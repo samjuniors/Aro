@@ -53,10 +53,21 @@ export const $focusedTreePaneId = computed(
   }
 )
 
-const TILE_PANE_PREFIX = 'session-tile:'
+/** The stored id of the session the user is working in: a focused
+ *  `session-tile:<storedId>` pane IS that session, otherwise it falls back
+ *  to the route-driven primary selection.
+ *
+ *  Lives HERE, not in session-states.ts, because low-level stores (the preview
+ *  rail) need it and session-states imports them — defining it there made
+ *  `session-states` ⇄ `preview` a load cycle. The inputs (the layout tree and
+ *  the primary selection) are both leaf stores, so every consumer can share one
+ *  derivation without dragging session-states in. */
+export const TILE_PANE_PREFIX = 'session-tile:'
 
-/** The stored id of the session a chat surface is working in: the focused
- *  session tile's id, else the primary's selected stored id. */
+export const $focusedSessionIsTile = computed($focusedTreePaneId, active =>
+  Boolean(active?.startsWith(TILE_PANE_PREFIX))
+)
+
 export const $focusedStoredSessionId = computed([$focusedTreePaneId, $selectedStoredSessionId], (active, selected) =>
   active?.startsWith(TILE_PANE_PREFIX) ? active.slice(TILE_PANE_PREFIX.length) : selected
 )

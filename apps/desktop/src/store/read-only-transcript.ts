@@ -14,6 +14,12 @@
  * Every other failure keeps its existing semantics. Rows whose owner IS
  * resolvable never take this path, and a later successful live resume (e.g.
  * after the single-match owner backfill stamps the row) clears the flag.
+ *
+ * A second, unrelated reason a stored transcript is read-only lives here too:
+ * a cron run the scheduler no longer owns but never closed (#88443). It keeps
+ * its own verdict (see `$cronRunReadOnlyVerdicts` below) so a live resume
+ * cannot clear it, and `isStoredTranscriptReadOnly` reports both, so every
+ * write path gets one answer.
  */
 import { atom } from 'nanostores'
 

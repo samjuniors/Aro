@@ -2634,8 +2634,9 @@ class _CompactionLifecycle:
 
 class _CompressionLease:
     """The per-attempt durable compression lock plus its lifecycle plumbing.
-    ``holder`` is None when no durable lock is owned (legacy DB, no session db); ``watermark`` is MAX(id) of
-    active rows at lease start (None = archive everything, no concurrent-tail preservation this cycle)."""
+    ``holder`` is None when no durable lock is owned (legacy DB, no session db); ``watermark`` is the highest
+    active row the compaction already represents: MAX(id) at lease start, advanced to the newest row of an
+    adopted durable snapshot (None = archive everything, no concurrent-tail preservation this cycle)."""
 
     def __init__(
         self, agent: Any, *, db: Any, sid: str, ttl: float, refresh_interval: Any,
@@ -2921,7 +2922,8 @@ def _adopt_grown_durable_parent(agent: Any, lease: _CompressionLease, messages: 
     """Return the durable parent transcript when it outgrew the in-memory snapshot.
     Rotation only (in-place never loses rows). The snapshot predates the lease: if durable grew, a writer
     committed a turn — ADOPT it (aborting wedged busy sessions forever). Length check only: in-memory edits of
-    past turns are legal."""
+    past turns are legal. Adoption advances ``lease.watermark`` to the snapshot's newest row, so publication
+    clones only rows the snapshot does not already carry."""
     if lease.db is None or not lease.sid:
         return None
     durable_loader = getattr(type(lease.db), "get_messages_as_conversation", None)
@@ -2954,9 +2956,12 @@ def _adopt_grown_durable_parent(agent: Any, lease: _CompressionLease, messages: 
         )
         return None
     # Re-read after the flush so the adopted snapshot carries the just-persisted tail.
-    durable_parent = durable_loader(lease.db, lease.sid)
+    durable_parent = durable_loader(lease.db, lease.sid, include_row_ids=True)
     if not (isinstance(durable_parent, list) and len(durable_parent) > len(messages)):
         return None
+    adopted_row_ids = [rid for m in durable_parent if isinstance(rid := m.pop("_row_id", None), int)]
+    if lease.watermark is not None and adopted_row_ids:
+        lease.watermark = max(lease.watermark, *adopted_row_ids)
     logger.info(
         "compression: session=%s grew before lease (%d → %d msgs); adopting durable snapshot", lease.sid, len(messages),
         len(durable_parent),
@@ -3292,7 +3297,7 @@ def _parent_deliberately_ended(session_db: Any, session_id: str) -> bool:
 
 
 def _carry_session_state_to_child(agent: Any, old_session_id: str, old_title: Any) -> None:
-    """Migrate /goal, /heartbeat, /loop state and the title from the parent to the child.
+    """Migrate /goal, /heartbeat, /loop state, rejected-thinking fingerprints and the title from the parent to the child.
     Each lookup is a flat per-session read with no parent walk, so state would silently die at the boundary. The title
     is carried unchanged (renumbering per rotation made one session look like many); its provenance is read BEFORE the
     transfer clears the ancestor's row, then restored so an inherited auto-title stays upgradeable.
@@ -3309,6 +3314,9 @@ def _carry_session_state_to_child(agent: Any, old_session_id: str, old_title: An
     with _swallow('Could not migrate loop on compression: %s'):
         from hermes_cli.loops import migrate_loop_to_session
         migrate_loop_to_session(old_session_id, agent.session_id, reason="compression")
+    with _swallow('Could not carry rejected thinking on compression: %s'):
+        from agent.anthropic_thinking_replay import carry_rejected_thinking_to_session
+        carry_rejected_thinking_to_session(agent, old_session_id)
     if not old_title:
         return
     _src = None
@@ -3354,7 +3362,8 @@ def _publish_rotated_compaction(
     if _parent_deliberately_ended(agent._session_db, old_session_id):
         raise RuntimeError(f"Compression parent already ended: {old_session_id}")
     # Foreign-tail ceiling: the flush below writes OUR rows (already in handoff);
-    # rows above the start watermark up to this MAX(id) are foreign appends.
+    # rows above the lease watermark (lease start, or the newest adopted-snapshot row) up to this MAX(id)
+    # are foreign appends.
     # No trustworthy ceiling means the clone could duplicate the handoff: skip tail preservation this rotation.
     _foreign_tail_ceiling = None
     with contextlib.suppress(Exception):
@@ -4065,7 +4074,7 @@ def compress_context(
     task_id: str = "default", focus_topic: Optional[str] = None, force: bool = False,
     bypass_cooldown: bool = False, defer_context_engine_notification: bool = False,
     commit_fence: Optional[CompressionCommitFence] = None, verbatim_tail: Optional[list] = None,
-    trigger: Optional[str] = None,
+    trigger: Optional[str] = None, snapshot_is_current: Optional[Callable[[], bool]] = None,
 ) -> Tuple[list, str]:
     """Compress conversation context and split the session in SQLite.
     ``force`` (manual /compress) clears the summary-failure cooldown; ``bypass_cooldown`` (provider-proven
@@ -4090,6 +4099,8 @@ def compress_context(
     after ``messages``; an in-place commit stores them after the compacted head and returns head + tail.
     trigger: Why this attempt runs (``"overflow"`` for provider-rejected requests); defaults to manual/auto
     from ``force``. Feeds attempt telemetry only.
+    snapshot_is_current: Optional host snapshot validation after durable lease admission. This protects
+    edits completed before admission; it is not a substitute for the host's final publication fence.
     """
     attempt = _begin_compression_attempt(
         agent, force=force, defer_notification=defer_context_engine_notification, trigger=trigger,
@@ -4146,6 +4157,15 @@ def compress_context(
     # Publish the holder-qualified release hook before a timeout can win the
     # fence. If no durable lock was acquired there is no hook to publish.
     lease.finish_lock_setup()
+    try:
+        current = snapshot_is_current is None or snapshot_is_current()
+    except BaseException:
+        lease.release()
+        raise
+    if not current:
+        _emit_aborted_attempt_telemetry(agent, attempt.started_at, "snapshot_stale")
+        lease.release()
+        return messages, _existing_system_prompt(agent, system_message)
     _adopted = _adopt_if_parent_rotated(agent, lease, messages, system_message)
     if _adopted is not None:
         return _adopted

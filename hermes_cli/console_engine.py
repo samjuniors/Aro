@@ -556,7 +556,7 @@ _version = _simple_command(
 def _status(_engine: HermesConsoleEngine, args: list[str]) -> str:
     _expect_no_args(args, "status")
     from hermes_cli.status import show_status
-    output = _capture_output(lambda: show_status(SimpleNamespace(all=False, deep=False)))
+    output = _capture_output(lambda: show_status(SimpleNamespace(full=True, deep=False)))
     return _strip_console_status_footer(output)
 
 
@@ -651,20 +651,11 @@ def _config_migrate(_engine: HermesConsoleEngine, args: list[str]) -> None:
 
 def _guard_exports(db, session_ids: list[str]) -> None:
     """Per-session export budget: only an individual runaway transcript trips it; 0 disables."""
-    from hermes_state import SessionExportTooLargeError, resolved_max_export_messages
-    limit = resolved_max_export_messages()
-    if limit <= 0:
-        return
+    from hermes_state import SessionExportTooLargeError
     try:
-        for session_id in session_ids:
-            db.assert_export_safe(session_id, max_messages=limit)
+        db.assert_exports_safe(session_ids)
     except SessionExportTooLargeError as exc:
-        raise ConsoleCommandError(
-            f"Session '{exc.session_id}' has more than {limit:,} "
-            "exportable messages; in-memory export is capped per session. "
-            "Use the Sessions page's streaming Export action, or set "
-            "sessions.max_export_messages: 0 in config.yaml to disable "
-            "the guard.") from exc
+        raise ConsoleCommandError(str(exc)) from exc
 
 
 @_captured

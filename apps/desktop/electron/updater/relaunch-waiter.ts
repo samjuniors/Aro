@@ -37,7 +37,7 @@ export interface RelaunchWaiterOptions {
   processStartTimeMs: number
   /** The MSIX identity name of this install (e.g. NousResearch.HermesBundled). */
   identityName: string
-  /** Absolute path to the waiter script inside the payload repo snapshot. */
+  /** Absolute path to the waiter script shipped in the app's resources. */
   scriptPath: string
   timeoutSeconds?: number
 }

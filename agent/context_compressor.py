@@ -1396,6 +1396,39 @@ def _content_text_for_contains(content: Any) -> str:
     return "" if content is None else content if isinstance(content, str) else str(content)
 
 
+# Gateway reply pointer prepended to a user turn (gateway/run_inbound.py
+# ``_prepend_inbound_reply_context``), optionally behind the Discord triggering note.
+# Non-greedy: a quote that itself contains the closing delimiter is only partly
+# stripped, which over-counts the request and keeps the conservative anchor.
+_GATEWAY_REPLY_POINTER_RE = re.compile(
+    r'\A(?:\[Triggering message id: [^\n]*\]\n\n)?'
+    r'\[Replying to(?: your previous message)?: ".*?"\]\n\n',
+    re.DOTALL,
+)
+
+
+def _restated_request_text(content: Any) -> str:
+    """A user turn's text, stripped, after the last in-flight replay header if present.
+
+    A request restated by an earlier compaction carries the replay header (and possibly the
+    old summary) before it; the text after the last header is the request itself, so a task
+    that survives several cycles never stacks headers or drags an old summary along.
+    """
+    text = _content_text_for_contains(content).strip()
+    if _INFLIGHT_TASK_REPLAY_HEADER in text:
+        text = text.rsplit(_INFLIGHT_TASK_REPLAY_HEADER, 1)[1].strip()
+    return text
+
+
+def _authored_request_text(content: Any) -> str:
+    """Text the user wrote in a turn, without the gateway's reply-to pointer.
+
+    The pointer quotes another message verbatim; it disambiguates which message is being
+    answered but is not part of the request, so it must not count toward request size.
+    """
+    return _GATEWAY_REPLY_POINTER_RE.sub("", _restated_request_text(content), count=1).strip()
+
+
 def _is_text_only_content(content: Any) -> bool:
     """Whether the active request can be restated without losing a content part."""
     if isinstance(content, str):
@@ -1683,7 +1716,7 @@ def _sum_search_files(name, args, content, content_len, line_count):
 def _sum_browser(name, args, content, content_len, line_count):
     url, ref = args.get("url", ""), args.get("ref", "")
     detail = f" {url}" if url else (f" ref={ref}" if ref else "")
-    return f"[{name}]{detail} ({content_len:,} chars)"
+    return f"[{name}]{detail} ({content_len:,} chars)" + _result_failure_suffix(content)
 
 
 def _sum_web_extract(name, args, content, content_len, line_count):
@@ -1697,13 +1730,13 @@ def _sum_web_extract(name, args, content, content_len, line_count):
         first = "?"
     if isinstance(urls, list) and len(urls) > 1:
         first += f" (+{len(urls) - 1} more)"
-    return f"[web_extract] {first} ({content_len:,} chars)"
+    return f"[web_extract] {first} ({content_len:,} chars)" + _result_failure_suffix(content)
 
 
 def _sum_delegate_task(name, args, content, content_len, line_count):
     goal = _str_arg(args, "goal")
     goal = goal if len(goal) <= 60 else goal[:57] + "..."
-    return f"[delegate_task] '{goal}' ({content_len:,} chars result)"
+    return f"[delegate_task] '{goal}' ({content_len:,} chars result)" + _result_failure_suffix(content)
 
 
 def _sum_execute_code(name, args, content, content_len, line_count):
@@ -1839,7 +1872,7 @@ def _sum_skill_manage(name, args, content, content_len, line_count):
         action = _str_arg(args, "action", "?")
         op_name = _str_arg(args, "name", "?")
         summary = f"[skill_manage] {action} {op_name}"
-    return f"{summary}{_skill_result_failure_suffix(content)} ({content_len:,} chars)"
+    return f"{summary}{_result_failure_suffix(content)} ({content_len:,} chars)"
 
 
 def _sum_skills_list(name, args, content, content_len, line_count):
@@ -1850,27 +1883,89 @@ def _sum_skills_list(name, args, content, content_len, line_count):
     payload = _json_dict(content)
     count = payload.get("count")
     listed = f" {count} skills" if isinstance(count, int) else ""
-    return f"[skills_list]{scope}{listed}{_skill_result_failure_suffix(content)} ({content_len:,} chars)"
+    return f"[skills_list]{scope}{listed}{_result_failure_suffix(content)} ({content_len:,} chars)"
 
 
-def _skill_result_failure_suffix(content: str) -> str:
-    """`` FAILED: <error>`` for a skill-tool payload that reports failure, else ``""``.
-    The skill tools return ``{"success": false, "error": ...}``; without the outcome in the stub a
-    failed batch compresses into the same line as a success and the post-compaction agent chases the
-    stub text as the error (#112710). Bounded to one line so the stub stays a stub."""
-    payload = _json_dict(content)
+def _failure_suffix(reason: Any, label: str = "FAILED") -> str:
+    """`` FAILED: <reason>`` on one line, or `` FAILED`` when the payload carries no message."""
+    preview = " ".join(str(reason).split())[:80] if reason else ""
+    return f" {label}: {preview}" if preview else f" {label}"
+
+
+def _result_failure_suffix(content: str) -> str:
+    """`` FAILED: <error>`` for any tool payload with a top-level ``error`` / ``success: false``, else ``""``.
+    Without the outcome in the stub a failed call compresses into the same line as a success and the
+    post-compaction agent reports the success or chases the stub text as the error (#112710,
+    #131244). Bounded to one line so the stub stays a stub."""
+    return _payload_failure_suffix(_json_dict(content))
+
+
+def _payload_failure_suffix(payload: dict) -> str:
+    """``_result_failure_suffix`` for an already-parsed payload."""
     error = payload.get("error")
     if not error and payload.get("success") is not False:
         return ""
-    preview = " ".join(str(error).split())[:80] if error else ""
-    return f" FAILED: {preview}" if preview else " FAILED"
+    return _failure_suffix(error)
+
+
+def _sum_cronjob_manage(name, args, content, content_len, line_count):
+    """``[cronjob] <action>``, plus the outcome of the run it triggered.
+
+    A manual run reports a dead or skipped job inside the job view while the tool call itself
+    succeeded, so the payload is a clean ``{"success": true, "job": {...}}`` and a top-level probe
+    finds nothing to mark. Only this call's own fields decide: ``job`` also carries the job's stored
+    state, including an ``error`` left behind by an earlier run.
+    """
+    stub = f"[cronjob] {args.get('action', '?')}"
+    payload = _json_dict(content)
+    suffix = _payload_failure_suffix(payload)
+    if not suffix:
+        job = payload.get("job")
+        job = job if isinstance(job, dict) else {}
+        error, skipped = job.get("execution_error"), job.get("execution_skipped")
+        if error is not None or (skipped is None and job.get("execution_success") is False):
+            suffix = _failure_suffix(error)
+        elif skipped is not None:
+            # Skipped is not failed: the scheduler may be running this very job right now.
+            suffix = _failure_suffix(skipped, "SKIPPED")
+    return stub + suffix
+
+
+def _sum_process_manage(name, args, content, content_len, line_count):
+    """``[process] <action> session=<id>``, plus how the process itself ended.
+
+    A poll of a finished process reports ``exit_code`` and ``completion_reason`` instead of an
+    ``error``, so a non-zero exit is invisible to a top-level probe. A process still running
+    reports no exit code at all, and that is not a failure.
+    """
+    stub = f"[process] {args.get('action', '?')} session={args.get('session_id', '?')}"
+    payload = _json_dict(content)
+    suffix = _payload_failure_suffix(payload)
+    if not suffix:
+        exit_code = payload.get("exit_code")
+        # A process the agent killed itself exits non-zero by design; that is not a failure.
+        if (
+            isinstance(exit_code, int) and not isinstance(exit_code, bool) and exit_code != 0
+            and payload.get("completion_reason") != "killed"
+        ):
+            suffix = _failure_suffix(f"exit code {exit_code}")
+    return stub + suffix
 
 
 def _sum_template(template: str, **defaults):
-    """Summarizer formatting ``template`` from the parsed args (``defaults`` fill missing keys) plus ``content_len``."""
-    return lambda name, args, content, content_len, line_count: template.format_map(
-        {**defaults, **args, "content_len": content_len}
-    )
+    """Summarizer formatting ``template`` from the parsed args (``defaults`` fill missing keys) plus
+    ``content_len`` and the result's outcome.
+
+    Every mutation routed through here lost its outcome, so a refused read, a rate-limited search, a
+    rejected cronjob or a silent ``memory`` write compressed into the same stub as the success it
+    never was, and the post-compaction agent reported the success (#131244).
+    """
+    def summarize(name, args, content, content_len, line_count):
+        return (
+            template.format_map({**defaults, **args, "content_len": content_len})
+            + _result_failure_suffix(content)
+        )
+    return summarize
 
 
 # tool_name -> (name, args, content, content_len, line_count) -> one-line summary.
@@ -1893,13 +1988,14 @@ _TOOL_RESULT_SUMMARIZERS = {
     "skill_manage": _sum_skill_manage,
     "vision_analyze": lambda name, args, content, content_len, line_count: (
         f"[vision_analyze] '{_str_arg(args, 'question')[:50]}' ({content_len:,} chars)"
+        + _result_failure_suffix(content)
     ),
     "memory": _sum_template("[memory] {action} on {target}", action="?", target="?"),
     "todo_list": lambda *a: "[todo] updated task list",
     "clarify": _sum_clarify,
     "text_to_speech": _sum_template("[text_to_speech] generated audio ({content_len:,} chars)"),
-    "cronjob_manage": _sum_template("[cronjob] {action}", action="?"),
-    "process_manage": _sum_template("[process] {action} session={session_id}", action="?", session_id="?"),
+    "cronjob_manage": _sum_cronjob_manage,
+    "process_manage": _sum_process_manage,
 }
 
 
@@ -1924,7 +2020,7 @@ def _summarize_tool_result_unguarded(tool_name: str, tool_args: str, tool_conten
     if summarizer is not None:
         return summarizer(tool_name, args, content, content_len, line_count)
     first_arg = "".join(f" {k}={str(v)[:40]}" for k, v in list(args.items())[:2])
-    return f"[{tool_name}]{first_arg} ({content_len:,} chars result)"
+    return f"[{tool_name}]{first_arg} ({content_len:,} chars result)" + _result_failure_suffix(content)
 
 
 def _model_threshold_key_rank(key: str, model: str, provider: str) -> "tuple[int, int] | None":
@@ -3091,10 +3187,14 @@ class ContextCompressor(SummaryDispatchMixin, MicroCompactionMixin, ContextEngin
         n = len(messages)
         newest_asst_idx = _last_assistant_index(messages)
         charge_all_thinking = self._stale_thinking_on_wire()
+        native_budget = self._native_anthropic_budget()
         accumulated = 0
         cut = n  # start from beyond the end
         for i in range(n - 1, head_end - 1, -1):
-            msg_tokens = _estimate_msg_budget_tokens(messages[i], charge_all_thinking or i == newest_asst_idx)
+            msg_tokens = (
+                native_budget(messages[i]) if native_budget
+                else _estimate_msg_budget_tokens(messages[i], charge_all_thinking or i == newest_asst_idx)
+            )
             if accumulated + msg_tokens > ceiling and (n - i) >= min_tail:
                 return (i if cut_at_break else cut), accumulated
             accumulated += msg_tokens
@@ -4423,9 +4523,13 @@ Write only the summary body. Do not include any preamble or prefix."""
             text = _redact_compaction_text(_content_text_for_contains(msg.get("content")).strip())
             if not text:
                 continue
+            if len(text) > _ACTIVE_TASK_MAX_CHARS:
+                # Past the cap, drop a gateway reply quote first so elision cannot keep the quote
+                # and cut the request; the split-turn gate measures the same authored text.
+                text = _redact_compaction_text(_authored_request_text(msg.get("content"))) or text
             text = re.sub(r"\s+", " ", text)
             # Elide AFTER repr: repr would escape the marker's "Hermes's" and hide a copy from the
-            # guard. Text within the cap stays whole (the split-turn path relies on that).
+            # guard. Authored text within the cap stays whole (the split-turn path relies on that).
             text = repr(text) if len(text) <= _ACTIVE_TASK_MAX_CHARS else elide(repr(text), _ACTIVE_TASK_MAX_CHARS)
             return (
                 f"User asked (deterministic, from compacted turns): {text}\n"
@@ -4864,13 +4968,8 @@ Write only the summary body. Do not include any preamble or prefix."""
             # carrier itself, after the marker. Already actionable.
             return compressed
 
-        task_text = _content_text_for_contains(inflight.get("content")).strip()
-        if _INFLIGHT_TASK_REPLAY_HEADER in task_text:
-            # Already a restatement from an earlier compaction (standalone row
-            # or merged onto a carrier): take the text after the header so a
-            # task that survives >1 cycle never stacks headers or drags the
-            # old summary along.
-            task_text = task_text.rsplit(_INFLIGHT_TASK_REPLAY_HEADER, 1)[1].strip()
+        # Keep any reply pointer: the restated task still needs its disambiguation.
+        task_text = _restated_request_text(inflight.get("content"))
         if not task_text:
             return compressed
 
@@ -4969,6 +5068,30 @@ Write only the summary body. Do not include any preamble or prefix."""
         except Exception:
             return False
 
+    def _native_anthropic_budget(self):
+        """Per-message tail budget on a preserved-thinking native Anthropic route, else None. That route
+        replays exactly the projected carriers minus this session's rejected signatures — what the
+        preflight estimate prices — never the canonical ``reasoning`` keys."""
+        from agent.anthropic_thinking_policy import native_anthropic_preserves_prior_thinking
+
+        if (getattr(self, "api_mode", "") or "") != "anthropic_messages" or not native_anthropic_preserves_prior_thinking(
+            getattr(self, "base_url", ""), getattr(self, "model", "")
+        ):
+            return None
+        from agent.anthropic_thinking_replay import session_rejected_thinking, strip_rejected_thinking
+        from agent.message_sanitization import native_anthropic_accounting_projection
+
+        rejected = session_rejected_thinking(self, getattr(self, "_session_db", None), getattr(self, "_session_id", ""))
+
+        def budget(msg: Dict[str, Any]) -> int:
+            request_copy = dict(msg)
+            if rejected:
+                strip_rejected_thinking(request_copy, rejected)
+            (projected,), readable = native_anthropic_accounting_projection([request_copy])
+            return _estimate_msg_budget_tokens(projected) + sum(estimate_tokens_rough(text) for text in readable)
+
+        return budget
+
     def _find_tail_cut_by_tokens(
         self, messages: List[Dict[str, Any]], head_end: int, token_budget: int | None = None,
         *, allow_split_turn: bool = True,
@@ -5032,8 +5155,9 @@ Write only the summary body. Do not include any preamble or prefix."""
             # A single oversized user message is indivisible and must stay verbatim in the tail; this
             # exception is only for aggregate turn growth after a normally sized opening request.
             and _estimate_msg_budget_tokens(messages[last_user_idx]) <= soft_ceiling
-            and len(_content_text_for_contains(messages[last_user_idx].get("content")).strip())
-            <= _ACTIVE_TASK_MAX_CHARS
+            # Measure what the user wrote: a gateway reply pointer quotes another message and
+            # would otherwise disable the split for a short reply to a long answer.
+            and len(_authored_request_text(messages[last_user_idx].get("content"))) <= _ACTIVE_TASK_MAX_CHARS
             # Only split when there is real turn body to summarize: if the oversized weight is the
             # active turn's own newest group, the pre-anchor cut retains it anyway, so taking the
             # active request out of the tail buys no reclaim and loses the #10896 anchor.
