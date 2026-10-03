@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { Toasts } from './ui'
 
 export type ToastTone = 'mint' | 'rose' | 'amber' | 'iris' | 'cyan' | 'neutral'
@@ -16,7 +17,7 @@ export function useToasts() {
   const seq = useRef(0)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  useEffect(() => () => { for (const t of timers.current) clearTimeout(t) }, [])
+  useEffect(() => () => { for (const t of timers.current) {clearTimeout(t)} }, [])
 
   const toast = useCallback((msg: string, tone: ToastTone = 'iris') => {
     const id = ++seq.current

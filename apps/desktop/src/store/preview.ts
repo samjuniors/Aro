@@ -12,7 +12,9 @@ import { normalize } from '@/lib/text'
 import { recordFeatureUse } from './desktop-metrics'
 import { $rightRailActiveTabId, type RightRailTabId, selectRightRailTab } from './layout'
 import { clearExplicitPreviewOpen, noteExplicitPreviewOpen, PREVIEW_TILE_PREFIX } from './preview-explicit'
+import { bucketTabsFor, ownerIdentity, type PreviewOwner } from './preview-ownership'
 import { normalizeProfileKey } from './profile'
+import { $focusedStoredSessionId } from './session-focus'
 import { canOpenBrowserWindow, openBrowserInNewWindow } from './windows'
 
 /**
@@ -73,6 +75,25 @@ export interface PreviewServerRestart {
 export interface PreviewTab {
   id: RightRailTabId
   target: PreviewTarget
+  /** Stored id of the session that owns the tab. Absent on a tab opened in a
+   *  fresh draft (adopted when the draft becomes a session) and on legacy
+   *  rows written before session scoping. */
+  sessionId?: string
+  /** Pinned tabs render in EVERY session — the explicit cross-session
+   *  workspace. Everything else is visible only in the session that owns
+   *  it. */
+  pinned?: boolean
+}
+
+/** The tabs an agent tool acting for `owner` (default: the focused session)
+ *  may read or drive: never another session's hidden tab, and never another
+ *  profile's pin. */
+export function previewTabsFor(owner: PreviewOwner = $focusedStoredSessionId.get()): PreviewTab[] {
+  // Single-view build (no per-profile tab buckets yet): one bucket, and the
+  // view's pins are the pins the owner shares.
+  const viewKey = normalizeProfileKey(null)
+
+  return bucketTabsFor($previewTabs.get(), ownerIdentity(owner), viewKey, viewKey)
 }
 
 const TABS_STORAGE_KEY = 'hermes.desktop.previewTabs.v2'

@@ -20,13 +20,13 @@
  *   /aro-design     — the design-system reference page (tokens + primitives)
  */
 
+import { type RouteContribution, ROUTES_AREA, SIDEBAR_NAV_AREA, type SidebarNavContribution } from '@/app/routes'
 import { registry } from '@/contrib/registry'
-import { ROUTES_AREA, SIDEBAR_NAV_AREA, type RouteContribution, type SidebarNavContribution } from '@/app/routes'
 
 import { AroDesignSystemPage } from './DesignSystemAro'
-import { AroTranscriptPage } from './ToolTimeline'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
+import { AroTranscriptPage } from './ToolTimeline'
 
 /** Contributed routes (one segment each, reserved by the host router). */
 export const ARO_DESIGN_ROUTE = '/aro-design'

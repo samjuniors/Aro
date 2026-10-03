@@ -4,6 +4,8 @@ import { findGroup, findGroupOfPane } from '@/components/pane-shell/tree/model'
 import { $activeTreeGroup, $layoutTree } from '@/components/pane-shell/tree/store'
 import { $workspaceMode } from '@/components/pane-shell/workspace-scope'
 
+import { $selectedStoredSessionId } from './session'
+
 // A chat surface: the primary's workspace or a session tile. Everything else a
 // zone can show — the sessions list, Files, Terminal, a preview tab — is chrome.
 const isChatPane = (paneId?: string): boolean => paneId === 'workspace' || Boolean(paneId?.startsWith('session-tile:'))
@@ -49,4 +51,12 @@ export const $focusedTreePaneId = computed(
 
     return active
   }
+)
+
+const TILE_PANE_PREFIX = 'session-tile:'
+
+/** The stored id of the session a chat surface is working in: the focused
+ *  session tile's id, else the primary's selected stored id. */
+export const $focusedStoredSessionId = computed([$focusedTreePaneId, $selectedStoredSessionId], (active, selected) =>
+  active?.startsWith(TILE_PANE_PREFIX) ? active.slice(TILE_PANE_PREFIX.length) : selected
 )

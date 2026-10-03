@@ -85,14 +85,14 @@ export function IconButton({
   return (
     <button
       {...rest}
-      title={label}
       aria-label={label}
-      style={{ width: size, height: size }}
       className={cn(
         'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-all duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94]',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
+      style={{ width: size, height: size }}
+      title={label}
     >
       <Icon size={Math.round(size * 0.5)} />
     </button>
@@ -234,6 +234,7 @@ export function Menu({
 }) {
   const [inner, setInner] = useState(false)
   const open = controlled ?? inner
+
   const setOpen = useCallback(
     (v: boolean) => {
       setInner(v)
@@ -241,30 +242,35 @@ export function Menu({
     },
     [onOpenChange],
   )
+
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (!open) return
+    if (!open) {return}
+
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) {setOpen(false)}
     }
+
     const k = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
     window.addEventListener('mousedown', h)
     window.addEventListener('keydown', k)
+
     return () => {
       window.removeEventListener('mousedown', h)
       window.removeEventListener('keydown', k)
     }
   }, [open, setOpen])
+
   return (
-    <div ref={ref} className={cn('relative', className)}>
+    <div className={cn('relative', className)} ref={ref}>
       <div onClick={() => setOpen(!open)}>{trigger(open)}</div>
       {open && (
         <div
-          style={{ width }}
           className={cn(
             'absolute z-[60] mt-1.5 origin-top animate-aro-slide-down overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
             align === 'right' ? 'right-0' : 'left-0',
           )}
+          style={{ width }}
         >
           {children(() => setOpen(false))}
         </div>
@@ -290,7 +296,6 @@ export function MenuItem({
 }) {
   return (
     <button
-      onClick={onClick}
       className={cn(
         'flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors',
         active
@@ -299,6 +304,7 @@ export function MenuItem({
             ? 'text-aro-rose hover:bg-aro-rose-tint'
             : 'text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
       )}
+      onClick={onClick}
     >
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -333,11 +339,11 @@ export function Select({
   bare?: boolean
 }) {
   const current = options.find((o) => o.value === value)
+
   return (
     <Menu
       align={align}
       className={className}
-      width={200}
       trigger={(open) => (
         <button
           className={cn(
@@ -347,17 +353,18 @@ export function Select({
           )}
         >
           <span className="truncate font-medium">{current?.label ?? value}</span>
-          <IconChevronDown size={12} className={cn('shrink-0 opacity-60 transition-transform', open && 'rotate-180')} />
+          <IconChevronDown className={cn('shrink-0 opacity-60 transition-transform', open && 'rotate-180')} size={12} />
         </button>
       )}
+      width={200}
     >
       {(close) =>
         options.map((o) => (
           <MenuItem
+            active={o.value === value}
+            hint={o.hint}
             key={o.value}
             label={o.label}
-            hint={o.hint}
-            active={o.value === value}
             onClick={() => {
               onChange(o.value)
               close()
@@ -373,17 +380,18 @@ export function Toggle({ checked, onChange, size = 'md' }: { checked: boolean; o
   const w = size === 'sm' ? 30 : 36
   const h = size === 'sm' ? 17 : 20
   const k = h - 4
+
   return (
     <button
-      role="switch"
       aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      style={{ width: w, height: h }}
       className={cn('relative shrink-0 cursor-pointer rounded-full transition-colors duration-200', checked ? 'bg-aro-iris' : 'bg-aro-line-strong')}
+      onClick={() => onChange(!checked)}
+      role="switch"
+      style={{ width: w, height: h }}
     >
       <span
-        style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 2 : 2}px)` }}
         className="absolute top-[2px] left-0 rounded-full bg-white shadow-aro-e1 transition-transform duration-200"
+        style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 2 : 2}px)` }}
       />
     </button>
   )
@@ -406,15 +414,16 @@ export function Segmented<T extends string>({
     <div className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)}>
       {items.map((it) => {
         const on = it.value === value
+
         return (
           <button
-            key={it.value}
-            onClick={() => onChange(it.value)}
             className={cn(
               'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-all duration-150',
               size === 'md' ? 'px-3 py-[6px] text-[12.5px]' : 'px-2.5 py-[4px] text-[12px]',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
+            key={it.value}
+            onClick={() => onChange(it.value)}
           >
             {it.icon && <it.icon size={12} />}
             {it.label}
@@ -440,14 +449,15 @@ export function Tabs<T extends string>({
     <div className={cn('flex items-center gap-0.5', className)}>
       {items.map((it) => {
         const on = it.value === value
+
         return (
           <button
-            key={it.value}
-            onClick={() => onChange(it.value)}
             className={cn(
               'relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
+            key={it.value}
+            onClick={() => onChange(it.value)}
           >
             <span className="flex items-center gap-1.5">
               {it.label}
@@ -480,7 +490,7 @@ export function Bar({
   height?: number
 }) {
   return (
-    <div style={{ height }} className={cn('w-full overflow-hidden rounded-full bg-aro-track', className)}>
+    <div className={cn('w-full overflow-hidden rounded-full bg-aro-track', className)} style={{ height }}>
       {indeterminate ? (
         <div className="relative h-full w-1/3">
           <div className="h-full w-full animate-aro-sweep rounded-full" style={{ background: toneHex(tone) }} />
@@ -507,20 +517,21 @@ export function Ring({
 }) {
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
+
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--aro-track)" strokeWidth={stroke} />
+      <svg className="-rotate-90" height={size} width={size}>
+        <circle cx={size / 2} cy={size / 2} fill="none" r={r} stroke="var(--aro-track)" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={r}
           fill="none"
+          r={r}
           stroke={tone}
-          strokeWidth={stroke}
-          strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c - (c * Math.min(value, 100)) / 100}
+          strokeLinecap="round"
+          strokeWidth={stroke}
           style={{ transition: 'stroke-dashoffset .7s var(--aro-ease-out-quint)' }}
         />
       </svg>
@@ -533,10 +544,11 @@ export function Sparkline({ data, color = 'var(--aro-iris)', w = 64, h = 20 }: {
   const max = Math.max(...data, 1)
   const min = Math.min(...data, 0)
   const pts = data.map((d, i) => `${((i / (data.length - 1)) * w).toFixed(1)},${(h - ((d - min) / (max - min || 1)) * (h - 2) - 1).toFixed(1)}`)
+
   return (
-    <svg width={w} height={h} className="overflow-visible">
-      <polyline points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={color} opacity="0.12" stroke="none" />
-      <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+    <svg className="overflow-visible" height={h} width={w}>
+      <polyline fill={color} opacity="0.12" points={`0,${h} ${pts.join(' ')} ${w},${h}`} stroke="none" />
+      <polyline fill="none" points={pts.join(' ')} stroke={color} strokeLinejoin="round" strokeWidth="1.4" />
     </svg>
   )
 }
@@ -559,7 +571,7 @@ export function Stat({
       <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
       <div className="flex items-end justify-between gap-2">
         <span className={cn('text-[20px] leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
-        {chart && <Sparkline data={chart} w={54} h={18} />}
+        {chart && <Sparkline data={chart} h={18} w={54} />}
       </div>
       {sub && <span className="text-[11px] text-aro-ink-3">{sub}</span>}
     </div>
@@ -624,21 +636,24 @@ export function Modal({
   children: ReactNode
 }) {
   useEffect(() => {
-    if (!open) return
+    if (!open) {return}
     const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', h)
+
     return () => window.removeEventListener('keydown', h)
   }, [open, onClose])
-  if (!open) return null
+
+  if (!open) {return null}
+
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]">
       <div className="absolute inset-0 animate-aro-fade bg-black/55 backdrop-blur-[3px]" onClick={onClose} />
       <div
-        role="dialog"
-        aria-modal="true"
         aria-label={title}
-        style={{ width, maxWidth: '94vw' }}
+        aria-modal="true"
         className="relative max-h-[78vh] animate-aro-pop overflow-hidden rounded-[14px] border border-aro-line-strong bg-aro-bg shadow-aro-e4"
+        role="dialog"
+        style={{ width, maxWidth: '94vw' }}
       >
         <div className="flex items-start justify-between gap-4 border-b border-aro-line-soft bg-aro-raise/60 px-4 py-3">
           <div>
@@ -656,13 +671,12 @@ export function Modal({
 export function Toasts({ items }: { items: { id: number; msg: string; tone: string }[] }) {
   return (
     <div
-      role="status"
       aria-live="polite"
       className="pointer-events-none fixed bottom-10 left-1/2 z-[150] flex -translate-x-1/2 flex-col items-center gap-2"
+      role="status"
     >
       {items.map((t) => (
         <div
-          key={t.id}
           className={cn(
             'animate-aro-slide-up rounded-[9px] border bg-aro-overlay px-3 py-2 text-[12px] text-aro-ink shadow-aro-e3',
             t.tone === 'mint'
@@ -673,6 +687,7 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
                   ? 'border-aro-amber/30'
                   : 'border-aro-iris/30',
           )}
+          key={t.id}
         >
           <span className={cn('mr-2 inline-block size-[6px] rounded-full', toneDot[(t.tone as Tone) || 'iris'])} />
           {t.msg}

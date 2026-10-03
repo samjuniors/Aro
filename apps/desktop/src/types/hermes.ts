@@ -583,6 +583,12 @@ export interface SessionInfo {
   actual_cost_usd?: null | number
   estimated_cost_usd?: null | number
   is_active: boolean
+  /** True while the cron scheduler still owns this run — a `source='cron'` row
+   *  whose `ended_at` is null is a live process's never-closed run. Unlike
+   *  `is_active` (a 300s activity window) it stays true through a long tool
+   *  call and is false for a zombie whose process died. Undefined against
+   *  older backends and for non-cron rows. */
+  scheduler_owned?: boolean
   last_active: number
   message_count: number
   model: null | string

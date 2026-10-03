@@ -25,6 +25,14 @@ function youtubeSrc(embedUrl: string): string {
   return url.toString()
 }
 
+/** The same video and params, served through the Desktop loopback wrapper. */
+export function wrappedYoutubeSrc(embedUrl: string, hostOrigin: string): string {
+  const url = new URL(embedUrl)
+  const id = url.pathname.split('/').pop() ?? ''
+
+  return `${hostOrigin}/youtube/${encodeURIComponent(id)}${url.search}`
+}
+
 // Keep this as a plain iframe and let YouTube render its native player/error UI.
 export default function YouTubeEmbedRenderer({ descriptor }: { descriptor: FrameEmbed }) {
   const isDark = useIsDark()

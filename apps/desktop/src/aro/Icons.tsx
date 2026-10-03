@@ -38,7 +38,7 @@ export const IconBolt = (p: P) => (
 )
 export const IconTerminal = (p: P) => (
   <svg {...base(p)}>
-    <rect x="2.5" y="4" width="19" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="19" x="2.5" y="4" />
     <path d="m7 10 2.5 2.5L7 15M12.5 15.5h4" />
   </svg>
 )
@@ -59,14 +59,14 @@ export const IconGit = (p: P) => (
 export const IconPalette = (p: P) => (
   <svg {...base(p)}>
     <path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.8-1.8 0-1.9 1.2-2.7 3-2.7h1.4A2.8 2.8 0 0 0 21 13.7 9 9 0 0 0 12 3Z" />
-    <circle cx="8" cy="10" r="1.1" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
-    <circle cx="16" cy="10" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="8" cy="10" fill="currentColor" r="1.1" stroke="none" />
+    <circle cx="12" cy="7.5" fill="currentColor" r="1.1" stroke="none" />
+    <circle cx="16" cy="10" fill="currentColor" r="1.1" stroke="none" />
   </svg>
 )
 export const IconMonitor = (p: P) => (
   <svg {...base(p)}>
-    <rect x="2.5" y="4" width="19" height="12.5" rx="2" />
+    <rect height="12.5" rx="2" width="19" x="2.5" y="4" />
     <path d="M9 20h6M12 16.5V20" />
   </svg>
 )
@@ -161,7 +161,7 @@ export const IconPause = (p: P) => (
 )
 export const IconStop = (p: P) => (
   <svg {...base(p)}>
-    <rect x="6" y="6" width="12" height="12" rx="2" />
+    <rect height="12" rx="2" width="12" x="6" y="6" />
   </svg>
 )
 export const IconUndo = (p: P) => (
@@ -177,10 +177,10 @@ export const IconPlug = (p: P) => (
 )
 export const IconGrid = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
-    <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
-    <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
-    <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+    <rect height="7" rx="1.5" width="7" x="3.5" y="3.5" />
+    <rect height="7" rx="1.5" width="7" x="13.5" y="3.5" />
+    <rect height="7" rx="1.5" width="7" x="3.5" y="13.5" />
+    <rect height="7" rx="1.5" width="7" x="13.5" y="13.5" />
   </svg>
 )
 export const IconList = (p: P) => (
@@ -229,21 +229,21 @@ export const IconEye = (p: P) => (
 )
 export const IconMcp = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="13.5" width="6" height="6" rx="1.5" />
-    <rect x="15" y="13.5" width="6" height="6" rx="1.5" />
-    <rect x="9" y="3.5" width="6" height="6" rx="1.5" />
+    <rect height="6" rx="1.5" width="6" x="3" y="13.5" />
+    <rect height="6" rx="1.5" width="6" x="15" y="13.5" />
+    <rect height="6" rx="1.5" width="6" x="9" y="3.5" />
     <path d="M12 9.5V11M6 13.5v-1.2a1.3 1.3 0 0 1 1.3-1.3h9.4a1.3 1.3 0 0 1 1.3 1.3v1.2" />
   </svg>
 )
 
 export const IconGrip = (p: P) => (
   <svg {...base(p)}>
-    <circle cx="9" cy="6" r="1.1" fill="currentColor" />
-    <circle cx="15" cy="6" r="1.1" fill="currentColor" />
-    <circle cx="9" cy="12" r="1.1" fill="currentColor" />
-    <circle cx="15" cy="12" r="1.1" fill="currentColor" />
-    <circle cx="9" cy="18" r="1.1" fill="currentColor" />
-    <circle cx="15" cy="18" r="1.1" fill="currentColor" />
+    <circle cx="9" cy="6" fill="currentColor" r="1.1" />
+    <circle cx="15" cy="6" fill="currentColor" r="1.1" />
+    <circle cx="9" cy="12" fill="currentColor" r="1.1" />
+    <circle cx="15" cy="12" fill="currentColor" r="1.1" />
+    <circle cx="9" cy="18" fill="currentColor" r="1.1" />
+    <circle cx="15" cy="18" fill="currentColor" r="1.1" />
   </svg>
 )
 export const IconZap = (p: P) => (
@@ -253,7 +253,7 @@ export const IconZap = (p: P) => (
 )
 export const IconLayout = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="18" x="3" y="4" />
     <path d="M3 15.5h18M9.5 4v11.5M15.5 15.5V11" />
   </svg>
 )
@@ -271,7 +271,7 @@ export const IconBell = (p: P) => (
 )
 export const IconMic = (p: P) => (
   <svg {...base(p)}>
-    <rect x="9" y="3" width="6" height="12" rx="3" />
+    <rect height="12" rx="3" width="6" x="9" y="3" />
     <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6" />
   </svg>
 )
@@ -295,19 +295,19 @@ export const IconGlobe = (p: P) => (
 )
 export const IconCalendar = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+    <rect height="15.5" rx="2.5" width="17" x="3.5" y="5" />
     <path d="M3.5 10h17M8 3.5v3M16 3.5v3" />
   </svg>
 )
 export const IconMail = (p: P) => (
   <svg {...base(p)}>
-    <rect x="2.8" y="5" width="18.4" height="14" rx="2.5" />
+    <rect height="14" rx="2.5" width="18.4" x="2.8" y="5" />
     <path d="m3.5 7.5 8.5 6 8.5-6" />
   </svg>
 )
 export const IconCopy = (p: P) => (
   <svg {...base(p)}>
-    <rect x="9" y="9" width="11.5" height="11.5" rx="2.2" />
+    <rect height="11.5" rx="2.2" width="11.5" x="9" y="9" />
     <path d="M15 6.2A2.2 2.2 0 0 0 12.8 4H5.7A2.2 2.2 0 0 0 3.5 6.2v7.1A2.2 2.2 0 0 0 5.7 15.5" />
   </svg>
 )
@@ -360,19 +360,19 @@ export const IconSettings = (p: P) => (
 )
 export const IconPanelBottom = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="18" x="3" y="4" />
     <path d="M3 14.5h18" />
   </svg>
 )
 export const IconPanelRight = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="18" x="3" y="4" />
     <path d="M14.5 4v16" />
   </svg>
 )
 export const IconPanelLeft = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="18" x="3" y="4" />
     <path d="M9.5 4v16" />
   </svg>
 )
@@ -383,7 +383,7 @@ export const IconCloud = (p: P) => (
 )
 export const IconLaptop = (p: P) => (
   <svg {...base(p)}>
-    <rect x="4.5" y="5" width="15" height="10" rx="1.5" />
+    <rect height="10" rx="1.5" width="15" x="4.5" y="5" />
     <path d="M2.5 19h19" />
   </svg>
 )
@@ -395,9 +395,9 @@ export const IconHistory = (p: P) => (
 )
 export const IconMore = (p: P) => (
   <svg {...base(p)}>
-    <circle cx="5.5" cy="12" r="1.2" fill="currentColor" />
-    <circle cx="12" cy="12" r="1.2" fill="currentColor" />
-    <circle cx="18.5" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="5.5" cy="12" fill="currentColor" r="1.2" />
+    <circle cx="12" cy="12" fill="currentColor" r="1.2" />
+    <circle cx="18.5" cy="12" fill="currentColor" r="1.2" />
   </svg>
 )
 
@@ -407,20 +407,20 @@ type MarkProps = { size?: number; className?: string }
 /** The Aro wordmark glyph — emerald geometric A on near-black. */
 export function LogoMark({ size = 22, className }: MarkProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" className={className} role="img" aria-label="Aro mark">
+    <svg aria-label="Aro mark" className={className} height={size} role="img" viewBox="0 0 32 32" width={size}>
       <defs>
-        <linearGradient id="aro-mark-g" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="aro-mark-g" x1="0" x2="1" y1="0" y2="1">
           <stop offset="0%" stopColor="#6EE7B7" />
           <stop offset="55%" stopColor="#10B981" />
           <stop offset="100%" stopColor="#0D9488" />
         </linearGradient>
       </defs>
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#101214" />
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="none" stroke="#27272a" strokeWidth="1" />
+      <rect fill="#101214" height="30" rx="8" width="30" x="1" y="1" />
+      <rect fill="none" height="30" rx="8" stroke="#27272a" strokeWidth="1" width="30" x="1" y="1" />
       {/* geometric A — sharp apex, two legs, high crossbar */}
-      <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M11.6 19.6 H20.4" stroke="url(#aro-mark-g)" strokeWidth="2.2" strokeLinecap="round" opacity="0.85" />
+      <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
+      <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
+      <path d="M11.6 19.6 H20.4" opacity="0.85" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.2" />
     </svg>
   )
 }
@@ -428,17 +428,18 @@ export function LogoMark({ size = 22, className }: MarkProps) {
 /** Deterministic two-tone agent avatar mark. */
 export function AgentMark({ glyph, from, to, size = 18, className }: MarkProps & { glyph: string; from: string; to: string }) {
   const id = `am-${glyph}-${from.replace('#', '')}`
+
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" className={className}>
+    <svg className={className} height={size} viewBox="0 0 24 24" width={size}>
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id} x1="0" x2="1" y1="0" y2="1">
           <stop offset="0%" stopColor={from} />
           <stop offset="100%" stopColor={to} />
         </linearGradient>
       </defs>
-      <rect x="1" y="1" width="22" height="22" rx="6.5" fill={`url(#${id})`} opacity="0.18" />
-      <rect x="1" y="1" width="22" height="22" rx="6.5" stroke={`url(#${id})`} strokeWidth="1.1" fill="none" opacity="0.75" />
-      <text x="12" y="16.4" textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="10.5" fontWeight="700" fill={`url(#${id})`}>
+      <rect fill={`url(#${id})`} height="22" opacity="0.18" rx="6.5" width="22" x="1" y="1" />
+      <rect fill="none" height="22" opacity="0.75" rx="6.5" stroke={`url(#${id})`} strokeWidth="1.1" width="22" x="1" y="1" />
+      <text fill={`url(#${id})`} fontFamily="JetBrains Mono, monospace" fontSize="10.5" fontWeight="700" textAnchor="middle" x="12" y="16.4">
         {glyph}
       </text>
     </svg>
@@ -457,7 +458,9 @@ export function IdeMark({ kind, size = 16, className }: MarkProps & { kind: stri
     emacs: { bg: '#a78bfa', label: 'EM' },
     xcode: { bg: '#5ba8ff', label: 'XC' },
   }
+
   const m = map[kind] ?? { bg: '#6e7890', label: '??' }
+
   return (
     <span
       className={cn('inline-flex shrink-0 items-center justify-center rounded-[4px] font-aro-mono font-bold', className)}

@@ -6,9 +6,11 @@
  * pattern pages need: transcript (tool timeline + approvals + diffs),
  * hunk-level review, and the tasks work-graph board.
  *
- * R3 replaces every array here with live data from the agent —
- * tui_gateway JSON-RPC for transcript/review state, SessionDB + cron
- * stores for tasks. Types stay: they are the wire contract.
+ * R2 (done — see `live.tsx`) folds the real gateway stores into these
+ * shapes: $messages → Step[], the git review bridge → DiffFile[], and
+ * $todosBySession → Task[]. The arrays below are the DEMO fallback shown
+ * when no live session/workspace/todo data exists (behind a DEMO badge);
+ * the types stay the wire contract between live data and the pages.
  */
 
 /* ============================== types ============================== */
@@ -48,16 +50,21 @@ export type Hunk = { header: string; lines: DiffLine[]; adds: number; dels: numb
 /** Split a unified diff file into reviewable hunks (P3 core). */
 export function splitHunks(file: DiffFile): Hunk[] {
   const hunks: Hunk[] = []
+
   for (const ln of file.lines) {
     let cur = hunks[hunks.length - 1]
+
     if (ln.t === 'hunk' || !cur) {
       cur = { header: ln.t === 'hunk' ? ln.text : '@@', lines: [], adds: 0, dels: 0 }
       hunks.push(cur)
     }
+
     cur.lines.push(ln)
-    if (ln.t === 'add') cur.adds++
-    else if (ln.t === 'del') cur.dels++
+
+    if (ln.t === 'add') {cur.adds++}
+    else if (ln.t === 'del') {cur.dels++}
   }
+
   return hunks
 }
 

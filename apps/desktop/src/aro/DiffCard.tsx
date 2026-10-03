@@ -7,24 +7,38 @@
  */
 
 import { useState } from 'react'
+
 import { cn } from '@/lib/utils'
-import type { DiffFile, DiffLine } from './workbenchData'
+
 import { IconChevronDown, IconFile } from './Icons'
 import { Segmented } from './ui'
+import type { DiffFile, DiffLine } from './workbenchData'
 
 function pairLines(lines: DiffLine[]) {
   const rows: { l?: DiffLine; r?: DiffLine; hunk?: string }[] = []
   let i = 0
+
   while (i < lines.length) {
     const ln = lines[i]
-    if (ln.t === 'hunk') { rows.push({ hunk: ln.text }); i++; continue }
-    if (ln.t === 'ctx') { rows.push({ l: ln, r: ln }); i++; continue }
+
+    if (ln.t === 'hunk') { rows.push({ hunk: ln.text }); i++;
+
+ continue }
+
+    if (ln.t === 'ctx') { rows.push({ l: ln, r: ln }); i++;
+
+ continue }
+
     const dels: DiffLine[] = []
     const adds: DiffLine[] = []
-    while (i < lines.length && lines[i].t === 'del') dels.push(lines[i++])
-    while (i < lines.length && lines[i].t === 'add') adds.push(lines[i++])
-    for (let k = 0; k < Math.max(dels.length, adds.length); k++) rows.push({ l: dels[k], r: adds[k] })
+
+    while (i < lines.length && lines[i].t === 'del') {dels.push(lines[i++])}
+
+    while (i < lines.length && lines[i].t === 'add') {adds.push(lines[i++])}
+
+    for (let k = 0; k < Math.max(dels.length, adds.length); k++) {rows.push({ l: dels[k], r: adds[k] })}
   }
+
   return rows
 }
 
@@ -42,17 +56,19 @@ export function DiffView({
   const [all, setAll] = useState(false)
   const [mode, setMode] = useState<'unified' | 'split'>(forced ?? 'unified')
   const shown = all ? file.lines : file.lines.slice(0, maxLines)
+
   const Cell = ({ l, side }: { l?: DiffLine; side: 'l' | 'r' }) => (
     <div className={cn('flex min-w-0 flex-1 items-start', l?.t === 'add' && 'aro-diff-add', l?.t === 'del' && 'aro-diff-del', !l && 'bg-aro-well/40')}>
       <span className="w-8 shrink-0 py-px pr-2 text-right text-aro-ink-4/70 select-none">{l ? (side === 'l' ? l.o ?? '' : l.n ?? '') : ''}</span>
       <span className={cn('truncate py-px pr-3 whitespace-pre', l?.t === 'add' ? 'text-aro-mint' : l?.t === 'del' ? 'text-aro-rose' : 'text-aro-ink-2')}>{l?.text || ' '}</span>
     </div>
   )
+
   return (
     <div className="overflow-hidden rounded-[8px] border border-aro-line-soft bg-aro-sunken">
       <div className="flex items-center justify-between gap-2 border-b border-aro-line-soft bg-aro-well px-2.5 py-1.5">
         <div className="flex min-w-0 items-center gap-1.5">
-          <IconFile size={11} className="shrink-0 text-aro-ink-4" />
+          <IconFile className="shrink-0 text-aro-ink-4" size={11} />
           <span className="truncate font-aro-mono text-[11px] text-aro-ink-2">{file.path}</span>
         </div>
         <div className="flex shrink-0 items-center gap-2 font-aro-mono text-[10px]">
@@ -60,10 +76,10 @@ export function DiffView({
           <span className="text-aro-rose">−{file.dels}</span>
           {showToggle && (
             <Segmented
-              value={mode}
-              onChange={setMode}
-              items={[{ value: 'unified', label: 'Unified' }, { value: 'split', label: 'Split' }]}
               className="ml-1 scale-90"
+              items={[{ value: 'unified', label: 'Unified' }, { value: 'split', label: 'Split' }]}
+              onChange={setMode}
+              value={mode}
             />
           )}
         </div>
@@ -71,7 +87,7 @@ export function DiffView({
       <div className="aro-scroll-thin overflow-x-auto font-aro-mono text-[11.5px] leading-[1.65]">
         {mode === 'unified'
           ? shown.map((l, i) => (
-              <div key={i} className={cn('flex items-start whitespace-pre', l.t === 'add' && 'aro-diff-add', l.t === 'del' && 'aro-diff-del', l.t === 'hunk' && 'bg-aro-iris-tint/50')}>
+              <div className={cn('flex items-start whitespace-pre', l.t === 'add' && 'aro-diff-add', l.t === 'del' && 'aro-diff-del', l.t === 'hunk' && 'bg-aro-iris-tint/50')} key={i}>
                 {l.t !== 'hunk' ? (
                   <>
                     <span className="w-8 shrink-0 py-px pr-2 text-right text-aro-ink-4/70 select-none">{l.o ?? ''}</span>
@@ -86,9 +102,9 @@ export function DiffView({
             ))
           : pairLines(shown).map((r, i) =>
               r.hunk ? (
-                <div key={i} className="bg-aro-iris-tint/50 py-0.5 pl-3 text-aro-ink-3">{r.hunk}</div>
+                <div className="bg-aro-iris-tint/50 py-0.5 pl-3 text-aro-ink-3" key={i}>{r.hunk}</div>
               ) : (
-                <div key={i} className="flex divide-x divide-aro-line-soft">
+                <div className="flex divide-x divide-aro-line-soft" key={i}>
                   <Cell l={r.l} side="l" />
                   <Cell l={r.r} side="r" />
                 </div>
@@ -97,11 +113,11 @@ export function DiffView({
       </div>
       {file.lines.length > maxLines && (
         <button
-          onClick={() => setAll((a) => !a)}
           className="flex w-full cursor-pointer items-center justify-center gap-1.5 border-t border-aro-line-soft py-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+          onClick={() => setAll((a) => !a)}
         >
           {all ? 'Collapse' : `Show ${file.lines.length - maxLines} more lines`}
-          <IconChevronDown size={11} className={cn('transition-transform', all && 'rotate-180')} />
+          <IconChevronDown className={cn('transition-transform', all && 'rotate-180')} size={11} />
         </button>
       )}
     </div>

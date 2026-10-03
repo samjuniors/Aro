@@ -117,7 +117,7 @@ const DS_SPACING = [2, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40]
 /* ============================ section frame ============================ */
 function DS({ id, eyebrow, title, body, children }: { id: string; eyebrow: string; title: string; body: string; children: ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-16 border-t border-aro-line-soft py-8 first:border-0">
+    <section className="scroll-mt-16 border-t border-aro-line-soft py-8 first:border-0" id={id}>
       <div className="mb-5">
         <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.16em] text-aro-iris-soft uppercase">{eyebrow}</span>
         <h2 className="mt-1.5 text-[19px] leading-tight font-semibold tracking-[-.02em] text-aro-ink">{title}</h2>
@@ -149,14 +149,15 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 /* ============================ color swatch ============================ */
 function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: string }) {
   const [copied, setCopied] = useState(false)
+
   return (
     <button
+      className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-[10px] border border-aro-line-soft bg-aro-raise text-left transition-all hover:border-aro-line-strong hover:shadow-aro-e2"
       onClick={() => {
         navigator.clipboard?.writeText(`var(${cssVar})`)
         setCopied(true)
         setTimeout(() => setCopied(false), 1100)
       }}
-      className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-[10px] border border-aro-line-soft bg-aro-raise text-left transition-all hover:border-aro-line-strong hover:shadow-aro-e2"
     >
       <div className="relative h-[62px] w-full" style={{ background: `var(${cssVar})` }}>
         <div
@@ -200,7 +201,7 @@ export function AroDesignSystemPage() {
   return (
     // data-theme on the WRAPPER: the aro token layer resolves only inside
     // this subtree. Unmounting the page removes the attribute with it.
-    <div data-theme={theme} className="aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200">
+    <div className="aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200" data-theme={theme}>
       {/* hero */}
       <div className="relative overflow-hidden border-b border-aro-line-soft">
         <div className="aro-grid-bg pointer-events-none absolute inset-0 opacity-60" />
@@ -211,10 +212,10 @@ export function AroDesignSystemPage() {
         <div className="relative px-6 py-8">
           <div className="flex items-center gap-2">
             <LogoMark size={26} />
-            <Badge tone="iris" mono className="text-[9.5px]">
+            <Badge className="text-[9.5px]" mono tone="iris">
               aro/primitives · desktop port
             </Badge>
-            <Badge tone="neutral" mono className="text-[9.5px]">
+            <Badge className="text-[9.5px]" mono tone="neutral">
               additive · namespaced · zero host risk
             </Badge>
           </div>
@@ -237,8 +238,8 @@ export function AroDesignSystemPage() {
               { t: 'Nothing silent', d: 'Tool calls, approvals and checkpoints are first-class, not log lines.', i: IconTerminal },
               { t: 'Density with air', d: '11–13px type, 4px rhythm, hairlines instead of heavy chrome.', i: IconSpark },
             ].map((p) => (
-              <div key={p.t} className="rounded-[11px] border border-aro-line-soft bg-aro-raise/70 p-3">
-                <p.i size={14} className="text-aro-iris-soft" />
+              <div className="rounded-[11px] border border-aro-line-soft bg-aro-raise/70 p-3" key={p.t}>
+                <p.i className="text-aro-iris-soft" size={14} />
                 <p className="mt-2 text-[12px] font-semibold text-aro-ink">{p.t}</p>
                 <p className="mt-1 text-[11px] leading-[1.55] text-aro-ink-3">{p.d}</p>
               </div>
@@ -250,20 +251,20 @@ export function AroDesignSystemPage() {
       <div className="px-6 pb-16">
         {/* ---------------- THEMES ---------------- */}
         <DS
-          id="themes"
-          eyebrow="foundation 00"
-          title="Themes"
           body="Five themes share one token contract. Signal colours are re-tuned per theme for contrast; tints are derived with color-mix so every badge, diff and approval card adapts automatically. Click to switch live — the whole page retints."
+          eyebrow="foundation 00"
+          id="themes"
+          title="Themes"
         >
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {THEMES.map((t) => (
               <button
-                key={t.id}
-                onClick={() => setTheme(t.id)}
                 className={cn(
                   'group cursor-pointer overflow-hidden rounded-[12px] border text-left transition-all hover:shadow-aro-e3',
                   theme === t.id ? 'border-aro-iris/60 shadow-aro-glow' : 'border-aro-line-soft hover:border-aro-line-strong',
                 )}
+                key={t.id}
+                onClick={() => setTheme(t.id)}
               >
                 <div className="relative h-[92px] p-2.5" style={{ background: t.swatch[0] }}>
                   <div className="h-full rounded-[7px] p-2" style={{ background: t.swatch[1], boxShadow: `inset 0 0 0 1px ${t.swatch[2]}33` }}>
@@ -292,10 +293,10 @@ export function AroDesignSystemPage() {
 
         {/* ---------------- COLOR ---------------- */}
         <DS
-          id="color"
-          eyebrow="foundation 01"
-          title="Colour"
           body="Three families only: surfaces for depth, ink for hierarchy, signal for meaning. Swatches read the live tokens — they retint with the theme above. Click a swatch to copy its CSS variable."
+          eyebrow="foundation 01"
+          id="color"
+          title="Colour"
         >
           <div className="space-y-4">
             {DS_COLORS.map((g) => (
@@ -321,7 +322,7 @@ export function AroDesignSystemPage() {
                   { c: 'rose', m: 'Destructive · deletions · halted runs' },
                   { c: 'sky', m: 'Informational · reads · file access' },
                 ].map((x) => (
-                  <div key={x.c} className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" key={x.c}>
                     <i className={cn('size-[10px] shrink-0 rounded-[3px]', toneBg[x.c as keyof typeof toneBg])} />
                     <span className="font-aro-mono text-[10.5px] text-aro-ink-2">{x.c}</span>
                     <span className="min-w-0 flex-1 truncate text-[10.5px] text-aro-ink-4">{x.m}</span>
@@ -337,7 +338,7 @@ export function AroDesignSystemPage() {
                   { n: 'e3', d: 'menus, sticky bars', cls: 'shadow-aro-e3 bg-aro-overlay' },
                   { n: 'e4', d: 'modals, command palette', cls: 'shadow-aro-e4 bg-aro-overlay' },
                 ].map((x) => (
-                  <div key={x.n} className={cn('rounded-[8px] px-2.5 py-2', x.cls)}>
+                  <div className={cn('rounded-[8px] px-2.5 py-2', x.cls)} key={x.n}>
                     <span className="font-aro-mono text-[10.5px] text-aro-ink">{x.n}</span>
                     <span className="ml-2 text-[10.5px] text-aro-ink-3">{x.d}</span>
                   </div>
@@ -354,18 +355,18 @@ export function AroDesignSystemPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="neutral" mono>
+                  <Badge mono tone="neutral">
                     <span className="text-aro-emerald">●</span> text-aro-emerald
                   </Badge>
-                  <Badge tone="neutral" mono>
+                  <Badge mono tone="neutral">
                     <span className="text-aro-emerald-soft">●</span> text-aro-emerald-soft
                   </Badge>
-                  <Badge tone="neutral" mono>
+                  <Badge mono tone="neutral">
                     bg-aro-emerald-tint
                   </Badge>
                 </div>
                 <div className="flex items-end gap-2 rounded-[8px] border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-[11.5px] text-aro-emerald">
-                  <AgentMark glyph="A" from="#10b981" to="#0d9488" size={18} /> agent tone — the mark's emerald, usable as a live/ok accent
+                  <AgentMark from="#10b981" glyph="A" size={18} to="#0d9488" /> agent tone — the mark's emerald, usable as a live/ok accent
                 </div>
               </div>
             </Spec>
@@ -374,16 +375,16 @@ export function AroDesignSystemPage() {
 
         {/* ---------------- TYPE ---------------- */}
         <DS
-          id="type"
-          eyebrow="foundation 02"
-          title="Typography & spacing"
           body="Three faces, one job each. Space Grotesk carries identity — the wordmark, page titles, empty-state headlines. Inter does all reading. JetBrains Mono is reserved for machine-authored text: paths, commands, hashes, diffs, counts. A path in a proportional face is the fastest way to lose a developer."
+          eyebrow="foundation 02"
+          id="type"
+          title="Typography & spacing"
         >
           <div className="grid gap-3 lg:grid-cols-[1.3fr_1fr]">
             <Spec label="type scale">
               <div className="space-y-3">
                 {DS_TYPE.map((t) => (
-                  <div key={t.token} className="border-b border-aro-line-soft/60 pb-3 last:border-0 last:pb-0">
+                  <div className="border-b border-aro-line-soft/60 pb-3 last:border-0 last:pb-0" key={t.token}>
                     <div className="mb-1 flex items-baseline gap-2">
                       <span className="font-aro-mono text-[9.5px] text-aro-iris-soft">{t.token}</span>
                       <span className="font-aro-mono text-[9.5px] text-aro-ink-4">{t.spec}</span>
@@ -410,7 +411,7 @@ export function AroDesignSystemPage() {
               <Spec label="spacing — 4px rhythm">
                 <div className="space-y-1.5">
                   {DS_SPACING.map((s) => (
-                    <div key={s} className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5" key={s}>
                       <span className="w-6 shrink-0 font-aro-mono text-[9.5px] text-aro-ink-4">{s}</span>
                       <div className="h-[7px] rounded-[2px] bg-linear-to-r from-aro-iris to-aro-iris-soft" style={{ width: s * 4 }} />
                       <span className="font-aro-mono text-[9px] text-aro-ink-4">{s % 4 === 0 ? `${s}px` : 'avoid'}</span>
@@ -421,7 +422,7 @@ export function AroDesignSystemPage() {
               <Spec label="radius">
                 <div className="grid grid-cols-3 gap-2">
                   {DS_RADII.map((r) => (
-                    <div key={r.token} className="text-center">
+                    <div className="text-center" key={r.token}>
                       <div className="mx-auto h-9 w-full border border-aro-iris/35 bg-aro-iris-tint" style={{ borderRadius: r.px }} />
                       <div className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-3">aro-{r.token}</div>
                       <div className="font-aro-mono text-[8.5px] text-aro-ink-4">{r.usage}</div>
@@ -435,14 +436,14 @@ export function AroDesignSystemPage() {
 
         {/* ---------------- MOTION ---------------- */}
         <DS
-          id="motion"
-          eyebrow="foundation 03"
-          title="Motion"
           body="Motion exists to explain provenance and continuity. Streams animate forever; finished work never does. Anything under 200ms is a state change, anything over 300ms is a transition. Keyframes ship aro- prefixed so they can never collide with the host's."
+          eyebrow="foundation 03"
+          id="motion"
+          title="Motion"
         >
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {DS_MOTION.map((m) => (
-              <div key={m.token} className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-3">
+              <div className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-3" key={m.token}>
                 <div className="flex items-center justify-between">
                   <span className="font-aro-mono text-[11px] text-aro-iris-soft">aro-{m.token}</span>
                   <span className="font-aro-mono text-[9.5px] text-aro-ink-4">{m.dur}</span>
@@ -474,29 +475,29 @@ export function AroDesignSystemPage() {
 
         {/* ---------------- COMPONENTS ---------------- */}
         <DS
-          id="components"
-          eyebrow="primitives"
-          title="Components"
           body="Every primitive is keyboard-reachable, has a hover and a focus-visible state, and consumes only namespaced aro tokens. These are the exact components exported from src/aro/ui.tsx."
+          eyebrow="primitives"
+          id="components"
+          title="Components"
         >
           <div className="grid gap-3 lg:grid-cols-2">
             <Spec label="buttons">
               <Row label="primary">
-                <Button variant="primary" icon={IconBolt}>
+                <Button icon={IconBolt} variant="primary">
                   Build plan
                 </Button>
-                <Button variant="primary" size="xs">
+                <Button size="xs" variant="primary">
                   Xs
                 </Button>
-                <Button variant="primary" size="lg">
+                <Button size="lg" variant="primary">
                   Lg
                 </Button>
               </Row>
               <Row label="secondary">
-                <Button variant="secondary" icon={IconPlug}>
+                <Button icon={IconPlug} variant="secondary">
                   Attach editor
                 </Button>
-                <Button variant="secondary" size="xs">
+                <Button size="xs" variant="secondary">
                   Xs
                 </Button>
               </Row>
@@ -504,16 +505,16 @@ export function AroDesignSystemPage() {
                 <Button variant="outline">Outline</Button>
                 <Button variant="ghost">Ghost</Button>
                 <IconButton icon={IconSearch} label="search" />
-                <IconButton icon={IconBrain} label="thinking" active />
+                <IconButton active icon={IconBrain} label="thinking" />
               </Row>
               <Row label="semantic">
-                <Button variant="success" icon={IconCheck}>
+                <Button icon={IconCheck} variant="success">
                   Allow once
                 </Button>
-                <Button variant="danger" icon={IconWarning}>
+                <Button icon={IconWarning} variant="danger">
                   Deny
                 </Button>
-                <Button variant="secondary" disabled>
+                <Button disabled variant="secondary">
                   Disabled
                 </Button>
               </Row>
@@ -522,22 +523,22 @@ export function AroDesignSystemPage() {
             <Spec label="badges, pills & keys">
               <Row label="tones">
                 {(['neutral', 'iris', 'cyan', 'mint', 'amber', 'rose', 'sky', 'plum'] as const).map((t) => (
-                  <Badge key={t} tone={t} mono dot>
+                  <Badge dot key={t} mono tone={t}>
                     {t}
                   </Badge>
                 ))}
               </Row>
               <Row label="status">
-                <Badge tone="cyan" dot>
+                <Badge dot tone="cyan">
                   running
                 </Badge>
-                <Badge tone="amber" dot>
+                <Badge dot tone="amber">
                   awaiting approval
                 </Badge>
-                <Badge tone="mint" dot>
+                <Badge dot tone="mint">
                   landed
                 </Badge>
-                <Badge tone="rose" dot>
+                <Badge dot tone="rose">
                   halted
                 </Badge>
               </Row>
@@ -546,7 +547,7 @@ export function AroDesignSystemPage() {
               </Row>
               <Row label="icon + text">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise py-[3px] pr-2.5 pl-2 text-[11px] text-aro-ink-3">
-                  <IconAt size={11} className="text-aro-iris-soft" /> @file
+                  <IconAt className="text-aro-iris-soft" size={11} /> @file
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-aro-line bg-aro-raise px-1.5 py-[1px] font-aro-mono text-[10px] text-aro-ink-3">
                   <IconGit size={9} /> feat/ide-bridge
@@ -559,16 +560,16 @@ export function AroDesignSystemPage() {
                 <Input placeholder="Filter sessions…" />
                 <div className="flex gap-2">
                   <Select
-                    value={sel}
+                    className="flex-1"
                     onChange={setSel}
                     options={[
                       { value: 'opus-4.6', label: 'Opus 4.6', hint: '200k' },
                       { value: 'sonnet-4.6', label: 'Sonnet 4.6', hint: '200k' },
                       { value: 'haiku-4.6', label: 'Haiku 4.6', hint: '200k' },
                     ]}
-                    className="flex-1"
+                    value={sel}
                   />
-                  <Select value={sel} onChange={setSel} align="right" options={[{ value: sel, label: 'Right aligned' }]} className="flex-1" />
+                  <Select align="right" className="flex-1" onChange={setSel} options={[{ value: sel, label: 'Right aligned' }]} value={sel} />
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-2 text-[11.5px] text-aro-ink-2">
@@ -580,21 +581,21 @@ export function AroDesignSystemPage() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Segmented
-                    value={seg}
-                    onChange={setSeg}
                     items={[
                       { value: 'plan', label: 'Plan', icon: IconBrain },
                       { value: 'agent', label: 'Agent', icon: IconBolt },
                     ]}
+                    onChange={setSeg}
+                    value={seg}
                   />
                   <Tabs
-                    value={demoTab}
-                    onChange={setDemoTab}
                     items={[
                       { value: 'a', label: 'Plan' },
                       { value: 'b', label: 'Context', count: 4 },
                       { value: 'c', label: 'Bridge' },
                     ]}
+                    onChange={setDemoTab}
+                    value={demoTab}
                   />
                 </div>
               </div>
@@ -603,31 +604,31 @@ export function AroDesignSystemPage() {
             <Spec label="data display">
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
-                  <Stat label="tokens" value="148.2k" sub="62% of window" chart={[22, 31, 28, 44, 51, 63, 72, 96]} />
-                  <Stat label="spend" value="$3.41" sub="this session" tone="iris" />
+                  <Stat chart={[22, 31, 28, 44, 51, 63, 72, 96]} label="tokens" sub="62% of window" value="148.2k" />
+                  <Stat label="spend" sub="this session" tone="iris" value="$3.41" />
                 </div>
                 <div className="flex items-center gap-4 rounded-[9px] border border-aro-line-soft bg-aro-sunken p-3">
-                  <Ring value={62} size={54} stroke={5}>
+                  <Ring size={54} stroke={5} value={62}>
                     <span className="font-aro-mono text-[11px] font-semibold text-aro-ink">62%</span>
                   </Ring>
-                  <Ring value={91} size={54} stroke={5} tone="var(--aro-mint)">
+                  <Ring size={54} stroke={5} tone="var(--aro-mint)" value={91}>
                     <span className="font-aro-mono text-[11px] font-semibold text-aro-mint">91%</span>
                   </Ring>
-                  <Ring value={38} size={54} stroke={5} tone="var(--aro-amber)">
+                  <Ring size={54} stroke={5} tone="var(--aro-amber)" value={38}>
                     <span className="font-aro-mono text-[11px] font-semibold text-aro-amber">38%</span>
                   </Ring>
                   <div className="ml-auto space-y-2">
-                    <Bar value={62} tone="iris" />
-                    <Bar value={91} tone="mint" />
-                    <Bar value={38} tone="amber" />
+                    <Bar tone="iris" value={62} />
+                    <Bar tone="mint" value={91} />
+                    <Bar tone="amber" value={38} />
                     <Bar indeterminate tone="cyan" />
                   </div>
                 </div>
                 <div className="flex items-center justify-between rounded-[9px] border border-aro-line-soft bg-aro-sunken px-3 py-2.5">
                   <span className="font-aro-mono text-[10px] text-aro-ink-4">sparkline · 12 buckets</span>
                   <div className="flex items-end gap-3">
-                    <Sparkline data={[4, 8, 6, 12, 9, 14, 11, 18]} color="var(--aro-mint)" w={70} h={22} />
-                    <Sparkline data={[18, 14, 16, 9, 11, 6, 8, 4]} color="var(--aro-rose)" w={70} h={22} />
+                    <Sparkline color="var(--aro-mint)" data={[4, 8, 6, 12, 9, 14, 11, 18]} h={22} w={70} />
+                    <Sparkline color="var(--aro-rose)" data={[18, 14, 16, 9, 11, 6, 8, 4]} h={22} w={70} />
                   </div>
                 </div>
               </div>
@@ -645,7 +646,7 @@ export function AroDesignSystemPage() {
                   <IconCheck size={12} /> 14 tests passed in 284ms
                 </div>
                 <div className="flex items-center gap-2 rounded-[8px] border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-[11.5px] text-aro-emerald">
-                  <AgentMark glyph="A" from="#10b981" to="#0d9488" size={14} /> aro · brand accent — live and healthy
+                  <AgentMark from="#10b981" glyph="A" size={14} to="#0d9488" /> aro · brand accent — live and healthy
                 </div>
               </div>
             </Spec>
@@ -653,39 +654,39 @@ export function AroDesignSystemPage() {
             <Spec label="overlay, empty & toasts">
               <div className="space-y-2.5">
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" icon={IconBolt} onClick={() => setModal(true)}>
+                  <Button icon={IconBolt} onClick={() => setModal(true)} variant="secondary">
                     Open modal
                   </Button>
                   <Button
-                    variant="secondary"
                     onClick={() => {
                       toast('Patch applied · 3 files', 'mint')
                       setTimeout(() => toast('Approval required', 'amber'), 700)
                     }}
+                    variant="secondary"
                   >
                     Fire toasts
                   </Button>
                 </div>
                 <div className="rounded-[10px] border border-dashed border-aro-line">
                   <EmptyState
-                    icon={IconSearch}
-                    title="No sessions match that filter"
-                    body="Try clearing the query, or start a new session with a different agent."
                     action={
-                      <Button variant="secondary" size="xs">
+                      <Button size="xs" variant="secondary">
                         Clear filter
                       </Button>
                     }
+                    body="Try clearing the query, or start a new session with a different agent."
+                    icon={IconSearch}
+                    title="No sessions match that filter"
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Tip label="tooltip · 150ms fade">
-                    <Button variant="ghost" size="xs">
+                    <Button size="xs" variant="ghost">
                       Hover me
                     </Button>
                   </Tip>
                   <Tip label="⌘B">
-                    <Button variant="ghost" size="xs">
+                    <Button size="xs" variant="ghost">
                       With shortcut
                     </Button>
                   </Tip>
@@ -697,15 +698,15 @@ export function AroDesignSystemPage() {
 
         {/* ---------------- TOKENS ---------------- */}
         <DS
-          id="tokens"
-          eyebrow="reference"
-          title="Token export"
           body="The namespaced contract this port ships. Utilities are generated by Tailwind from the @theme bridge in src/aro/tokens.css; the raw values resolve per theme at the element that carries data-theme."
+          eyebrow="reference"
+          id="tokens"
+          title="Token export"
         >
           <div className="overflow-hidden rounded-[11px] border border-aro-line-soft bg-aro-code">
             <div className="flex items-center gap-1.5 border-b border-aro-line-soft px-3 py-2">
               {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
-                <i key={c} className="size-[7px] rounded-full" style={{ background: c }} />
+                <i className="size-[7px] rounded-full" key={c} style={{ background: c }} />
               ))}
               <span className="ml-1.5 font-aro-mono text-[10px] text-aro-ink-4">src/aro/tokens.css</span>
               <span className="ml-auto font-aro-mono text-[9.5px] text-aro-ink-4">namespaced</span>
@@ -750,16 +751,16 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
           </div>
           <Divider className="my-6" />
           <div className="flex flex-wrap items-center gap-3">
-            <Badge tone="neutral" mono>
+            <Badge mono tone="neutral">
               a11y: full keyboard map
             </Badge>
-            <Badge tone="neutral" mono>
+            <Badge mono tone="neutral">
               additive: zero existing files restyled
             </Badge>
-            <Badge tone="neutral" mono>
+            <Badge mono tone="neutral">
               reduced-motion: host blanket rule applies
             </Badge>
-            <Badge tone="neutral" mono>
+            <Badge mono tone="neutral">
               min target 22×22px
             </Badge>
           </div>
@@ -767,10 +768,10 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
       </div>
 
       <Modal
-        open={modal}
         onClose={() => setModal(false)}
-        title="Modal surface"
+        open={modal}
         sub="e4 elevation · 14px radius · Escape closes · backdrop blur 3px"
+        title="Modal surface"
         width={520}
       >
         <div className="space-y-3 p-4">
@@ -783,26 +784,26 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
             <div className="space-y-2">
               <Input placeholder="Session name" />
               <Select
-                value="opus-4.6"
                 onChange={() => {}}
                 options={[
                   { value: 'opus-4.6', label: 'Opus 4.6', hint: '$25 / 1M' },
                   { value: 'gpt-5.4', label: 'GPT-5.4-Codex', hint: '$14 / 1M' },
                 ]}
+                value="opus-4.6"
               />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setModal(false)}>
+            <Button onClick={() => setModal(false)} variant="ghost">
               Cancel
             </Button>
             <Button
-              variant="primary"
               icon={IconCheck}
               onClick={() => {
                 setModal(false)
                 toast('Confirmed', 'mint')
               }}
+              variant="primary"
             >
               Confirm
             </Button>
