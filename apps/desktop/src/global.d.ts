@@ -550,6 +550,18 @@ declare global {
         start: (options?: { cols?: number; cwd?: string; rows?: number }) => Promise<HermesTerminalSession>
         write: (id: string, data: string) => Promise<boolean>
       }
+      // The aro bridge daemon (aro.jsonl/1): Electron main owns the python
+      // child; the renderer only sees these invokes plus the per-session
+      // event/exit channels. Tools are delegated BACK through toolResult.
+      aroBridge: {
+        start: (options?: AroBridgeStartOptions) => Promise<{ sessionId: string }>
+        send: (sessionId: string, text: string) => Promise<boolean>
+        toolResult: (sessionId: string, callId: string, ok: boolean, output: string) => Promise<boolean>
+        interrupt: (sessionId: string) => Promise<boolean>
+        stop: (sessionId: string) => Promise<boolean>
+        onEvent: (sessionId: string, callback: (payload: AroBridgeEvent) => void) => () => void
+        onExit: (sessionId: string, callback: (payload: { code: number | null }) => void) => () => void
+      }
       reachPreviewUrl?: (url: string) => Promise<string>
       setActiveConnectionRoute?: (
         route: {
@@ -700,6 +712,29 @@ export interface HermesTerminalSession {
 export interface HermesTerminalExit {
   code: number | null
   signal: string | null
+}
+
+/** One aro.jsonl/1 event off the aro bridge daemon's stdout — mirrored
+ *  exactly from aro_bridge/protocol.md. session_start is always first, done
+ *  always last per turn; tool_call/tool_result pair on callId; assistant_delta
+ *  chunks accumulate into the final reply. */
+export type AroBridgeEvent =
+  | { type: 'session_start'; sessionId: string; model: string; tools: string[] }
+  | { type: 'thinking'; label: string; ms: number }
+  | { type: 'tool_call'; callId: string; tool: 'web_search' | 'page_reader'; args: Record<string, unknown> }
+  | { type: 'tool_result'; callId: string; ok: boolean; ms: number; summary: string; lines: string[] }
+  | { type: 'assistant_delta'; text: string }
+  | { type: 'reply_done'; ms: number }
+  | { type: 'error'; message: string }
+  | { type: 'done'; ms: number; toolCalls: number }
+
+/** `hermes:aro:bridge:start` options — the daemon's engine dial and, for the
+ *  openai engine, its endpoint/model/key. */
+export interface AroBridgeStartOptions {
+  engine?: 'demo' | 'openai'
+  baseUrl?: string
+  model?: string
+  apiKey?: string
 }
 
 /** The pm receipt shape (pm/receipt.py schema 1) — one machine-readable

@@ -54,6 +54,7 @@ import {
   packagedReleaseChannel
 } from './app-version'
 import { runAppInstallerChecker } from './appinstaller-checker'
+import { registerAroIpc, resolveDefaultAroDaemon } from './aro-ipc'
 import { installApplicationMenuAfterFirstWindow } from './application-menu-startup'
 import { stopBackendChild as stopBackendChildImpl, waitForBackendExit } from './backend-child'
 import {
@@ -18653,6 +18654,8 @@ const terminalIpc = registerTerminalIpc({
   ensureBackend: webContentsId => ensureTerminalBackend(webContentsId),
   getSshConnectionState: scope => sshConnections.get(scope)
 })
+// Aro bridge daemon ownership (hermes:aro:bridge:*) — see aro-ipc.ts.
+registerAroIpc({ resolveAroDaemon: resolveDefaultAroDaemon })
 
 const disposeTerminalSession = terminalIpc.disposeTerminalSession
 

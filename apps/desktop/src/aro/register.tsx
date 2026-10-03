@@ -18,11 +18,15 @@
  *   /aro-review     — hunk-level accept/reject/comment review (the gap-closer)
  *   /aro-tasks      — work-graph board (agents + humans, costs, deps)
  *   /aro-design     — the design-system reference page (tokens + primitives)
+ *
+ * Plus the live bridge session (R4):
+ *   /aro-agent      — the aro_bridge daemon's own event stream (useAroBridge)
  */
 
 import { type RouteContribution, ROUTES_AREA, SIDEBAR_NAV_AREA, type SidebarNavContribution } from '@/app/routes'
 import { registry } from '@/contrib/registry'
 
+import { AroBridgeView } from './AroBridgeView'
 import { AroDesignSystemPage } from './DesignSystemAro'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
@@ -33,6 +37,7 @@ export const ARO_DESIGN_ROUTE = '/aro-design'
 export const ARO_TRANSCRIPT_ROUTE = '/aro-transcript'
 export const ARO_REVIEW_ROUTE = '/aro-review'
 export const ARO_TASKS_ROUTE = '/aro-tasks'
+export const ARO_AGENT_ROUTE = '/aro-agent'
 
 registry.registerMany([
   /* ── pages ─────────────────────────────────────────────────────── */
@@ -64,6 +69,13 @@ registry.registerMany([
     data: { path: ARO_DESIGN_ROUTE } satisfies RouteContribution,
     render: () => <AroDesignSystemPage />,
   },
+  {
+    id: 'aro-agent',
+    area: ROUTES_AREA,
+    title: 'Aro Bridge',
+    data: { path: ARO_AGENT_ROUTE } satisfies RouteContribution,
+    render: () => <AroBridgeView />,
+  },
 
   /* ── sidebar nav rows ──────────────────────────────────────────── */
   {
@@ -71,6 +83,12 @@ registry.registerMany([
     area: SIDEBAR_NAV_AREA,
     order: 50,
     data: { codicon: 'comment-discussion', label: 'Aro Transcript', path: ARO_TRANSCRIPT_ROUTE } satisfies SidebarNavContribution,
+  },
+  {
+    id: 'aro-agent',
+    area: SIDEBAR_NAV_AREA,
+    order: 50.5,
+    data: { codicon: 'rocket', label: 'Aro Bridge', path: ARO_AGENT_ROUTE } satisfies SidebarNavContribution,
   },
   {
     id: 'aro-review',

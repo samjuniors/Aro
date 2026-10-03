@@ -480,6 +480,30 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
       createPr: repoPath => ipcRenderer.invoke('hermes:git:review:createPr', repoPath)
     }
   },
+  // The aro bridge daemon (aro.jsonl/1): Electron main owns the python child;
+  // the renderer only ever sees these invokes + per-session event channels.
+  aroBridge: {
+    start: options => ipcRenderer.invoke('hermes:aro:bridge:start', options),
+    send: (sessionId, text) => ipcRenderer.invoke('hermes:aro:bridge:send', sessionId, text),
+    toolResult: (sessionId, callId, ok, output) =>
+      ipcRenderer.invoke('hermes:aro:bridge:toolResult', sessionId, callId, ok, output),
+    interrupt: sessionId => ipcRenderer.invoke('hermes:aro:bridge:interrupt', sessionId),
+    stop: sessionId => ipcRenderer.invoke('hermes:aro:bridge:stop', sessionId),
+    onEvent: (sessionId, callback) => {
+      const channel = `hermes:aro:bridge:${sessionId}:event`
+      const listener = (_event, payload) => callback(payload)
+      ipcRenderer.on(channel, listener)
+
+      return () => ipcRenderer.removeListener(channel, listener)
+    },
+    onExit: (sessionId, callback) => {
+      const channel = `hermes:aro:bridge:${sessionId}:exit`
+      const listener = (_event, payload) => callback(payload)
+      ipcRenderer.on(channel, listener)
+
+      return () => ipcRenderer.removeListener(channel, listener)
+    }
+  },
   terminal: {
     attach: id => ipcRenderer.invoke('hermes:terminal:attach', id),
     cwd: id => ipcRenderer.invoke('hermes:terminal:cwd', id),
