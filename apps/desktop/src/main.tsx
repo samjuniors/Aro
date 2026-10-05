@@ -52,6 +52,15 @@ if (import.meta.env.MODE !== 'production' || import.meta.env.VITE_PERF_PROBE ===
 
 const winParam = new URLSearchParams(window.location.search).get('win')
 
+// The Aro Workbench prototype is the visual source of truth. Keep the real
+// Hermes renderer/state/RPC stack, but opt the primary desktop window into
+// the Aro token contract. Secondary utility windows retain their purpose-built
+// surfaces and are not affected.
+if (!winParam) {
+  document.documentElement.dataset.aroUi = 'true'
+  document.documentElement.dataset.theme = 'obsidian'
+}
+
 if (winParam === 'hud') {
   document.title = 'Hermes HUD'
 }
