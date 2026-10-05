@@ -172,7 +172,7 @@ function ChatHeader({
   }
 
   return (
-    <header className={cn(titlebarHeaderBaseClass, isRoutedSessionView && titlebarHeaderShadowClass)}>
+    <header className={cn(titlebarHeaderBaseClass, isRoutedSessionView && titlebarHeaderShadowClass)} data-aro-session-header="">
       <div
         className={cn(titlebarHeaderTitleClass, showProfileTag && 'flex items-center')}
         style={{
