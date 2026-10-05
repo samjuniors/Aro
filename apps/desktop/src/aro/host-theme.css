@@ -18,6 +18,10 @@
   color-scheme: dark;
 
   /* Typography: prototype uses Inter for reading and Space Grotesk for identity. */
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', 'Noto Sans Mono', 'Noto Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+
   --dt-font-sans:
     'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
     system-ui, sans-serif;
