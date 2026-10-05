@@ -288,7 +288,7 @@
   color: var(--aro-ink);
 }
 
-:root[data-aro-ui='true'] [data-aro-session-header] [data-slot='title-menu-trigger'] {
+:root[data-aro-ui='true'] [data-aro-session-header] > div > button > span {
   font-family: var(--font-display);
   font-size: 0.8125rem;
   font-weight: 650;
