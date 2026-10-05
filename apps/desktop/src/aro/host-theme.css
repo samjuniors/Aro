@@ -1,0 +1,132 @@
+/* ============================================================================
+   ARO HOST VISUAL SYSTEM
+   ----------------------------------------------------------------------------
+   The prototype is the visual source of truth; Hermes remains the functional
+   source of truth. This layer maps the existing desktop design-token contract
+   onto the Aro Workbench token contract.
+
+   It intentionally changes tokens, not application state, RPC contracts,
+   session identity, model resolution, or tool execution. Components can
+   therefore be migrated incrementally without creating a second application.
+
+   The default desktop theme is Aro Obsidian. The existing theme provider still
+   owns theme persistence; this file only supplies the Aro visual values while
+   the renderer is opted into the Aro surface.
+   ============================================================================ */
+
+:root[data-aro-ui='true'] {
+  color-scheme: dark;
+
+  /* Typography: prototype uses Inter for reading and Space Grotesk for identity. */
+  --dt-font-sans:
+    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    system-ui, sans-serif;
+  --dt-font-mono:
+    'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono',
+    'Liberation Mono', 'Noto Sans Mono', 'Noto Mono', 'SF Mono', ui-monospace,
+    Menlo, Consolas, monospace;
+
+  --dt-background: var(--aro-void);
+  --dt-foreground: var(--aro-ink);
+  --dt-card: var(--aro-bg);
+  --dt-card-foreground: var(--aro-ink);
+  --dt-muted: var(--aro-well);
+  --dt-muted-foreground: var(--aro-ink-3);
+  --dt-popover: var(--aro-overlay);
+  --dt-popover-foreground: var(--aro-ink);
+  --dt-primary: var(--aro-iris);
+  --dt-primary-foreground: var(--aro-on-iris);
+  --dt-primary-solid: var(--aro-iris);
+  --dt-primary-solid-foreground: var(--aro-on-iris);
+  --dt-secondary: var(--aro-raise);
+  --dt-secondary-foreground: var(--aro-ink-2);
+  --dt-accent: var(--aro-hover);
+  --dt-accent-foreground: var(--aro-ink);
+  --dt-border: var(--aro-line);
+  --dt-input: var(--aro-line);
+  --dt-ring: var(--aro-iris);
+  --dt-midground: var(--aro-iris);
+  --dt-sidebar-bg: var(--aro-sunken);
+  --dt-sidebar-border: var(--aro-line-soft);
+  --dt-destructive: var(--aro-rose);
+  --dt-destructive-foreground: #fff;
+
+  /* Existing desktop semantic layer → Aro surfaces. */
+  --ui-base: var(--aro-ink);
+  --ui-accent: var(--aro-iris);
+  --ui-accent-secondary: var(--aro-iris-soft);
+  --ui-warm: var(--aro-amber);
+  --ui-red: var(--aro-rose);
+  --ui-orange: var(--aro-amber);
+  --ui-yellow: var(--aro-amber);
+  --ui-green: var(--aro-mint);
+  --ui-cyan: var(--aro-cyan);
+  --ui-blue: var(--aro-sky);
+  --ui-purple: var(--aro-iris);
+
+  --ui-bg-chrome: var(--aro-void);
+  --ui-bg-sidebar: var(--aro-sunken);
+  --ui-bg-editor: var(--aro-bg);
+  --ui-bg-elevated: var(--aro-overlay);
+  --ui-bg-card: var(--aro-raise);
+  --ui-bg-input: var(--aro-sunken);
+
+  --ui-bg-primary: var(--aro-iris-tint);
+  --ui-bg-secondary: color-mix(in srgb, var(--aro-iris) 10%, var(--aro-bg));
+  --ui-bg-tertiary: color-mix(in srgb, var(--aro-ink) 5%, var(--aro-bg));
+  --ui-bg-quaternary: color-mix(in srgb, var(--aro-ink) 4%, var(--aro-bg));
+  --ui-bg-quinary: color-mix(in srgb, var(--aro-ink) 3%, var(--aro-bg));
+
+  --ui-row-hover-background: var(--aro-hover);
+  --ui-row-active-background: var(--aro-iris-tint);
+  --ui-row-open-background: color-mix(in srgb, var(--aro-iris) 7%, transparent);
+  --ui-control-hover-background: var(--aro-hover);
+  --ui-control-active-background: var(--aro-iris-tint);
+
+  --ui-text-primary: var(--aro-ink);
+  --ui-text-secondary: var(--aro-ink-2);
+  --ui-text-tertiary: var(--aro-ink-3);
+  --ui-text-quaternary: var(--aro-ink-4);
+
+  --ui-stroke-primary: var(--aro-line);
+  --ui-stroke-secondary: var(--aro-line-soft);
+  --ui-stroke-tertiary: color-mix(in srgb, var(--aro-line) 70%, transparent);
+  --ui-stroke-quaternary: color-mix(in srgb, var(--aro-line) 45%, transparent);
+
+  --ui-surface-background: var(--aro-bg);
+  --ui-sidebar-surface-background: var(--aro-sunken);
+  --ui-chat-surface-background: var(--aro-void);
+  --ui-editor-surface-background: var(--aro-void);
+  --ui-terminal-surface-background: var(--aro-void);
+  --ui-widget-surface-background: var(--aro-raise);
+
+  --ui-chat-bubble-background: var(--aro-raise);
+  --ui-chat-bubble-opaque-background: var(--aro-raise);
+  --ui-inline-code-background: var(--aro-code);
+  --ui-inline-code-foreground: var(--aro-ink);
+  --ui-selection-background: color-mix(in srgb, var(--aro-iris) 32%, transparent);
+
+  --conversation-scaffold-text: var(--aro-ink-2);
+  --conversation-scaffold-meta: var(--aro-ink-3);
+
+  /* Prototype radius ladder. */
+  --radius-scalar: 0.625rem;
+
+  /* Aro's compact vertical rhythm. */
+  --dt-base-size: 1rem;
+  --dt-line-height: 1.5;
+  --dt-letter-spacing: 0;
+}
+
+:root[data-aro-ui='true'] body {
+  background: var(--aro-void);
+  color: var(--aro-ink);
+  font-family: var(--dt-font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'tnum';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-aro-ui='true'] ::selection {
+  background: color-mix(in srgb, var(--aro-iris) 32%, transparent);
+}
