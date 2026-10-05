@@ -218,3 +218,45 @@
 :root[data-aro-ui='true'] [data-slot='composer-root'][data-status-stack] [data-slot='composer-surface'] {
   border-color: color-mix(in srgb, var(--aro-cyan) 34%, var(--aro-line));
 }
+
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] {
+  --conversation-turn-gap: 1rem;
+  --conversation-text-font-size: 0.875rem;
+  --message-text-indent: 0;
+  background: var(--aro-void);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] {
+  max-width: min(52rem, 100%);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='user'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='user'] .composer-human-message {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 12%);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] pre {
+  border-color: var(--aro-line);
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] code {
+  background: color-mix(in srgb, var(--aro-code) 88%, var(--aro-raise));
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] + [data-role='user'] {
+  margin-top: 0.375rem;
+}
