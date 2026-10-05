@@ -260,3 +260,42 @@
 :root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] + [data-role='user'] {
   margin-top: 0.375rem;
 }
+
+
+/* Real Hermes session header. SessionActionsMenu/TitleMenuTrigger keep all
+   session operations; this only supplies the Aro Workbench chrome. */
+:root[data-aro-ui='true'] [data-aro-session-header] {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  padding-inline: 0.75rem;
+  border-color: var(--aro-line-soft);
+  background: color-mix(in srgb, var(--aro-void) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] > div {
+  gap: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] button {
+  border-radius: 0.5rem;
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] [data-slot='title-menu-trigger'] {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] [data-profile-tag] {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+}
