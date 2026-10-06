@@ -299,3 +299,46 @@
   border-color: var(--aro-line);
   background: var(--aro-raise);
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro three-panel workbench context.                                        */
+/* These markers wrap REAL Hermes file/review surfaces; no demo context data. */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-aro-context-pane] {
+  min-width: 0;
+  background: var(--aro-sunken);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] > aside {
+  border-color: var(--aro-line-soft);
+  background: var(--aro-sunken);
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-pane-self-label],
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-suppress-pane-reveal-side] {
+  font-family: var(--font-mono);
+  letter-spacing: .08em;
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] button:hover {
+  background: color-mix(in srgb, var(--aro-iris) 7%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] [role='treeitem'][aria-selected='true'],
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-selected='true'] {
+  background: var(--aro-iris-tint);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] ::-webkit-scrollbar-thumb {
+  background: var(--aro-line);
+  border-radius: 999px;
+}
