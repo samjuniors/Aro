@@ -660,6 +660,45 @@
 }
 
 
+
+
+/* Prototype composer structure: editor field above, compact action footer below. */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] {
+  border-color: var(--aro-line-soft);
+  background: color-mix(in srgb, var(--aro-bg) 72%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] > [data-slot='input'] {
+  min-height: 4.75rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] > [data-slot='footer'],
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [class*='[grid-area:footer]'] {
+  border-top-color: var(--aro-line-soft);
+  background: color-mix(in srgb, var(--aro-sunken) 54%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [data-slot='composer-input'] {
+  min-height: 4.5rem;
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [aria-label='Slash commands'],
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [aria-label='Path and context references'] {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [data-aro-composer-controls] {
+  gap: 0.3rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [data-aro-composer-controls] [data-aro-model-pill],
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [data-aro-composer-controls] [data-aro-reasoning-pill] {
+  min-height: 1.75rem;
+}
+
 /* Aro composer control grammar — presentation only; every control remains
    backed by the live Hermes composer state and handlers. */
 [data-aro-composer-controls] {
