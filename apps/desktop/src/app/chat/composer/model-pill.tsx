@@ -178,6 +178,7 @@ export function ModelPill({
           aria-label={copy.openModelPicker}
           className={pillClass}
           data-tour={tourMarker}
+          data-aro-model-pill=""
           disabled={disabled}
           onClick={() => setModelPickerOpen(true)}
           type="button"
@@ -208,6 +209,7 @@ export function ModelPill({
             aria-label={title}
             className={pillClass}
             data-tour={tourMarker}
+            data-aro-model-pill=""
             disabled={disabled}
             type="button"
             variant="ghost"
