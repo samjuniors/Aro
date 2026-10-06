@@ -17,7 +17,6 @@ import { composerFloatingStrip, composerInputBacking } from '@/components/chat/c
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
@@ -1541,10 +1540,10 @@ export function ChatBar({
                       <div className="flex min-w-0 items-center gap-0.5 rounded-[10px] border border-line-soft bg-sunken/60 p-0.5">
                         {contextMenu}
                         <Button aria-label="Slash commands" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('/')} size="icon" type="button" variant="ghost">
-                          <Codicon name="terminal" size="0.875rem" />
+                          <span aria-hidden className="font-mono text-xs font-semibold">/</span>
                         </Button>
                         <Button aria-label="Path and context references" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('@')} size="icon" type="button" variant="ghost">
-                          <Codicon name="mention" size="0.875rem" />
+                          <span aria-hidden className="font-mono text-xs font-semibold">@</span>
                         </Button>
                       </div>
                       <ContribSlot area={COMPOSER_AREAS.leading} />
