@@ -342,3 +342,176 @@
   background: var(--aro-line);
   border-radius: 999px;
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro conversation surface + composer.                                      */
+/* The prototype's Workbench is the visual reference; these selectors restyle */
+/* the REAL Hermes transcript/composer instead of mounting a second chat.     */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-chat-surface=''] {
+  --composer-width: min(820px, calc(100% - 3rem));
+  --conversation-turn-gap: 1rem;
+  background:
+    radial-gradient(80% 55% at 50% 0%, color-mix(in srgb, var(--aro-iris) 5%, transparent), transparent 72%),
+    var(--aro-void);
+}
+
+:root[data-aro-ui='true'] [data-chat-surface=''] [data-slot='composer-bounds'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-viewport'] {
+  scrollbar-color: var(--aro-line) transparent;
+  scrollbar-width: thin;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] {
+  max-width: 820px;
+  padding-inline: 1.5rem;
+  padding-top: 3.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > [data-role='user'] {
+  margin-bottom: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_user-message-root'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] .composer-human-message {
+  border-color: var(--aro-line-soft);
+  background: var(--aro-raise);
+  border-radius: 0.625rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 13%), inset 0 1px 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] {
+  max-width: 52rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] > p,
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] li {
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] pre {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.625rem;
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] blockquote {
+  border-left-color: var(--aro-iris);
+  color: var(--aro-ink-3);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > button {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+  color: var(--aro-ink-3);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > button:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 42%, var(--aro-line));
+  background: var(--aro-iris-tint);
+  color: var(--aro-ink);
+}
+
+/* Composer: preserve Hermes' real rich editor, attachment pipeline, queue, */
+/* slash/@ completions, voice, model picker, stop/steer and send actions. */
+:root[data-aro-ui='true'] [data-slot='composer-dock'] {
+  width: min(820px, calc(100% - 3rem));
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-root'] {
+  width: 100%;
+  padding-top: 0.375rem;
+  padding-bottom: 0.5rem;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--aro-void) 92%, transparent));
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  min-height: 108px;
+  border: 1px solid var(--aro-line);
+  border-radius: 1rem;
+  background: var(--aro-raise);
+  box-shadow:
+    0 14px 38px rgb(0 0 0 / 24%),
+    0 1px 0 rgb(255 255 255 / 3%) inset;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-fade'] {
+  padding: 0.75rem;
+  gap: 0.5rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
+  border-color: color-mix(in srgb, var(--aro-iris) 58%, var(--aro-line));
+  box-shadow:
+    0 14px 38px rgb(0 0 0 / 24%),
+    0 0 0 3px color-mix(in srgb, var(--aro-iris) 8%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true'] {
+  min-height: 58px;
+  color: var(--aro-ink);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true']:empty::before {
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-slot='composer-input'],
+:root[data-aro-ui='true'] [data-slot='composer-surface'] textarea {
+  font-family: var(--dt-font-sans);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-slot='composer-controls'] {
+  border-top-color: var(--aro-line-soft);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button {
+  color: var(--aro-ink-3);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button:hover {
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-variant='primary'],
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit'] {
+  border-radius: 999px;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-dock'] [data-slot='composer-floating-strip'] {
+  font-family: var(--dt-font-mono);
+}
+
+@media (max-width: 900px) {
+  :root[data-aro-ui='true'] [data-chat-surface=''] {
+    --composer-width: calc(100% - 1.5rem);
+  }
+
+  :root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] {
+    padding-inline: 0.75rem;
+  }
+
+  :root[data-aro-ui='true'] [data-slot='composer-dock'] {
+    width: calc(100% - 1.5rem);
+  }
+}
