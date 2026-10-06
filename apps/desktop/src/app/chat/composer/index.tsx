@@ -17,6 +17,7 @@ import { composerFloatingStrip, composerInputBacking } from '@/components/chat/c
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
 import { Button } from '@/components/ui/button'
+import { Codicon } from '@/components/ui/codicon'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
@@ -1530,30 +1531,31 @@ export function ChatBar({
                     </div>
                   )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
+                  {/* Aro/Codex composition: editor first, dedicated action footer second. */}
                   <div
-                    className={cn(
-                      'grid w-full',
-                      stacked
-                        ? 'grid-cols-[auto_1fr] gap-(--composer-row-gap) [grid-template-areas:"input_input"_"menu_controls"]'
-                        : 'grid-cols-[auto_1fr_auto] items-center gap-(--composer-control-gap) [grid-template-areas:"menu_input_controls"]'
-                    )}
+                    className="grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[12px] border border-line-soft/70 bg-base/20 [grid-template-areas:'input'_'footer']"
+                    data-aro-composer-layout="codex"
                   >
-                    <div className="flex translate-y-[3px] items-start gap-(--composer-control-gap) self-start [grid-area:menu]">
-                      {contextMenu}
+                    <div className="min-w-0 [grid-area:input] px-2.5 pt-2.5 pb-1">{input}</div>
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 border-t border-line-soft/60 bg-base/40 px-1.5 py-1.5 [grid-area:footer]">
+                      <div className="flex min-w-0 items-center gap-0.5 rounded-[10px] border border-line-soft bg-sunken/60 p-0.5">
+                        {contextMenu}
+                        <Button aria-label="Slash commands" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('/')} size="icon" type="button" variant="ghost">
+                          <Codicon name="terminal" size="0.875rem" />
+                        </Button>
+                        <Button aria-label="Path and context references" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('@')} size="icon" type="button" variant="ghost">
+                          <Codicon name="mention" size="0.875rem" />
+                        </Button>
+                      </div>
                       <ContribSlot area={COMPOSER_AREAS.leading} />
-                    </div>
-                    <div className="min-w-0 [grid-area:input]">{input}</div>
-                    {/* `justify-end` packs contributed actions and the send cluster
-                      together on the right. The cluster must not carry its own
-                      `ml-auto`: in the stacked layout the auto margin absorbs the
-                      row's free space and pins a contributed action to the row
-                      start, detached from the cluster (#116332). */}
-                    <div className="flex min-w-0 items-center justify-end gap-(--composer-control-gap) [grid-area:controls]">
-                      <ContribSlot area={COMPOSER_AREAS.actions} />
-                      <div data-aro-composer-controls="" className="flex min-w-0 items-center">
-                        {controls}
+                      <div className="ml-auto flex min-w-0 items-center justify-end gap-(--composer-control-gap)">
+                        <ContribSlot area={COMPOSER_AREAS.actions} />
+                        <div data-aro-composer-controls="" className="flex min-w-0 items-center">
+                          {controls}
+                        </div>
                       </div>
                     </div>
+                  </div>
                   </div>
                   <ContribSlot area={COMPOSER_AREAS.bottom} />
                 </div>
