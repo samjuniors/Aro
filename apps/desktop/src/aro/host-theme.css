@@ -658,3 +658,88 @@
 :root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] [data-slot='composer-input']:empty::before {
   opacity: 1;
 }
+
+
+/* Aro composer control grammar — presentation only; every control remains
+   backed by the live Hermes composer state and handlers. */
+[data-aro-composer-controls] {
+  gap: 0.375rem;
+}
+
+[data-aro-composer-controls] > div {
+  gap: 0.375rem;
+}
+
+[data-aro-composer-controls] button {
+  border-radius: 0.5rem;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease;
+}
+
+[data-aro-composer-controls] button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--aro-text) 6%, transparent);
+}
+
+[data-aro-composer-controls] button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+[data-aro-composer-controls] [data-slot='model-pill'],
+[data-aro-composer-controls] [data-slot='reasoning-pill'] {
+  border: 1px solid var(--aro-border);
+  background: color-mix(in srgb, var(--aro-panel-raised) 78%, transparent);
+  color: var(--aro-text-secondary);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
+[data-aro-composer-controls] [data-slot='model-pill']:hover,
+[data-aro-composer-controls] [data-slot='reasoning-pill']:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 34%, var(--aro-border));
+  color: var(--aro-text);
+}
+
+[data-aro-composer-controls] > div > button[type='submit'] {
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  background: var(--aro-iris);
+  color: var(--aro-on-iris);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--aro-iris) 24%, transparent);
+}
+
+[data-aro-composer-controls] > div > button[type='submit']:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--aro-iris) 32%, transparent);
+}
+
+[data-aro-composer-controls] > div > button[type='submit']:disabled {
+  opacity: 0.38;
+  box-shadow: none;
+}
+
+[data-aro-composer-controls] [data-state='open'] {
+  background: color-mix(in srgb, var(--aro-iris) 10%, transparent);
+  border-color: color-mix(in srgb, var(--aro-iris) 28%, var(--aro-border));
+}
+
+[data-aro-composer-controls] svg {
+  color: currentColor;
+}
+
+[data-aro-composer] [data-slot='composer-surface'] {
+  border-color: color-mix(in srgb, var(--aro-border) 88%, transparent);
+}
+
+[data-aro-composer] [data-slot='composer-surface'] > div:last-child {
+  border-top-color: color-mix(in srgb, var(--aro-border) 72%, transparent);
+}
+
+@media (max-width: 720px) {
+  [data-aro-composer-controls] [data-slot='reasoning-pill'] {
+    display: none;
+  }
+}
