@@ -515,3 +515,146 @@
     width: calc(100% - 1.5rem);
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro chat + composer replacement surface.                                  */
+/* The DOM is still Hermes; these rules replace its visual grammar in-place. */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-aro-chat-screen] {
+  --aro-chat-gutter: clamp(1rem, 3vw, 3rem);
+  background:
+    radial-gradient(900px 500px at 50% 15%, rgb(124 92 255 / 4%), transparent 65%),
+    var(--aro-void);
+}
+
+:root[data-aro-ui='true'] [data-aro-chat-screen] [data-slot='composer-bounds'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--aro-line) transparent;
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+  width: min(100%, 52rem);
+  max-width: 52rem;
+  padding-inline: var(--aro-chat-gutter);
+  padding-top: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-slot='aui_assistant-message-root'],
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  width: 100%;
+  max-width: 100%;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] {
+  padding-inline: 0;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] [data-slot='aui_assistant-message-content'] {
+  max-width: 46rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  justify-content: flex-end;
+  padding-inline: 0;
+  margin-block: 0.5rem 0.75rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='user'] > * {
+  max-width: min(80%, 42rem);
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] .composer-human-message {
+  border: 1px solid var(--aro-line);
+  background: linear-gradient(180deg, var(--aro-raise), color-mix(in srgb, var(--aro-bg) 92%, var(--aro-raise)));
+  border-radius: 0.875rem;
+  padding: 0.65rem 0.8rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] + [data-role='user'] {
+  margin-top: 0.875rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] {
+  width: min(100%, 56rem);
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-bottom: 0.75rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] {
+  border: 1px solid var(--aro-line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--aro-raise) 96%, transparent);
+  box-shadow:
+    0 18px 45px rgb(0 0 0 / 22%),
+    inset 0 1px 0 rgb(255 255 255 / 3%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-fade'] {
+  padding: 0.15rem 0.15rem 0;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-input'] {
+  min-height: 5.25rem;
+  padding: 0.7rem 0.75rem 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-input']::before {
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] > div:last-child {
+  border-top-color: var(--aro-line-soft);
+  background: color-mix(in srgb, var(--aro-sunken) 62%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button {
+  color: var(--aro-ink-3);
+  border-radius: 0.55rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button:hover {
+  color: var(--aro-ink);
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit'],
+:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message'] {
+  min-width: 4.25rem;
+  border-radius: 0.6rem;
+  background: var(--aro-iris);
+  color: var(--aro-on-iris);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit']:hover,
+:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message']:hover {
+  background: var(--aro-iris-soft);
+  color: var(--aro-on-iris);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface']:focus-within {
+  border-color: color-mix(in srgb, var(--aro-iris) 58%, var(--aro-line));
+  box-shadow:
+    0 18px 45px rgb(0 0 0 / 22%),
+    0 0 0 3px color-mix(in srgb, var(--aro-iris) 9%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] [data-slot='composer-input']:empty::before {
+  opacity: 1;
+}
