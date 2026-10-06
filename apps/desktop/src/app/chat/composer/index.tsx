@@ -1550,7 +1550,9 @@ export function ChatBar({
                       start, detached from the cluster (#116332). */}
                     <div className="flex min-w-0 items-center justify-end gap-(--composer-control-gap) [grid-area:controls]">
                       <ContribSlot area={COMPOSER_AREAS.actions} />
-                      {controls}
+                      <div data-aro-composer-controls="" className="flex min-w-0 items-center">
+                        {controls}
+                      </div>
                     </div>
                   </div>
                   <ContribSlot area={COMPOSER_AREAS.bottom} />
