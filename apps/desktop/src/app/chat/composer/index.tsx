@@ -1387,7 +1387,7 @@ export function ChatBar({
             data-drag-active={dragActive ? '' : undefined}
             data-hud-grabbing={hudGrabbing ? '' : undefined}
             data-popped-out={poppedOut ? '' : undefined}
-            data-slot="composer-root"
+            data-slot="composer-root" data-aro-composer=""
             data-status-stack={statusStackVisible && !statusDrawerCollapsed ? '' : undefined}
             data-thread-scrolled-up={scrolledUp ? '' : undefined}
             data-tip-region=""
