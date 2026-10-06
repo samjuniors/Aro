@@ -1555,7 +1555,6 @@ export function ChatBar({
                       </div>
                     </div>
                   </div>
-                  </div>
                   <ContribSlot area={COMPOSER_AREAS.bottom} />
                 </div>
               </div>
