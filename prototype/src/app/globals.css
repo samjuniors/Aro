@@ -301,7 +301,9 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   * { border-color: var(--color-line); }
   /* anti-slop rule: every interactive element announces itself */
   button:not(:disabled), [role="button"], a, select, summary { cursor: pointer; }
-  html, body { height: 100%; height: 100dvh; }
+  /* clip: absolutely-positioned tooltips near an edge must never inflate
+     the page's scrollable width on mobile */
+  html, body { height: 100%; height: 100dvh; overflow-x: clip; }
   html { background: var(--color-void); overscroll-behavior: none; }
   /* accessible focus fallback (components with ring-focus override it) */
   button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible {
@@ -390,18 +392,12 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .mobile-pane-scrim { display: none; }
 
 @media (max-width: 1080px) {
-  .titlebar-daemon { display: none !important; }
-  .titlebar-search { width: min(300px, 24vw) !important; }
   .app-transcript-inner { padding-inline: max(18px, var(--d-page-gutter)); }
 }
 
 @media (max-width: 820px) {
   .app-titlebar { gap: 6px; padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
   .titlebar-repo { display: none !important; }
-  .titlebar-search { margin-left: auto !important; width: 34px !important; padding-inline: 9px !important; justify-content: center; }
-  .titlebar-search-label, .titlebar-search-kbd { display: none !important; }
-  .titlebar-help { display: none !important; }
-  .titlebar-account-chevron { display: none !important; }
 
   .app-sidebar-shell {
     position: fixed; inset: var(--d-chrome-height) auto 0 0; z-index: 65;
@@ -510,12 +506,61 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .sidebar-project-group.is-pinned { background: color-mix(in srgb, var(--color-iris) 5%, transparent); box-shadow: inset 2px 0 0 var(--color-iris); }
 .sidebar-section-label { padding: 6px 9px 4px; color: var(--color-ink-4); font-size: 9px; }
 .sidebar-footer { flex-shrink: 0; padding: 8px 12px 14px; border-top: 1px solid var(--color-line-soft); }
+/* ---------- Sidebar progressive collapse (container-query rail) ----------
+   As the sidebar narrows, its contents disappear one by one: keyboard
+   hints and footnotes first, then search and every label (icon rail),
+   rows compress — and dragging past the floor releases the sidebar
+   entirely, leaving just the titlebar arrow. The container is the shell
+   itself, so the stages track the live drag. */
+.app-sidebar-shell { container: sidebar / inline-size; }
+.app-sidebar-shell.is-snapping { opacity: .5; filter: saturate(.7); }
+.app-sidebar-resizer[data-snap="true"]::after { background: var(--color-rose) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--color-rose) 60%, transparent); }
+@container sidebar (max-width: 336px) {
+  .rail-kbd, .rail-hide, .sidebar-footer p { display: none; }
+  .sidebar-primary-actions { padding: 8px 8px 6px; }
+  .sidebar-main-nav { padding: 2px 8px 8px; }
+  .sidebar-footer { padding: 8px 8px 12px; }
+  .sidebar-projects-heading { padding-inline: 10px; }
+}
+@container sidebar (max-width: 296px) {
+  .rail-label, .sidebar-section-label { display: none; }
+  .sidebar-search-wrap { display: none; }
+  .sidebar-brand { padding-inline: 10px 8px; }
+  .sidebar-navigation-row { justify-content: center; padding-inline: 0; }
+  .new-session-action { justify-content: center; padding-inline: 0; }
+  .sidebar-projects-heading { gap: 5px; }
+  .sidebar-footer .sidebar-navigation-row { justify-content: center; }
+}
+@container sidebar (max-width: 248px) {
+  .sidebar-navigation-row { min-height: 27px; }
+  .session-list-row { min-height: 27px; }
+  .sidebar-project-group .session-row-more { display: none; }
+}
 .fresh-workbench { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: center; background: var(--color-base); }
 .fresh-session-stage { width: min(100%, 790px); padding: 28px; transform: translateY(-30px); }
 .fresh-session-heading { margin-bottom: 34px; text-align: center; }
 .fresh-eyebrow { display: block; margin-bottom: 10px; color: var(--color-ink-4); font-size: 11px; letter-spacing: .02em; }
 .fresh-session-heading h1 { margin: 0; font-family: var(--d-font-display); font-size: clamp(24px, 2.5vw, 32px); font-weight: 500; line-height: 1.2; letter-spacing: -.04em; color: var(--color-ink); }
 .fresh-composer-hint { margin: 17px 0 0; text-align: center; font-size: 11px; color: var(--color-ink-4); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+/* fresh-session suggestion chips — quiet answers to “what would you like to build?”;
+   they prefill the composer (or open the project picker), never send */
+.fresh-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
+.fresh-suggestion {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 13px;
+  border: 1px solid var(--color-line); border-radius: 99px; background: var(--color-overlay);
+  color: var(--color-ink-3); font-size: 11.5px; cursor: pointer; white-space: nowrap;
+  animation: fadeUp .45s var(--ease-out-expo) both;
+  transition: border-color 150ms, color 150ms, transform 150ms, box-shadow 150ms, background-color 150ms;
+}
+.fresh-suggestion:hover {
+  border-color: color-mix(in srgb, var(--color-iris) 45%, transparent);
+  color: var(--color-ink); background: var(--color-base);
+  transform: translateY(-1px); box-shadow: var(--shadow-e2);
+}
+.fresh-suggestion:active { transform: translateY(0) scale(.98); }
+.fresh-suggestion svg { color: var(--color-ink-4); transition: color 150ms; }
+.fresh-suggestion:hover svg { color: var(--color-iris-soft); }
 .reference-composer-container { position: relative; width: 100%; }
 .reference-composer { position: relative; z-index: 2; border: 1px solid var(--color-line); border-radius: calc(var(--d-composer-radius) + 5px); background: var(--color-overlay); box-shadow: 0 3px 12px -5px var(--t-shadow-b); transition: border-color 160ms ease, box-shadow 160ms ease; }
 /* Aro composer glow — kept from the first prototype (user request):
@@ -717,9 +762,45 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .repo-chooser-clear { border-top: 0; padding-top: 5px; color: var(--color-ink-4); }
 .repo-chooser-archived-label { padding: 8px 10px 4px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-ink-4); }
 
-/* ---------- Top-right Titlebar Divider & Alignment ---------- */
+/* ---------- Titlebar Divider & centered search ---------- */
 .titlebar-divider-v { width: 1px; height: 16px; background: var(--color-line-soft); margin: 0 3px; flex-shrink: 0; }
-.minimal-titlebar { display: flex; align-items: center; gap: 6px; padding-inline: 12px; height: var(--d-chrome-height); background: var(--color-base); border-bottom: 1px solid var(--color-line-soft); }
+.minimal-titlebar { position: relative; display: flex; align-items: center; gap: 6px; padding-inline: 12px; height: var(--d-chrome-height); background: var(--color-base); border-bottom: 1px solid var(--color-line-soft); }
+/* centered search pill — absolutely centered so the left chrome (project
+   title) never pushes it off-axis; falls back to a compact icon when the
+   bar is too crowded. A new session (data-minimal) has room sooner. */
+.titlebar-search {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: none; height: 28px; align-items: center; gap: 9px;
+  padding: 0 8px 0 12px; border: 1px solid var(--color-line); border-radius: 99px;
+  background: var(--color-sunken); color: var(--color-ink-3); font-size: 11.5px;
+  cursor: pointer; white-space: nowrap; z-index: 6;
+  transition: border-color 150ms var(--ease-out-expo), color 150ms, box-shadow 150ms, background-color 150ms;
+}
+.titlebar-search:hover {
+  border-color: color-mix(in srgb, var(--color-iris) 45%, transparent);
+  background: var(--color-base); color: var(--color-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-iris) 10%, transparent), 0 4px 14px -6px color-mix(in srgb, var(--color-iris) 40%, transparent);
+}
+.titlebar-search svg { color: var(--color-ink-4); transition: color 150ms; }
+.titlebar-search:hover svg { color: var(--color-iris-soft); }
+.titlebar-search-kbd { display: inline-flex; opacity: .85; }
+.titlebar-search-compact {
+  display: inline-flex; height: 28px; width: 28px; align-items: center; justify-content: center;
+  border-radius: 7px; color: var(--color-ink-3); cursor: pointer;
+  transition: background-color 140ms, color 140ms;
+}
+.titlebar-search-compact:hover { background: var(--color-hover); color: var(--color-ink); }
+@media (min-width: 1080px) {
+  .titlebar-search { display: inline-flex; }
+  .titlebar-search-compact { display: none; }
+}
+@media (min-width: 780px) and (max-width: 1079px) {
+  .minimal-titlebar[data-minimal="true"] .titlebar-search { display: inline-flex; }
+  .minimal-titlebar[data-minimal="true"] .titlebar-search-compact { display: none; }
+}
+/* crowded bars retire the workspace quick-icons first (status bar + ⌘L + the
+   corner arrow still reach everything) */
+@media (max-width: 1000px) { .titlebar-optional-controls { display: none; } }
 
 /* ---------- Agent plan / todo card (above the composer, opens upward) ----------
    Reference: TODO.png — a minimal elevated card. The collapsed state is the
@@ -731,6 +812,13 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   z-index: 5;
   width: 100%;
   margin: 0 0 8px;
+}
+/* onboarding strip brand tile — Aro mark on a quiet iris-tinted plate */
+.onboarding-mark {
+  display: flex; width: 32px; height: 32px; align-items: center; justify-content: center;
+  border-radius: 9px; background: var(--color-base);
+  border: 1px solid color-mix(in srgb, var(--color-iris) 25%, transparent);
+  box-shadow: 0 0 14px -6px color-mix(in srgb, var(--color-iris) 55%, transparent);
 }
 .plan-todo-strip {
   display: flex;
@@ -1182,16 +1270,32 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .app-workspace-panel {
   display: flex; flex-direction: column; min-width: 0; height: 100%;
   background: var(--color-base); border-left: 1px solid var(--color-line); overflow: hidden;
+  container: workspace / inline-size;
   animation: panelIn .22s var(--ease-out-expo) both;
 }
 @keyframes panelIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
 .app-workspace-panel.is-snapping { opacity: .45; filter: saturate(.65); }
+/* full-screen a tool tab — the panel covers the workspace row (sidebar
+   and titlebar stay); Esc or the corner button restores the split */
+.app-workspace-panel.is-fullscreen {
+  position: absolute; inset: 0; z-index: 62; width: auto; flex: 1 1 auto;
+  border-left: 0; animation: panelIn .18s var(--ease-out-expo) both;
+}
 .workspace-tabstrip {
   display: flex; height: 34px; flex-shrink: 0; align-items: center; gap: 2px;
   padding: 0 6px; border-bottom: 1px solid var(--color-line-soft); background: var(--color-sunken);
+}
+/* the tabs themselves scroll — when they overflow, icons slip one by one
+   over soft edge fades (applied only while overflowing) */
+.workspace-tabs-scroll {
+  display: flex; min-width: 0; align-items: center; gap: 2px;
   overflow-x: auto; scrollbar-width: none;
 }
-.workspace-tabstrip::-webkit-scrollbar { display: none; }
+.workspace-tabs-scroll::-webkit-scrollbar { display: none; }
+.workspace-tabs-scroll.is-overflowing {
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
 .workspace-tab {
   display: inline-flex; align-items: center; height: 24px; min-width: 0; flex-shrink: 0;
   border-radius: 6px; padding-right: 2px; color: var(--color-ink-3); position: relative;
@@ -1220,12 +1324,13 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 }
 .workspace-tab:hover .workspace-tab-close, .workspace-tab-close:focus-visible { opacity: 1; }
 .workspace-tab-close:hover { background: var(--color-rose-tint); color: var(--color-rose); }
-.workspace-tab-new, .workspace-panel-close {
+.workspace-tab-new, .workspace-panel-close, .workspace-panel-full {
   display: inline-flex; align-items: center; justify-content: center;
   width: 24px; height: 24px; flex-shrink: 0; border-radius: 6px; color: var(--color-ink-3);
   transition: background-color 130ms, color 130ms;
 }
-.workspace-tab-new:hover, .workspace-panel-close:hover { background: var(--color-hover); color: var(--color-ink); }
+.workspace-tab-new:hover, .workspace-panel-close:hover, .workspace-panel-full:hover { background: var(--color-hover); color: var(--color-ink); }
+.workspace-panel-full.is-on { color: var(--color-iris-soft); background: var(--color-iris-tint); }
 .workspace-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .workspace-tabpane { display: none; flex: 1; min-width: 0; min-height: 0; flex-direction: column; }
 .workspace-tabpane.is-active { display: flex; }
@@ -1237,14 +1342,29 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
     position: fixed; top: var(--d-chrome-height); right: 0; bottom: 0; z-index: 65;
     width: min(100vw, 640px) !important; box-shadow: -16px 0 40px -12px rgba(0,0,0,.6);
   }
+  .app-workspace-panel.is-fullscreen { position: fixed; top: var(--d-chrome-height); left: 0; right: 0; bottom: 0; width: 100% !important; }
   .workspace-resizer { display: none; }
 }
-/* empty workspace — the tool picker a first-time user lands on */
-.workspace-picker { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; }
+/* progressive tab collapse as the panel narrows: titles shrink, then go
+   icon-only, close buttons retire to the active tab — icons to the edge */
+@container workspace (max-width: 600px) { .workspace-tab-title { max-width: 60px; } }
+@container workspace (max-width: 470px) { .workspace-tab-title { display: none; } .workspace-tab-main { padding: 0 8px; } }
+@container workspace (max-width: 330px) {
+  .workspace-tab-close { display: none; }
+  .workspace-tab.is-active .workspace-tab-close { display: flex; }
+  .workspace-tab-main { padding: 0 6px; }
+}
+/* empty workspace — the tool picker a first-time user lands on.
+   auto-margin centering keeps it centered when it fits and scrollable
+   when the tool grid outgrows the panel */
+.workspace-picker { display: flex; flex: 1; flex-direction: column; align-items: center; padding: 28px; text-align: center; overflow-y: auto; }
+.workspace-picker > :first-child { margin-top: auto; }
+.workspace-picker > :last-child { margin-bottom: auto; }
 .workspace-picker-eyebrow { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-ink-4); }
 .workspace-picker-title { margin: 8px 0 0; font-family: var(--d-font-display); font-size: 19px; font-weight: 600; letter-spacing: -.02em; color: var(--color-ink); }
 .workspace-picker-sub { margin: 10px auto 0; max-width: 340px; font-size: 12px; line-height: 1.6; color: var(--color-ink-3); }
-.workspace-picker-grid { margin-top: 22px; display: grid; width: 100%; max-width: 420px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.workspace-picker-grid { margin-top: 22px; display: grid; width: 100%; max-width: 420px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex-shrink: 0; }
+.workspace-picker > h3, .workspace-picker > p { flex-shrink: 0; }
 .workspace-picker-card {
   display: flex; flex-direction: column; gap: 6px; cursor: pointer;
   border: 1px solid var(--color-line-soft); border-radius: 11px; background: var(--color-raise);
@@ -1252,6 +1372,9 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   transition: border-color 140ms, transform 140ms, box-shadow 140ms;
 }
 .workspace-picker-card:hover { border-color: var(--color-iris); transform: translateY(-1px); box-shadow: var(--shadow-e2); }
+.workspace-picker-card.workspace-picker-connect { border-style: dashed; background: transparent; }
+.workspace-picker-card.workspace-picker-connect .workspace-picker-icon { background: var(--color-hover); color: var(--color-ink-3); }
+.workspace-picker-card.workspace-picker-connect:hover .workspace-picker-icon { background: var(--color-iris-tint); color: var(--color-iris-soft); }
 .workspace-picker-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: var(--color-iris-tint); color: var(--color-iris-soft); }
 .workspace-picker-name { font-size: 12.5px; font-weight: 600; color: var(--color-ink); }
 .workspace-picker-desc { font-size: 10.5px; line-height: 1.45; color: var(--color-ink-3); }
@@ -1270,6 +1393,28 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   background: var(--color-iris-tint);
 }
 .workspace-corner-open:active { transform: scale(.94); }
+
+/* ---------- Files tab — project tree + preview ---------- */
+.files-tree-root { display: flex; align-items: center; gap: 6px; padding: 6px 10px 8px; border-bottom: 1px solid var(--color-line-soft); font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-3); }
+.files-tree-root svg { color: var(--color-iris-soft); }
+.files-row { display: flex; width: 100%; align-items: center; gap: 6px; height: 26px; color: var(--color-ink-3); font-size: 11.5px; text-align: left; cursor: pointer; transition: background-color 120ms, color 120ms; }
+.files-row:hover { background: var(--color-hover); color: var(--color-ink-2); }
+.files-row.is-open { background: var(--color-hover); color: var(--color-ink); box-shadow: inset 2px 0 0 var(--color-iris); }
+.files-dir .files-name { font-weight: 550; color: var(--color-ink-2); }
+.files-dir svg { color: var(--color-ink-4); flex-shrink: 0; }
+.files-lang { display: inline-flex; width: 18px; height: 14px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 3px; background: var(--color-well); font-family: var(--font-mono); font-size: 7.5px; letter-spacing: .04em; color: var(--color-ink-4); }
+.files-lines { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--color-ink-4); opacity: 0; transition: opacity 120ms; }
+.files-row:hover .files-lines { opacity: 1; }
+.files-open-path { margin: 0 0 8px; font-size: 10px; color: var(--color-iris-soft); }
+.files-open-body { margin: 0; font-family: var(--font-mono); font-size: 11px; line-height: 1.65; color: var(--color-ink-2); white-space: pre; }
+.files-empty-hint { padding: 18px 14px; font-size: 11px; color: var(--color-ink-4); }
+/* ---------- Search tab — ripgrep-lite results ---------- */
+.files-hit-path { display: flex; align-items: center; gap: 6px; padding: 6px 8px 3px; font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-2); }
+.files-hit-count { color: var(--color-ink-4); font-size: 9px; }
+.files-hit { display: flex; gap: 8px; padding: 3px 8px; border-radius: 5px; cursor: default; }
+.files-hit:hover { background: var(--color-hover); }
+.files-hit-line { width: 18px; flex-shrink: 0; text-align: right; color: var(--color-ink-4); }
+.files-hit-text { color: var(--color-ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 10.5px; }
 
 /* =========================================================================
    STATUS BAR — the dynamic footer (state-wise items, toggle via Layout)
@@ -1718,3 +1863,5 @@ html[data-design="editorial"] .workspace-tab, html[data-design="editorial"] .wor
   .active-composer-area { padding: 0 10px max(12px, env(safe-area-inset-bottom)); }
   .reference-project-modal { top: 50% !important; left: 50% !important; width: calc(100vw - 28px) !important; max-width: calc(100vw - 28px) !important; transform: translate(-50%, -50%) !important; border: 1px solid var(--color-line) !important; border-radius: 16px !important; }
 }
+
+/* css-rev 1791364604 */

@@ -436,6 +436,25 @@ export const IconColumns = (p: P) => (
     <path d="M15 4.5v15" />
   </svg>
 );
+/* keyboard — the shortcuts affordance in the titlebar */
+export const IconKeyboard = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="2.5" y="6" width="19" height="12" rx="2.5" />
+    <path d="M6.2 9.4h.01M9.7 9.4h.01M13.2 9.4h.01M16.7 9.4h.01M6.2 12.8h.01M9.7 12.8h.01M13.2 12.8h.01M16.7 12.8h.01M7.9 15.4h8.2" />
+  </svg>
+);
+/* restore (exit fullscreen) — corners folding inward */
+export const IconMinimize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+  </svg>
+);
+/* plug-ish "connect more tools" glyph for the workspace picker */
+export const IconPuzzle = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M10.5 3.5a2 2 0 0 1 4 0V5h2.4a1.6 1.6 0 0 1 1.6 1.6V9h1.3a2 2 0 0 1 0 4H18.5v3.6a1.6 1.6 0 0 1-1.6 1.6H14.5v1.6a2 2 0 0 1-4 0V18.2H7.9a1.6 1.6 0 0 1-1.6-1.6V13H5.2a2 2 0 0 1 0-4h1.1V6.6A1.6 1.6 0 0 1 7.9 5h2.6Z" />
+  </svg>
+);
 
 /* ------------------------- brand marks for agents ------------------------ */
 type MarkProps = { size?: number; className?: string };

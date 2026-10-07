@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "../utils/cn";
 import { useApp } from "../lib/app";
-import { IconCheck, IconFolder, IconGlobe, IconX, IconZap } from "./Icons";
+import { IconCheck, IconFolder, IconGlobe, IconX, IconZap, LogoMark } from "./Icons";
 import { Button, IconButton } from "./ui";
 
 /* ====================================================================
@@ -70,12 +70,12 @@ export function OnboardingStrip({ onDismiss }: { onDismiss: () => void }) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[10px] border border-iris/25 bg-iris-tint/40 px-4 py-3">
-      {/* Aro mark substitute + headline */}
+      {/* Aro mark + headline */}
       <div className="flex min-w-[200px] items-center gap-2.5">
-        <span className="flex size-[26px] shrink-0 items-center justify-center rounded-[8px] bg-gradient-to-br from-[#6EE7B7] to-[#10B981] text-[#07231a] shadow-glow-iris"><IconZap size={13} /></span>
+        <span className="onboarding-mark shrink-0"><LogoMark size={22} /></span>
         <div className="min-w-0">
           <p className="text-[13px] leading-[1.3] font-semibold text-ink">Get Aro running</p>
-          <p className="text-[11.5px] leading-[1.4] text-ink-3">{wsDone ? "Workspace set — everything is ready." : "Doctor found everything it needs — one step left."}</p>
+          <p className="text-[11.5px] leading-[1.4] text-ink-3">{wsDone ? "Workspace set — everything is ready." : "The doctor checked the runtime and model — one step left."}</p>
         </div>
       </div>
 

@@ -1,33 +1,47 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { cn } from "../utils/cn";
 import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
 import { makeId, readStored, writeStored } from "../lib/storage";
-import { IconBrain, IconGit, IconGlobe, IconPin, IconTerminal, IconX } from "./Icons";
-import { Menu, MenuSep, Tip } from "./ui";
+import { DEMO_FILES, flattenFiles, type FileNode } from "../data/files";
+import { IconBrain, IconChevron, IconChevronDown, IconClock, IconFolder, IconGit, IconGlobe, IconGrid, IconList, IconMaximize, IconMinimize, IconPin, IconPlus, IconPuzzle, IconSearch, IconTerminal, IconX } from "./Icons";
+import { Menu, MenuLabel, MenuSep, Tip } from "./ui";
 import { BrowserView } from "./views2";
-import { ReviewView } from "./views";
+import { FleetView, ReviewView } from "./views";
+import { TasksView } from "./views2";
+import { AutomationsView } from "./views4";
 import { ArtifactsView } from "./views5";
 import { MemoryView } from "./MemoryView";
 
 /* =====================================================================
    WORKSPACE PANEL — Codex-style docked workspace with real tabs.
-   Every tool (browse / changes / artifacts / terminal / memory) opens as
-   its own tab; tabs can be added with "+", closed individually, and the
-   whole panel snaps away when dragged towards the screen edge. The layout
-   (width, tabs, active tab) persists across reloads; a fresh user starts
-   with just the chat and the single corner icon.
+   Every tool (browse / changes / artifacts / terminal / memory / files /
+   search / tasks / runs / automations) opens as its own tab; tabs can be
+   added with "+", closed individually, and the whole panel snaps away when
+   dragged towards the screen edge. As the panel narrows, tab labels and
+   close buttons progressively collapse (container queries) — icons slip
+   one by one over the strip's edge fades — until only icons remain, and
+   dragging further hides the panel entirely. Any tab can go full-screen
+   from the strip's corner (Esc restores). The layout (width, tabs, active
+   tab) persists across reloads; a fresh user starts with just the chat,
+   the single corner icon, and a “connect more tools” path in the picker.
    ===================================================================== */
 
-export type WorkspaceTool = "browse" | "changes" | "artifacts" | "terminal" | "memory";
-export const WORKSPACE_TOOLS: { id: WorkspaceTool; label: string; icon: ComponentType<{ size?: number; className?: string }>; desc: string }[] = [
-  { id: "browse", label: "Browse", icon: IconGlobe, desc: "Live page previews at any device width" },
-  { id: "changes", label: "Changes", icon: IconGit, desc: "Review the working diff before committing" },
-  { id: "artifacts", label: "Artifacts", icon: IconPin, desc: "Pinned outputs from agent sessions" },
-  { id: "terminal", label: "Terminal", icon: IconTerminal, desc: "Shell output streamed next to chat" },
-  { id: "memory", label: "Memory", icon: IconBrain, desc: "Everything the agent remembers" },
+export type WorkspaceTool = "browse" | "changes" | "artifacts" | "terminal" | "memory" | "files" | "search" | "tasks" | "runs" | "automations";
+type ToolGroup = "Workspace" | "Project" | "Autonomy";
+export const WORKSPACE_TOOLS: { id: WorkspaceTool; label: string; icon: ComponentType<{ size?: number; className?: string }>; desc: string; group: ToolGroup }[] = [
+  { id: "browse", label: "Browse", icon: IconGlobe, desc: "Live page previews at any device width", group: "Workspace" },
+  { id: "changes", label: "Changes", icon: IconGit, desc: "Review the working diff before committing", group: "Workspace" },
+  { id: "terminal", label: "Terminal", icon: IconTerminal, desc: "Shell output streamed next to chat", group: "Workspace" },
+  { id: "artifacts", label: "Artifacts", icon: IconPin, desc: "Pinned outputs from agent sessions", group: "Workspace" },
+  { id: "memory", label: "Memory", icon: IconBrain, desc: "Everything the agent remembers", group: "Workspace" },
+  { id: "files", label: "Files", icon: IconFolder, desc: "The attached project's file tree", group: "Project" },
+  { id: "search", label: "Search", icon: IconSearch, desc: "Ripgrep-style search across the project", group: "Project" },
+  { id: "tasks", label: "Tasks", icon: IconList, desc: "The workspace task queue", group: "Autonomy" },
+  { id: "runs", label: "Runs", icon: IconGrid, desc: "Parallel agent runs across projects", group: "Autonomy" },
+  { id: "automations", label: "Automations", icon: IconClock, desc: "Cron jobs and scheduled workflows", group: "Autonomy" },
 ];
 export const toolMeta = (tool: WorkspaceTool) => WORKSPACE_TOOLS.find((t) => t.id === tool)!;
 
@@ -37,21 +51,40 @@ const PANEL_KEY = "conductor.workspace.panel.v1";
 const DEFAULT_SIZE = 540;
 const SNAP_CLOSE_AT = 300; /* dragging below this width releases → panel closes */
 
-export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
+export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpenSession, onConnectTools }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   project?: Project;
   onAskAgent: (text: string) => void;
+  onOpenSession?: (id: string) => void;
+  onConnectTools?: () => void;
 }) {
   const { toast } = useApp();
   const [panel, setPanel] = useState<PersistedPanel>(() => {
     const saved = readStored<PersistedPanel>(PANEL_KEY, { tabs: [], activeId: null, size: DEFAULT_SIZE });
-    return { tabs: Array.isArray(saved.tabs) ? saved.tabs.filter((t) => WORKSPACE_TOOLS.some((tool) => tool.id === t.tool)) : [], activeId: saved.activeId, size: Math.max(360, Math.min(1100, saved.size || DEFAULT_SIZE)) };
+    return { tabs: Array.isArray(saved.tabs) ? saved.tabs.filter((t) => WORKSPACE_TOOLS.some((tool) => tool.id === t.tool)) : [], activeId: saved.activeId, size: Math.max(216, Math.min(1100, saved.size || DEFAULT_SIZE)) };
   });
   const [dragging, setDragging] = useState(false);
   const [snapHint, setSnapHint] = useState(false);
+  /* full-screen for the focused tool tab — Esc leaves, width is restored.
+     Render-phase reset (no effect) keeps it from surviving a panel close. */
+  const [fullscreen, setFullscreen] = useState(false);
+  if (!open && fullscreen) setFullscreen(false);
+  const [tabsOverflow, setTabsOverflow] = useState(false);
   const snapRef = useRef(false);
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
   const active = panel.tabs.find((t) => t.id === panel.activeId) ?? panel.tabs[panel.tabs.length - 1] ?? null;
+
+  /* edge fades appear only while the tab strip actually overflows */
+  useEffect(() => {
+    const el = tabsScrollRef.current;
+    if (!el) return;
+    const check = () => setTabsOverflow(el.scrollWidth > el.clientWidth + 2);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [panel.tabs.length]);
 
   /* persist the layout + announce the tab count (footer listens) */
   useEffect(() => {
@@ -89,7 +122,7 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
         });
         return;
       }
-      const tool: WorkspaceTool = detail === "browser" || detail === "browse" ? "browse" : "changes";
+      const tool: WorkspaceTool = detail === "browser" || detail === "browse" ? "browse" : detail === "files" ? "files" : detail === "search" ? "search" : "changes";
       setPanel((p) => {
         const existing = p.tabs.find((t) => t.tool === tool);
         if (existing) return { ...p, activeId: existing.id };
@@ -100,6 +133,14 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
     window.addEventListener("conductor:pane", pane as EventListener);
     return () => window.removeEventListener("conductor:pane", pane as EventListener);
   }, []);
+
+  /* full-screen for the focused tool tab — Esc leaves, width is restored */
+  useEffect(() => {
+    if (!fullscreen) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setFullscreen(false); } };
+    window.addEventListener("keydown", esc, true);
+    return () => window.removeEventListener("keydown", esc, true);
+  }, [fullscreen]);
 
   /* ------- resizable split: drag to adjust, drag to the edge to close ------- */
   const onResizeDown = (e: React.MouseEvent) => {
@@ -135,47 +176,66 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
 
   if (!open) return null;
   return <>
-    <button className="mobile-pane-scrim workspace-scrim" aria-label="Close workspace panel" onClick={() => onOpenChange(false)} />
-    <div
-      onMouseDown={onResizeDown}
-      onDoubleClick={() => setPanel((p) => ({ ...p, size: DEFAULT_SIZE }))}
-      data-active={dragging}
-      className={cn("resizer workspace-resizer", snapHint && "will-snap")}
-      role="separator"
-      aria-orientation="vertical"
-      aria-label="Resize workspace — drag to the edge to hide"
-      title="Drag to resize · double-click to reset"
-    />
-    <section style={{ width: panel.size }} className={cn("app-workspace-panel shrink-0", snapHint && "is-snapping")} aria-label="Workspace panel">
+    {!fullscreen && <button className="mobile-pane-scrim workspace-scrim" aria-label="Close workspace panel" onClick={() => onOpenChange(false)} />}
+    {!fullscreen && (
+      <div
+        onMouseDown={onResizeDown}
+        onDoubleClick={() => setPanel((p) => ({ ...p, size: DEFAULT_SIZE }))}
+        data-active={dragging}
+        className={cn("resizer workspace-resizer", snapHint && "will-snap")}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize workspace — drag to the edge to hide"
+        title="Drag to resize · double-click to reset"
+      />
+    )}
+    <section style={fullscreen ? undefined : { width: panel.size }} className={cn("app-workspace-panel shrink-0", snapHint && "is-snapping", fullscreen && "is-fullscreen")} aria-label="Workspace panel">
       <div className="workspace-tabstrip" role="tablist" aria-label="Workspace tools">
-        {panel.tabs.map((tab) => {
-          const meta = toolMeta(tab.tool);
-          const on = tab.id === active?.id;
-          return (
-            <div key={tab.id} role="tab" aria-selected={on} className={cn("workspace-tab", on && "is-active")}>
-              <button type="button" className="workspace-tab-main" onClick={() => setPanel((p) => ({ ...p, activeId: tab.id }))} title={meta.label}>
-                <meta.icon size={11} />
-                <span className="workspace-tab-title">{meta.label}</span>
-              </button>
-              <button type="button" className="workspace-tab-close" onClick={() => closeTab(tab.id)} aria-label={`Close ${meta.label} tab`}><IconX size={9} /></button>
-            </div>
-          );
-        })}
-        <Menu align="right" width={236} trigger={() => <button type="button" className="workspace-tab-new" aria-label="Add a tool tab" title="Add a tool tab"><span className="text-[13px] leading-none">+</span></button>}>
+        <div ref={tabsScrollRef} className={cn("workspace-tabs-scroll", tabsOverflow && "is-overflowing")}>
+          {panel.tabs.map((tab) => {
+            const meta = toolMeta(tab.tool);
+            const on = tab.id === active?.id;
+            return (
+              <div key={tab.id} role="tab" aria-selected={on} className={cn("workspace-tab", on && "is-active")}>
+                <button type="button" className="workspace-tab-main" onClick={() => setPanel((p) => ({ ...p, activeId: tab.id }))} title={meta.label}>
+                  <meta.icon size={11} />
+                  <span className="workspace-tab-title">{meta.label}</span>
+                </button>
+                <button type="button" className="workspace-tab-close" onClick={() => closeTab(tab.id)} aria-label={`Close ${meta.label} tab`}><IconX size={9} /></button>
+              </div>
+            );
+          })}
+        </div>
+        <Menu align="right" width={252} trigger={() => <button type="button" className="workspace-tab-new" aria-label="Add a tool tab" title="Add a tool tab"><IconPlus size={13} /></button>}>
           {(close) => <>
-            {WORKSPACE_TOOLS.map((tool) => (
-              <button key={tool.id} onClick={() => { addTab(tool.id); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-ink-2 transition-colors hover:bg-hover hover:text-ink">
-                <span className="flex w-4 shrink-0 items-center justify-center text-ink-3"><tool.icon size={13} /></span>
-                <span className="min-w-0 flex-1"><span className="block text-[12.5px]">{tool.label}</span><span className="block text-[10.5px] leading-tight text-ink-4">{tool.desc}</span></span>
-              </button>
-            ))}
+            {(["Workspace", "Project", "Autonomy"] as ToolGroup[]).map((group, gi) => <div key={group}>
+              {gi > 0 && <div className="mt-1 border-t border-line-soft" />}
+              <MenuLabel>{group}</MenuLabel>
+              {WORKSPACE_TOOLS.filter((tool) => tool.group === group).map((tool) => (
+                <button key={tool.id} onClick={() => { addTab(tool.id); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-ink-2 transition-colors hover:bg-hover hover:text-ink">
+                  <span className="flex w-4 shrink-0 items-center justify-center text-ink-3"><tool.icon size={13} /></span>
+                  <span className="min-w-0 flex-1"><span className="block text-[12.5px]">{tool.label}</span><span className="block text-[10.5px] leading-tight text-ink-4">{tool.desc}</span></span>
+                </button>
+              ))}
+            </div>)}
             <MenuSep />
+            <button onClick={() => { close(); if (onConnectTools) onConnectTools(); else toast("Connectors live in Settings → Connectors", "iris"); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-iris-soft transition-colors hover:bg-iris-tint">
+              <span className="flex w-4 shrink-0 items-center justify-center"><IconPuzzle size={13} /></span>
+              <span className="min-w-0 flex-1"><span className="block">Connect more tools</span><span className="block text-[10.5px] leading-tight text-ink-4">MCP connectors, channels and skills</span></span>
+            </button>
             <button disabled={panel.tabs.length === 0} onClick={() => { setPanel((p) => ({ ...p, tabs: [], activeId: null })); onOpenChange(false); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-ink-3 transition-colors hover:bg-hover hover:text-ink disabled:cursor-not-allowed disabled:opacity-40">
               <span className="flex w-4 shrink-0 items-center justify-center"><IconX size={12} /></span>Close all tabs
             </button>
           </>}
         </Menu>
         <span className="min-w-0 flex-1" />
+        {panel.tabs.length > 0 && (
+          <Tip label={fullscreen ? "Exit full screen · Esc" : "Full screen this tool"} side="bottom">
+            <button type="button" className={cn("workspace-panel-full", fullscreen && "is-on")} onClick={() => setFullscreen((v) => !v)} aria-label={fullscreen ? "Exit full screen" : "Full screen the workspace tool"} aria-pressed={fullscreen}>
+              {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
+            </button>
+          </Tip>
+        )}
         <Tip label="Hide workspace · ⌘L">
           <button type="button" className="workspace-panel-close" onClick={() => onOpenChange(false)} aria-label="Hide workspace panel"><IconX size={13} /></button>
         </Tip>
@@ -188,6 +248,11 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
             {tab.tool === "artifacts" && <ArtifactsView />}
             {tab.tool === "terminal" && <PanelTerminal onAskAgent={onAskAgent} />}
             {tab.tool === "memory" && <MemoryView />}
+            {tab.tool === "files" && <FilesView project={project} />}
+            {tab.tool === "search" && <CodeSearchView project={project} />}
+            {tab.tool === "tasks" && <TasksView onOpenSession={onOpenSession ?? (() => {})} />}
+            {tab.tool === "runs" && <FleetView />}
+            {tab.tool === "automations" && <AutomationsView />}
           </div>
         ))}
         {panel.tabs.length === 0 && (
@@ -203,12 +268,128 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent }: {
                   <span className="workspace-picker-desc">{tool.desc}</span>
                 </button>
               ))}
+              <button onClick={() => onConnectTools?.()} className="workspace-picker-card workspace-picker-connect">
+                <span className="workspace-picker-icon"><IconPuzzle size={16} /></span>
+                <span className="workspace-picker-name">Connect tools</span>
+                <span className="workspace-picker-desc">MCP connectors, channels and skills</span>
+              </button>
             </div>
           </div>
         )}
       </div>
     </section>
   </>;
+}
+
+/* ------------------------------ files tab ------------------------------ */
+
+const LANG_GLYPH: Record<string, string> = { tsx: "TS", ts: "TS", css: "CSS", json: "{}", md: "MD" };
+
+function FilesView({ project }: { project?: Project }) {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [openFile, setOpenFile] = useState<string | null>(null);
+  const open = useMemo(() => flattenFiles().find((f) => f.path === openFile), [openFile]);
+  const toggle = (key: string) => setCollapsed((all) => ({ ...all, [key]: !all[key] }));
+
+  const renderNode = (node: FileNode, depth: number, path: string) => {
+    if (node.kind === "dir") {
+      const isCollapsed = collapsed[path];
+      return (
+        <div key={path}>
+          <button type="button" onClick={() => toggle(path)} className="files-row files-dir" style={{ paddingInlineStart: 6 + depth * 14 }}>
+            {isCollapsed ? <IconChevron size={10} /> : <IconChevronDown size={10} />}
+            <span className="files-name">{node.name}</span>
+          </button>
+          {!isCollapsed && (node.children ?? []).map((child) => renderNode(child, depth + 1, `${path}/${child.name}`))}
+        </div>
+      );
+    }
+    const selected = openFile === path;
+    return (
+      <button type="button" key={path} onClick={() => setOpenFile(selected ? null : path)} className={cn("files-row files-file", selected && "is-open")} style={{ paddingInlineStart: 22 + depth * 14 }}>
+        <span className="files-lang" data-lang={node.lang ?? ""}>{LANG_GLYPH[node.lang ?? ""] ?? "·"}</span>
+        <span className="files-name">{node.name}</span>
+        {node.lines != null && <span className="files-lines">{node.lines}</span>}
+      </button>
+    );
+  };
+
+  if (!project) return <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+    <span className="flex size-10 items-center justify-center rounded-[12px] border border-line bg-raise text-ink-3"><IconList size={17} /></span>
+    <p className="text-[13px] font-semibold text-ink">No project attached</p>
+    <p className="max-w-[280px] text-[12px] leading-relaxed text-ink-3">Attach a project with the folder button in the composer — its file tree appears here.</p>
+  </div>;
+
+  return <div className="flex min-h-0 flex-1">
+    <div className="scroll-thin min-h-0 w-[46%] max-w-[300px] shrink-0 overflow-y-auto border-r border-line-soft py-2">
+      <p className="files-tree-root"><IconList size={10} /> {project.name}</p>
+      {DEMO_FILES.map((node) => renderNode(node, 0, node.name))}
+    </div>
+    <div className="scroll-thin min-h-0 flex-1 overflow-auto">
+      {open ? (
+        <div className="p-3">
+          <p className="files-open-path font-mono">{open.path}</p>
+          <pre className="files-open-body"><code>{open.node.body}</code></pre>
+        </div>
+      ) : <p className="files-empty-hint">Select a file to preview it.</p>}
+    </div>
+  </div>;
+}
+
+/* ------------------------------ search tab ------------------------------ */
+
+type Hit = { path: string; line: number; text: string };
+
+function CodeSearchView({ project }: { project?: Project }) {
+  const [query, setQuery] = useState("");
+  const files = useMemo(() => flattenFiles(), []);
+  const hits = useMemo<Hit[]>(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    const out: Hit[] = [];
+    for (const file of files) {
+      if (file.node.name.toLowerCase().includes(q)) out.push({ path: file.path, line: 0, text: `— filename match —` });
+      for (const [i, line] of (file.node.body ?? "").split("\n").entries()) {
+        if (line.toLowerCase().includes(q)) out.push({ path: file.path, line: i + 1, text: line.trim() });
+      }
+    }
+    return out.slice(0, 60);
+  }, [query, files]);
+  const byFile = useMemo(() => {
+    const map = new Map<string, Hit[]>();
+    for (const hit of hits) map.set(hit.path, [...(map.get(hit.path) ?? []), hit]);
+    return [...map.entries()];
+  }, [hits]);
+
+  return <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex items-center gap-2 border-b border-line-soft px-3 py-2">
+      <IconSearch size={12} className="shrink-0 text-ink-4" />
+      <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={project ? `Search ${project.name}…` : "Search the project…"} className="h-[26px] min-w-0 flex-1 bg-transparent font-mono text-[11px] outline-none" aria-label="Search across project files" />
+      {query.length > 0 && <span className="shrink-0 font-mono text-[9px] text-ink-4">{hits.length} hit{hits.length === 1 ? "" : "s"}</span>}
+    </div>
+    <div className="scroll-thin min-h-0 flex-1 overflow-auto p-2">
+      {query.trim().length < 2 ? (
+        <div className="flex h-full flex-col items-center justify-center gap-2 px-8 text-center">
+          <span className="flex size-10 items-center justify-center rounded-[12px] border border-line bg-raise text-ink-3"><IconSearch size={16} /></span>
+          <p className="text-[12px] text-ink-3">Ripgrep-style search — matches stream in by file and line as you type.</p>
+        </div>
+      ) : hits.length === 0 ? (
+        <p className="py-8 text-center font-mono text-[11px] text-ink-4">no matches for “{query.trim()}”</p>
+      ) : byFile.map(([path, fileHits]) => (
+        <div key={path} className="mb-2">
+          <p className="files-hit-path font-mono">{path}<span className="files-hit-count">{fileHits.length}</span></p>
+          {fileHits.map((hit, i) => (
+            <div key={i} className="files-hit">
+              <span className="files-hit-line font-mono">{hit.line || "·"}</span>
+              <code className="files-hit-text">{hit.text}</code>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+    {!project && <p className="border-t border-line-soft px-3 py-2 font-mono text-[9px] text-ink-4">no project — attach one to search real files</p>}
+    {project && <p className="border-t border-line-soft px-3 py-2 font-mono text-[9px] text-ink-4">demo corpus — the prototype ships a sample tree</p>}
+  </div>;
 }
 
 /* --------------------------- terminal tab body --------------------------- */

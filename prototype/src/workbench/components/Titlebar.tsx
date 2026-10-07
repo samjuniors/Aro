@@ -1,16 +1,17 @@
 import { cn } from "../utils/cn";
 import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
-import { IconBranch, IconEye, IconGit, IconHelp, IconPanelLeft, IconSearch, IconSettings, IconTerminal } from "./Icons";
-import { IconButton, Tip } from "./ui";
+import { IconBranch, IconEye, IconGit, IconKeyboard, IconPanelLeft, IconSearch, IconSettings, IconTerminal } from "./Icons";
+import { IconButton, Kbd, Tip } from "./ui";
 import { LayoutControl, type LayoutState } from "./LayoutControl";
 import type { ViewId } from "./Sidebar";
 
-/* Titlebar — quiet, crisp, state-aware. Left: mode + project. Right: a single
-   row of 28px icon actions that all target the docked workspace (Git opens a
-   Changes tab, Browse opens a Browse tab, Terminal toggles the shell) so the
-   chrome never duplicates what the workspace already does. The external-editor
-   picker lives in Settings ▸ Editor connections. */
+/* Titlebar — minimal, state-aware, honest about what a session can do.
+   A first-launch user (no project attached, no terminal) sees exactly
+   three affordances: the centered search pill, keyboard shortcuts and
+   settings. The project title, the workspace tool icons and the layout
+   control appear only once there is something to work on, so the chrome
+   grows with the session instead of front-loading it. */
 export function Titlebar({ onOpenCmdk, setView, layout, setLayout, layoutOpen, setLayoutOpen, onHelp, project }: {
   onOpenCmdk: () => void; onNew: () => void; setView: (view: ViewId) => void; layout: LayoutState; setLayout: (layout: LayoutState) => void;
   panelLabel: string; layoutOpen: boolean; setLayoutOpen: (open: boolean) => void; onHelp: () => void; project?: Project;
@@ -19,23 +20,35 @@ export function Titlebar({ onOpenCmdk, setView, layout, setLayout, layoutOpen, s
   const source = project?.sources?.[0];
   const isDemo = project?.id === "demo-sofia-ui";
   const openWorkspace = (tool: "changes" | "browse") => window.dispatchEvent(new CustomEvent("conductor:pane", { detail: tool }));
-  return <header className="app-titlebar minimal-titlebar">
+  /* state-wise chrome: workspace tools + layout arrive with the first project
+     (or the first terminal) — a new session keeps the bar almost empty */
+  const hasWork = Boolean(project) || layout.terminal;
+  return <header className="app-titlebar minimal-titlebar" data-minimal={hasWork ? undefined : "true"}>
     {!layout.list && <Tip label="Show sidebar · ⇧⌘B" side="bottom"><IconButton icon={IconPanelLeft} label="Show sidebar" size={28} onClick={() => setLayout({ ...layout, list: true })} /></Tip>}
     <div className="product-switcher" role="group" aria-label="Workspace mode">
       {(["code", "agent"] as const).map((item) => <button key={item} onClick={() => setProduct(item)} aria-pressed={product === item} className={cn("product-option", product === item && "selected")}>{item === "code" ? "Code" : "Agent"}</button>)}
     </div>
     {project && <div className="selected-project-title"><span className="truncate">{project.name}</span>{isDemo && <span className="titlebar-demo">DEMO</span>}{source?.branch && <span className="hidden items-center gap-1 font-mono text-[10px] text-ink-4 lg:flex"><IconBranch size={10} />{source.branch}</span>}</div>}
     <div className="titlebar-spacer" />
-    <Tip label="Search · ⌘K" side="bottom"><IconButton icon={IconSearch} label="Search sessions and commands" onClick={onOpenCmdk} size={28} /></Tip>
-    <div className="titlebar-optional-controls contents">
+    {/* centered search — the one global affordance a new user actually needs */}
+    <button type="button" className="titlebar-search" onClick={onOpenCmdk} title="Search sessions and commands · ⌘K" aria-label="Search sessions and commands">
+      <IconSearch size={12} />
+      <span className="titlebar-search-label">Search</span>
+      <span className="titlebar-search-kbd"><Kbd>⌘K</Kbd></span>
+    </button>
+    <Tip label="Search · ⌘K" side="bottom">
+      <button type="button" className="titlebar-search-compact" onClick={onOpenCmdk} aria-label="Search sessions and commands"><IconSearch size={14} /></button>
+    </Tip>
+    <div className="titlebar-spacer" />
+    {hasWork && <div className="titlebar-optional-controls contents">
       <Tip label="Changes — workspace tab" side="bottom"><IconButton icon={IconGit} label="Open changes in the workspace" size={28} onClick={() => openWorkspace("changes")} /></Tip>
       <Tip label="Browse — workspace tab" side="bottom"><IconButton icon={IconEye} label="Open a browser tab in the workspace" size={28} onClick={() => openWorkspace("browse")} /></Tip>
       <Tip label="Terminal · ⌘J" side="bottom"><IconButton icon={IconTerminal} label="Toggle terminal" size={28} active={layout.terminal} onClick={() => setTermOpen(!layout.terminal)} /></Tip>
-    </div>
-    <LayoutControl state={layout} setState={setLayout} panelLabel="Workspace" open={layoutOpen} setOpen={setLayoutOpen} />
+    </div>}
+    {project && <LayoutControl state={layout} setState={setLayout} panelLabel="Workspace" open={layoutOpen} setOpen={setLayoutOpen} />}
     <span className="titlebar-divider-v" />
-    <span className="hidden sm:inline-flex"><IconButton icon={IconHelp} label="Keyboard shortcuts" onClick={onHelp} size={28} /></span>
-    <IconButton icon={IconSettings} label="Settings" size={28} onClick={() => setView("settings")} />
+    <Tip label="Keyboard shortcuts · ⌘/" side="bottom"><IconButton icon={IconKeyboard} label="Keyboard shortcuts" onClick={onHelp} size={28} /></Tip>
+    <Tip label="Settings · ⌘," side="bottom"><IconButton icon={IconSettings} label="Settings" onClick={() => setView("settings")} size={28} /></Tip>
   </header>;
 }
 

@@ -5,7 +5,7 @@ import { cn } from "./utils/cn";
 import { AGENTS, MODES, agentById, type ModeId, type Session, type Step } from "./data/catalog";
 import type { Project } from "./data/providers";
 import { specFor } from "./data/design";
-import { AppProvider, useApp, useResizable, type ProductMode } from "./lib/app";
+import { AppProvider, useApp, type ProductMode } from "./lib/app";
 import { WorkspaceProvider, useWorkspace } from "./lib/workspace";
 import { DEMO_SESSIONS } from "./data/demo";
 import { buildAgentResponse } from "./data/extra";
@@ -114,6 +114,12 @@ function Shell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [listOpen, setListOpen] = useState(() => window.innerWidth > 820 && localStorage.getItem("conductor.sidebar.collapsed") !== "true");
+  /* Sidebar width — custom drag with progressive collapse: as it narrows,
+     labels, search and hints drop away one by one (container queries) and
+     dragging to the last extent releases the sidebar entirely. */
+  const [sidebarSize, setSidebarSize] = useState(() => readStored("conductor.sidebar.size", 272));
+  const [sidebarHint, setSidebarHint] = useState(false);
+  const sidebarSnap = useRef(false);
   /* Right workspace panel — Codex-style docked tabs. First launch keeps it
      closed (minimal: chat + composer + one corner icon); the layout persists. */
   const [rightOpen, setRightOpen] = useState(() => readStored("conductor.workspace.panel.open", false));
@@ -129,7 +135,37 @@ function Shell() {
   const bridgeAbort = useRef<AbortController | null>(null);
   const timers = useRef<number[]>([]);
   const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
-  const sidebar = useResizable(272, 220, 460);
+  const sidebarResizing = useRef(false);
+  const onSidebarResizeDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const x0 = e.clientX;
+    const s0 = sidebarSize;
+    sidebarSnap.current = false;
+    sidebarResizing.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    const move = (ev: MouseEvent) => {
+      const next = Math.max(172, Math.min(480, s0 + (ev.clientX - x0)));
+      sidebarSnap.current = next <= 184;
+      setSidebarHint(sidebarSnap.current);
+      setSidebarSize(next);
+    };
+    const up = () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      sidebarResizing.current = false;
+      setSidebarHint(false);
+      if (sidebarSnap.current) {
+        setSidebarSize(272); /* restore width for the next open */
+        setListOpen(false);
+        toast("Sidebar hidden — ⇧⌘B or the arrow brings it back", "iris");
+      }
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
   const active = sessions.find((s) => s.id === activeIds[product]) ?? drafts[product];
   const project = projects.find((p) => p.id === active.projectId);
   const productSessions = sessions.filter((s) => (s.product ?? "code") === product);
@@ -143,6 +179,7 @@ function Shell() {
 
   useEffect(() => { writeStored("conductor.workspace.v3.sessions", userSessions); }, [userSessions]);
   useEffect(() => localStorage.setItem("conductor.sidebar.collapsed", String(!listOpen)), [listOpen]);
+  useEffect(() => { if (!sidebarResizing.current) writeStored("conductor.sidebar.size", sidebarSize); }, [sidebarSize]);
   useEffect(() => { writeStored("conductor.workspace.panel.open", rightOpen); }, [rightOpen]);
 
   /* ---------------- sticky agent plan (composer corner) ----------------
@@ -176,7 +213,7 @@ function Shell() {
 
   useEffect(() => {
     const profile = specFor(design);
-    sidebar.setSize(profile.panels.sidebar);
+    setSidebarSize(profile.panels.sidebar);
     if (!profile.themes.includes(theme)) setTheme(profile.defaultTheme);
   }, [design]);
   useEffect(() => { document.title = runningId ? "Working | Aro" : "Aro"; }, [runningId]);
@@ -500,9 +537,9 @@ function Shell() {
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
     <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} />
     <div className="flex min-h-0 flex-1">
-      {listOpen && <><button className="mobile-pane-scrim" aria-label="Close sidebar" onClick={() => setListOpen(false)} /><div style={{ width: sidebar.size }} className="app-sidebar-shell shrink-0"><Sidebar {...sidebarProps} /></div><div {...sidebar.handle} className={`${sidebar.handle.className} app-sidebar-resizer`} /></>}
+      {listOpen && <><button className="mobile-pane-scrim" aria-label="Close sidebar" onClick={() => setListOpen(false)} /><div style={{ width: sidebarSize }} className={cn("app-sidebar-shell shrink-0", sidebarHint && "is-snapping")}><Sidebar {...sidebarProps} /></div><div onMouseDown={onSidebarResizeDown} onDoubleClick={() => setSidebarSize(272)} data-active={sidebarHint} data-snap={sidebarHint} className="app-sidebar-resizer resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar — drag to the edge to hide" title="Drag to resize · double-click to reset" /></>}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex min-h-0 flex-1">
+        <div className="relative flex min-h-0 flex-1">
           <main className="relative flex min-w-0 flex-1 flex-col">
             {onboarding && view === "workbench" && <div className="shrink-0 px-3 pt-3"><OnboardingStrip onDismiss={dismissOnboarding} /></div>}
             <div className="relative flex min-h-0 min-w-0 flex-1">
@@ -527,8 +564,8 @@ function Shell() {
               )}
             </div>
           </main>
-          {/* Right workspace panel — Codex-style docked tool tabs (browse / changes / artifacts / terminal / memory) */}
-          <WorkspacePanel open={rightOpen} onOpenChange={setRightOpen} project={project} onAskAgent={(text) => void send(text)} />
+          {/* Right workspace panel — Codex-style docked tool tabs (browse / changes / artifacts / terminal / memory / files / search / tasks / runs / automations) */}
+          <WorkspacePanel open={rightOpen} onOpenChange={setRightOpen} project={project} onAskAgent={(text) => void send(text)} onOpenSession={selectSession} onConnectTools={() => { closeSheet(); setViewRaw("connectors"); }} />
         </div>
         {termOpen && <TerminalPanel onAskAgent={(text) => void send(text)} />}
       </div>

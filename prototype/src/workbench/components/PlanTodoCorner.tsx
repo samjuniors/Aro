@@ -30,10 +30,12 @@ export function extractPlanTodos(steps: Step[]): string[] {
  * Agent plan docked directly ABOVE the composer — a minimal card
  * (reference: TODO.png) whose header row is the collapsed state. Visible
  * ONLY while the agent has a plan (workspace-sticky: it survives switching
- * sessions/projects until cleared or replaced by a new plan). The panel
- * opens UPWARD, over the transcript, so it never covers the composer.
+ * sessions/projects until cleared or replaced by a new plan) AND the
+ * current session has a transcript — a brand-new session with no steps
+ * and no project has nothing to show progress on. The panel opens UPWARD,
+ * over the transcript, so it never covers the composer.
  */
-export function PlanTodoCorner() {
+export function PlanTodoCorner({ fresh }: { fresh?: boolean }) {
   const { agentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [newText, setNewText] = useState("");
@@ -59,7 +61,7 @@ export function PlanTodoCorner() {
     return () => window.removeEventListener("mousedown", handleDown);
   }, [open]);
 
-  if (!agentPlan || agentPlan.items.length === 0) return null;
+  if (fresh || !agentPlan || agentPlan.items.length === 0) return null;
 
   const items = agentPlan.items;
   const doneCount = items.filter((t) => t.state === "done").length;

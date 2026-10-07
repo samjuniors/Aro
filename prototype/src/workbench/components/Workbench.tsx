@@ -9,7 +9,7 @@ import { formatSeconds } from "../lib/speak";
 import { ProjectPickerPanel } from "./ProjectDialog";
 import { DiffSideDrawer, RepoBar, repoStateFor } from "./RepoDock";
 import { PlanTodoCorner } from "./PlanTodoCorner";
-import { IconArrowUp, IconBrain, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconX } from "./Icons";
+import { IconArrowUp, IconBrain, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconPulse, IconSearch, IconShield, IconSpark, IconStop, IconX } from "./Icons";
 import { Button, IconButton, Menu, MenuItem, MenuLabel, MenuSep, Tip, Toggle, type Tone } from "./ui";
 import { StepView, StreamingRow } from "./Transcript";
 
@@ -95,6 +95,17 @@ function Composer(props: WorkbenchProps) {
     if (!input) return;
     input.style.height = "auto"; input.style.height = `${Math.max(60, Math.min(input.scrollHeight, 220))}px`;
   }, [value]);
+  /* fresh-stage suggestion chips prefill the composer (never send on their own) */
+  useEffect(() => {
+    const prefill = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      if (!text) return;
+      setValue((old) => old || text);
+      textarea.current?.focus();
+    };
+    window.addEventListener("conductor:composer-prefill", prefill);
+    return () => window.removeEventListener("conductor:composer-prefill", prefill);
+  }, []);
   useEffect(() => {
     const toggle = () => { dictation.toggle(); textarea.current?.focus(); };
     window.addEventListener("conductor:voice:dictate", toggle);
@@ -125,8 +136,9 @@ function Composer(props: WorkbenchProps) {
 
   return <div className="reference-composer-container">
     {/* agent plan — slim strip directly above the composer (replaces the old
-        project bar), sticky across projects; the panel opens upward */}
-    <PlanTodoCorner />
+        project bar); hidden on a fresh session with nothing to show yet,
+        the panel opens upward */}
+    <PlanTodoCorner fresh={props.steps.length === 0} />
     <div className={cn("reference-composer", dictation.listening && "is-listening", props.streaming && "is-streaming")}>
       {/* Wispr Flow-style dictation bubble floating above the voice button */}
       {dictation.listening && (
@@ -239,6 +251,16 @@ function Composer(props: WorkbenchProps) {
   </div>;
 }
 
+/* Fresh-session suggestion chips — the quiet “what would you like to build?”
+   answers. One taps straight into the project picker; the others prefill
+   the composer so the user can edit before sending. */
+const FRESH_IDEAS: { icon: ComponentType<{ size?: number; className?: string }>; label: string; prompt?: string; chooseProject?: boolean }[] = [
+  { icon: IconFolder, label: "Attach a project", chooseProject: true },
+  { icon: IconPulse, label: "Explain a repository", prompt: "Walk through the architecture of this repository — the main pieces, how they connect, and where the tricky parts live." },
+  { icon: IconList, label: "Plan a refactor", prompt: "Plan a refactor of the channel layer so flushes are throttled and the cursor is resumable. Start with a plan, no edits yet." },
+  { icon: IconSpark, label: "Build a landing page", prompt: "Draft and build a minimal, well-typographed landing page for a developer tool — one hero, three feature cards, no clutter." },
+];
+
 export function Workbench(props: WorkbenchProps) {
   const { providers } = useApp();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -257,6 +279,14 @@ export function Workbench(props: WorkbenchProps) {
         {!props.project && <p className="fresh-sub">Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.</p>}
       </div>
       <Composer {...props} />
+      <div className="fresh-suggestions">
+        {FRESH_IDEAS.map((idea, index) => (
+          <button key={idea.label} type="button" className="fresh-suggestion" style={{ animationDelay: `${120 + index * 70}ms` }}
+            onClick={() => { if (idea.chooseProject) window.dispatchEvent(new CustomEvent("conductor:choose-project")); else window.dispatchEvent(new CustomEvent("conductor:composer-prefill", { detail: idea.prompt })); }}>
+            <idea.icon size={12} />{idea.label}
+          </button>
+        ))}
+      </div>
       <p className="fresh-composer-hint">{props.project ? "Project, model and permissions stay with this session." : "Blank canvas — nothing is connected until you choose a project and model."}</p>
     </div>
   </div>;
