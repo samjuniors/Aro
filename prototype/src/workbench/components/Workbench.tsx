@@ -273,12 +273,14 @@ export function Workbench(props: WorkbenchProps) {
   useEffect(() => { if (following) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: props.streaming ? "auto" : "smooth" }); }, [props.steps, following, props.streaming]);
   if (fresh) return <div className="fresh-workbench">
     <div className="fresh-session-stage animate-fade">
+      {/* heading centers itself in the free space; the composer stays
+          anchored to the BOTTOM on every viewport — desktop, tablet and
+          mobile — exactly like an active session */}
       <div className="fresh-session-heading">
         {props.project?.id === "demo-sofia-ui" && <span className="fresh-demo-pill">REFERENCE DEMO · pre-filled so you can compare</span>}
         <h1>{props.project ? `Let's work on ${props.project.name}.` : "What would you like to build?"}</h1>
         {!props.project && <p className="fresh-sub">Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.</p>}
       </div>
-      <Composer {...props} />
       <div className="fresh-suggestions">
         {FRESH_IDEAS.map((idea, index) => (
           <button key={idea.label} type="button" className="fresh-suggestion" style={{ animationDelay: `${120 + index * 70}ms` }}
@@ -287,6 +289,7 @@ export function Workbench(props: WorkbenchProps) {
           </button>
         ))}
       </div>
+      <Composer {...props} />
       <p className="fresh-composer-hint">{props.project ? "Project, model and permissions stay with this session." : "Blank canvas — nothing is connected until you choose a project and model."}</p>
     </div>
   </div>;

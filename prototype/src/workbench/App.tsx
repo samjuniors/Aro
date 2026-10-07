@@ -117,7 +117,7 @@ function Shell() {
   /* Sidebar width — custom drag with progressive collapse: as it narrows,
      labels, search and hints drop away one by one (container queries) and
      dragging to the last extent releases the sidebar entirely. */
-  const [sidebarSize, setSidebarSize] = useState(() => readStored("conductor.sidebar.size", 272));
+  const [sidebarSize, setSidebarSize] = useState(() => readStored("conductor.sidebar.size", 292));
   const [sidebarHint, setSidebarHint] = useState(false);
   const sidebarSnap = useRef(false);
   /* Right workspace panel — Codex-style docked tabs. First launch keeps it
@@ -158,7 +158,7 @@ function Shell() {
       sidebarResizing.current = false;
       setSidebarHint(false);
       if (sidebarSnap.current) {
-        setSidebarSize(272); /* restore width for the next open */
+        setSidebarSize(292); /* restore width for the next open */
         setListOpen(false);
         toast("Sidebar hidden — ⇧⌘B or the arrow brings it back", "iris");
       }
@@ -537,7 +537,7 @@ function Shell() {
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
     <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} />
     <div className="flex min-h-0 flex-1">
-      {listOpen && <><button className="mobile-pane-scrim" aria-label="Close sidebar" onClick={() => setListOpen(false)} /><div style={{ width: sidebarSize }} className={cn("app-sidebar-shell shrink-0", sidebarHint && "is-snapping")}><Sidebar {...sidebarProps} /></div><div onMouseDown={onSidebarResizeDown} onDoubleClick={() => setSidebarSize(272)} data-active={sidebarHint} data-snap={sidebarHint} className="app-sidebar-resizer resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar — drag to the edge to hide" title="Drag to resize · double-click to reset" /></>}
+      {listOpen && <><button className="mobile-pane-scrim" aria-label="Close sidebar" onClick={() => setListOpen(false)} /><div style={{ width: sidebarSize }} className={cn("app-sidebar-shell shrink-0", sidebarHint && "is-snapping")}><Sidebar {...sidebarProps} /></div><div onMouseDown={onSidebarResizeDown} onDoubleClick={() => setSidebarSize(292)} data-active={sidebarHint} data-snap={sidebarHint} className="app-sidebar-resizer resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar — drag to the edge to hide" title="Drag to resize · double-click to reset" /></>}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="relative flex min-h-0 flex-1">
           <main className="relative flex min-w-0 flex-1 flex-col">

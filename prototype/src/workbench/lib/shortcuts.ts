@@ -12,10 +12,9 @@ export const SHORTCUTS: Shortcut[] = [
   { id: "voice", label: "Dictate", keys: ["⌘", "⇧", "V"], group: "Composer", note: "Speech → text in the composer" },
 
   { id: "v-sessions", label: "Sessions", keys: ["⌘", "1"], group: "Navigate" },
-  { id: "v-tasks", label: "Tasks", keys: ["⌘", "2"], group: "Navigate" },
+  { id: "v-projects", label: "Projects", keys: ["⌘", "2"], group: "Navigate" },
   { id: "v-skills", label: "Skills", keys: ["⌘", "3"], group: "Navigate" },
   { id: "v-connectors", label: "Connectors", keys: ["⌘", "4"], group: "Navigate" },
-  { id: "v-projects", label: "Projects", keys: ["⌘", "5"], group: "Navigate" },
   { id: "v-pane", label: "Cycle context pane section", keys: ["⌘", "["], group: "Navigate", note: "Plan · Changes · Context · Fleet · Git · Browser · Editors · Terminal" },
 
   { id: "mode", label: "Cycle permission mode", keys: ["⇧", "Tab"], group: "Composer", note: "Plan · Read only · Agent · Full access" },

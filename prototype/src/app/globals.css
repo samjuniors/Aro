@@ -479,20 +479,22 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .external-editor-trigger { display: flex; height: 30px; width: 30px; align-items: center; justify-content: center; border-radius: 7px; }
 .external-editor-trigger:hover { background: var(--color-hover); }
 .codex-sidebar { display: flex; height: 100%; min-width: 0; flex-direction: column; border-right: 1px solid var(--color-line-soft); background: var(--color-sunken); }
-.sidebar-brand { display: flex; height: var(--d-chrome-height); flex-shrink: 0; align-items: center; gap: 8px; padding-inline: 14px 10px; border-bottom: 1px solid transparent; }
-.sidebar-primary-actions { padding: 8px 10px 6px; }
-.sidebar-main-nav { padding: 2px 10px 10px; display: flex; flex-direction: column; gap: 1px; }
-.new-session-action { display: flex; height: 33px; width: 100%; align-items: center; gap: 9px; border-radius: 7px; padding-inline: 8px; color: var(--color-ink-2); font-size: 12px; transition: background-color 140ms; }
+/* One horizontal rhythm for every layer: containers sit at 10px, rows keep
+   9px of inner pill padding, the brand plate at 12px — so icons, pills and
+   the search field all share a calm, single left edge. */
+.sidebar-brand { display: flex; height: var(--d-chrome-height); flex-shrink: 0; align-items: center; gap: 9px; padding-inline: 12px 10px; border-bottom: 1px solid transparent; }
+.sidebar-primary-actions { padding: 10px 10px 6px; }
+.sidebar-main-nav { padding: 2px 10px 10px; display: flex; flex-direction: column; gap: 2px; }
+.new-session-action { display: flex; height: 36px; width: 100%; align-items: center; gap: 10px; border-radius: 8px; padding-inline: 9px; color: var(--color-ink-2); font-size: 13px; font-weight: 500; transition: background-color 140ms; }
 .new-session-action:hover { background: var(--color-hover); }
-.sidebar-search { height: 29px; padding-left: 29px; border-color: transparent; background: var(--color-base); font-size: 11px; }
-.sidebar-main-nav { padding: 2px 12px 12px; }
-.sidebar-navigation-row { display: flex; min-height: 29px; width: 100%; align-items: center; gap: 9px; border-radius: 7px; padding-inline: 8px; color: var(--color-ink-3); font-size: 11.5px; transition: background-color 140ms, color 140ms; }
+.sidebar-search { height: 32px; padding-left: 30px; border-color: transparent; background: var(--color-base); font-size: 12px; }
+.sidebar-navigation-row { display: flex; min-height: 34px; width: 100%; align-items: center; gap: 10px; border-radius: 8px; padding-inline: 9px; color: var(--color-ink-3); font-size: 12.5px; transition: background-color 140ms, color 140ms; }
 .sidebar-navigation-row:hover { background: var(--color-hover); color: var(--color-ink-2); }
 .sidebar-navigation-row.active { background: var(--color-hover); color: var(--color-ink); }
-.sidebar-projects-heading { display: flex; flex-shrink: 0; align-items: center; gap: 9px; padding: 4px 20px 8px; color: var(--color-ink-4); font-size: 10px; }
+.sidebar-projects-heading { display: flex; flex-shrink: 0; align-items: center; gap: 8px; padding: 6px 14px 8px 16px; color: var(--color-ink-4); font-size: 10px; }
 .sidebar-project-group { margin-bottom: 5px; border-radius: 7px; padding: 0 4px; transition: background-color 140ms; }
 .sidebar-project-group.drop-target { background: var(--color-iris-tint); outline: 1px solid var(--color-iris); }
-.session-list-row { display: flex; min-height: 29px; align-items: center; gap: 5px; border-radius: 6px; padding: 0 4px 0 8px; color: var(--color-ink-3); transition: background-color 140ms, color 140ms; }
+.session-list-row { display: flex; min-height: 32px; align-items: center; gap: 5px; border-radius: 7px; padding: 0 4px 0 9px; color: var(--color-ink-3); transition: background-color 140ms, color 140ms; }
 .session-list-row:hover { background: var(--color-hover); color: var(--color-ink-2); }
 .session-list-row.selected { background: var(--color-hover); color: var(--color-ink); box-shadow: inset 2px 0 0 var(--color-iris); }
 .session-list-row.keyboard-selected { outline: 1px solid var(--color-ink-4); }
@@ -504,48 +506,50 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .session-row-action:hover { background: var(--color-hover); color: var(--color-ink); }
 .session-row-action:hover.text-rose { color: var(--color-rose); background: var(--color-rose-tint); }
 .sidebar-project-group.is-pinned { background: color-mix(in srgb, var(--color-iris) 5%, transparent); box-shadow: inset 2px 0 0 var(--color-iris); }
-.sidebar-section-label { padding: 6px 9px 4px; color: var(--color-ink-4); font-size: 9px; }
-.sidebar-footer { flex-shrink: 0; padding: 8px 12px 14px; border-top: 1px solid var(--color-line-soft); }
+.sidebar-section-label { padding: 7px 9px 5px; color: var(--color-ink-4); font-size: 10px; }
+.sidebar-footer { flex-shrink: 0; padding: 8px 10px 14px; border-top: 1px solid var(--color-line-soft); }
 /* ---------- Sidebar progressive collapse (container-query rail) ----------
    As the sidebar narrows, its contents disappear one by one: keyboard
-   hints and footnotes first, then search and every label (icon rail),
-   rows compress — and dragging past the floor releases the sidebar
+   hints and footnotes first, then search and every label (icon rail —
+   icons stay LEFT-aligned on the same rhythm, never centered), rows
+   compress — and dragging past the floor releases the sidebar
    entirely, leaving just the titlebar arrow. The container is the shell
-   itself, so the stages track the live drag. */
+   itself, so the stages track the live drag. Thresholds sit well below
+   the 292px default so a normal sidebar always shows full labels. */
 .app-sidebar-shell { container: sidebar / inline-size; }
 .app-sidebar-shell.is-snapping { opacity: .5; filter: saturate(.7); }
 .app-sidebar-resizer[data-snap="true"]::after { background: var(--color-rose) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--color-rose) 60%, transparent); }
-@container sidebar (max-width: 336px) {
+@container sidebar (max-width: 262px) {
   .rail-kbd, .rail-hide, .sidebar-footer p { display: none; }
-  .sidebar-primary-actions { padding: 8px 8px 6px; }
-  .sidebar-main-nav { padding: 2px 8px 8px; }
-  .sidebar-footer { padding: 8px 8px 12px; }
-  .sidebar-projects-heading { padding-inline: 10px; }
+  .sidebar-primary-actions { padding: 8px 7px 6px; }
+  .sidebar-main-nav { padding: 2px 7px 8px; }
+  .sidebar-footer { padding: 8px 7px 12px; }
+  .sidebar-projects-heading { padding-inline: 8px 10px 8px 13px; }
 }
-@container sidebar (max-width: 296px) {
+@container sidebar (max-width: 218px) {
   .rail-label, .sidebar-section-label { display: none; }
   .sidebar-search-wrap { display: none; }
   .sidebar-brand { padding-inline: 10px 8px; }
-  .sidebar-navigation-row { justify-content: center; padding-inline: 0; }
-  .new-session-action { justify-content: center; padding-inline: 0; }
   .sidebar-projects-heading { gap: 5px; }
-  .sidebar-footer .sidebar-navigation-row { justify-content: center; }
 }
-@container sidebar (max-width: 248px) {
-  .sidebar-navigation-row { min-height: 27px; }
-  .session-list-row { min-height: 27px; }
+@container sidebar (max-width: 196px) {
+  .sidebar-navigation-row { min-height: 30px; }
+  .session-list-row { min-height: 30px; }
   .sidebar-project-group .session-row-more { display: none; }
 }
-.fresh-workbench { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: center; background: var(--color-base); }
-.fresh-session-stage { width: min(100%, 790px); padding: 28px; transform: translateY(-30px); }
-.fresh-session-heading { margin-bottom: 34px; text-align: center; }
+/* Fresh session — the composer is anchored to the BOTTOM on every viewport
+   (desktop, tablet, mobile) exactly like an active session; the heading
+   centers itself in the free space above it. */
+.fresh-workbench { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; background: var(--color-base); overflow-y: auto; }
+.fresh-session-stage { display: flex; width: min(100%, 790px); flex-direction: column; min-height: 100%; padding: 24px 28px 4px; }
+.fresh-session-heading { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 22px; text-align: center; }
 .fresh-eyebrow { display: block; margin-bottom: 10px; color: var(--color-ink-4); font-size: 11px; letter-spacing: .02em; }
 .fresh-session-heading h1 { margin: 0; font-family: var(--d-font-display); font-size: clamp(24px, 2.5vw, 32px); font-weight: 500; line-height: 1.2; letter-spacing: -.04em; color: var(--color-ink); }
-.fresh-composer-hint { margin: 17px 0 0; text-align: center; font-size: 11px; color: var(--color-ink-4); }
+.fresh-composer-hint { margin: 13px 0 0; text-align: center; font-size: 11px; color: var(--color-ink-4); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 /* fresh-session suggestion chips — quiet answers to “what would you like to build?”;
    they prefill the composer (or open the project picker), never send */
-.fresh-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
+.fresh-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 12px; }
 .fresh-suggestion {
   display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 13px;
   border: 1px solid var(--color-line); border-radius: 99px; background: var(--color-overlay);
@@ -798,9 +802,24 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   .minimal-titlebar[data-minimal="true"] .titlebar-search { display: inline-flex; }
   .minimal-titlebar[data-minimal="true"] .titlebar-search-compact { display: none; }
 }
-/* crowded bars retire the workspace quick-icons first (status bar + ⌘L + the
-   corner arrow still reach everything) */
-@media (max-width: 1000px) { .titlebar-optional-controls { display: none; } }
+/* the workspace tools live in the panel's own tab strip — the titlebar
+   keeps only unique controls (layout, keyboard, quick settings) */
+
+/* ---------- Titlebar quick settings — one easy-access menu; the full
+   panel still lives at the bottom of the sidebar. Theme dots, panel
+   toggles and deep links, all reachable without leaving the workbench. */
+.quick-theme-row { display: flex; gap: 5px; padding: 1px 2px 2px; }
+.quick-theme-dot { position: relative; display: flex; height: 27px; width: 27px; cursor: pointer; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--color-line); background: var(--color-well); transition: border-color 140ms, transform 140ms, box-shadow 140ms; }
+.quick-theme-dot:hover { transform: translateY(-1px); border-color: var(--color-line-strong); }
+.quick-theme-dot.is-active { border-color: color-mix(in srgb, var(--color-iris) 65%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-iris) 22%, transparent); }
+.quick-theme-dot i { height: 12px; width: 12px; border-radius: 50%; background: var(--dot, var(--color-iris-soft)); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%); }
+.quick-theme-dot.is-active::after { content: ""; position: absolute; inset: -4px; border-radius: 10px; }
+.quick-toggle-row { display: flex; width: 100%; cursor: pointer; align-items: center; gap: 9px; border-radius: 7px; padding: 6px 8px; text-align: left; color: var(--color-ink-2); font-size: 12.5px; transition: background-color 130ms; }
+.quick-toggle-row:hover { background: var(--color-hover); }
+.quick-toggle-box { display: flex; height: 15px; width: 15px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--color-line-strong); color: var(--color-on-iris); transition: background-color 130ms, border-color 130ms; }
+.quick-toggle-row.is-on .quick-toggle-box { border-color: var(--color-iris); background: var(--color-iris); }
+.quick-link-row { display: flex; width: 100%; cursor: pointer; align-items: center; gap: 9px; border-radius: 7px; padding: 6px 8px; text-align: left; color: var(--color-ink-2); font-size: 12.5px; transition: background-color 130ms; }
+.quick-link-row:hover { background: var(--color-hover); color: var(--color-ink); }
 
 /* ---------- Agent plan / todo card (above the composer, opens upward) ----------
    Reference: TODO.png — a minimal elevated card. The collapsed state is the
@@ -1175,6 +1194,15 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   transition: background-color 130ms, color 130ms;
 }
 .browser-tab-new:hover { background: var(--color-hover); color: var(--color-ink); }
+/* tab ACTIONS — visually quieter than the “+”: one new-tab control,
+   everything else (duplicate · reload · close) hides behind this ghost */
+.browser-tab-actions {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; flex-shrink: 0; margin-left: 2px;
+  border-radius: 6px; color: var(--color-ink-4); opacity: .72;
+  transition: background-color 130ms, color 130ms, opacity 130ms;
+}
+.browser-tab-actions:hover { background: var(--color-hover); color: var(--color-ink-2); opacity: 1; }
 .browser-toolbar {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   padding: 8px 10px;
@@ -1847,13 +1875,19 @@ html[data-design="editorial"] .plan-todo-checkbox { border-radius: 2px; }
 html[data-design="editorial"] .browser-tab, html[data-design="editorial"] .browser-frame.is-device { border-radius: 4px; }
 html[data-design="editorial"] .workspace-tab, html[data-design="editorial"] .workspace-picker-card, html[data-design="editorial"] .workspace-corner-open, html[data-design="editorial"] .prose-code { border-radius: 4px; }
 .reference-project-modal { background: var(--color-overlay); }
+@media (max-width: 900px) {
+  /* the hands-free orb would sit on top of the composer's send button on
+     narrow viewports — it stays a desktop affordance (toggleable in quick
+     settings); dictation still works from the composer's mic */
+  .voice-agent { display: none; }
+}
 @media (max-width: 560px) {
   html[data-design] { --d-chrome-height: 44px !important; }
-  .titlebar-optional-controls { display: none !important; }
   .selected-project-title { display: none; }
-  .session-list-row, .sidebar-navigation-row { min-height: 35px; }
-  .fresh-session-stage { padding: 16px; transform: translateY(-15px); }
-  .fresh-session-heading { margin-bottom: 28px; }
+  .session-list-row, .sidebar-navigation-row { min-height: 36px; }
+  .fresh-session-stage { padding: 14px 12px 2px; }
+  .fresh-session-heading { margin-bottom: 14px; }
+  .fresh-suggestions { gap: 6px; }
   .reference-composer-input { padding-inline: 12px; font-size: 16px; }
   .model-effort, .model-monogram { display: none; }
   .model-label { max-width: 84px; font-size: 10.5px; }
@@ -1864,4 +1898,4 @@ html[data-design="editorial"] .workspace-tab, html[data-design="editorial"] .wor
   .reference-project-modal { top: 50% !important; left: 50% !important; width: calc(100vw - 28px) !important; max-width: calc(100vw - 28px) !important; transform: translate(-50%, -50%) !important; border: 1px solid var(--color-line) !important; border-radius: 16px !important; }
 }
 
-/* css-rev 1791364604 */
+/* css-rev 1791368101 */

@@ -51,7 +51,7 @@ export const DESIGN_SPECS: DesignSpec[] = [
       ],
     },
     shape: { radiusPanel: "10px", radiusControl: "7px", radiusCard: "12px", borderStyle: "1px hairline, 100% opacity", rule: "1px solid" },
-    panels: { sidebar: 272, context: 368, chrome: 46, composer: "16px radius, 220px max height" },
+    panels: { sidebar: 292, context: 368, chrome: 46, composer: "16px radius, 220px max height" },
     elevation: "Soft: 4-step shadow (e1–e4) + inset top highlight on raised chrome",
     feel: ["Balanced density", "Signal colour", "Soft elevation", "Generous context"],
     signature: "The context pane's icon rail with live counts, and the composer's iris glow while streaming.",

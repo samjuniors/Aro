@@ -97,7 +97,8 @@ export function BrowserView({ onAskAgent }: { onAskAgent: (text: string) => void
   const reload = () => patch(active.id, { loading: true, nonce: active.nonce + 1 });
 
   return <div className="flex min-h-0 flex-1 flex-col">
-    {/* tab strip — switch, close, duplicate; “+” and ⋯ for the rest */}
+    {/* tab strip — ONE “+” creates a new tab; everything else
+        (duplicate · reload · close) hides behind a quiet actions ghost */}
     <div className="browser-tabstrip" role="tablist" aria-label="Browser tabs">
       {tabs.map((t) => (
         <div key={t.id} role="tab" aria-selected={t.id === active.id} className={cn("browser-tab", t.id === active.id && "is-active")}>
@@ -114,9 +115,8 @@ export function BrowserView({ onAskAgent }: { onAskAgent: (text: string) => void
         <button type="button" className="browser-tab-new" onClick={() => newTab()} aria-label="New browser tab"><IconPlus size={12} /></button>
       </Tip>
       <span className="min-w-0 flex-1" />
-      <Menu align="right" width={196} trigger={() => <button type="button" className="browser-tab-new" aria-label="Tab actions" title="Tab actions"><IconMore size={12} /></button>}>
+      <Menu align="right" width={196} trigger={() => <button type="button" className="browser-tab-actions" aria-label="Tab actions" title="Tab actions"><IconMore size={11} /></button>}>
         {(close) => <>
-          <MenuItem icon={<IconPlus size={12} />} label="New tab" onClick={() => { close(); newTab(); }} />
           <MenuItem icon={<IconCopy size={12} />} label="Duplicate current tab" onClick={() => { close(); duplicateTab(); }} />
           <MenuItem icon={<IconRefresh size={12} />} label="Reload page" disabled={!active.url} onClick={() => { close(); reload(); }} />
           <MenuSep />
