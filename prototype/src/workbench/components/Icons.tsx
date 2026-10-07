@@ -420,6 +420,22 @@ export const IconSmartphone = (p: P) => (
     <path d="M10.7 18.5h2.6" />
   </svg>
 );
+/* open-into-panel: a right wall with an arrow flying into it — the single
+   corner affordance that summons the workspace panel */
+export const IconPanelOpen = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 4v16" />
+    <path d="M3.5 12h12" />
+    <path d="m11 6.5 5.5 5.5-5.5 5.5" />
+  </svg>
+);
+/* compact "columns" mark used for the workspace tab strip itself */
+export const IconColumns = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4.5" width="18" height="15" rx="2.2" />
+    <path d="M15 4.5v15" />
+  </svg>
+);
 
 /* ------------------------- brand marks for agents ------------------------ */
 type MarkProps = { size?: number; className?: string };

@@ -1174,42 +1174,169 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .transcript-step { content-visibility: auto; contain-intrinsic-size: 1px 96px; animation: rise 0.34s var(--ease-out-expo) both; }
 
 /* =========================================================================
-   CODEX-STYLE DOCKED RIGHT WORKSPACE PANEL (inside main workspace, resizable)
+   WORKSPACE PANEL — docked tool tabs (Codex-style)
+   Any tool (browse / changes / artifacts / terminal / memory) opens as its
+   own tab; "+" adds more, tabs close individually, and the whole panel hides
+   when the last tab closes or the divider is dragged to the screen edge.
    ========================================================================= */
-.app-right-panel {
+.app-workspace-panel {
   display: flex; flex-direction: column; min-width: 0; height: 100%;
   background: var(--color-base); border-left: 1px solid var(--color-line); overflow: hidden;
+  animation: panelIn .22s var(--ease-out-expo) both;
 }
-.app-right-tabs {
+@keyframes panelIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+.app-workspace-panel.is-snapping { opacity: .45; filter: saturate(.65); }
+.workspace-tabstrip {
   display: flex; height: 34px; flex-shrink: 0; align-items: center; gap: 2px;
   padding: 0 6px; border-bottom: 1px solid var(--color-line-soft); background: var(--color-sunken);
+  overflow-x: auto; scrollbar-width: none;
 }
-.app-right-tab {
-  display: inline-flex; height: 24px; align-items: center; gap: 6px;
-  border-radius: 6px; padding: 0 9px; font-size: 11.5px; font-weight: 500;
-  color: var(--color-ink-3); position: relative; transition: all 130ms;
+.workspace-tabstrip::-webkit-scrollbar { display: none; }
+.workspace-tab {
+  display: inline-flex; align-items: center; height: 24px; min-width: 0; flex-shrink: 0;
+  border-radius: 6px; padding-right: 2px; color: var(--color-ink-3); position: relative;
+  animation: pop 0.2s var(--ease-spring) both;
+  transition: background-color 130ms, color 130ms;
 }
-.app-right-tab:hover { color: var(--color-ink-2); background: var(--color-hover); }
-.app-right-tab.is-active { background: var(--color-raise); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-line); }
-.app-right-tab.is-active::after {
-  content: ""; position: absolute; left: 9px; right: 9px; bottom: 2px; height: 2px;
+.workspace-tab:hover { color: var(--color-ink-2); background: var(--color-hover); }
+.workspace-tab.is-active { background: var(--color-raise); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-line); }
+.workspace-tab.is-active::after {
+  content: ""; position: absolute; left: 9px; right: 9px; bottom: 1px; height: 2px;
   border-radius: 99px; background: var(--color-iris);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-iris) 55%, transparent);
 }
-.app-right-tab-spacer { flex: 1; }
-.app-right-scrim { display: none; }
-@media (max-width: 900px) {
-  .app-right-scrim { display: block; }
+.workspace-tab-main {
+  display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 5px 0 9px;
+  background: none; border: 0; cursor: pointer; color: inherit; font-size: 11.5px; font-weight: 550;
 }
-.app-right-body { flex: 1; min-height: 0; overflow: hidden; }
+.workspace-tab-main svg { color: var(--color-ink-4); flex-shrink: 0; }
+.workspace-tab.is-active .workspace-tab-main svg { color: var(--color-iris-soft); }
+.workspace-tab-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 104px; }
+.workspace-tab-close {
+  display: flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; margin: 0 2px; border-radius: 4px;
+  color: var(--color-ink-4); opacity: 0;
+  transition: opacity 130ms, background-color 120ms, color 120ms;
+}
+.workspace-tab:hover .workspace-tab-close, .workspace-tab-close:focus-visible { opacity: 1; }
+.workspace-tab-close:hover { background: var(--color-rose-tint); color: var(--color-rose); }
+.workspace-tab-new, .workspace-panel-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; flex-shrink: 0; border-radius: 6px; color: var(--color-ink-3);
+  transition: background-color 130ms, color 130ms;
+}
+.workspace-tab-new:hover, .workspace-panel-close:hover { background: var(--color-hover); color: var(--color-ink); }
+.workspace-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.workspace-tabpane { display: none; flex: 1; min-width: 0; min-height: 0; flex-direction: column; }
+.workspace-tabpane.is-active { display: flex; }
+.workspace-resizer.will-snap::after { background: var(--color-rose) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--color-rose) 60%, transparent); }
+.workspace-scrim { display: none; }
 @media (max-width: 900px) {
-  .app-right-panel {
-    position: fixed; top: var(--d-chrome-height); right: 0; bottom: 26px; z-index: 65;
+  .workspace-scrim { display: block; }
+  .app-workspace-panel {
+    position: fixed; top: var(--d-chrome-height); right: 0; bottom: 0; z-index: 65;
     width: min(100vw, 640px) !important; box-shadow: -16px 0 40px -12px rgba(0,0,0,.6);
-    animation: sheetIn .24s var(--ease-out-expo) both;
   }
-  .app-right-resizer { display: none; }
+  .workspace-resizer { display: none; }
 }
+/* empty workspace — the tool picker a first-time user lands on */
+.workspace-picker { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; }
+.workspace-picker-eyebrow { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-ink-4); }
+.workspace-picker-title { margin: 8px 0 0; font-family: var(--d-font-display); font-size: 19px; font-weight: 600; letter-spacing: -.02em; color: var(--color-ink); }
+.workspace-picker-sub { margin: 10px auto 0; max-width: 340px; font-size: 12px; line-height: 1.6; color: var(--color-ink-3); }
+.workspace-picker-grid { margin-top: 22px; display: grid; width: 100%; max-width: 420px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.workspace-picker-card {
+  display: flex; flex-direction: column; gap: 6px; cursor: pointer;
+  border: 1px solid var(--color-line-soft); border-radius: 11px; background: var(--color-raise);
+  padding: 13px 13px 12px; text-align: left;
+  transition: border-color 140ms, transform 140ms, box-shadow 140ms;
+}
+.workspace-picker-card:hover { border-color: var(--color-iris); transform: translateY(-1px); box-shadow: var(--shadow-e2); }
+.workspace-picker-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: var(--color-iris-tint); color: var(--color-iris-soft); }
+.workspace-picker-name { font-size: 12.5px; font-weight: 600; color: var(--color-ink); }
+.workspace-picker-desc { font-size: 10.5px; line-height: 1.45; color: var(--color-ink-3); }
+/* the single corner affordance that summons the workspace */
+.workspace-corner-open {
+  position: absolute; top: 9px; right: 9px; z-index: 20;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  border: 1px solid var(--color-line); background: var(--color-raise);
+  color: var(--color-ink-3); box-shadow: var(--shadow-e1); opacity: .82;
+  transition: opacity 150ms, color 150ms, border-color 150ms, background-color 150ms, transform 150ms;
+}
+.workspace-corner-open:hover {
+  opacity: 1; color: var(--color-iris-soft);
+  border-color: color-mix(in srgb, var(--color-iris) 45%, transparent);
+  background: var(--color-iris-tint);
+}
+.workspace-corner-open:active { transform: scale(.94); }
+
+/* =========================================================================
+   STATUS BAR — the dynamic footer (state-wise items, toggle via Layout)
+   ========================================================================= */
+.app-statusbar {
+  display: flex; height: 24px; flex-shrink: 0; align-items: center;
+  padding: 0 8px; border-top: 1px solid var(--color-line-soft); background: var(--color-sunken);
+  font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-4);
+  user-select: none; overflow: hidden;
+}
+.status-item { display: inline-flex; height: 100%; min-width: 0; align-items: center; gap: 5px; padding: 0 7px; white-space: nowrap; }
+.status-sep { width: 1px; height: 12px; margin: 0 1px; background: var(--color-line-soft); flex-shrink: 0; }
+.status-spacer { flex: 1; }
+.status-click { cursor: pointer; border: 0; background: none; color: inherit; font: inherit; padding: 0; height: 100%; display: inline-flex; align-items: center; gap: 5px; padding-inline: 7px; border-radius: 0; transition: background-color 130ms, color 130ms; }
+.status-click:hover { background: var(--color-hover); color: var(--color-ink-2); }
+.status-state { color: var(--color-ink-3); }
+.status-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--color-mint); box-shadow: 0 0 6px color-mix(in srgb, var(--color-mint) 60%, transparent); }
+.status-state.is-live { color: var(--color-cyan); }
+.status-state.is-live i { background: var(--color-cyan); animation: breathe 1.3s ease-in-out infinite; box-shadow: 0 0 7px color-mix(in srgb, var(--color-cyan) 65%, transparent); }
+.status-glyph { font-family: var(--font-mono); font-size: 9px; font-weight: 600; color: var(--color-ink-3); }
+.status-model { color: var(--color-ink-3); }
+.status-effort { display: inline-flex; align-items: center; gap: 4px; color: var(--effort-color, var(--color-ink-4)); font-weight: 550; }
+.status-effort-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--effort-color, var(--color-ink-4)); box-shadow: 0 0 6px color-mix(in srgb, var(--effort-color, var(--color-ink-4)) 55%, transparent); transition: background-color 200ms; }
+.status-thinking { color: var(--color-plum); font-size: 9px; }
+@media (max-width: 860px) { .status-secondary { display: none; } }
+
+/* =========================================================================
+   MODEL MENU — collapsed shows only effort + thinking; the model name
+   slides the full picker up; picking a model collapses it again
+   ========================================================================= */
+.model-menu-head {
+  display: flex; width: 100%; align-items: center; gap: 9px;
+  margin: 1px 0 3px; border-radius: 9px; padding: 7px 8px; cursor: pointer; text-align: left;
+  transition: background-color 130ms;
+}
+.model-menu-head:hover { background: var(--color-hover); }
+.model-menu-list { animation: modelListIn .24s var(--ease-out-expo) both; padding-top: 2px; }
+@keyframes modelListIn { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+.model-menu-compact { animation: modelCompactIn .22s var(--ease-out-expo) both; }
+@keyframes modelCompactIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.model-thinking-row { display: flex; align-items: center; gap: 9px; margin: 4px 2px 3px; border-radius: 8px; padding: 5px 8px; transition: background-color 130ms; }
+.model-thinking-row:hover { background: var(--color-hover); }
+
+/* =========================================================================
+   MESSAGE HOVER ACTIONS + inline edit (transcript)
+   ========================================================================= */
+.msg-actions { display: inline-flex; gap: 2px; margin-left: auto; opacity: 0; transform: translateY(1px); transition: opacity 140ms, transform 140ms; }
+.group\/msg:hover .msg-actions, .msg-actions:focus-within { opacity: 1; transform: none; }
+.msg-action-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--color-line-soft); background: var(--color-overlay);
+  color: var(--color-ink-3); box-shadow: var(--shadow-e1);
+  transition: color 120ms, background-color 120ms, border-color 120ms;
+}
+.msg-action-btn:hover { color: var(--color-ink); background: var(--color-hover); border-color: var(--color-line-strong); }
+.msg-edit { border: 1px solid color-mix(in srgb, var(--color-iris) 40%, var(--color-line)); border-radius: 10px; background: var(--color-overlay); padding: 10px 12px; box-shadow: var(--shadow-glow-iris); }
+.msg-edit textarea { display: block; width: 100%; min-height: 64px; resize: vertical; border: 0; background: transparent; font-family: var(--d-font-sans); font-size: 13px; line-height: 1.55; color: var(--color-ink); outline: none; }
+
+/* =========================================================================
+   FENCED CODE BLOCKS inside chat messages
+   ========================================================================= */
+.prose-code { overflow: hidden; border: 1px solid var(--color-line-soft); border-radius: 9px; background: var(--color-code); }
+.prose-code-head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-line-soft); padding: 4px 5px 4px 11px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-ink-4); }
+.prose-code-copy { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 20px; border-radius: 5px; color: var(--color-ink-4); transition: color 120ms, background-color 120ms; }
+.prose-code-copy:hover { color: var(--color-ink); background: var(--color-hover); }
+.prose-code pre { margin: 0; padding: 10px 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.65; color: var(--color-ink-2); }
 
 /* =========================================================================
    CODEX / CURSOR CHANGES PANEL (Matching User Screenshot exactly)
@@ -1573,6 +1700,7 @@ html[data-design="editorial"] .reference-composer { border-radius: 4px; box-shad
 html[data-design="editorial"] .plan-todo-strip, html[data-design="editorial"] .plan-todo-dropdown { border-radius: 3px; }
 html[data-design="editorial"] .plan-todo-checkbox { border-radius: 2px; }
 html[data-design="editorial"] .browser-tab, html[data-design="editorial"] .browser-frame.is-device { border-radius: 4px; }
+html[data-design="editorial"] .workspace-tab, html[data-design="editorial"] .workspace-picker-card, html[data-design="editorial"] .workspace-corner-open, html[data-design="editorial"] .prose-code { border-radius: 4px; }
 .reference-project-modal { background: var(--color-overlay); }
 @media (max-width: 560px) {
   html[data-design] { --d-chrome-height: 44px !important; }

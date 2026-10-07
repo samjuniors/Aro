@@ -9,8 +9,8 @@ import { formatSeconds } from "../lib/speak";
 import { ProjectPickerPanel } from "./ProjectDialog";
 import { DiffSideDrawer, RepoBar, repoStateFor } from "./RepoDock";
 import { PlanTodoCorner } from "./PlanTodoCorner";
-import { IconArrowUp, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconX } from "./Icons";
-import { Button, IconButton, Menu, MenuItem, MenuLabel, MenuSep, Tip, type Tone } from "./ui";
+import { IconArrowUp, IconBrain, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconX } from "./Icons";
+import { Button, IconButton, Menu, MenuItem, MenuLabel, MenuSep, Tip, Toggle, type Tone } from "./ui";
 import { StepView, StreamingRow } from "./Transcript";
 
 type ModeDefinition = { id: ModeId; label: string; short: string; desc: string; tone: Tone; icon: ComponentType<{ size?: number; className?: string }> };
@@ -29,6 +29,10 @@ export type WorkbenchProps = {
   agentId: string; setAgentId: (id: string) => void; modelId: string; setModelId: (id: string) => void;
   onSend: (text: string, files?: File[]) => boolean | Promise<boolean>; onStop: () => void;
   project?: Project; onChooseProject: (id?: string, createdProject?: Project) => void; compact?: boolean;
+  /* transcript affordances — edit & resend a turn, retry the last reply, rewind to a checkpoint */
+  onEditMessage?: (stepId: string, text: string) => void;
+  onRetry?: () => void;
+  onRestoreCheckpoint?: (stepId: string) => void;
 };
 
 function SessionHeader({ session, sessions, onSelect, onNew }: Pick<WorkbenchProps, "session" | "sessions" | "onSelect" | "onNew">) {
@@ -68,8 +72,12 @@ function Composer(props: WorkbenchProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [effort, setEffort] = useState(() => Math.min(EFFORTS.length - 1, Math.max(0, readStored<number>("conductor.pref.effort", 2))));
   const effortLevel = EFFORTS[effort];
-  const setEffortIdx = (index: number) => { setEffort(index); writeStored("conductor.pref.effort", index); };
+  const setEffortIdx = (index: number) => { setEffort(index); writeStored("conductor.pref.effort", index); window.dispatchEvent(new CustomEvent("conductor:effort", { detail: index })); };
   const [modelQuery, setModelQuery] = useState("");
+  /* model menu starts collapsed on the effort slider; the model name slides the list up */
+  const [modelExpanded, setModelExpanded] = useState(false);
+  const [thinking, setThinking] = useState(() => readStored("conductor.pref.thinking", true));
+  const setThinkingOn = (on: boolean) => { setThinking(on); writeStored("conductor.pref.thinking", on); window.dispatchEvent(new CustomEvent("conductor:thinking", { detail: on })); };
   const [submitting, setSubmitting] = useState(false);
   const textarea = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -162,29 +170,52 @@ function Composer(props: WorkbenchProps) {
         </Menu>
 
         <div className="composer-right-controls">
-          <Menu side="top" align="right" width={340} trigger={() => <button className="model-control" aria-label="Choose model and reasoning effort">{pickerIcon}<span className="model-label">{selectedModel?.label ?? "Choose model"}</span><span className="model-effort" data-level={effortLevel.id} style={{ ["--effort-color" as string]: effortLevel.color }}><i className="model-effort-dot" aria-hidden />{effortLevel.label}</span><IconChevronDown size={11} className="text-ink-4" /></button>}>
+          <Menu side="top" align="right" width={330} onOpenChange={(v) => { if (!v) setModelExpanded(false); }} trigger={() => <button className="model-control" aria-label="Choose model and reasoning effort">{pickerIcon}<span className="model-label">{selectedModel?.label ?? "Choose model"}</span><span className="model-effort" data-level={effortLevel.id} style={{ ["--effort-color" as string]: effortLevel.color }}><i className="model-effort-dot" aria-hidden />{effortLevel.label}</span><IconChevronDown size={11} className="text-ink-4" /></button>}>
             {(close) => <>
-              <div className="relative px-1 py-1"><IconSearch size={11} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-4" /><input placeholder="Search models" value={modelQuery} onChange={(e) => setModelQuery(e.target.value)} className="h-[30px] w-full rounded-[6px] border border-line bg-well pr-2 pl-7 text-[12px] outline-none" /></div>
-              <div className="scroll-thin max-h-[300px] overflow-y-auto">
-                {(["local", "cloud"] as const).map((kind) => <div key={kind}><MenuLabel>{kind === "local" ? "On-device providers" : "Cloud providers"}</MenuLabel>{providers.filter((p) => p.kind === kind).map((p) => {
-                  const matches = p.models.filter((m) => `${p.name} ${m.label}`.toLowerCase().includes(modelQuery.toLowerCase()));
-                  if (!matches.length && !modelQuery) return <MenuItem key={p.id} label={p.name} hint={p.status === "ready" ? "no models" : "not connected"} onClick={() => { close(); openProviders(); }} />;
-                  return <div key={p.id}><div className="px-2 pt-1 font-mono text-[9px] text-ink-4">{p.name}</div>{matches.map((model) => <MenuItem key={model.id} label={model.label} hint={p.status === "ready" ? "available" : "catalog"} active={props.modelId === `provider:${p.id}:${model.id}`} onClick={() => { props.setModelId(`provider:${p.id}:${model.id}`); close(); }} />)}</div>;
-                })}</div>)}
-              </div>
-              <MenuSep /><MenuLabel>Reasoning effort</MenuLabel>
-              <div className="effort-slider" style={{ ["--effort-color" as string]: effortLevel.color }}>
-                <div className="effort-slider-head">
-                  <span className="effort-level-name"><i className="effort-level-dot" aria-hidden />{effortLevel.label}</span>
-                  <span className="effort-bars" aria-hidden>
-                    {EFFORTS.map((_, i) => <i key={i} className={cn(i <= effort && "is-on")} style={{ height: 4 + i * 2 }} />)}
-                  </span>
+              {/* model head — clicking it slides the full model list up */}
+              <button type="button" className="model-menu-head" onClick={() => setModelExpanded((v) => !v)} aria-expanded={modelExpanded}>
+                {pickerIcon}
+                <span className="min-w-0 flex-1 text-left">
+                  <span className="block truncate text-[12.5px] font-medium text-ink">{selectedModel?.label ?? "Choose a model"}</span>
+                  <span className="block truncate font-mono text-[9.5px] text-ink-4">{selectedModel ? `${selectedModel.provider.name} · ${selectedModel.provider.kind === "local" ? "on-device" : "cloud"}` : "not connected"}</span>
+                </span>
+                <IconChevronDown size={12} className={cn("shrink-0 text-ink-4 transition-transform duration-200", modelExpanded && "rotate-180")} />
+              </button>
+              {modelExpanded ? (
+                <div className="model-menu-list">
+                  <div className="relative px-1 py-1"><IconSearch size={11} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-4" /><input placeholder="Search models" value={modelQuery} onChange={(e) => setModelQuery(e.target.value)} className="h-[30px] w-full rounded-[6px] border border-line bg-well pr-2 pl-7 text-[12px] outline-none" /></div>
+                  <div className="scroll-thin max-h-[280px] overflow-y-auto">
+                    {(["local", "cloud"] as const).map((kind) => <div key={kind}><MenuLabel>{kind === "local" ? "On-device providers" : "Cloud providers"}</MenuLabel>{providers.filter((p) => p.kind === kind).map((p) => {
+                      const matches = p.models.filter((m) => `${p.name} ${m.label}`.toLowerCase().includes(modelQuery.toLowerCase()));
+                      if (!matches.length && !modelQuery) return <MenuItem key={p.id} label={p.name} hint={p.status === "ready" ? "no models" : "not connected"} onClick={() => { close(); openProviders(); }} />;
+                      return <div key={p.id}><div className="px-2 pt-1 font-mono text-[9px] text-ink-4">{p.name}</div>{matches.map((model) => <MenuItem key={model.id} label={model.label} hint={p.status === "ready" ? "available" : "catalog"} active={props.modelId === `provider:${p.id}:${model.id}`} onClick={() => { props.setModelId(`provider:${p.id}:${model.id}`); setModelExpanded(false); }} />)}</div>;
+                    })}</div>)}
+                  </div>
                 </div>
-                <input type="range" min={0} max={EFFORTS.length - 1} step={1} value={effort} onChange={(e) => setEffortIdx(Number(e.target.value))} className="effort-range" aria-label={`Reasoning effort — ${effortLevel.label}`} aria-valuetext={effortLevel.label} style={{ ["--effort-fill" as string]: `${(effort / (EFFORTS.length - 1)) * 100}%` }} />
-                <div className="effort-slider-scale"><span>Minimal</span><span>Ultra</span></div>
-                <p className="effort-slider-desc">{effortLevel.desc}</p>
-              </div>
-              <MenuSep /><MenuItem icon={<IconPlus size={12} />} label="Configure providers" onClick={() => { close(); openProviders(); }} />
+              ) : (
+                <div className="model-menu-compact">
+                  <div className="effort-slider" style={{ ["--effort-color" as string]: effortLevel.color }}>
+                    <div className="effort-slider-head">
+                      <span className="effort-level-name"><i className="effort-level-dot" aria-hidden />{effortLevel.label}</span>
+                      <span className="effort-bars" aria-hidden>
+                        {EFFORTS.map((_, i) => <i key={i} className={cn(i <= effort && "is-on")} style={{ height: 4 + i * 2 }} />)}
+                      </span>
+                    </div>
+                    <input type="range" min={0} max={EFFORTS.length - 1} step={1} value={effort} onChange={(e) => setEffortIdx(Number(e.target.value))} className="effort-range" aria-label={`Reasoning effort — ${effortLevel.label}`} aria-valuetext={effortLevel.label} style={{ ["--effort-fill" as string]: `${(effort / (EFFORTS.length - 1)) * 100}%` }} />
+                    <div className="effort-slider-scale"><span>Minimal</span><span>Ultra</span></div>
+                    <p className="effort-slider-desc">{effortLevel.desc}</p>
+                  </div>
+                  <div className="model-thinking-row">
+                    <IconBrain size={13} className="shrink-0 text-plum" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[12px] font-medium text-ink-2">Thinking</span>
+                      <span className="block text-[10px] leading-tight text-ink-4">Show the model's reasoning before it replies</span>
+                    </span>
+                    <Toggle size="sm" checked={thinking} onChange={setThinkingOn} />
+                  </div>
+                  <MenuItem icon={<IconPlus size={12} />} label="Configure providers" onClick={() => { close(); openProviders(); }} />
+                </div>
+              )}
             </>}
           </Menu>
           <Tip label={dictation.listening ? "Stop dictation · Esc" : "Talk to type · ⌘⇧V"}>
@@ -232,7 +263,13 @@ export function Workbench(props: WorkbenchProps) {
   return <div className="flex h-full min-w-0 flex-1 flex-col bg-base">
     <SessionHeader session={props.session} sessions={props.sessions} onSelect={props.onSelect} onNew={props.onNew} />
     <div ref={scrollRef} onScroll={(e) => { const element = e.currentTarget; setFollowing(element.scrollHeight - element.scrollTop - element.clientHeight < 100); }} className="scroll-thin relative min-h-0 flex-1 overflow-y-auto">
-      <div className="app-transcript-inner mx-auto w-full space-y-5 py-6">{props.steps.map((step) => <div className="transcript-step" key={step.id}><StepView step={step} agentId={props.agentId} persona={persona} /></div>)}{props.streaming && <StreamingRow label={props.streamLabel} />}</div>
+      <div className="app-transcript-inner mx-auto w-full space-y-5 py-6">{props.steps.map((step, index) => {
+        const isLast = index === props.steps.length - 1;
+        return <div className="transcript-step" key={step.id}><StepView step={step} agentId={props.agentId} persona={persona}
+          onEditMessage={props.onEditMessage}
+          onRetry={props.onRetry && isLast && step.type === "text" && !props.streaming ? props.onRetry : undefined}
+          onRestore={props.onRestoreCheckpoint} /></div>;
+      })}{props.streaming && <StreamingRow label={props.streamLabel} />}</div>
       {!following && <button onClick={() => { setFollowing(true); scrollRef.current?.scrollTo({ top: 1e8, behavior: "smooth" }); }} className="sticky bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-line bg-overlay px-3 py-1 text-[11px] text-ink-2 shadow-e2"><IconChevronDown size={11} />Latest</button>}
     </div>
     <div className="active-composer-area"><Composer {...props} /></div>

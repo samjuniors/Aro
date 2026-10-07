@@ -13,17 +13,19 @@ import { makeId, readStored, writeStored } from "./lib/storage";
 import { streamLocalChat, type ChatMessage } from "./lib/inference";
 import { fetchLiveReply, getBackend, historyFromSteps, sleep, type HistoryTurn } from "./lib/live";
 import { runAgentBridge } from "./lib/bridge";
-import { NAV_AGENT, NAV_CODE, Sidebar, type ViewId } from "./components/Sidebar";
+import { Sidebar, NAV_AGENT, NAV_CODE, type ViewId } from "./components/Sidebar";
 import { Workbench, modeDefs } from "./components/Workbench";
 import { Titlebar } from "./components/Titlebar";
-import { AgentMark, IconBolt, IconCheck, IconEye, IconGit, IconTerminal, IconX, LogoMark } from "./components/Icons";
-import { Badge, Button, IconButton, Kbd, Modal, Segmented, Tip, Toasts } from "./components/ui";
+import { AgentMark, IconBolt, IconCheck, IconPanelOpen, IconTerminal, LogoMark } from "./components/Icons";
+import { Badge, Button, Kbd, Modal, Segmented, Toasts } from "./components/ui";
 import { ConnectorsView, ProjectsView, SkillsView } from "./components/views3";
 import { BrowserView, GitView, TasksView } from "./components/views2";
 import { FleetView, ReviewView } from "./components/views";
 import { AutomationsView } from "./components/views4";
 import { ArtifactsView } from "./components/views5";
 import { MemoryView } from "./components/MemoryView";
+import { WorkspacePanel } from "./components/WorkspacePanel";
+import { StatusBar } from "./components/StatusBar";
 import { OnboardingStrip } from "./components/Onboarding";
 import { SettingsView } from "./components/Settings";
 import { ProjectDialog } from "./components/ProjectDialog";
@@ -112,10 +114,10 @@ function Shell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [listOpen, setListOpen] = useState(() => window.innerWidth > 820 && localStorage.getItem("conductor.sidebar.collapsed") !== "true");
-  /* Right workspace panel (Codex-style dockable review / browser pane) */
-  const [rightOpen, setRightOpen] = useState(() => window.innerWidth > 900);
-  const [rightTab, setRightTab] = useState<"changes" | "browser">("changes");
-  const [statusOpen, setStatusOpen] = useState(false);
+  /* Right workspace panel — Codex-style docked tabs. First launch keeps it
+     closed (minimal: chat + composer + one corner icon); the layout persists. */
+  const [rightOpen, setRightOpen] = useState(() => readStored("conductor.workspace.panel.open", false));
+  const [statusOpen, setStatusOpen] = useState(true);
   /* rotating stream label + first-run onboarding + agent-picker modal */
   const [label, setLabel] = useState(LABELS.code[0]);
   const [onboarding, setOnboarding] = useState(false);
@@ -128,7 +130,6 @@ function Shell() {
   const timers = useRef<number[]>([]);
   const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
   const sidebar = useResizable(272, 220, 460);
-  const right = useResizable(540, 380, 1100, "left");
   const active = sessions.find((s) => s.id === activeIds[product]) ?? drafts[product];
   const project = projects.find((p) => p.id === active.projectId);
   const productSessions = sessions.filter((s) => (s.product ?? "code") === product);
@@ -140,8 +141,9 @@ function Shell() {
   const appendText = useCallback((sid: string, stepId: string, word: string) => setSessions((all) => all.map((s) => s.id === sid ? { ...s, steps: s.steps.map((st) => st.id === stepId && st.type === "text" ? { ...st, text: st.text + word } : st) } : s)), []);
   const setStatus = useCallback((sid: string, status: Session["status"]) => setSessions((all) => all.map((s) => s.id === sid ? { ...s, status } : s)), []);
 
-  useEffect(() => writeStored("conductor.workspace.v3.sessions", userSessions), [userSessions]);
+  useEffect(() => { writeStored("conductor.workspace.v3.sessions", userSessions); }, [userSessions]);
   useEffect(() => localStorage.setItem("conductor.sidebar.collapsed", String(!listOpen)), [listOpen]);
+  useEffect(() => { writeStored("conductor.workspace.panel.open", rightOpen); }, [rightOpen]);
 
   /* ---------------- sticky agent plan (composer corner) ----------------
      Whenever a session's steps contain an agent plan, capture it into the
@@ -213,8 +215,10 @@ function Shell() {
       if (defaults.modelId) setModelId(defaults.modelId);
     }
   };
+  /* context resets close overlays and pickers — never the workspace panel,
+     terminal or status bar: those are the user's layout and stay put */
   const resetUtilities = () => {
-    setRightOpen(false); setTermOpen(false); setDockOpen(false); setCmdk(false); setHelpOpen(false); setLayoutOpen(false); setStatusOpen(false); setNewOpen(false); closeSheet();
+    setDockOpen(false); setCmdk(false); setHelpOpen(false); setLayoutOpen(false); setNewOpen(false); closeSheet();
     window.dispatchEvent(new CustomEvent("conductor:voice:minimize"));
   };
   const stop = () => {
@@ -244,7 +248,9 @@ function Shell() {
     const token = ++runToken;
     const full = product === "code" ? buildCodeResponse(text, agentId, mode) : buildAgentResponse(text);
     let fallback = "Done. Everything checks out — say the word if you want the diff opened for review.";
-    const script = [...full];
+    /* the model menu's Thinking toggle gates scripted reasoning steps */
+    let script = [...full];
+    if (!readStored("conductor.pref.thinking", true)) script = script.filter((s) => s.type !== "thinking");
     const last = script[script.length - 1];
     if (last && last.type === "text") { fallback = last.text; script.pop(); }
     setRunningId(sid);
@@ -320,7 +326,10 @@ function Shell() {
     }
   }, [appendSteps, appendText, patchStep, setStatus, runScripted, agentId]);
 
-  const send = async (text: string, attachments: File[] = []): Promise<boolean> => {
+  /* baseSteps: send() can rewind the transcript before sending — used by
+     edit & resend (drop everything from the edited message on) and retry
+     (drop the turn being regenerated) so history stays truthful. */
+  const send = async (text: string, attachments: File[] = [], baseSteps?: Step[]): Promise<boolean> => {
     if (runningId) { toast("Stop the current response before sending another message.", "amber"); return false; }
     let target = active;
     if (isDemoSession(active.id)) {
@@ -329,11 +338,12 @@ function Shell() {
       setActiveIds((all) => ({ ...all, [product]: target.id }));
       toast("Demo is read-only — forked so you can continue freely.", "iris");
     }
+    const stepsBase = baseSteps ?? target.steps;
     const backend = getBackend();
     /* history is captured before the user step lands in the transcript */
-    const prior = historyFromSteps(target.steps);
+    const prior = historyFromSteps(stepsBase);
     const user: Step = { id: makeId("message"), type: "user", text, at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), attachments: attachments.map((file) => file.name) };
-    const next: Session = { ...target, title: target.title === "New session" ? text.slice(0, 65) : target.title, steps: [...target.steps, user], status: "running", modelId, permission: mode, updated: "now" };
+    const next: Session = { ...target, title: target.title === "New session" ? text.slice(0, 65) : target.title, steps: [...stepsBase, user], status: "running", modelId, permission: mode, updated: "now" };
     setSessions((all) => all.some((s) => s.id === target.id) ? all.map((s) => s.id === target.id ? next : s) : [next, ...all]);
     setRunningId(target.id); closeSheet();
 
@@ -374,6 +384,31 @@ function Shell() {
       setSessions((all) => all.map((s) => s.id === target.id ? { ...s, status: cancelled ? "idle" : "failed", steps: [...s.steps.filter((step) => step.id !== replyId || Boolean(reply)), { id: makeId("message"), type: "notice", tone: cancelled ? "info" : "error", text: message }] } : s));
     } finally { if (controller.current === abort) { controller.current = null; setRunningId(null); } }
     return true;
+  };
+
+  /* ---------- transcript affordances: edit & resend, retry, rewind ---------- */
+  const editMessage = (stepId: string, text: string) => {
+    const index = active.steps.findIndex((s) => s.id === stepId);
+    if (index === -1 || !text.trim()) return;
+    void send(text, [], active.steps.slice(0, index));
+    toast("Message edited — the turn was rewound and resent", "iris");
+  };
+  const retryLast = () => {
+    let lastUser = -1;
+    active.steps.forEach((s, i) => { if (s.type === "user") lastUser = i; });
+    if (lastUser === -1) return;
+    const text = (active.steps[lastUser] as Extract<Step, { type: "user" }>).text;
+    void send(text, [], active.steps.slice(0, lastUser));
+    toast("Retrying — regenerating the last reply", "iris");
+  };
+  const restoreCheckpoint = (stepId: string) => {
+    const index = active.steps.findIndex((s) => s.id === stepId);
+    if (index === -1) return;
+    const checkpoint = active.steps[index] as Extract<Step, { type: "checkpoint" }>;
+    const removed = active.steps.length - index - 1;
+    const kept = active.steps.slice(0, index + 1);
+    patchActive({ steps: [...kept, { id: makeId("message"), type: "notice", tone: "info", text: `Rewound to checkpoint ${checkpoint.hash} — ${removed} later step${removed === 1 ? "" : "s"} removed.` }] });
+    toast(`Restored checkpoint ${checkpoint.hash} · ${checkpoint.label}`, "mint");
   };
 
   const archive = (id: string, archived: boolean) => { if (isDemoSession(id)) { toast("Reference demo can't be archived. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, archived } : s)); if (id === active.id && archived) newSession(); toast(archived ? "Session archived" : "Session restored", "mint"); };
@@ -431,7 +466,7 @@ function Shell() {
       else if (key === "l" && e.shiftKey) { e.preventDefault(); setLayoutOpen((v) => !v); }
       else if (key === "l" || key === "\\") { e.preventDefault(); setRightOpen((v) => !v); }
       else if (key === "b" && e.shiftKey) { e.preventDefault(); setListOpen((v) => !v); }
-      else if (key === "[") { e.preventDefault(); setRightTab((t) => (t === "changes" ? "browser" : "changes")); setRightOpen(true); }
+      else if (key === "[") { e.preventDefault(); window.dispatchEvent(new CustomEvent("conductor:pane", { detail: "cycle" })); setRightOpen(true); }
       else if (key === "v" && e.shiftKey) { e.preventDefault(); closeSheet(); window.dispatchEvent(new CustomEvent("conductor:voice:dictate")); }
       else if (key === "t") { e.preventDefault(); window.dispatchEvent(new CustomEvent("conductor:agent-plan-toggle")); }
       else if (key === "f" && e.shiftKey) { e.preventDefault(); setLayout(PRESETS[1].state); }
@@ -441,7 +476,8 @@ function Shell() {
     window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h);
   });
   useEffect(() => {
-    const paneEvent = (e: Event) => { const detail = (e as CustomEvent<string>).detail; setRightTab(detail === "browser" ? "browser" : "changes"); setRightOpen(true); };
+    /* the panel itself listens for conductor:pane and focuses/creates the tab */
+    const paneEvent = () => setRightOpen(true);
     const settings = () => setViewRaw("settings");
     const providerSettings = () => { setSettingsSection("providers"); setViewRaw("settings"); };
     const help = () => setHelpOpen(true);
@@ -453,7 +489,12 @@ function Shell() {
   });
 
   const latestReply = [...active.steps].reverse().find((s): s is Extract<Step, { type: "text" }> => s.type === "text")?.text.replace(/[`*#]/g, "") ?? "";
-  const empty = !active.steps.length;
+  /* footer model info — same resolution the transcript persona uses */
+  const footerRoute = (active.modelId ?? modelId).split(":");
+  const footerProvider = providers.find((p) => p.id === footerRoute[1]);
+  const footerModel = footerProvider?.models.find((m) => m.id === footerRoute.slice(2).join(":"));
+  const permissionShort = modeDefs(product).find((m) => m.id === mode)?.short ?? mode;
+  const backendMode = getBackend().mode;
   const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false), onDeleteProject: deleteProject, onDuplicateProject: duplicateProject };
 
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
@@ -465,7 +506,7 @@ function Shell() {
           <main className="relative flex min-w-0 flex-1 flex-col">
             {onboarding && view === "workbench" && <div className="shrink-0 px-3 pt-3"><OnboardingStrip onDismiss={dismissOnboarding} /></div>}
             <div className="relative flex min-h-0 min-w-0 flex-1">
-              <Workbench key={active.id} session={active} sessions={productSessions} onSelect={selectSession} onNew={() => openNew()} steps={active.steps} streaming={streaming} streamLabel={label} mode={mode} setMode={setMode} agentId={agentId} setAgentId={setAgentId} modelId={modelId} setModelId={setModelId} onSend={send} onStop={stop} project={project} onChooseProject={chooseProject} />
+              <Workbench key={active.id} session={active} sessions={productSessions} onSelect={selectSession} onNew={() => openNew()} steps={active.steps} streaming={streaming} streamLabel={label} mode={mode} setMode={setMode} agentId={agentId} setAgentId={setAgentId} modelId={modelId} setModelId={setModelId} onSend={send} onStop={stop} project={project} onChooseProject={chooseProject} onEditMessage={editMessage} onRetry={retryLast} onRestoreCheckpoint={restoreCheckpoint} />
               {view !== "workbench" && <Sheet title={TITLES[view] ?? "Settings"} onClose={closeSheet} streaming={streaming}><ErrorBoundary key={view} label={TITLES[view]}>
                 {view === "settings" && <SettingsView onStart={(id) => newSession(id)} />}
                 {view === "projects" && <ProjectsView projects={projects} sessions={productSessions} onUpdate={updateProject} onNew={(id) => newSession(undefined, id)} onOpenThread={selectSession} />}
@@ -478,28 +519,22 @@ function Shell() {
                 {view === "browser" && <BrowserView onAskAgent={(text) => void send(text)} />}
                 {view === "runs" && <FleetView />}{view === "review" && <ReviewView project={project} />}
               </ErrorBoundary></Sheet>}
+              {/* the one corner affordance — opens the workspace (or creates its first tab) */}
+              {!rightOpen && view === "workbench" && (
+                <button className="workspace-corner-open" onClick={() => setRightOpen(true)} aria-label="Open the workspace panel" title="Workspace · ⌘L">
+                  <IconPanelOpen size={15} />
+                </button>
+              )}
             </div>
           </main>
-          {/* Right workspace panel — Codex-style docked review / browser pane */}
-          {rightOpen && <><button className="mobile-pane-scrim app-right-scrim" aria-label="Close workspace panel" onClick={() => setRightOpen(false)} /><div {...right.handle} className={`${right.handle.className} app-right-resizer`} /><div style={{ width: right.size }} className="app-right-panel shrink-0">
-            <div className="app-right-tabs">
-              {([{ id: "changes", label: "Changes", icon: IconGit }, { id: "browser", label: "Browser", icon: IconEye }] as const).map((t) => (
-                <button key={t.id} onClick={() => setRightTab(t.id)} className={cn("app-right-tab", rightTab === t.id && "is-active")} aria-pressed={rightTab === t.id}>
-                  <t.icon size={12} />{t.label}
-                </button>
-              ))}
-              <span className="app-right-tab-spacer" />
-              <Tip label="Close panel · ⌘L"><IconButton icon={IconX} label="Close workspace panel" size={24} onClick={() => setRightOpen(false)} /></Tip>
-            </div>
-            <div className="app-right-body">
-              {rightTab === "changes" ? <ReviewView project={project} /> : <BrowserView onAskAgent={(text) => void send(text)} />}
-            </div>
-          </div></>}
+          {/* Right workspace panel — Codex-style docked tool tabs (browse / changes / artifacts / terminal / memory) */}
+          <WorkspacePanel open={rightOpen} onOpenChange={setRightOpen} project={project} onAskAgent={(text) => void send(text)} />
         </div>
         {termOpen && <TerminalPanel onAskAgent={(text) => void send(text)} />}
       </div>
     </div>
-    {statusOpen && !empty && <footer className="flex h-[25px] items-center gap-3 border-t border-line-soft px-3 font-mono text-[10px] text-ink-3"><span>{streaming ? "Responding" : "Idle"}</span><span>{active.tokens ? `${active.tokens.toLocaleString()} tokens reported` : "Usage not reported"}</span>{project && <span className="truncate">{project.name}</span>}</footer>}
+    {/* dynamic status bar — every item is state-driven; toggle it from Layout ▸ Status bar */}
+    {statusOpen && <StatusBar streaming={streaming} streamLabel={label} modelLabel={footerModel?.label ?? "select a model"} modelGlyph={footerProvider?.glyph ?? "AI"} permission={permissionShort} backend={backendMode === "agent" ? "agent bridge" : backendMode === "live" ? "live endpoint" : "demo harness"} projectName={project?.name} projectBranch={active.branch || project?.sources?.find((s) => s.branch)?.branch} tokens={active.tokens} panelOpen={rightOpen} onTogglePanel={() => setRightOpen((v) => !v)} onOpenLayout={() => setLayoutOpen(true)} />}
     <CommandPalette open={cmdk} onClose={() => setCmdk(false)} setView={setView} onSelectSession={selectSession} onNew={newSession} sessions={sessions} />
     <ProjectDialog /><ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     <VoiceAgent onSend={(text) => void send(text)} onNavigate={setView} reply={latestReply} streaming={Boolean(runningId)} />
