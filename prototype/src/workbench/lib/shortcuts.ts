@@ -11,7 +11,7 @@ export const SHORTCUTS: Shortcut[] = [
   { id: "todo", label: "Todo list", keys: ["⌘", "T"], group: "Global" },
   { id: "voice", label: "Dictate", keys: ["⌘", "⇧", "V"], group: "Composer", note: "Speech → text in the composer" },
 
-  { id: "v-threads", label: "Threads", keys: ["⌘", "1"], group: "Navigate" },
+  { id: "v-sessions", label: "Sessions", keys: ["⌘", "1"], group: "Navigate" },
   { id: "v-tasks", label: "Tasks", keys: ["⌘", "2"], group: "Navigate" },
   { id: "v-skills", label: "Skills", keys: ["⌘", "3"], group: "Navigate" },
   { id: "v-connectors", label: "Connectors", keys: ["⌘", "4"], group: "Navigate" },
@@ -21,17 +21,11 @@ export const SHORTCUTS: Shortcut[] = [
   { id: "mode", label: "Cycle permission mode", keys: ["⇧", "Tab"], group: "Composer", note: "Plan · Read only · Agent · Full access" },
   { id: "send", label: "Send", keys: ["⏎"], group: "Composer" },
   { id: "newline", label: "New line", keys: ["⇧", "⏎"], group: "Composer" },
-  { id: "commands", label: "Slash commands", keys: ["/"], group: "Composer", note: "Type at an empty prompt" },
-  { id: "mention", label: "Add context", keys: ["@"], group: "Composer", note: "File · diff · editor · browser · terminal" },
-  { id: "compact", label: "Compact context", keys: ["⌘", "⇧", "K"], group: "Composer" },
 
   { id: "stop", label: "Stop the agent", keys: ["Esc"], group: "Agent" },
-  { id: "rewind", label: "Rewind to checkpoint", keys: ["Esc", "Esc"], group: "Agent" },
-  { id: "approve", label: "Allow pending approval", keys: ["⌘", "⏎"], group: "Agent" },
-  { id: "fork", label: "Fork into parallel run", keys: ["⌘", "D"], group: "Agent" },
 
   { id: "layout-sidebar", label: "Sidebar", keys: ["⌘", "⇧", "B"], group: "Layout" },
-  { id: "sidebar-nav", label: "Move through threads", keys: ["↑", "↓"], group: "Layout", note: "⏎ open · ⌫ archive · Home/End jump" },
+  { id: "sidebar-nav", label: "Move through sessions", keys: ["↑", "↓"], group: "Layout", note: "⏎ open · ⌫ archive · Home/End jump" },
   { id: "layout-terminal", label: "Terminal", keys: ["⌘", "J"], group: "Layout" },
   { id: "layout-panel", label: "Side panel / Agent panel", keys: ["⌘", "L"], group: "Layout" },
   { id: "layout-inspector", label: "Inspector (in session)", keys: ["⌘", "\\"], group: "Layout" },

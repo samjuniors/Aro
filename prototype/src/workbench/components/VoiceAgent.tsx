@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn";
 import { IconArrowUp, IconEye, IconGit, IconList, IconTerminal, IconX } from "./Icons";
@@ -29,15 +27,15 @@ const STATE_HINT: Record<OrbState, string> = {
   listening: "Speak naturally — I'm listening",
   thinking: "The agent is working on it",
   speaking: "Reading the reply aloud",
-  completed: "Finished — reply is in the thread",
+  completed: "Finished — reply is in the session",
   error: "Something needs your attention",
 };
 
 export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (text: string) => void; onNavigate: (view: ViewId) => void; reply: string; streaming: boolean }) {
   const [open, setOpen] = useState(false);
-  const [enabled, setEnabled] = useState(() => localStorage.getItem("aro.voice.orb") !== "false");
-  const [handsFree, setHandsFree] = useState(() => localStorage.getItem("aro.voice.handsFree") === "true");
-  const [speakBack, setSpeakBack] = useState(() => localStorage.getItem("aro.voice.speakBack") === "true");
+  const [enabled, setEnabled] = useState(() => localStorage.getItem("conductor.voice.orb") === "true");
+  const [handsFree, setHandsFree] = useState(() => localStorage.getItem("conductor.voice.handsFree") === "true");
+  const [speakBack, setSpeakBack] = useState(() => localStorage.getItem("conductor.voice.speakBack") === "true");
   const [listening, setListening] = useState(false);
   const [dictating, setDictating] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -48,47 +46,48 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
   const [error, setError] = useState("");
   const [lastHeard, setLastHeard] = useState("");
   const [position, setPosition] = useState<{ x: number; y: number }>(() => {
-    try { const p = JSON.parse(localStorage.getItem("aro.voice.position") || "null"); return p && typeof p.x === "number" ? p : { x: 0, y: 0 }; } catch { return { x: 0, y: 0 }; }
+    try { const p = JSON.parse(localStorage.getItem("conductor.voice.position") || "null"); return p && typeof p.x === "number" ? p : { x: 0, y: 0 }; } catch { return { x: 0, y: 0 }; }
   });
   const dragRef = useRef<{ x: number; y: number; px: number; py: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
   const recRef = useRef<Recognition | null>(null);
   const restartOnEnd = useRef(false);
   const spokenRef = useRef("");
+  const wasStreaming = useRef(streaming);
   const supported = Boolean(voiceWindow().SpeechRecognition ?? voiceWindow().webkitSpeechRecognition);
 
   /* the orb listens to the mic whenever *anything* is capturing speech */
-  const micLevel = useMicLevel(listening || dictating);
+  const micLevel = useMicLevel(enabled && (listening || dictating));
 
   const orbState: OrbState = errorFlash ? "error" : listening || dictating ? "listening" : speaking ? "speaking" : streaming ? "thinking" : completed ? "completed" : "idle";
 
   /* persistence + cross-component events */
-  useEffect(() => localStorage.setItem("aro.voice.position", JSON.stringify(position)), [position]);
-  useEffect(() => localStorage.setItem("aro.voice.speakBack", String(speakBack)), [speakBack]);
-  useEffect(() => localStorage.setItem("aro.voice.handsFree", String(handsFree)), [handsFree]);
+  useEffect(() => localStorage.setItem("conductor.voice.position", JSON.stringify(position)), [position]);
+  useEffect(() => localStorage.setItem("conductor.voice.speakBack", String(speakBack)), [speakBack]);
+  useEffect(() => localStorage.setItem("conductor.voice.handsFree", String(handsFree)), [handsFree]);
   useEffect(() => {
     const on = (name: string, fn: (e: Event) => void) => { window.addEventListener(name, fn); return () => window.removeEventListener(name, fn); };
     const offs = [
-      on("aro:voice", () => { setEnabled(true); setOpen(true); }),
-      on("aro:voice:orb", (e) => setEnabled(Boolean((e as CustomEvent<boolean>).detail))),
-      on("aro:voice:speakBack", (e) => setSpeakBack(Boolean((e as CustomEvent<boolean>).detail))),
-      on("aro:voice:handsFree", (e) => setHandsFree(Boolean((e as CustomEvent<boolean>).detail))),
-      on("aro:dictation", (e) => setDictating(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:voice", () => { setEnabled(true); setOpen(true); }),
+      on("conductor:voice:minimize", () => { stopRecognition(); setOpen(false); }),
+      on("conductor:voice:orb", (e) => setEnabled(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:voice:speakBack", (e) => setSpeakBack(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:voice:handsFree", (e) => setHandsFree(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:dictation", (e) => setDictating(Boolean((e as CustomEvent<boolean>).detail))),
     ];
     return () => offs.forEach((off) => off());
   }, []);
 
-  /* thinking → completed pulse (adjust during render; the fade-out is a timer) */
-  const [prevStreaming, setPrevStreaming] = useState(streaming);
-  if (prevStreaming !== streaming) {
-    setPrevStreaming(streaming);
-    if (prevStreaming && !streaming) setCompleted(true);
-  }
+  /* thinking → completed pulse */
   useEffect(() => {
-    if (!completed) return;
-    const t = window.setTimeout(() => setCompleted(false), 2800);
-    return () => window.clearTimeout(t);
-  }, [completed]);
+    if (wasStreaming.current && !streaming) {
+      setCompleted(true);
+      const t = window.setTimeout(() => setCompleted(false), 2800);
+      wasStreaming.current = streaming;
+      return () => window.clearTimeout(t);
+    }
+    wasStreaming.current = streaming;
+  }, [streaming]);
 
   const flashError = (msg: string) => {
     setError(msg);
@@ -126,20 +125,20 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
     const hit = NAV.find((n) => n.words.some((w) => [w, `open ${w}`, `go to ${w}`, `show ${w}`].includes(lower)));
     if (hit) { onNavigate(hit.view); return `Opening ${hit.label}.`; }
     const events: [string[], string, string, unknown?][] = [
-      [["open terminal", "show terminal"], "aro:terminal", "Terminal toggled."],
-      [["open settings", "settings"], "aro:settings", "Opening settings."],
-      [["open providers", "open local models"], "aro:providers", "Opening model providers."],
-      [["show todos", "open todo"], "aro:todo", "Opening your todo list."],
-      [["new thread", "new chat", "new session"], "aro:new-session", "Starting a new thread."],
-      [["code mode", "switch to code mode"], "aro:product", "Switched to Code.", "code"],
-      [["agent mode", "switch to agent mode"], "aro:product", "Switched to Agent.", "agent"],
+      [["open terminal", "show terminal"], "conductor:terminal", "Terminal toggled."],
+      [["open settings", "settings"], "conductor:settings", "Opening settings."],
+      [["open providers", "open local models"], "conductor:providers", "Opening model providers."],
+      [["show todos", "open todo"], "conductor:todo", "Opening your todo list."],
+      [["new session", "new chat", "start a session"], "conductor:new-session", "Starting a new session."],
+      [["code mode", "switch to code mode"], "conductor:product", "Switched to Code.", "code"],
+      [["agent mode", "switch to agent mode"], "conductor:product", "Switched to Agent.", "agent"],
     ];
     for (const [phrases, evt, ack, detail] of events) {
       if (phrases.includes(lower)) { window.dispatchEvent(new CustomEvent(evt, { detail })); return ack; }
     }
     if (["stop listening", "stop voice", "stop"].includes(lower)) { setHandsFree(false); stopRecognition(); return "Paused."; }
     onSend(text);
-    return "Sent to your thread.";
+    return "Sent to your session.";
   }, [onNavigate, onSend]);
 
   const startRecognition = useCallback((continuous: boolean) => {
@@ -148,7 +147,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
     try {
       recRef.current?.abort();
       const r = new C();
-      r.lang = localStorage.getItem("aro.voice.language") || navigator.language || "en-US";
+      r.lang = localStorage.getItem("conductor.voice.language") || navigator.language || "en-US";
       r.continuous = continuous;
       r.interimResults = true;
       restartOnEnd.current = continuous;
@@ -201,7 +200,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
   const tone = orbState === "listening" ? "text-rose" : orbState === "thinking" ? "text-amber" : orbState === "speaking" ? "text-cyan" : orbState === "completed" ? "text-mint" : orbState === "error" ? "text-rose" : "text-ink-3";
 
   return (
-    <div className="fixed right-5 bottom-[40px] z-[80] flex flex-col items-end" style={{ transform: `translate(${-position.x}px, ${-position.y}px)` }}>
+    <div className="voice-agent fixed right-5 bottom-[40px] z-[80] flex flex-col items-end" style={{ transform: `translate(${-position.x}px, ${-position.y}px)` }}>
       {open && (
         <section role="dialog" aria-label="Voice assistant" className="mb-3 w-[min(340px,calc(100vw-28px))] animate-pop overflow-hidden rounded-[20px] border border-line-strong bg-overlay/95 shadow-e4 backdrop-blur-xl">
           <div onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} className="flex cursor-grab items-center gap-2 px-3.5 pt-3 active:cursor-grabbing">
@@ -217,7 +216,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
             </button>
             <p className={cn("mt-1 text-[12.5px] font-medium", tone)}>{STATE_HINT[orbState]}</p>
             <p className="mt-1 min-h-[34px] max-w-[280px] text-center text-[11.5px] leading-[1.45] text-ink-3">
-              {interim ? <span className="italic">“{interim}”</span> : lastHeard ? <span className="text-ink-4">Last: “{lastHeard.slice(0, 90)}”</span> : supported ? <span className="text-ink-4">Try “open tasks”, “new thread”, or just ask.</span> : <span className="text-amber">Voice recognition isn't available here.</span>}
+              {interim ? <span className="italic">“{interim}”</span> : lastHeard ? <span className="text-ink-4">Last: “{lastHeard.slice(0, 90)}”</span> : supported ? <span className="text-ink-4">Try “open tasks”, “new session”, or just ask.</span> : <span className="text-amber">Voice recognition isn't available here.</span>}
             </p>
             {error && <p role="alert" className="mt-1 text-center text-[10.5px] text-amber">{error}</p>}
           </div>

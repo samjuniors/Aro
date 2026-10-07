@@ -16,26 +16,28 @@ export type ModelProvider = {
   hint?: string;
 };
 
+export type ProjectSource = {
+  id: string;
+  kind: "folder" | "git";
+  name: string;
+  path?: string;
+  remoteUrl?: string;
+  fileCount?: number;
+  branch?: string;
+};
+
 export type Project = {
   id: string;
   name: string;
   path?: string;
   color: string;
   kind: "repo" | "workspace";
+  sources?: ProjectSource[];
   /** Inherited by every thread in the project unless the thread overrides it. */
   defaults?: { agentId?: string; modelId?: string; mode?: string; rules?: string[]; budget?: string };
 };
 
-export const PROJECTS: Project[] = [
-  { id: "platform", name: "Platform", path: "aro/platform", color: "#8f82ff", kind: "repo",
-    defaults: { agentId: "claude-code", modelId: "opus-4.6", mode: "agent", budget: "$25 / session", rules: ["Never touch generated/", "pnpm only", "Run biome before done"] } },
-  { id: "payments", name: "Payments", path: "internal/payments", color: "#36c5b6", kind: "repo",
-    defaults: { agentId: "codex", modelId: "gpt-5.4-codex", mode: "plan", budget: "$15 / session", rules: ["No migrations without a dry run", "Idempotency keys required"] } },
-  { id: "editors", name: "Editor extensions", path: "aro/editors", color: "#ec9acb", kind: "repo",
-    defaults: { agentId: "cursor", modelId: "composer-2.5", mode: "agent", budget: "$10 / session", rules: ["Match the host editor's UX conventions"] } },
-  { id: "personal", name: "Personal", color: "#eab45a", kind: "workspace",
-    defaults: { agentId: "glm-code", modelId: "glm-5", mode: "readonly", budget: "$5 / session", rules: [] } },
-];
+export const PROJECTS: Project[] = [];
 
 export const PROVIDER_SEEDS: ModelProvider[] = [
   {
@@ -52,30 +54,21 @@ export const PROVIDER_SEEDS: ModelProvider[] = [
   },
   {
     id: "anthropic", name: "Anthropic", kind: "cloud", description: "Claude models · hosted API", status: "needs-key", glyph: "A", accent: "#d5a98c",
-    models: [{ id: "claude-opus-4-6", label: "Claude Opus 4.6", context: "200k" }, { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", context: "200k" }, { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", context: "200k" }], hint: "API key stored locally in this prototype",
+    models: [{ id: "claude-opus-4-6", label: "Claude Opus 4.6", context: "200k" }, { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", context: "200k" }, { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", context: "200k" }], hint: "Model catalog only · connect through an authenticated runtime",
   },
   {
     id: "openai", name: "OpenAI", kind: "cloud", description: "GPT and Codex models · hosted API", status: "needs-key", glyph: "◎", accent: "#79ceb6",
-    models: [{ id: "gpt-5.4", label: "GPT-5.4", context: "400k" }, { id: "gpt-5.4-codex", label: "GPT-5.4-Codex", context: "400k" }, { id: "gpt-5-mini", label: "GPT-5 mini", context: "400k" }], hint: "API key stored locally in this prototype",
+    models: [{ id: "gpt-5.4", label: "GPT-5.4", context: "400k" }, { id: "gpt-5.4-codex", label: "GPT-5.4-Codex", context: "400k" }, { id: "gpt-5-mini", label: "GPT-5 mini", context: "400k" }], hint: "Model catalog only · connect through an authenticated runtime",
   },
   {
     id: "google", name: "Google AI Studio", kind: "cloud", description: "Gemini models · hosted API", status: "needs-key", glyph: "G", accent: "#80a9ff",
-    models: [{ id: "gemini-2.5-pro", label: "Gemini 2.5 Pro", context: "1M" }, { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", context: "1M" }], hint: "API key stored locally in this prototype",
+    models: [{ id: "gemini-2.5-pro", label: "Gemini 2.5 Pro", context: "1M" }, { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", context: "1M" }], hint: "Model catalog only · connect through an authenticated runtime",
   },
   {
     id: "openrouter", name: "OpenRouter", kind: "cloud", description: "Multi-provider model gateway", status: "needs-key", glyph: "OR", accent: "#f2b45c",
     models: [{ id: "openrouter/auto", label: "Auto Router", context: "varies" }, { id: "deepseek/deepseek-r1", label: "DeepSeek R1", context: "128k" }, { id: "qwen/qwen3-coder", label: "Qwen3 Coder", context: "256k" }], hint: "One key · multiple model families",
   },
 ];
-
-export const DEFAULT_PROJECT_FOR_SESSION: Record<string, string> = {
-  s1: "platform", s2: "payments", s3: "platform", s4: "platform", s5: "platform", s6: "platform", s7: "editors", s8: "platform",
-  a1: "platform", a2: "personal", a3: "personal", a4: "platform", a5: "personal",
-};
-
-export function normalizeProjectId(id?: string) {
-  return id && PROJECTS.some((p) => p.id === id) ? id : "platform";
-}
 
 /** Local servers expose model discovery endpoints; failed CORS is reported separately from offline. */
 export async function probeProvider(provider: ModelProvider): Promise<{ status: ProviderStatus; models: ProviderModel[]; message: string }> {

@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type ResultEvent = { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> };
@@ -15,7 +13,7 @@ export const ENGINES: { id: Engine; label: string; short: string; note: string }
 ];
 export const engineMeta = (id: Engine) => ENGINES.find((e) => e.id === id) ?? ENGINES[0];
 export const readEngine = (): Engine => {
-  const v = localStorage.getItem("aro.voice.engine") as Engine | null;
+  const v = localStorage.getItem("conductor.voice.engine") as Engine | null;
   return v && ENGINES.some((e) => e.id === v) ? v : "browser";
 };
 
@@ -27,11 +25,11 @@ export function useDictation(onFinal: (text: string) => void, onError?: (msg: st
   const ref = useRef<Rec | null>(null);
   const supported = typeof window !== "undefined" && Boolean(ctor());
   /* let the voice orb mirror composer dictation */
-  useEffect(() => { window.dispatchEvent(new CustomEvent("aro:dictation", { detail: listening })); }, [listening]);
+  useEffect(() => { window.dispatchEvent(new CustomEvent("conductor:dictation", { detail: listening })); }, [listening]);
   useEffect(() => {
     const h = (e: Event) => setEngine((e as CustomEvent<Engine>).detail);
-    window.addEventListener("aro:voice:engine", h);
-    return () => window.removeEventListener("aro:voice:engine", h);
+    window.addEventListener("conductor:voice:engine", h);
+    return () => window.removeEventListener("conductor:voice:engine", h);
   }, []);
 
   const stop = useCallback(() => { try { ref.current?.stop(); } catch { /* already stopped */ } setListening(false); setInterim(""); }, []);
@@ -41,7 +39,7 @@ export function useDictation(onFinal: (text: string) => void, onError?: (msg: st
     try {
       ref.current?.abort();
       const r = new C();
-      r.lang = localStorage.getItem("aro.voice.language") || navigator.language || "en-US";
+      r.lang = localStorage.getItem("conductor.voice.language") || navigator.language || "en-US";
       r.continuous = true;
       r.interimResults = true;
       r.onresult = (e) => {

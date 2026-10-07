@@ -1,5 +1,3 @@
-"use client";
-
 import type { SVGProps } from "react";
 
 type P = SVGProps<SVGSVGElement> & { size?: number };
@@ -343,6 +341,25 @@ export const IconPin = (p: P) => (
     <path d="M9 3.5h6l-.8 5.2 3.3 3.1H14l-2 8.7-2-8.7H6.5l3.3-3.1L9 3.5Z" />
   </svg>
 );
+export const IconFilePlus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <line x1="12" y1="18" x2="12" y2="12" />
+    <line x1="9" y1="15" x2="15" y2="15" />
+  </svg>
+);
+export const IconMaximize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </svg>
+);
+export const IconSplitVertical = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="12" y1="3" x2="12" y2="21" />
+  </svg>
+);
 export const IconSettings = (p: P) => (
   <svg {...base(p)}>
     <circle cx="12" cy="12" r="3" />
@@ -397,20 +414,33 @@ type MarkProps = { size?: number; className?: string };
 
 export function LogoMark({ size = 22, className = "" }: MarkProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" className={className} role="img" aria-label="Aro mark">
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className}>
       <defs>
-        <linearGradient id="aro-mark-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6EE7B7" />
-          <stop offset="55%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#0D9488" />
+        <linearGradient id="lg-a" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#a89cff" />
+          <stop offset="55%" stopColor="#7c6bff" />
+          <stop offset="100%" stopColor="#35d6c4" />
         </linearGradient>
       </defs>
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#101214" />
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="none" stroke="#27272a" strokeWidth="1" />
-      {/* geometric A — sharp apex, two legs, high crossbar */}
-      <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M11.6 19.6 H20.4" stroke="url(#aro-mark-g)" strokeWidth="2.2" strokeLinecap="round" opacity="0.85" />
+      <rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#lg-a)" opacity="0.16" />
+      <rect
+        x="1.5"
+        y="1.5"
+        width="29"
+        height="29"
+        rx="9"
+        stroke="url(#lg-a)"
+        strokeWidth="1.3"
+        fill="none"
+        opacity="0.65"
+      />
+      <g stroke="url(#lg-a)" strokeWidth="2.1" strokeLinecap="round" fill="none">
+        <path d="M9 9v14" />
+        <path d="M16 6v20" />
+        <path d="M23 11v10" />
+      </g>
+      <circle cx="23" cy="8.5" r="2.1" fill="#35d6c4" />
+      <circle cx="9" cy="23.5" r="2.1" fill="#a89cff" />
     </svg>
   );
 }

@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { DM_Sans, Inter, JetBrains_Mono, Newsreader, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--f-inter", display: "swap" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--f-jbmono", display: "swap" });
 const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--f-grotesk", display: "swap" });
+/* editorial design-profile fonts (html[data-design="editorial"]) */
+const newsreader = Newsreader({ subsets: ["latin"], variable: "--f-newsreader", display: "swap" });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--f-dmsans", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Aro — Agent Workbench",
@@ -36,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="obsidian" className={`${inter.variable} ${jetbrains.variable} ${grotesk.variable}`} suppressHydrationWarning>
+    <html lang="en" data-theme="obsidian" className={`${inter.variable} ${jetbrains.variable} ${grotesk.variable} ${newsreader.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         {children}
       </body>

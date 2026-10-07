@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 
 export type OrbState = "idle" | "listening" | "thinking" | "speaking" | "completed" | "error";
@@ -73,7 +71,7 @@ export function useMicLevel(active: boolean) {
 export function Orb({ state, size = 44, levelRef, className }: { state: OrbState; size?: number; levelRef?: React.RefObject<number>; className?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef(state);
-  useEffect(() => { stateRef.current = state; }, [state]);
+  stateRef.current = state;
 
   useEffect(() => {
     const el = canvas.current;

@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "../utils/cn";
 import { IconLayout, IconPanelBottom, IconPanelLeft, IconPanelRight, IconCheck } from "./Icons";
 import { Kbd, Menu, Tip } from "./ui";
@@ -35,7 +33,7 @@ function Wire({ state, onPick, interactive = true }: { state: LayoutState; onPic
   return (
     <div className="flex h-[84px] w-full flex-col gap-[3px] rounded-[6px] border border-line-strong/60 bg-code p-[3px]">
       <div className="flex min-h-0 flex-1 gap-[3px]">
-        {region("list", "w-[20%]", "Sidebar · ⇧⌘B", <IconPanelLeft size={11} />)}
+        {region("list", "w-[18%]", "Sidebar · ⇧⌘B", <IconPanelLeft size={11} />)}
         <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <div className="flex min-h-0 flex-1 items-center justify-center rounded-[3px] border border-dashed border-line-strong/60 bg-well/50 font-mono text-[8.5px] tracking-[.12em] text-ink-4 uppercase">main</div>
           {region("terminal", "h-[24px]", "Terminal · ⌘J", <IconPanelBottom size={11} />)}
@@ -73,7 +71,7 @@ export function LayoutControl({
         <Tip label="Layout · ⌘⇧L" side="bottom">
           <button className={cn("flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[8px] border bg-raise px-2 text-[12px] transition-all hover:border-line-strong", open ? "border-iris/50 text-iris-soft" : "border-line text-ink-3 hover:text-ink")}>
             <IconLayout size={14} />
-            <span className="hidden lg:inline">Layout</span>
+            <span className="titlebar-layout-label hidden lg:inline">Layout</span>
             <Kbd className="hidden xl:inline-flex">⌘⇧L</Kbd>
           </button>
         </Tip>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn";
 import { useApp, type Todo } from "../lib/app";
@@ -30,7 +28,7 @@ export function TodoPopup() {
 
   if (!todoOpen) return null;
   return (
-    <div style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} className="fixed right-[92px] bottom-10 z-[90] w-[320px] animate-slide-up overflow-hidden rounded-[14px] border border-line-strong bg-overlay shadow-e4">
+    <div style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} className="todo-popup fixed right-[92px] bottom-10 z-[90] w-[320px] animate-slide-up overflow-hidden rounded-[14px] border border-line-strong bg-overlay shadow-e4">
       <div onMouseDown={onDrag} className="flex cursor-grab items-center gap-2 border-b border-line-soft bg-raise/70 px-3 py-2 select-none active:cursor-grabbing">
         <IconCheck size={13} className="text-iris-soft" /><span className="font-display text-[13px] font-semibold tracking-[-.01em] text-ink">Todo</span>
         <span className="font-mono text-[10px] text-ink-4">{done}/{todos.length}</span>

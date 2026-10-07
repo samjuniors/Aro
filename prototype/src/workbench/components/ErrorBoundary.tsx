@@ -1,12 +1,10 @@
-"use client";
-
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
 /** Keeps one broken view from blanking the whole workbench. */
 export class ErrorBoundary extends Component<{ children: ReactNode; label?: string; compact?: boolean }, { error: Error | null }> {
   state = { error: null as Error | null };
   static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch(error: Error, info: ErrorInfo) { console.error(`[aro] ${this.props.label ?? "view"} crashed`, error, info.componentStack); }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error(`[conductor] ${this.props.label ?? "view"} crashed`, error, info.componentStack); }
   reset = () => this.setState({ error: null });
   render() {
     if (!this.state.error) return this.props.children;

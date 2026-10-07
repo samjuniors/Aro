@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { cn } from "../utils/cn";
 import type { DiffFile, DiffLine, Step } from "../data/catalog";
@@ -15,7 +13,7 @@ function Inline({ text }: { text: string }) {
 }
 export function Prose({ text, className }: { text: string; className?: string }) {
   return (
-    <div className={cn("space-y-2.5 text-[13.5px] leading-[1.65] text-ink-2", className)}>
+    <div className={cn("ds-body space-y-2.5 text-ink-2", className)}>
       {text.split("\n\n").map((b, i) => {
         const lines = b.split("\n");
         if (b.startsWith("## ")) return <h4 key={i} className="pt-1 text-[13.5px] font-semibold text-ink">{b.slice(3)}</h4>;
@@ -186,7 +184,7 @@ export function StepView({ step, agentId = "claude-code", persona }: { step: Ste
   const who = persona ?? { name: a.name, glyph: a.glyph, from: a.from, to: a.to, model: a.models[0].id };
   if (step.type === "user") return (
     <div className="animate-rise flex gap-3">
-      <div className="flex size-[28px] shrink-0 items-center justify-center rounded-[8px] bg-hover font-mono text-[10.5px] font-bold text-ink-2 shadow-e1">DV</div>
+      <div className="flex size-[28px] shrink-0 items-center justify-center rounded-[8px] bg-hover font-mono text-[10.5px] font-bold text-ink-2 shadow-e1">Y</div>
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
           <span className="text-[12.5px] font-semibold text-ink">You</span><span className="font-mono text-[10px] text-ink-4">{step.at}</span>
