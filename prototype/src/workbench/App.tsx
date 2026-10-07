@@ -31,6 +31,7 @@ import { CommandPalette } from "./components/CommandPalette";
 import { ShortcutHelp } from "./components/ShortcutHelp";
 import { TerminalPanel } from "./components/Terminal";
 import { VoiceAgent } from "./components/VoiceAgent";
+import { TodoPopup } from "./components/TodoPopup";
 import { extractPlanTodos } from "./components/PlanTodoCorner";
 import { Sheet } from "./components/Sheet";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -486,6 +487,7 @@ function Shell() {
     <CommandPalette open={cmdk} onClose={() => setCmdk(false)} setView={setView} onSelectSession={selectSession} onNew={newSession} sessions={sessions} />
     <ProjectDialog /><ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     <VoiceAgent onSend={(text) => void send(text)} onNavigate={setView} reply={latestReply} streaming={Boolean(runningId)} />
+    <TodoPopup />
     <Toasts items={toasts} />
 
     <Modal open={newOpen} onClose={() => setNewOpen(false)} title="Start a session" sub="Pick the agent and the starting mode — both change later from the composer." width={660}>
