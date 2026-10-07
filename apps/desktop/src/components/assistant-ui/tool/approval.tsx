@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { IconShield } from '@/aro/Icons'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
@@ -211,8 +212,8 @@ export function ApprovalQueue({
           })
       }}
       surfaceClassName={cn(
-        'rounded-xl border bg-(--ui-chat-surface-background)',
-        floating ? 'border-(--stroke-nous) shadow-nous' : 'border-(--ui-stroke-secondary)'
+        'rounded-[10px] border border-aro-amber/40 bg-aro-well shadow-aro-e2 overflow-hidden',
+        floating ? 'border-aro-iris/40 shadow-aro-e3' : 'border-aro-amber/40'
       )}
       swipeDirections={['left']}
     >
@@ -334,17 +335,20 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
       onPointerDownCapture={rememberFocusOrigin}
       ref={cardRef}
     >
-      <div className="flex items-center gap-2 px-2.5 pt-2 text-xs text-(--ui-text-secondary)">
-        <Codicon name="terminal" size="0.875rem" />
-        <span>{showsDescription ? copy.commandDetails : copy.command}</span>
+      <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2 text-xs">
+        <IconShield className="text-aro-amber shrink-0" size={13} />
+        <span className="font-semibold text-aro-ink">{showsDescription ? copy.commandDetails : copy.command}</span>
+        <span className="rounded bg-aro-amber-tint px-1.5 py-0.5 font-aro-mono text-[9.5px] font-medium text-aro-amber capitalize">
+          {request.smartDenied ? 'smart-denied' : 'approval required'}
+        </span>
         {total > 1 && (
-          <span className="ml-auto text-[0.6875rem] tabular-nums text-(--ui-text-tertiary)">
+          <span className="ml-auto font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
             {position} / {total}
           </span>
         )}
       </div>
       {details.length > 0 && (
-        <pre className="m-0 max-h-40 overflow-auto whitespace-pre-wrap break-words px-2.5 py-2 font-mono text-xs leading-relaxed text-(--ui-text-primary)">
+        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-[11.5px] leading-relaxed text-aro-ink-2">
           {details}
         </pre>
       )}

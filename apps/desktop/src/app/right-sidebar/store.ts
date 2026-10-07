@@ -35,3 +35,9 @@ export const runInTerminal = (command: string) => {
   setTerminalTakeover(true)
   $terminalInjection.set(trimmed)
 }
+
+export type ContextSectionId = 'files' | 'plan' | 'changes' | 'context' | 'git' | 'terminal'
+
+export const $rightSidebarSection = atom<ContextSectionId>('files')
+
+export const setRightSidebarSection = (section: ContextSectionId) => $rightSidebarSection.set(section)

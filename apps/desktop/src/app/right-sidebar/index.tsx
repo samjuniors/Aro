@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react'
-import { type ComponentProps, useCallback, useEffect } from 'react'
+import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo } from 'react'
 
+import { IconBrain, IconFolder, IconGit, IconGrid, IconList, IconTerminal } from '@/aro/Icons'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Button } from '@/components/ui/button'
@@ -10,22 +11,44 @@ import { useDelayedTrue } from '@/hooks/use-delayed-true'
 import { useI18n } from '@/i18n'
 import { normalizeOrLocalPreviewTarget } from '@/lib/local-preview'
 import { cn } from '@/lib/utils'
-import { refreshRepoStatus, registerRepoStatusCwd } from '@/store/coding-status'
+import { refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
 import { $panesFlipped } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
 import { openPreview } from '@/store/preview'
 import { openFolderAsProject } from '@/store/projects'
+import { $reviewFiles } from '@/store/review'
+import { $activeSessionId, $selectedStoredSessionId } from '@/store/session'
 import { $focusedWorkspaceCwd } from '@/store/session-states'
+import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 
 import { SidebarPanelLabel } from '../shell/sidebar-label'
 
+import { ChangesSection } from './changes-section'
+import { ContextSection } from './context-section'
 import { ProjectTree } from './files/tree'
 import { useProjectTree } from './files/use-project-tree'
+import { GitSection } from './git-section'
+import { PlanSection } from './plan-section'
+import { $rightSidebarSection, type ContextSectionId, setRightSidebarSection } from './store'
+import { TerminalSection } from './terminal-section'
 
 interface RightSidebarPaneProps {
   onActivateFile: (path: string) => void
   onActivateFolder: (path: string) => void
 }
+
+const SECTIONS: {
+  id: ContextSectionId
+  label: string
+  icon: ComponentType<{ size?: number; className?: string }>
+}[] = [
+  { id: 'files', label: 'Files', icon: IconFolder },
+  { id: 'plan', label: 'Plan', icon: IconList },
+  { id: 'changes', label: 'Changes', icon: IconGrid },
+  { id: 'context', label: 'Context', icon: IconBrain },
+  { id: 'git', label: 'Git', icon: IconGit },
+  { id: 'terminal', label: 'Terminal', icon: IconTerminal },
+]
 
 export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSidebarPaneProps) {
   const { t } = useI18n()
@@ -33,6 +56,20 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
   const panesFlipped = useStore($panesFlipped)
   const targetCwd = useStore($focusedWorkspaceCwd)
   const hasWorkspace = Boolean(targetCwd)
+  const section = useStore($rightSidebarSection)
+
+  const activeSessionId = useStore($activeSessionId)
+  const selectedStoredId = useStore($selectedStoredSessionId)
+  const sessionId = activeSessionId || selectedStoredId
+  const todosMap = useStore($todosBySession)
+  const retainedMap = useStore($retainedTodosBySession)
+
+  const activeTodos = useMemo(() => {
+    const list = (sessionId ? todosMap[sessionId] ?? retainedMap[sessionId] : null) ?? []
+    return list.filter(item => item.status === 'pending' || item.status === 'in_progress').length
+  }, [sessionId, todosMap, retainedMap])
+
+  const reviewFiles = useStore($reviewFiles)
 
   const {
     collapseAll,
@@ -49,24 +86,24 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     showIgnored
   } = useProjectTree(hasWorkspace ? targetCwd : '')
 
-  useEffect(() => {
-    const activeCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
+  const activeRepoCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
+  const repoStatus = useStore(repoStatusForCwd(activeRepoCwd))
+  const dirtyCount = repoStatus ? (repoStatus.staged ?? 0) + (repoStatus.unstaged ?? 0) : 0
 
-    if (!activeCwd) {
+  useEffect(() => {
+    if (!activeRepoCwd) {
       return
     }
 
-    return registerRepoStatusCwd(activeCwd)
-  }, [effectiveCwd, hasWorkspace, targetCwd])
+    return registerRepoStatusCwd(activeRepoCwd)
+  }, [activeRepoCwd])
 
   const handleRefresh = useCallback(() => {
     void refreshRoot()
-    const activeCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
-
-    if (activeCwd) {
-      void refreshRepoStatus(activeCwd)
+    if (activeRepoCwd) {
+      void refreshRepoStatus(activeRepoCwd)
     }
-  }, [effectiveCwd, hasWorkspace, refreshRoot, targetCwd])
+  }, [activeRepoCwd, refreshRoot])
 
   const cwdName =
     effectiveCwd
@@ -90,6 +127,16 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     }
   }
 
+  const currentSection = SECTIONS.find(s => s.id === section) ?? SECTIONS[0]
+  const currentCount =
+    section === 'plan'
+      ? (activeTodos > 0 ? activeTodos : undefined)
+      : section === 'changes'
+        ? (reviewFiles.length > 0 ? reviewFiles.length : undefined)
+        : section === 'git'
+          ? (dirtyCount > 0 ? dirtyCount : undefined)
+          : undefined
+
   return (
     <aside
       aria-label={r.aria}
@@ -100,26 +147,93 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
     >
-      <FilesystemTab
-        canCollapse={canCollapse}
-        collapseNonce={collapseNonce}
-        cwd={effectiveCwd}
-        cwdName={cwdName}
-        data={data}
-        error={rootError}
-        hasWorkspace={hasWorkspace}
-        loading={rootLoading}
-        onActivateFile={onActivateFile}
-        onActivateFolder={onActivateFolder}
-        onCollapseAll={collapseAll}
-        onLoadChildren={loadChildren}
-        onNodeOpenChange={setNodeOpen}
-        onPreviewFile={previewFile}
-        onRefresh={handleRefresh}
-        onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
-        openState={openState}
-        showIgnored={showIgnored}
-      />
+      <div className="flex h-[44px] shrink-0 items-center gap-2 border-b border-aro-line-soft bg-aro-base/85 px-3 backdrop-blur-xl">
+        <currentSection.icon size={13} className="text-aro-iris-soft" />
+        <h2 className="font-aro-sans text-[12.5px] font-semibold text-aro-ink">{currentSection.label}</h2>
+        {currentCount !== undefined && (
+          <span className="rounded-full bg-aro-hover px-1.5 font-aro-mono text-[9.5px] text-aro-ink-3">
+            {currentCount}
+          </span>
+        )}
+      </div>
+
+      <div className="flex min-h-0 flex-1">
+        {/* Left icon rail */}
+        <nav
+          aria-label="Context rail sections"
+          className="flex w-[44px] shrink-0 flex-col items-center gap-0.5 border-r border-aro-line-soft bg-aro-sunken/40 py-1.5"
+        >
+          {SECTIONS.map(item => {
+            const active = section === item.id
+            const count =
+              item.id === 'plan'
+                ? (activeTodos > 0 ? activeTodos : undefined)
+                : item.id === 'changes'
+                  ? (reviewFiles.length > 0 ? reviewFiles.length : undefined)
+                  : item.id === 'git'
+                    ? (dirtyCount > 0 ? dirtyCount : undefined)
+                    : undefined
+
+            return (
+              <Tip key={item.id} label={item.label}>
+                <button
+                  type="button"
+                  aria-label={item.label}
+                  aria-pressed={active}
+                  onClick={() => setRightSidebarSection(item.id)}
+                  className={cn(
+                    'group relative flex size-[34px] cursor-pointer items-center justify-center rounded-[9px] transition-all duration-150 active:scale-[.94]',
+                    active
+                      ? 'bg-aro-raise text-aro-iris-soft shadow-aro-e1'
+                      : 'text-aro-ink-3 hover:bg-aro-raise/60 hover:text-aro-ink-2'
+                  )}
+                >
+                  {active && (
+                    <span className="absolute top-1.5 bottom-1.5 -left-[3px] w-[2px] rounded-full bg-aro-iris" />
+                  )}
+                  <item.icon size={14} />
+                  {count !== undefined && count > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-[13px] min-w-[13px] items-center justify-center rounded-full bg-aro-iris px-0.5 font-aro-mono text-[8px] font-bold text-aro-on-iris">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </Tip>
+            )
+          })}
+        </nav>
+
+        {/* Section content */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          {section === 'files' && (
+            <FilesystemTab
+              canCollapse={canCollapse}
+              collapseNonce={collapseNonce}
+              cwd={effectiveCwd}
+              cwdName={cwdName}
+              data={data}
+              error={rootError}
+              hasWorkspace={hasWorkspace}
+              loading={rootLoading}
+              onActivateFile={onActivateFile}
+              onActivateFolder={onActivateFolder}
+              onCollapseAll={collapseAll}
+              onLoadChildren={loadChildren}
+              onNodeOpenChange={setNodeOpen}
+              onPreviewFile={previewFile}
+              onRefresh={handleRefresh}
+              onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
+              openState={openState}
+              showIgnored={showIgnored}
+            />
+          )}
+          {section === 'plan' && <PlanSection />}
+          {section === 'changes' && <ChangesSection />}
+          {section === 'context' && <ContextSection />}
+          {section === 'git' && <GitSection />}
+          {section === 'terminal' && <TerminalSection />}
+        </div>
+      </div>
     </aside>
   )
 }

@@ -28,6 +28,8 @@ import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { interceptsTypedVoiceStop } from '@/lib/voice-stop-word'
 import { sessionCompacting } from '@/store/compaction'
+import { openWorktreeDialog } from '@/store/coding-status'
+import { requestStartWorkSession } from '@/store/projects'
 import { browseBackward, browseForward, deriveUserHistory, isBrowsingHistory } from '@/store/composer-input-history'
 import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
 import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
@@ -42,6 +44,7 @@ import { $threadScrolledUpBySession } from '@/store/thread-scroll'
 import { $autoSpeakReplies } from '@/store/voice-prefs'
 import { useTheme } from '@/themes'
 
+import { ApprovalModePill } from './approval-mode-pill'
 import { AttachmentList } from './attachments'
 import {
   acceptsTriggerCompletion,
@@ -54,10 +57,12 @@ import {
   slashArgStage
 } from './composer-utils'
 import { ContextMenu } from './context-menu'
+import { ContextPill } from './context-pill'
 import { COMPOSER_AREAS, runComposerMiddleware } from './contrib'
 import { ComposerControls } from './controls'
 import { ComposerDirectiveActions } from './directive-actions'
 import { COMPOSER_DROP_ACTIVE_CLASS, COMPOSER_DROP_FADE_CLASS } from './drop-affordance'
+import { EnvPill } from './env-pill'
 import { markActiveComposer, onComposerAttachImagesRequest } from './focus'
 import { HelpHint } from './help-hint'
 import { useAtCompletions } from './hooks/use-at-completions'
@@ -1136,6 +1141,55 @@ export function ChatBar({
     />
   )
 
+  const leadingCluster = (
+    <div className="flex min-w-0 items-center gap-0.5 rounded-[8px] border border-line-soft bg-sunken/60 p-[2px]">
+      {contextMenu}
+      <Button
+        aria-label="Slash commands"
+        className="h-7 w-7 rounded-[6px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground"
+        disabled={inputDisabled}
+        onClick={() => insertText('/')}
+        size="icon"
+        type="button"
+        variant="ghost"
+      >
+        <span aria-hidden className="font-mono text-xs font-semibold">/</span>
+      </Button>
+      <Button
+        aria-label="Path and context references"
+        className="h-7 w-7 rounded-[6px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground"
+        disabled={inputDisabled}
+        onClick={() => insertText('@')}
+        size="icon"
+        type="button"
+        variant="ghost"
+      >
+        <span aria-hidden className="font-mono text-xs font-semibold">@</span>
+      </Button>
+    </div>
+  )
+
+  const modeControl = <ApprovalModePill disabled={disabled} gateway={gateway} />
+
+  const envControl = (
+    <EnvPill
+      cwd={cwd}
+      disabled={disabled}
+      onBranchOff={() => void openWorktreeDialog({ repoPath: cwd ?? undefined })}
+      onOpenWorktree={(path) => {
+        requestStartWorkSession(path)
+      }}
+    />
+  )
+
+  const contextControl = (
+    <ContextPill
+      busy={busy}
+      gateway={gateway}
+      sessionId={sessionId}
+    />
+  )
+
   const controls = (
     <ComposerControls
       autoSpeak={autoSpeak}
@@ -1143,6 +1197,7 @@ export function ChatBar({
       busyAction={busyAction}
       canSubmit={canSubmit}
       compactModelPill={poppedOut || compactPill}
+      contextControl={contextControl}
       conversation={{
         active: voiceConversationActive,
         level: conversation.level,
@@ -1154,10 +1209,13 @@ export function ChatBar({
         status: conversation.status
       }}
       disabled={disabled}
+      envControl={envControl}
       foldVoice={foldVoice}
       hasComposerPayload={hasComposerPayload}
       hideModelPill={guidedChat}
+      leadingCluster={leadingCluster}
       minimal={minimal}
+      modeControl={modeControl}
       onDictate={dictate}
       onQueue={queueDraft}
       onToggleAutoSpeak={handleToggleAutoSpeak}
@@ -1532,29 +1590,33 @@ export function ChatBar({
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
                   {/* Aro/Codex composition: editor first, dedicated action footer second. */}
                   <div
-                    className="grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[12px] border border-line-soft/70 bg-base/20 [grid-template-areas:'input'_'footer']"
+                    className={cn(
+                      "relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[16px] border transition-all duration-200 shadow-aro-e2 [grid-template-areas:'input'_'footer']",
+                      busy
+                        ? 'border-aro-cyan/50 shadow-[0_0_0_1px_rgba(34,211,238,0.25)]'
+                        : 'border-aro-line bg-aro-raise focus-within:border-aro-iris/50 focus-within:shadow-aro-glow-iris'
+                    )}
                     data-aro-composer-layout="codex"
                   >
-                    <div className="min-w-0 [grid-area:input] px-2.5 pt-2.5 pb-1">{input}</div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 border-t border-line-soft/60 bg-base/40 px-1.5 py-1.5 [grid-area:footer]">
-                      <div className="flex min-w-0 items-center gap-0.5 rounded-[10px] border border-line-soft bg-sunken/60 p-0.5">
-                        {contextMenu}
-                        <Button aria-label="Slash commands" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('/')} size="icon" type="button" variant="ghost">
-                          <span aria-hidden className="font-mono text-xs font-semibold">/</span>
-                        </Button>
-                        <Button aria-label="Path and context references" className="h-7 w-7 rounded-[8px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground" disabled={inputDisabled} onClick={() => insertText('@')} size="icon" type="button" variant="ghost">
-                          <span aria-hidden className="font-mono text-xs font-semibold">@</span>
-                        </Button>
+                    {busy && (
+                      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[2px] overflow-hidden rounded-t-[inherit]">
+                        <div className="animate-aro-sweep absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-cyan to-transparent" />
                       </div>
+                    )}
+                    <div className="min-w-0 [grid-area:input] px-4 pt-3.5 pb-2">{input}</div>
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 border-t border-aro-line-soft/60 bg-aro-base/40 px-1.5 py-1.5 [grid-area:footer]">
                       <ContribSlot area={COMPOSER_AREAS.leading} />
-                      <div className="ml-auto flex min-w-0 items-center justify-end gap-(--composer-control-gap)">
-                        <ContribSlot area={COMPOSER_AREAS.actions} />
-                        <div data-aro-composer-controls="" className="flex min-w-0 items-center">
-                          {controls}
-                        </div>
-                      </div>
+                      {controls}
+                      <ContribSlot area={COMPOSER_AREAS.actions} />
                     </div>
                   </div>
+                  <p className="mt-1.5 hidden select-none items-center justify-center gap-2 font-aro-mono text-[9.5px] text-aro-ink-4 sm:flex">
+                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⏎</kbd> send <span>·</span>
+                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⇧⏎</kbd> newline <span>·</span>
+                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⇧Tab</kbd> mode <span>·</span>
+                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">/</kbd> commands <span>·</span>
+                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⌘⇧V</kbd> voice
+                  </p>
                   <ContribSlot area={COMPOSER_AREAS.bottom} />
                 </div>
               </div>

@@ -92,7 +92,6 @@ export function IconButton({
         className,
       )}
       style={{ width: size, height: size }}
-      title={label}
     >
       <Icon size={Math.round(size * 0.5)} />
     </button>

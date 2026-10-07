@@ -311,7 +311,7 @@ export function AroReviewPage() {
                       </span>
                       <span className="min-w-0 flex-1 truncate font-aro-mono text-[10.5px] text-aro-ink-3">{h.header}</span>
                       {v && (
-                        <button aria-label={`Reset hunk ${i + 1}`} className={cn('inline-flex shrink-0 cursor-pointer items-center rounded-full px-1.5 py-px font-aro-mono text-[9.5px] transition-opacity hover:opacity-75', v === 'accepted' ? 'bg-aro-mint-tint text-aro-mint' : 'bg-aro-rose-tint text-aro-rose')} onDoubleClick={() => resetVerdict(key)} title="Double-click to reset">
+                        <button aria-label={`Reset hunk ${i + 1}`} className={cn('inline-flex shrink-0 cursor-pointer items-center rounded-full px-1.5 py-px font-aro-mono text-[9.5px] transition-opacity hover:opacity-75', v === 'accepted' ? 'bg-aro-mint-tint text-aro-mint' : 'bg-aro-rose-tint text-aro-rose')} onDoubleClick={() => resetVerdict(key)}>
                           {v === 'accepted' ? 'accepted ✓' : 'rejected'}
                         </button>
                       )}
