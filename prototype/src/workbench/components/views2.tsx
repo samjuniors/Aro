@@ -4,8 +4,8 @@ import type { Project } from "../data/providers";
 import { useWorkspace } from "../lib/workspace";
 import { useApp } from "../lib/app";
 import { makeId } from "../lib/storage";
-import { IconCheck, IconEye, IconExternal, IconFolder, IconGit, IconList, IconPlus, IconTrash } from "./Icons";
-import { Button, EmptyState, Input, Modal } from "./ui";
+import { IconCheck, IconCopy, IconExternal, IconEye, IconFolder, IconGit, IconGlobe, IconList, IconMonitor, IconMore, IconPlus, IconRefresh, IconSmartphone, IconTablet, IconTrash, IconX } from "./Icons";
+import { Button, EmptyState, Input, Menu, MenuItem, MenuSep, Modal, Tip } from "./ui";
 import { PageHeader } from "./Titlebar";
 
 export function TasksView({ onOpenSession: _onOpenSession }: { onOpenSession: (id: string) => void }) {
@@ -42,13 +42,109 @@ export function GitView({ project, onReview }: { project?: Project; onReview: ()
   </div>;
 }
 
+/* --------------------------------- browser -------------------------------- */
+
+type BrowserTab = { id: string; input: string; url: string; title: string; loading: boolean; nonce: number };
+type ViewportId = "desktop" | "tablet" | "mobile";
+const VIEWPORTS: { id: ViewportId; label: string; width: string; icon: typeof IconMonitor }[] = [
+  { id: "desktop", label: "Desktop", width: "", icon: IconMonitor },
+  { id: "tablet", label: "Tablet", width: "768px", icon: IconTablet },
+  { id: "mobile", label: "Mobile", width: "390px", icon: IconSmartphone },
+];
+const freshTab = (): BrowserTab => ({ id: makeId("tab"), input: "", url: "", title: "New tab", loading: false, nonce: 0 });
+const hostOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return "New tab"; } };
+
 export function BrowserView({ onAskAgent }: { onAskAgent: (text: string) => void }) {
-  const [input, setInput] = useState("");
-  const [url, setUrl] = useState("");
+  const { toast } = useApp();
+  const [tabs, setTabs] = useState<BrowserTab[]>([freshTab()]);
+  const [activeId, setActiveId] = useState<string>("");
+  const [viewport, setViewport] = useState<ViewportId>("desktop");
   const [error, setError] = useState("");
-  const open = () => { try { const parsed = new URL(input.includes("://") ? input : `https://${input}`); if (!["http:", "https:"].includes(parsed.protocol)) throw new Error(); setUrl(parsed.href); setError(""); } catch { setError("Enter a valid HTTP or HTTPS URL."); } };
-  return <div className="flex min-h-0 flex-1 flex-col"><div className="flex flex-wrap items-center gap-2 border-b border-line-soft px-4 py-3"><IconEye size={13} className="text-ink-3" /><Input placeholder="Enter a preview URL" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && open()} className="min-w-[160px] flex-1 font-mono text-[11px]" /><Button size="sm" disabled={!input.trim()} onClick={open}>Open</Button>{url && <Button size="sm" icon={IconExternal} onClick={() => window.open(url, "_blank", "noopener,noreferrer")}>External</Button>}</div>
-    {error && <p className="px-4 py-2 text-[11px] text-rose">{error}</p>}
-    {url ? <><p className="border-b border-line-soft px-4 py-2 text-[10px] text-ink-4">Some sites block embedded previews. If the pane is blank, open the URL externally. Browser automation is not connected.</p><iframe title="Website preview" src={url} sandbox="allow-scripts allow-forms" referrerPolicy="no-referrer" className="min-h-0 flex-1 border-0 bg-white" /><div className="border-t border-line-soft p-3"><Button size="xs" onClick={() => onAskAgent(`Help me understand this page: ${url}. I will provide any content you need.`)}>Discuss this URL</Button></div></> : <EmptyState icon={IconEye} title="No page open" body="Enter a URL to open a real preview. No example page or fake console output is shown." />}
+  const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
+
+  const patch = (id: string, next: Partial<BrowserTab>) => setTabs((all) => all.map((t) => (t.id === id ? { ...t, ...next } : t)));
+  const open = () => {
+    try {
+      const parsed = new URL(active.input.includes("://") ? active.input : `https://${active.input}`);
+      if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("bad protocol");
+      patch(active.id, { url: parsed.href, input: parsed.href, title: hostOf(parsed.href), loading: true });
+      setError("");
+    } catch { setError("Enter a valid HTTP or HTTPS URL."); }
+  };
+  const newTab = (url = "") => {
+    const tab: BrowserTab = { ...freshTab(), input: url, url, title: url ? hostOf(url) : "New tab", loading: Boolean(url) };
+    setTabs((all) => [...all, tab]);
+    setActiveId(tab.id);
+    setError("");
+  };
+  const closeTab = (id: string) => {
+    const index = tabs.findIndex((t) => t.id === id);
+    if (index === -1) return;
+    const rest = tabs.filter((t) => t.id !== id);
+    if (rest.length === 0) { const fresh = freshTab(); setTabs([fresh]); setActiveId(fresh.id); return; }
+    setTabs(rest);
+    if (id === active.id) setActiveId(rest[Math.min(Math.max(0, index - 1), rest.length - 1)].id);
+  };
+  const duplicateTab = (id = active.id) => {
+    const source = tabs.find((t) => t.id === id);
+    if (!source) return;
+    const copy: BrowserTab = { ...source, id: makeId("tab") };
+    const at = tabs.findIndex((t) => t.id === id);
+    setTabs((all) => [...all.slice(0, at + 1), copy, ...all.slice(at + 1)]);
+    setActiveId(copy.id);
+    toast("Tab duplicated", "mint");
+  };
+  const reload = () => patch(active.id, { loading: true, nonce: active.nonce + 1 });
+
+  return <div className="flex min-h-0 flex-1 flex-col">
+    {/* tab strip — switch, close, duplicate; “+” and ⋯ for the rest */}
+    <div className="browser-tabstrip" role="tablist" aria-label="Browser tabs">
+      {tabs.map((t) => (
+        <div key={t.id} role="tab" aria-selected={t.id === active.id} className={cn("browser-tab", t.id === active.id && "is-active")}>
+          <button type="button" className="browser-tab-main" onClick={() => { setActiveId(t.id); setError(""); }} title={t.url || "New tab"}>
+            <span className="browser-tab-globe" aria-hidden>
+              {t.loading ? <span className="browser-tab-spinner" /> : <IconGlobe size={11} />}
+            </span>
+            <span className="browser-tab-title">{t.title}</span>
+          </button>
+          <button type="button" className="browser-tab-close" onClick={() => closeTab(t.id)} aria-label={`Close ${t.title}`}><IconX size={10} /></button>
+        </div>
+      ))}
+      <Tip label="New tab">
+        <button type="button" className="browser-tab-new" onClick={() => newTab()} aria-label="New browser tab"><IconPlus size={12} /></button>
+      </Tip>
+      <span className="min-w-0 flex-1" />
+      <Menu align="right" width={196} trigger={() => <button type="button" className="browser-tab-new" aria-label="Tab actions" title="Tab actions"><IconMore size={12} /></button>}>
+        {(close) => <>
+          <MenuItem icon={<IconPlus size={12} />} label="New tab" onClick={() => { close(); newTab(); }} />
+          <MenuItem icon={<IconCopy size={12} />} label="Duplicate current tab" onClick={() => { close(); duplicateTab(); }} />
+          <MenuItem icon={<IconRefresh size={12} />} label="Reload page" disabled={!active.url} onClick={() => { close(); reload(); }} />
+          <MenuSep />
+          <MenuItem icon={<IconX size={12} />} label="Close other tabs" disabled={tabs.length < 2} onClick={() => { close(); setTabs([active]); }} />
+          <MenuItem icon={<IconTrash size={12} />} label="Close all tabs" danger onClick={() => { close(); const fresh = freshTab(); setTabs([fresh]); setActiveId(fresh.id); }} />
+        </>}
+      </Menu>
+    </div>
+    {/* url bar + viewport switcher */}
+    <div className="browser-toolbar">
+      <Input placeholder="Enter a preview URL" value={active.input} onChange={(e) => patch(active.id, { input: e.target.value })} onKeyDown={(e) => e.key === "Enter" && open()} className="min-w-[140px] flex-1 font-mono text-[11px]" aria-label="Preview URL" />
+      <Button size="sm" disabled={!active.input.trim()} onClick={open}>Open</Button>
+      {active.url && <Tip label="Reload"><button type="button" className="browser-tool-btn" onClick={reload} aria-label="Reload page"><IconRefresh size={13} /></button></Tip>}
+      <div className="browser-viewport-group" role="group" aria-label="Viewport size">
+        {VIEWPORTS.map((v) => <Tip key={v.id} label={v.label}><button type="button" className={cn("browser-viewport-btn", viewport === v.id && "is-active")} onClick={() => setViewport(v.id)} aria-label={`${v.label} viewport`} aria-pressed={viewport === v.id}><v.icon size={13} /></button></Tip>)}
+      </div>
+      {active.url && <Tip label="Open externally"><button type="button" className="browser-tool-btn" onClick={() => window.open(active.url, "_blank", "noopener,noreferrer")} aria-label="Open in external browser"><IconExternal size={13} /></button></Tip>}
+    </div>
+    {error && <p className="px-4 py-2 text-[11px] text-rose" role="alert">{error}</p>}
+    {active.url ? <>
+      <p className="browser-note">Some sites block embedded previews. If the pane stays blank, open it externally — browser automation is not connected.</p>
+      <div className={cn("browser-stage", viewport !== "desktop" && "has-device")}>
+        <div className={cn("browser-frame", viewport !== "desktop" && "is-device")} style={viewport !== "desktop" ? { width: VIEWPORTS.find((v) => v.id === viewport)!.width, maxWidth: "100%" } : undefined}>
+          {active.loading && <div className="browser-loading" aria-hidden><span /></div>}
+          <iframe key={`${active.id}-${active.nonce}`} title={`${active.title} preview`} src={active.url} sandbox="allow-scripts allow-forms" referrerPolicy="no-referrer" className="browser-iframe" onLoad={() => patch(active.id, { loading: false })} />
+        </div>
+      </div>
+      <div className="browser-footer"><Button size="xs" onClick={() => onAskAgent(`Help me understand this page: ${active.url}. I will provide any content you need.`)}>Discuss this URL</Button></div>
+    </> : <EmptyState icon={IconEye} title="No page open" body="Enter a URL to open a real preview. Open several pages in tabs, duplicate them, or switch between desktop, tablet and mobile widths." />}
   </div>;
 }

@@ -3,7 +3,6 @@ import { cn } from "../utils/cn";
 import type { Step } from "../data/catalog";
 import { useWorkspace } from "../lib/workspace";
 import { IconCheck, IconChevronDown, IconPlus, IconSpark, IconTrash, IconX } from "./Icons";
-import { Bar } from "./ui";
 
 /** Pull the plan lines out of an agent's tool step ("plan" tool) or numbered text. */
 export function extractPlanTodos(steps: Step[]): string[] {
@@ -28,11 +27,11 @@ export function extractPlanTodos(steps: Step[]): string[] {
 }
 
 /**
- * Agent plan docked directly ABOVE the composer — slim, minimal strip that
- * replaces the old project bar. Visible ONLY while the agent has a plan
- * (workspace-sticky: it survives switching sessions/projects until cleared
- * or replaced by a new plan). The panel opens UPWARD, over the transcript,
- * so it never covers the composer.
+ * Agent plan docked directly ABOVE the composer — a minimal card
+ * (reference: TODO.png) whose header row is the collapsed state. Visible
+ * ONLY while the agent has a plan (workspace-sticky: it survives switching
+ * sessions/projects until cleared or replaced by a new plan). The panel
+ * opens UPWARD, over the transcript, so it never covers the composer.
  */
 export function PlanTodoCorner() {
   const { agentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan } = useWorkspace();
@@ -82,90 +81,75 @@ export function PlanTodoCorner() {
 
   return (
     <div ref={anchorRef} className="plan-todo-anchor">
-      {/* slim strip above the composer — opens the panel upward */}
+      {/* collapsed state = the card's header row — icon, title, progress
+          track, "0 / 9" counter, chevron (TODO.png reference) */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn("plan-todo-strip", open && "is-active", allDone && "is-completed")}
         aria-expanded={open}
-        aria-label={`Agent plan — ${doneCount} of ${totalCount} done`}
+        aria-label={`Todo progress — ${doneCount} of ${totalCount} done`}
       >
-        <span className="plan-todo-strip-icon">
-          <IconSpark size={11} />
+        <span className="plan-todo-strip-icon" aria-hidden>
+          <IconSpark size={12} />
         </span>
-        <span className="plan-todo-strip-label">Agent plan</span>
-        <span className="plan-todo-strip-stats font-mono">
-          {doneCount}/{totalCount}
-        </span>
+        <span className="plan-todo-strip-title">Todo progress</span>
         <span className="plan-todo-strip-track" aria-hidden>
           <span className="plan-todo-strip-fill" style={{ width: `${progressPct}%` }} />
         </span>
-        {allDone && <IconCheck size={10} className="plan-todo-strip-done" />}
-        <IconChevronDown
-          size={11}
-          className={cn("plan-todo-strip-arrow transition-transform duration-200", !open && "rotate-180")}
-        />
+        <span className="plan-todo-strip-count">{doneCount} / {totalCount}</span>
+        <IconChevronDown size={12} className={cn("plan-todo-strip-arrow", !open && "is-closed")} />
       </button>
 
-      {/* dropdown panel — floats UPWARD over the transcript */}
+      {/* expanded card — floats UPWARD over the transcript */}
       {open && (
         <div className="plan-todo-dropdown animate-slide-up shadow-e4" role="dialog" aria-label="Agent plan">
-          <div className="plan-todo-header">
-            <div className="plan-todo-title-wrap">
-              <span className="plan-todo-badge">
-                <IconSpark size={10} />
-                <span>Agent plan</span>
-              </span>
-              <span className="plan-todo-count font-mono">
-                {doneCount} of {totalCount} · sticks to the composer
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className="plan-todo-toggle-btn hover:text-rose"
-                onClick={() => { clearAgentPlan(); setOpen(false); }}
-                title="Clear the plan from the composer"
-                aria-label="Clear agent plan"
-              >
-                <IconTrash size={11} />
-              </button>
-              <button
-                type="button"
-                className="plan-todo-toggle-btn"
-                onClick={() => setOpen(false)}
-                aria-label="Close plan panel"
-              >
-                <IconChevronDown size={12} />
-              </button>
-            </div>
+          <div className="plan-todo-head">
+            <span className="plan-todo-head-icon" aria-hidden>
+              <IconSpark size={12} />
+            </span>
+            <span className="plan-todo-head-title">Todo progress</span>
+            <span className="plan-todo-head-count">{doneCount} of {totalCount} complete</span>
+            <button
+              type="button"
+              className="plan-todo-head-btn hover:text-rose"
+              onClick={() => { clearAgentPlan(); setOpen(false); }}
+              title="Clear the plan from the composer"
+              aria-label="Clear agent plan"
+            >
+              <IconTrash size={12} />
+            </button>
+            <button
+              type="button"
+              className="plan-todo-head-btn"
+              onClick={() => setOpen(false)}
+              aria-label="Close plan panel"
+            >
+              <IconChevronDown size={13} />
+            </button>
           </div>
 
           <div className="plan-todo-body">
-            <div className="plan-todo-bar">
-              <Bar value={progressPct} tone={allDone ? "mint" : "iris"} height={3} />
-            </div>
-
             <div className="plan-todo-list scroll-thin">
-              {items.map((item) => {
+              {items.map((item, index) => {
                 const isDone = item.state === "done";
                 const isDoing = item.state === "doing";
                 return (
-                  <div key={item.id} className="plan-todo-item group">
+                  <div key={item.id} className="plan-todo-item group" style={{ animationDelay: `${Math.min(index * 26, 208)}ms` }}>
                     <button
                       type="button"
                       onClick={() => toggleItem(item.id, item.state)}
                       className={cn("plan-todo-checkbox", isDone && "is-done", isDoing && "is-doing")}
                       aria-label={`Mark "${item.text}" as ${isDone ? "incomplete" : "complete"}`}
                     >
-                      {isDone && <IconCheck size={9} />}
+                      {isDone && <IconCheck size={8} strokeWidth={2.6} />}
                       {isDoing && <span className="plan-todo-pulse-dot" />}
                     </button>
-                    <span className={cn("plan-todo-text", isDone && "line-through opacity-50")}>{item.text}</span>
+                    <span className={cn("plan-todo-text", isDone && "is-done")}>{item.text}</span>
                     <button
                       type="button"
                       onClick={() => removeAgentPlanItem(item.id)}
-                      className="plan-todo-remove opacity-0 transition-opacity group-hover:opacity-100"
+                      className="plan-todo-remove"
                       aria-label={`Remove ${item.text} from plan`}
                     >
                       <IconX size={10} />
@@ -175,21 +159,22 @@ export function PlanTodoCorner() {
               })}
             </div>
 
-            <form onSubmit={handleAdd} className="plan-todo-add-form">
+            <form onSubmit={handleAdd} className="plan-todo-add">
               <input
                 type="text"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
-                placeholder="Add step to plan..."
-                className="plan-todo-input"
+                placeholder="Add a step to the plan…"
+                className="plan-todo-add-input"
+                aria-label="Add a step to the plan"
               />
               <button
                 type="submit"
                 disabled={!newText.trim()}
-                className="plan-todo-submit-btn"
+                className="plan-todo-add-btn"
                 aria-label="Add step"
               >
-                <IconPlus size={11} />
+                <IconPlus size={12} />
               </button>
             </form>
           </div>

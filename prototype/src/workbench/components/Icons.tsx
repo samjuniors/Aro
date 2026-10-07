@@ -8,7 +8,7 @@ const base = (p: P) => ({
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.7,
+  strokeWidth: 1.8,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   ...p,
@@ -406,6 +406,18 @@ export const IconMore = (p: P) => (
     <circle cx="5.5" cy="12" r="1.2" fill="currentColor" />
     <circle cx="12" cy="12" r="1.2" fill="currentColor" />
     <circle cx="18.5" cy="12" r="1.2" fill="currentColor" />
+  </svg>
+);
+export const IconTablet = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="4.5" y="3" width="15" height="18" rx="2.2" />
+    <path d="M10.7 17.7h2.6" />
+  </svg>
+);
+export const IconSmartphone = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="7" y="2.5" width="10" height="19" rx="2.4" />
+    <path d="M10.7 18.5h2.6" />
   </svg>
 );
 

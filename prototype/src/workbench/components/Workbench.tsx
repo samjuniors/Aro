@@ -3,6 +3,7 @@ import { cn } from "../utils/cn";
 import { type ModeId, type Session, type Step } from "../data/catalog";
 import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
+import { readStored, writeStored } from "../lib/storage";
 import { useDictation, engineMeta } from "../lib/dictation";
 import { formatSeconds } from "../lib/speak";
 import { ProjectPickerPanel } from "./ProjectDialog";
@@ -51,11 +52,23 @@ function SessionHeader({ session, sessions, onSelect, onNew }: Pick<WorkbenchPro
   </header>;
 }
 
+/* Reasoning-effort levels — Codex-style strength ramp: the further right,
+   the hotter the accent color (neutral → cyan → iris → amber → rose). */
+const EFFORTS = [
+  { id: "minimal", label: "Minimal", color: "var(--color-ink-3)", desc: "Straight to the point — no visible reasoning. Fastest and cheapest for lookups." },
+  { id: "low", label: "Low", color: "var(--color-cyan)", desc: "Light reasoning for small edits, renames and quick fixes." },
+  { id: "medium", label: "Medium", color: "var(--color-iris-soft)", desc: "Balanced thinking for everyday coding — the sensible default." },
+  { id: "high", label: "High", color: "var(--color-amber)", desc: "Deep multi-step reasoning for tricky bugs and cross-file refactors." },
+  { id: "ultra", label: "Ultra", color: "var(--color-rose)", desc: "Maximum reasoning power — architecture, migrations, hard proofs." },
+] as const;
+
 function Composer(props: WorkbenchProps) {
   const { product, providers, toast, setSettingsSection } = useApp();
   const [value, setValue] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [effort, setEffort] = useState("Medium");
+  const [effort, setEffort] = useState(() => Math.min(EFFORTS.length - 1, Math.max(0, readStored<number>("conductor.pref.effort", 2))));
+  const effortLevel = EFFORTS[effort];
+  const setEffortIdx = (index: number) => { setEffort(index); writeStored("conductor.pref.effort", index); };
   const [modelQuery, setModelQuery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -122,7 +135,7 @@ function Composer(props: WorkbenchProps) {
       <textarea ref={textarea} data-composer="true" rows={2} value={value} onChange={(e) => setValue(e.target.value)} placeholder={dictation.listening ? "Listening — speak or press Esc to stop" : "Do anything"} aria-label="Message to the coding agent" spellCheck
         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} className="reference-composer-input" />
       <div className="reference-composer-toolbar">
-        <Menu side="top" width={225} trigger={() => <button className="composer-icon-button" aria-label="Add files or context"><IconPlus size={16} /></button>}>
+        <Menu side="top" width={225} trigger={() => <button className="composer-icon-button" aria-label="Add files or context"><IconPlus size={15} /></button>}>
           {(close) => <>
                 <MenuItem icon={<IconPaperclip size={13} />} label="Attach text or code files" onClick={() => { close(); fileInput.current?.click(); }} />
             <MenuItem icon={<IconFolder size={13} />} label="Choose project" onClick={() => { close(); window.setTimeout(() => setProjectMenuOpen(true), 16); }} />
@@ -138,7 +151,7 @@ function Composer(props: WorkbenchProps) {
           {(close) => <ProjectPickerPanel project={props.project} onChoose={(id, created) => { props.onChooseProject(id, created); close(); }} />}
         </Menu>
         <input ref={fileInput} type="file" multiple accept=".txt,.md,.js,.jsx,.ts,.tsx,.json,.py,.html,.css,.scss,.yaml,.yml,.toml,.rs,.go,.java,.c,.cpp,.sql,.sh" className="hidden" onChange={(e) => { const selected = Array.from(e.target.files ?? []); const readable = selected.filter((file) => file.size <= 128_000 && !/^(image|video|audio)\//.test(file.type)); if (readable.length < selected.length) toast("Attach text/code files smaller than 128 KB. Unsupported files were not added.", "amber"); setFiles((all) => [...all, ...readable].slice(0, 8)); e.target.value = ""; }} />
-        <Menu side="top" width={310} trigger={() => <button className={cn("permission-control", props.mode === "full" && "full-permission")} aria-label={`Permissions: ${permission.label}`}><IconShield size={13} /><span>{permission.short}</span></button>}>
+        <Menu side="top" width={310} trigger={() => <button className={cn("permission-control", props.mode === "full" && "full-permission")} aria-label={`Permissions: ${permission.label}`}><IconShield size={14} /><span>{permission.short}</span></button>}>
           {(close) => <>
             <MenuLabel>Permissions</MenuLabel>
             {modeDefs(product).map((mode) => <button key={mode.id} onClick={() => { props.setMode(mode.id); close(); }} className={cn("flex w-full items-start gap-2.5 rounded-[7px] px-2 py-2 text-left hover:bg-hover", mode.id === props.mode && "bg-hover/70")}>
@@ -149,7 +162,7 @@ function Composer(props: WorkbenchProps) {
         </Menu>
 
         <div className="composer-right-controls">
-          <Menu side="top" align="right" width={340} trigger={() => <button className="model-control" aria-label="Choose model and reasoning effort">{pickerIcon}<span className="model-label">{selectedModel?.label ?? "Choose model"}</span><span className="model-effort">{effort}</span><IconChevronDown size={10} className="text-ink-4" /></button>}>
+          <Menu side="top" align="right" width={340} trigger={() => <button className="model-control" aria-label="Choose model and reasoning effort">{pickerIcon}<span className="model-label">{selectedModel?.label ?? "Choose model"}</span><span className="model-effort" data-level={effortLevel.id} style={{ ["--effort-color" as string]: effortLevel.color }}><i className="model-effort-dot" aria-hidden />{effortLevel.label}</span><IconChevronDown size={11} className="text-ink-4" /></button>}>
             {(close) => <>
               <div className="relative px-1 py-1"><IconSearch size={11} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-4" /><input placeholder="Search models" value={modelQuery} onChange={(e) => setModelQuery(e.target.value)} className="h-[30px] w-full rounded-[6px] border border-line bg-well pr-2 pl-7 text-[12px] outline-none" /></div>
               <div className="scroll-thin max-h-[300px] overflow-y-auto">
@@ -159,16 +172,27 @@ function Composer(props: WorkbenchProps) {
                   return <div key={p.id}><div className="px-2 pt-1 font-mono text-[9px] text-ink-4">{p.name}</div>{matches.map((model) => <MenuItem key={model.id} label={model.label} hint={p.status === "ready" ? "available" : "catalog"} active={props.modelId === `provider:${p.id}:${model.id}`} onClick={() => { props.setModelId(`provider:${p.id}:${model.id}`); close(); }} />)}</div>;
                 })}</div>)}
               </div>
-              <MenuSep /><MenuLabel>Reasoning effort</MenuLabel><div className="flex gap-1 px-1 pb-1">{["Low", "Medium", "High"].map((item) => <button key={item} onClick={() => setEffort(item)} className={cn("flex-1 rounded-[6px] border px-2 py-1 text-[11px]", effort === item ? "border-line-strong bg-hover text-ink" : "border-line text-ink-3")}>{item}</button>)}</div>
+              <MenuSep /><MenuLabel>Reasoning effort</MenuLabel>
+              <div className="effort-slider" style={{ ["--effort-color" as string]: effortLevel.color }}>
+                <div className="effort-slider-head">
+                  <span className="effort-level-name"><i className="effort-level-dot" aria-hidden />{effortLevel.label}</span>
+                  <span className="effort-bars" aria-hidden>
+                    {EFFORTS.map((_, i) => <i key={i} className={cn(i <= effort && "is-on")} style={{ height: 4 + i * 2 }} />)}
+                  </span>
+                </div>
+                <input type="range" min={0} max={EFFORTS.length - 1} step={1} value={effort} onChange={(e) => setEffortIdx(Number(e.target.value))} className="effort-range" aria-label={`Reasoning effort — ${effortLevel.label}`} aria-valuetext={effortLevel.label} style={{ ["--effort-fill" as string]: `${(effort / (EFFORTS.length - 1)) * 100}%` }} />
+                <div className="effort-slider-scale"><span>Minimal</span><span>Ultra</span></div>
+                <p className="effort-slider-desc">{effortLevel.desc}</p>
+              </div>
               <MenuSep /><MenuItem icon={<IconPlus size={12} />} label="Configure providers" onClick={() => { close(); openProviders(); }} />
             </>}
           </Menu>
           <Tip label={dictation.listening ? "Stop dictation · Esc" : "Talk to type · ⌘⇧V"}>
             <button className={cn("composer-icon-button wave-button", dictation.listening && "recording")} onClick={dictation.toggle} aria-label={dictation.listening ? "Stop speech-to-text recording" : "Record speech to text"} aria-pressed={dictation.listening}>
-              {dictation.listening ? <IconStop size={13} /> : <IconMic size={16} />}
+              {dictation.listening ? <IconStop size={14} /> : <IconMic size={15} />}
             </button>
           </Tip>
-          {props.streaming ? <button onClick={props.onStop} className="reference-send-button sending" aria-label="Stop response"><IconStop size={12} /></button> : <button disabled={!value.trim() || submitting} onClick={() => void submit()} className="reference-send-button" aria-label="Send message"><IconArrowUp size={15} /></button>}
+          {props.streaming ? <button onClick={props.onStop} className="reference-send-button sending" aria-label="Stop response"><IconStop size={12} /></button> : <button disabled={!value.trim() || submitting} onClick={() => void submit()} className="reference-send-button" aria-label="Send message"><IconArrowUp size={16} /></button>}
         </div>
       </div>
     </div>

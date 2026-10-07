@@ -31,6 +31,40 @@ const pickMime = () => {
   return "";
 };
 
+/** Encode Float32 samples as a 16-bit PCM mono WAV blob. */
+const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
+  const bytes = new DataView(new ArrayBuffer(44 + samples.length * 2));
+  const w = (offset: number, text: string) => { for (let i = 0; i < text.length; i += 1) bytes.setUint8(offset + i, text.charCodeAt(i)); };
+  w(0, "RIFF"); bytes.setUint32(4, 36 + samples.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+  bytes.setUint32(16, 16, true); bytes.setUint16(20, 1, true); bytes.setUint16(22, 1, true);
+  bytes.setUint32(24, sampleRate, true); bytes.setUint32(28, sampleRate * 2, true);
+  bytes.setUint16(32, 2, true); bytes.setUint16(34, 16, true);
+  w(36, "data"); bytes.setUint32(40, samples.length * 2, true);
+  let at = 44;
+  for (let i = 0; i < samples.length; i += 1, at += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    bytes.setInt16(at, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([bytes.buffer], { type: "audio/wav" });
+};
+
+/** Convert any recorded clip to 16 kHz mono WAV. The transcription service
+ *  accepts WAV/WebM only — some environments record matroska or another
+ *  container it can't detect, so this normalizes the payload everywhere. */
+const blobToWav = async (blob: Blob): Promise<Blob> => {
+  const Ctx = window.OfflineAudioContext ?? (window as Window & { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext;
+  if (!Ctx) throw new Error("no audio decoder");
+  const decode = new Ctx(1, 1, 16000);
+  const decoded = await decode.decodeAudioData(await blob.arrayBuffer());
+  const channels = Math.min(2, decoded.numberOfChannels);
+  const left = decoded.getChannelData(0);
+  if (channels === 1 || decoded.numberOfChannels === 1) return encodeWav(left, decoded.sampleRate);
+  const right = decoded.getChannelData(1);
+  const mono = new Float32Array(left.length);
+  for (let i = 0; i < left.length; i += 1) mono[i] = (left[i] + right[i]) / 2;
+  return encodeWav(mono, decoded.sampleRate);
+};
+
 const tidy = (text: string) => {
   const trimmed = text.replace(/\s+/g, " ").trim();
   if (!trimmed) return "";
@@ -124,9 +158,12 @@ export function useDictation(onFinal: (text: string) => void, onError?: (msg: st
     try {
       while (chunksRef.current.length > 0) {
         const batch = chunksRef.current.splice(0, chunksRef.current.length);
-        const blob = new Blob(batch, { type: recorderRef.current?.mimeType || "audio/webm" });
+        let blob = new Blob(batch, { type: recorderRef.current?.mimeType || "audio/webm" });
         if (blob.size < 2048) continue;
         if (stoppedRef.current) break;
+        /* normalize the clip to WAV — some browsers record containers the
+           transcription service can't read ("unknown audio format") */
+        try { blob = await blobToWav(blob); } catch { /* send the original — webm is still accepted */ }
         const base64 = await blobToBase64(blob);
         setInterim("…");
         try {
