@@ -8,7 +8,6 @@ import {
   DEMO_DIFF_STATS,
   DEMO_PR,
   DEMO_PROJECT_ID,
-  DEMO_PROJECT_FILES,
 } from "../data/demo";
 import { useApp } from "../lib/app";
 import {
@@ -16,11 +15,11 @@ import {
   IconChevronDown,
   IconFile,
   IconFilePlus,
-  IconFolder,
   IconGit,
+  IconList,
   IconMaximize,
+  IconMinimize,
   IconMore,
-  IconPlus,
   IconRefresh,
   IconSearch,
   IconSettings,
@@ -28,7 +27,7 @@ import {
   IconUndo,
   IconX,
 } from "./Icons";
-import { Menu, MenuItem, MenuLabel } from "./ui";
+import { Menu, MenuItem, MenuLabel, MenuSep } from "./ui";
 import { DiffView } from "./Transcript";
 
 export function formatCount(n: number) {
@@ -172,25 +171,23 @@ export function RepoBar({
 }
 
 /* =========================================================================
-   CODEX / CURSOR STYLE CHANGES & DIFFERENCE PANEL (Matches user's screenshot)
-   - Top tab bar: [ 📄 Changes ✕ ]  +                ⤢  ◫
-   - Subheader toolbar: [ Branch ▾ ] [ main → origin/main ▾ ]   ··· 📄 ↻ ⮂ 🎚️ ◫ 📁
-   - Left side: Wide Diff Viewer (or "No file changes yet" with file+ icon)
-   - Right side: Search "Filter files..." + files list ("No matching files" when empty)
+   CODEX / CURSOR STYLE CHANGES & DIFFERENCE PANEL
+   ONE top section only: the surrounding surface (workspace tab strip,
+   sheet header or drawer header) already names the view — this content
+   starts directly at its toolbar.
+   - Toolbar: [ Branch ▾ ] [ main → origin/main ▾ ]      ··· ◫  ☰
+   - Split view: wide diff viewer (or "No file changes yet") | files list
+   - Tracks its own width (container queries): on a narrow panel the file
+     list stacks below the diff instead of crushing it, and spare toolbar
+     icons retire into the ··· menu — nothing ever overlaps.
    ========================================================================= */
 export function ChangesPanelContent({
   project,
   state,
-  onClose,
-  isMaximized,
-  onToggleMaximize,
   onMerge,
 }: {
   project?: Project;
   state?: RepoState | null;
-  onClose?: () => void;
-  isMaximized?: boolean;
-  onToggleMaximize?: () => void;
   onMerge?: () => void;
 }) {
   const { toast } = useApp();
@@ -199,12 +196,10 @@ export function ChangesPanelContent({
   const [diffMode, setDiffMode] = useState<"unified" | "split">("unified");
   const [branchMenu, setBranchMenu] = useState("main");
   const [showRightFiles, setShowRightFiles] = useState(true);
-  const [tab, setTab] = useState<"changes" | "files">("changes");
 
   const effectiveState = state ?? (project ? repoStateFor(project) : null);
   const isDemo = effectiveState?.isDemo ?? false;
   const files = isDemo ? DEMO_CHANGED_FILES : effectiveState?.files ?? [];
-  const tree = isDemo ? DEMO_PROJECT_FILES : [];
 
   const filteredFiles = useMemo(() => {
     if (!filterQuery.trim()) return files;
@@ -218,57 +213,8 @@ export function ChangesPanelContent({
 
   return (
     <div className="codex-changes-container">
-      {/* 1. Top Tab Header Bar */}
-      <div className="codex-changes-tabbar">
-        <div className="codex-changes-tabbar-left">
-          <div className="codex-changes-tab-pill">
-            <IconFile size={13} className="text-ink-3" />
-            <span className="codex-changes-tab-title">Changes</span>
-            {onClose && (
-              <button
-                type="button"
-                onClick={onClose}
-                className="codex-changes-tab-close"
-                title="Close (Esc)"
-                aria-label="Close changes panel"
-              >
-                <IconX size={11} />
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            className="codex-changes-tab-plus"
-            title="New diff / tab"
-            onClick={() => toast("All workspace diffs are live in this view.", "iris")}
-          >
-            <IconPlus size={13} />
-          </button>
-        </div>
-
-        <div className="codex-changes-tabbar-right">
-          {onToggleMaximize && (
-            <button
-              type="button"
-              className={cn("codex-changes-tabbar-icon-btn", isMaximized && "text-iris-soft")}
-              onClick={onToggleMaximize}
-              title={isMaximized ? "Restore view" : "Maximize (⤢)"}
-            >
-              <IconMaximize size={13} />
-            </button>
-          )}
-          <button
-            type="button"
-            className={cn("codex-changes-tabbar-icon-btn", !showRightFiles && "opacity-50")}
-            onClick={() => setShowRightFiles((v) => !v)}
-            title="Toggle files panel"
-          >
-            <IconSplitVertical size={13} />
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Secondary Subheader Bar (Branch and Actions) */}
+      {/* 1. Toolbar (Branch and Actions) — the single header this view adds;
+          the tab strip / sheet header above it is the one-and-only top bar */}
       <div className="codex-changes-subheader">
         <div className="codex-changes-subheader-left">
           {/* Branch dropdown */}
@@ -332,19 +278,36 @@ export function ChangesPanelContent({
           </Menu>
         </div>
 
-        {/* Action icons on right */}
+        {/* Action icons on right — secondary actions live in the ··· menu so
+            the row stays one line at any panel width */}
         <div className="codex-changes-subheader-right">
           <Menu
-            width={180}
+            width={210}
             align="right"
             trigger={() => (
-              <button type="button" className="codex-changes-action-icon" title="More options">
+              <button type="button" className="codex-changes-action-icon" title="More options" aria-label="More options">
                 <IconMore size={13} />
               </button>
             )}
           >
             {(close) => (
               <>
+                <MenuItem
+                  icon={<IconRefresh size={12} />}
+                  label="Refresh changes"
+                  onClick={() => { toast("Refreshed changes from repository", "mint"); close(); }}
+                />
+                <MenuItem
+                  icon={<IconFile size={12} />}
+                  label="Stage / commit file"
+                  onClick={() => { toast("Changes are automatically watched", "iris"); close(); }}
+                />
+                <MenuItem
+                  icon={<IconUndo size={12} />}
+                  label="Revert selected file"
+                  onClick={() => { toast("Checkout previous version", "amber"); close(); }}
+                />
+                <MenuSep />
                 <MenuItem
                   label="Stage all changes"
                   onClick={() => {
@@ -366,35 +329,9 @@ export function ChangesPanelContent({
 
           <button
             type="button"
-            className="codex-changes-action-icon"
-            title="Stage / commit file"
-            onClick={() => toast("Changes are automatically watched", "iris")}
-          >
-            <IconFile size={13} />
-          </button>
-
-          <button
-            type="button"
-            className="codex-changes-action-icon"
-            title="Refresh changes"
-            onClick={() => toast("Refreshed changes from repository", "mint")}
-          >
-            <IconRefresh size={13} />
-          </button>
-
-          <button
-            type="button"
-            className="codex-changes-action-icon"
-            title="Revert selected file"
-            onClick={() => toast("Checkout previous version", "amber")}
-          >
-            <IconUndo size={13} />
-          </button>
-
-          <button
-            type="button"
             className={cn("codex-changes-action-icon", diffMode === "split" && "text-iris-soft")}
             title={diffMode === "split" ? "Switch to unified diff" : "Switch to split diff"}
+            aria-pressed={diffMode === "split"}
             onClick={() => setDiffMode((m) => (m === "unified" ? "split" : "unified"))}
           >
             <IconSplitVertical size={13} />
@@ -402,11 +339,12 @@ export function ChangesPanelContent({
 
           <button
             type="button"
-            className={cn("codex-changes-action-icon", tab === "files" && "text-iris-soft")}
-            title={tab === "files" ? "Show changed diffs" : "Show project files"}
-            onClick={() => setTab((t) => (t === "changes" ? "files" : "changes"))}
+            className={cn("codex-changes-action-icon", !showRightFiles && "opacity-50")}
+            title={showRightFiles ? "Hide the file list" : "Show the file list"}
+            aria-pressed={showRightFiles}
+            onClick={() => setShowRightFiles((v) => !v)}
           >
-            <IconFolder size={13} />
+            <IconList size={13} />
           </button>
         </div>
       </div>
@@ -415,22 +353,7 @@ export function ChangesPanelContent({
       <div className="codex-changes-split-body">
         {/* Left column: Diff Viewer or Empty State */}
         <div className="codex-changes-diff-viewport scroll-thin">
-          {tab === "files" ? (
-            <div className="p-4 space-y-1">
-              <div className="text-[12px] font-medium text-ink-3 pb-2 border-b border-line-soft">
-                Project Files ({tree.length > 0 ? tree.length : project?.sources?.length ?? 0})
-              </div>
-              {(isDemo ? tree : []).map((f) => (
-                <div key={f.path} className="flex items-center gap-2 py-1.5 px-2 font-mono text-[11px] text-ink-3 hover:bg-hover rounded">
-                  <IconFile size={12} className="text-ink-4 shrink-0" />
-                  <span className="truncate">{f.path}</span>
-                </div>
-              ))}
-              {!isDemo && (!project?.sources || project.sources.length === 0) && (
-                <div className="py-12 text-center text-ink-4 text-[12px]">No project files loaded.</div>
-              )}
-            </div>
-          ) : files.length === 0 ? (
+          {files.length === 0 ? (
             /* EXACT Empty State from user screenshot */
             <div className="codex-changes-empty-stage">
               <div className="codex-empty-file-icon-box">
@@ -553,7 +476,10 @@ export function ChangesPanelContent({
   );
 }
 
-/* ---------------- Right-Side Sliding Drawer Wrapper ---------------- */
+/* ---------------- Right-Side Sliding Drawer Wrapper ----------------
+   The drawer carries its own slim header (name · maximize · close); the
+   content below is the very same ChangesPanelContent the workspace tab
+   uses — one design, two surfaces. */
 export function DiffSideDrawer({
   open,
   onClose,
@@ -583,12 +509,35 @@ export function DiffSideDrawer({
         role="dialog"
         aria-label="Changes and diff inspector"
       >
+        <header className="codex-changes-drawer-head">
+          <span className="flex min-w-0 items-center gap-2">
+            <IconGit size={13} className="shrink-0 text-ink-3" />
+            <span className="truncate text-[12.5px] font-medium text-ink">Changes</span>
+          </span>
+          <span className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              className={cn("codex-changes-action-icon", maximized && "text-iris-soft")}
+              onClick={() => setMaximized((v) => !v)}
+              title={maximized ? "Restore view" : "Maximize (⤢)"}
+              aria-label={maximized ? "Restore view" : "Maximize view"}
+            >
+              {maximized ? <IconMinimize size={13} /> : <IconMaximize size={13} />}
+            </button>
+            <button
+              type="button"
+              className="codex-changes-action-icon"
+              onClick={onClose}
+              title="Close (Esc)"
+              aria-label="Close changes panel"
+            >
+              <IconX size={13} />
+            </button>
+          </span>
+        </header>
         <ChangesPanelContent
           project={project}
           state={state}
-          onClose={onClose}
-          isMaximized={maximized}
-          onToggleMaximize={() => setMaximized((v) => !v)}
           onMerge={onMerge}
         />
       </aside>

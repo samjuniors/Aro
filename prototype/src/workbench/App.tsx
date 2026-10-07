@@ -114,10 +114,10 @@ function Shell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [listOpen, setListOpen] = useState(() => window.innerWidth > 820 && localStorage.getItem("conductor.sidebar.collapsed") !== "true");
-  /* Sidebar width — custom drag with progressive collapse: as it narrows,
-     labels, search and hints drop away one by one (container queries) and
-     dragging to the last extent releases the sidebar entirely. */
-  const [sidebarSize, setSidebarSize] = useState(() => readStored("conductor.sidebar.size", 292));
+  /* Sidebar width — straight drag: the content stays full at every size
+     (no icon-rail stages); dragging to the last extent releases the
+     sidebar entirely. */
+  const [sidebarSize, setSidebarSize] = useState(() => Math.max(240, readStored("conductor.sidebar.size", 292)));
   const [sidebarHint, setSidebarHint] = useState(false);
   const sidebarSnap = useRef(false);
   /* Right workspace panel — Codex-style docked tabs. First launch keeps it
@@ -145,8 +145,8 @@ function Shell() {
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
     const move = (ev: MouseEvent) => {
-      const next = Math.max(172, Math.min(480, s0 + (ev.clientX - x0)));
-      sidebarSnap.current = next <= 184;
+      const next = Math.max(240, Math.min(480, s0 + (ev.clientX - x0)));
+      sidebarSnap.current = next <= 252;
       setSidebarHint(sidebarSnap.current);
       setSidebarSize(next);
     };
@@ -213,7 +213,7 @@ function Shell() {
 
   useEffect(() => {
     const profile = specFor(design);
-    setSidebarSize(profile.panels.sidebar);
+    setSidebarSize(Math.max(240, profile.panels.sidebar));
     if (!profile.themes.includes(theme)) setTheme(profile.defaultTheme);
   }, [design]);
   useEffect(() => { document.title = runningId ? "Working | Aro" : "Aro"; }, [runningId]);

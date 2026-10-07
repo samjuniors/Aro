@@ -508,35 +508,12 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .sidebar-project-group.is-pinned { background: color-mix(in srgb, var(--color-iris) 5%, transparent); box-shadow: inset 2px 0 0 var(--color-iris); }
 .sidebar-section-label { padding: 7px 9px 5px; color: var(--color-ink-4); font-size: 10px; }
 .sidebar-footer { flex-shrink: 0; padding: 8px 10px 14px; border-top: 1px solid var(--color-line-soft); }
-/* ---------- Sidebar progressive collapse (container-query rail) ----------
-   As the sidebar narrows, its contents disappear one by one: keyboard
-   hints and footnotes first, then search and every label (icon rail —
-   icons stay LEFT-aligned on the same rhythm, never centered), rows
-   compress — and dragging past the floor releases the sidebar
-   entirely, leaving just the titlebar arrow. The container is the shell
-   itself, so the stages track the live drag. Thresholds sit well below
-   the 292px default so a normal sidebar always shows full labels. */
-.app-sidebar-shell { container: sidebar / inline-size; }
+/* ---------- Sidebar resize ----------
+   The sidebar keeps its full content at every width — no icon-rail stages,
+   nothing appears or disappears mid-drag. Only drag-to-the-edge still
+   releases it entirely (the titlebar arrow brings it back). */
 .app-sidebar-shell.is-snapping { opacity: .5; filter: saturate(.7); }
 .app-sidebar-resizer[data-snap="true"]::after { background: var(--color-rose) !important; box-shadow: 0 0 8px color-mix(in srgb, var(--color-rose) 60%, transparent); }
-@container sidebar (max-width: 262px) {
-  .rail-kbd, .rail-hide, .sidebar-footer p { display: none; }
-  .sidebar-primary-actions { padding: 8px 7px 6px; }
-  .sidebar-main-nav { padding: 2px 7px 8px; }
-  .sidebar-footer { padding: 8px 7px 12px; }
-  .sidebar-projects-heading { padding-inline: 8px 10px 8px 13px; }
-}
-@container sidebar (max-width: 218px) {
-  .rail-label, .sidebar-section-label { display: none; }
-  .sidebar-search-wrap { display: none; }
-  .sidebar-brand { padding-inline: 10px 8px; }
-  .sidebar-projects-heading { gap: 5px; }
-}
-@container sidebar (max-width: 196px) {
-  .sidebar-navigation-row { min-height: 30px; }
-  .session-list-row { min-height: 30px; }
-  .sidebar-project-group .session-row-more { display: none; }
-}
 /* Fresh session — the composer is anchored to the BOTTOM on every viewport
    (desktop, tablet, mobile) exactly like an active session; the heading
    centers itself in the free space above it. */
@@ -1313,10 +1290,11 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   display: flex; height: 34px; flex-shrink: 0; align-items: center; gap: 2px;
   padding: 0 6px; border-bottom: 1px solid var(--color-line-soft); background: var(--color-sunken);
 }
-/* the tabs themselves scroll — when they overflow, icons slip one by one
-   over soft edge fades (applied only while overflowing) */
+/* the tabs area takes every spare pixel — with one tab open, that tab fills
+   the whole strip (icon + full label, close at its end); with more tabs
+   they share it and the strip scrolls once it truly overflows */
 .workspace-tabs-scroll {
-  display: flex; min-width: 0; align-items: center; gap: 2px;
+  display: flex; min-width: 0; flex: 1 1 auto; align-items: center; gap: 2px;
   overflow-x: auto; scrollbar-width: none;
 }
 .workspace-tabs-scroll::-webkit-scrollbar { display: none; }
@@ -1332,6 +1310,11 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 }
 .workspace-tab:hover { color: var(--color-ink-2); background: var(--color-hover); }
 .workspace-tab.is-active { background: var(--color-raise); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-line); }
+/* the focused tab absorbs the strip's free space — a lone tab reads as the
+   panel's single full header instead of a small icon floating in emptiness */
+.workspace-tab.is-active { flex: 1 1 auto; }
+.workspace-tab.is-active .workspace-tab-main { flex: 1 1 auto; }
+.workspace-tab.is-active .workspace-tab-title { max-width: none; }
 .workspace-tab.is-active::after {
   content: ""; position: absolute; left: 9px; right: 9px; bottom: 1px; height: 2px;
   border-radius: 99px; background: var(--color-iris);
@@ -1373,10 +1356,8 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   .app-workspace-panel.is-fullscreen { position: fixed; top: var(--d-chrome-height); left: 0; right: 0; bottom: 0; width: 100% !important; }
   .workspace-resizer { display: none; }
 }
-/* progressive tab collapse as the panel narrows: titles shrink, then go
-   icon-only, close buttons retire to the active tab — icons to the edge */
-@container workspace (max-width: 600px) { .workspace-tab-title { max-width: 60px; } }
-@container workspace (max-width: 470px) { .workspace-tab-title { display: none; } .workspace-tab-main { padding: 0 8px; } }
+/* close buttons retire to the hovered / active tab only on very narrow
+   panels — titles always stay visible, they just ellipsize */
 @container workspace (max-width: 330px) {
   .workspace-tab-close { display: none; }
   .workspace-tab.is-active .workspace-tab-close { display: flex; }
@@ -1512,9 +1493,9 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .prose-code pre { margin: 0; padding: 10px 12px; overflow-x: auto; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.65; color: var(--color-ink-2); }
 
 /* =========================================================================
-   CODEX / CURSOR CHANGES PANEL (Matching User Screenshot exactly)
-   - Top tab: [ 📄 Changes ✕ ]  +                ⤢  ◫
-   - Subheader: [ Branch ▾ ] [ main → origin/main ▾ ]   ··· 📄 ↻ ⮂ 🎚️ ◫ 📁
+   CODEX / CURSOR CHANGES PANEL — content only, no tab bar of its own
+   (the workspace tab strip / sheet / drawer header is the single top bar)
+   - Toolbar: [ Branch ▾ ] [ main → origin/main ▾ ]        ··· ◫ ☰
    - Split layout: Left wide Diff area / Right Filter Files Sidebar
    ========================================================================= */
 .codex-changes-container {
@@ -1526,93 +1507,20 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   color: var(--color-ink);
   font-family: var(--d-font-sans);
   overflow: hidden;
+  container: changes / inline-size;
 }
 
-/* 1. Top Tab Header Bar */
-.codex-changes-tabbar {
+/* slim drawer header (the sliding-drawer surface gets its own — the
+   workspace tab strip and sheet headers are the header everywhere else) */
+.codex-changes-drawer-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 38px;
-  padding: 0 10px;
+  height: 36px; flex-shrink: 0; align-items: center; justify-content: space-between;
+  padding: 0 6px 0 12px;
   background: var(--color-sunken);
   border-bottom: 1px solid var(--color-line-soft);
-  flex-shrink: 0;
 }
 
-.codex-changes-tabbar-left {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.codex-changes-tab-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 28px;
-  padding: 0 10px 0 9px;
-  border-radius: 6px;
-  background: var(--color-hover);
-  color: var(--color-ink);
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--color-line);
-}
-
-.codex-changes-tab-title {
-  letter-spacing: -0.01em;
-}
-.codex-changes-tab-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  margin-left: 2px;
-  color: var(--color-ink-3);
-  transition: all 120ms;
-}
-.codex-changes-tab-close:hover {
-  background: var(--color-hover);
-  color: var(--color-ink);
-}
-.codex-changes-tab-plus {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
-  color: var(--color-ink-3);
-  transition: all 120ms;
-}
-.codex-changes-tab-plus:hover {
-  background: var(--color-hover);
-  color: var(--color-ink-2);
-}
-
-.codex-changes-tabbar-right {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-.codex-changes-tabbar-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 5px;
-  color: var(--color-ink-3);
-  transition: all 120ms;
-}
-.codex-changes-tabbar-icon-btn:hover {
-  background: var(--color-hover);
-  color: var(--color-ink);
-}
-
-/* 2. Secondary Subheader Bar */
+/* Toolbar row */
 .codex-changes-subheader {
   display: flex;
   align-items: center;
@@ -1677,7 +1585,10 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   color: var(--color-ink-2);
 }
 
-/* 3. Main Split Area: Left Wide Diff Viewer | Right File Sidebar */
+/* 3. Main Split Area: Left Wide Diff Viewer | Right File Sidebar.
+   Tracks the PANEL's own width — on a narrow workspace panel the file list
+   stacks below the diff (never crushes it into fragmented text), and the
+   toolbar pills ellipsize instead of overlapping. */
 .codex-changes-split-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -1685,11 +1596,22 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   min-height: 0;
   overflow: hidden;
 }
-@media (max-width: 720px) {
+@container changes (max-width: 460px) {
   .codex-changes-split-body {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 1fr) auto;
   }
+  .codex-changes-diff-viewport { border-right: 0; border-bottom: 1px solid var(--color-line-soft); }
+  .codex-changes-files-sidebar { max-height: 42%; }
+  .codex-changes-empty-stage { padding: 36px 16px; }
+  .codex-changes-subheader { padding: 0 8px; gap: 6px; }
+  .codex-changes-subheader-left { flex: 1 1 auto; }
+  .codex-branch-target { min-width: 0; max-width: 52%; }
+  .codex-branch-target span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+@container changes (max-width: 340px) {
+  /* the scope pill retires — the branch pill beside it says the same thing */
+  .codex-changes-subheader-left .codex-changes-pill-btn:not(.codex-branch-target) { display: none; }
 }
 
 .codex-changes-diff-viewport {

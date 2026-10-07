@@ -19,14 +19,14 @@ import { MemoryView } from "./MemoryView";
    WORKSPACE PANEL — Codex-style docked workspace with real tabs.
    Every tool (browse / changes / artifacts / terminal / memory / files /
    search / tasks / runs / automations) opens as its own tab; tabs can be
-   added with "+", closed individually, and the whole panel snaps away when
-   dragged towards the screen edge. As the panel narrows, tab labels and
-   close buttons progressively collapse (container queries) — icons slip
-   one by one over the strip's edge fades — until only icons remain, and
-   dragging further hides the panel entirely. Any tab can go full-screen
-   from the strip's corner (Esc restores). The layout (width, tabs, active
-   tab) persists across reloads; a fresh user starts with just the chat,
-   the single corner icon, and a “connect more tools” path in the picker.
+   added with "+", closed individually, and the whole panel snaps away only
+   when the divider is dragged well toward the screen edge. The focused tab
+   fills the strip (a lone tab reads as the panel's single header); when
+   many tabs overflow, titles ellipsize and the strip scrolls with soft
+   edge fades. Any tab can go full-screen from the strip's corner (Esc
+   restores). The layout (width, tabs, active tab) persists across
+   reloads; a fresh user starts with just the chat, the single corner
+   icon, and a "connect more tools" path in the picker.
    ===================================================================== */
 
 export type WorkspaceTool = "browse" | "changes" | "artifacts" | "terminal" | "memory" | "files" | "search" | "tasks" | "runs" | "automations";
@@ -49,7 +49,10 @@ export type PanelTab = { id: string; tool: WorkspaceTool };
 type PersistedPanel = { tabs: PanelTab[]; activeId: string | null; size: number };
 const PANEL_KEY = "conductor.workspace.panel.v1";
 const DEFAULT_SIZE = 540;
-const SNAP_CLOSE_AT = 300; /* dragging below this width releases → panel closes */
+const MIN_SIZE = 224;
+/* the panel only releases when the divider is dragged well toward the
+   screen edge — small-but-open stays open (both chat and workspace visible) */
+const SNAP_CLOSE_AT = 240;
 
 export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpenSession, onConnectTools }: {
   open: boolean;
@@ -62,7 +65,7 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpen
   const { toast } = useApp();
   const [panel, setPanel] = useState<PersistedPanel>(() => {
     const saved = readStored<PersistedPanel>(PANEL_KEY, { tabs: [], activeId: null, size: DEFAULT_SIZE });
-    return { tabs: Array.isArray(saved.tabs) ? saved.tabs.filter((t) => WORKSPACE_TOOLS.some((tool) => tool.id === t.tool)) : [], activeId: saved.activeId, size: Math.max(216, Math.min(1100, saved.size || DEFAULT_SIZE)) };
+    return { tabs: Array.isArray(saved.tabs) ? saved.tabs.filter((t) => WORKSPACE_TOOLS.some((tool) => tool.id === t.tool)) : [], activeId: saved.activeId, size: Math.max(MIN_SIZE, Math.min(1100, saved.size || DEFAULT_SIZE)) };
   });
   const [dragging, setDragging] = useState(false);
   const [snapHint, setSnapHint] = useState(false);
@@ -152,8 +155,8 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpen
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
     const move = (ev: MouseEvent) => {
-      const next = Math.max(216, Math.min(1100, s0 - (ev.clientX - x0)));
-      snapRef.current = next < SNAP_CLOSE_AT;
+      const next = Math.max(MIN_SIZE, Math.min(1100, s0 - (ev.clientX - x0)));
+      snapRef.current = next <= SNAP_CLOSE_AT;
       setSnapHint(snapRef.current);
       setPanel((p) => ({ ...p, size: next }));
     };
@@ -228,7 +231,6 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpen
             </button>
           </>}
         </Menu>
-        <span className="min-w-0 flex-1" />
         {panel.tabs.length > 0 && (
           <Tip label={fullscreen ? "Exit full screen · Esc" : "Full screen this tool"} side="bottom">
             <button type="button" className={cn("workspace-panel-full", fullscreen && "is-on")} onClick={() => setFullscreen((v) => !v)} aria-label={fullscreen ? "Exit full screen" : "Full screen the workspace tool"} aria-pressed={fullscreen}>
