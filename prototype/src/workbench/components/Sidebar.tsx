@@ -5,7 +5,7 @@ import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
 import { useWorkspace } from "../lib/workspace";
 import { readStored, writeStored } from "../lib/storage";
-import { IconArchive, IconBrain, IconCheck, IconChevronDown, IconClock, IconCopy, IconFolder, IconList, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, LogoMark } from "./Icons";
+import { IconArchive, IconBrain, IconCheck, IconChevronDown, IconClock, IconCopy, IconFolder, IconList, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, IconUndo, LogoMark } from "./Icons";
 import { Button, IconButton, Input, Kbd, Menu, MenuItem, MenuLabel, MenuSep, Modal, Tip } from "./ui";
 
 export type ViewId = "workbench" | "tasks" | "skills" | "connectors" | "projects" | "automations" | "memory" | "artifacts" | "runs" | "agents" | "bridges" | "git" | "browser" | "review" | "design" | "settings";
@@ -25,11 +25,13 @@ export type SidebarProps = {
   onNew: (projectId?: string) => void; projects: Project[]; onUpdateProject: (project: Project) => void; onCreateProject: (name: string) => string; onRequestProject: () => void;
   onArchive: (id: string, archived: boolean) => void; onDelete: (id: string) => void; onMoveProject: (id: string, projectId: string) => void;
   onDuplicate: (id: string) => void; onTogglePin: (id: string) => void; onRename: (id: string, title: string) => void; onCollapse: () => void;
+  onDeleteProject: (id: string) => void;
 };
 
 export function Sidebar(props: SidebarProps) {
-  const { product, todos, setTodoOpen } = useApp();
-  const { demoEnabled, setDemoEnabled, isDemoProject } = useWorkspace();
+  const { product, todos, setTodoOpen, toast } = useApp();
+  const workspace = useWorkspace();
+  const { demoEnabled, setDemoEnabled, userProjects } = workspace;
   const [search, setSearch] = useState("");
   const [folds, setFolds] = useState<Record<string, boolean>>(() => readStored("conductor.sidebar.v3.folds", {}));
   const [archive, setArchive] = useState(false);
@@ -39,11 +41,17 @@ export function Sidebar(props: SidebarProps) {
   const [renaming, setRenaming] = useState<Session | null>(null);
   const [name, setName] = useState("");
   const [deleting, setDeleting] = useState<Session | null>(null);
+  const [renamingProject, setRenamingProject] = useState<Project | null>(null);
+  const [projectName, setProjectName] = useState("");
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const list = useRef<HTMLDivElement>(null);
   const visible = props.sessions.filter((s) => Boolean(s.archived) === archive && s.title.toLowerCase().includes(search.toLowerCase()));
   const pinned = visible.filter((s) => s.favorite || s.pinned);
   const unassigned = visible.filter((s) => !s.projectId && !pinned.includes(s));
-  const ordered = useMemo(() => [...pinned, ...props.projects.flatMap((p) => folds[p.id] ? [] : visible.filter((s) => s.projectId === p.id && !pinned.includes(s))), ...unassigned], [props.projects, folds, visible, pinned, unassigned]);
+  /* pinned projects float to the top of the list; archived ones only render in the archive view */
+  const sortedProjects = useMemo(() => [...props.projects].sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false)), [props.projects]);
+  const archivedProjects = useMemo(() => userProjects.filter((p) => p.archived), [userProjects]);
+  const ordered = useMemo(() => [...pinned, ...sortedProjects.flatMap((p) => folds[p.id] ? [] : visible.filter((s) => s.projectId === p.id && !pinned.includes(s))), ...unassigned], [sortedProjects, folds, visible, pinned, unassigned]);
   useEffect(() => writeStored("conductor.sidebar.v3.folds", folds), [folds]);
   useEffect(() => { list.current?.querySelector<HTMLElement>(`[data-session="${cursor}"]`)?.scrollIntoView({ block: "nearest" }); }, [cursor]);
   const handleKeyboard = (event: React.KeyboardEvent) => {
@@ -79,22 +87,69 @@ export function Sidebar(props: SidebarProps) {
         className={cn("demo-toggle", demoEnabled && "on")}><span className="demo-toggle-dot" />{demoEnabled ? "Demo on" : "Demo"}</button>
       <Tip label="Create project"><button onClick={props.onRequestProject} aria-label="Create project" className="ml-auto text-ink-4 hover:text-ink"><IconPlus size={13} /></button></Tip><Menu align="right" width={175} trigger={() => <button aria-label="Session list options" className="text-ink-4 hover:text-ink"><IconMore size={13} /></button>}>{(close) => <MenuItem icon={<IconArchive size={12} />} label={archive ? "Active sessions" : "Archived sessions"} onClick={() => { setArchive((value) => !value); close(); }} />}</Menu></div>
     <div ref={list} className="scroll-thin min-h-0 flex-1 overflow-y-auto px-2.5 pb-3" onKeyDown={handleKeyboard}>
+      {archive ? (
+        /* ---------- archive view: archived projects + archived sessions ---------- */
+        <>
+          {archivedProjects.length > 0 && <div className="mb-2"><p className="sidebar-section-label">Archived projects</p>
+            {archivedProjects.map((project) => {
+              const count = props.sessions.filter((s) => s.projectId === project.id).length;
+              return <div key={project.id} className="session-list-row group">
+                <span className="flex min-w-0 flex-1 items-center gap-1.5"><IconFolder size={12} className="shrink-0 text-ink-4" /><span className="truncate text-[12px] text-ink-3">{project.name}</span>{count > 0 && <span className="font-mono text-[9px] text-ink-4">{count}</span>}</span>
+                <button onClick={() => { workspace.archiveProject(project.id, false); toast("Project restored", "mint"); }} className="session-row-action" title="Restore project" aria-label={`Restore ${project.name}`}><IconUndo size={11} /></button>
+                <button onClick={() => setDeletingProject(project)} className="session-row-action hover:text-rose" title="Delete project" aria-label={`Delete ${project.name}`}><IconTrash size={11} /></button>
+              </div>;
+            })}
+          </div>}
+          {visible.length > 0 && <div><p className="sidebar-section-label">Archived sessions</p>{visible.map(renderSession)}</div>}
+          {!archivedProjects.length && !visible.length && <p className="py-5 text-center text-[11px] text-ink-4">Nothing archived yet.</p>}
+        </>
+      ) : (
+        <>
       {pinned.length > 0 && <div className="mb-2"><p className="sidebar-section-label">Pinned</p>{pinned.map(renderSession)}</div>}
-      {props.projects.map((project) => {
+      {sortedProjects.map((project) => {
         const all = visible.filter((s) => s.projectId === project.id);
         const items = all.filter((s) => !pinned.includes(s));
         const attention = all.filter((s) => s.status === "waiting" || s.status === "failed").length;
-        return <section key={project.id} onDragOver={(e) => { if (!dragId) return; e.preventDefault(); setDropId(project.id); }} onDragLeave={() => setDropId(null)} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); if (id) props.onMoveProject(id, project.id); setDropId(null); setDragId(null); }} className={cn("sidebar-project-group", dropId === project.id && "drop-target")}>
-          <div className="group flex items-center gap-1 py-1.5"><button onClick={() => setFolds((allFolds) => ({ ...allFolds, [project.id]: !allFolds[project.id] }))} className="flex min-w-0 flex-1 items-center gap-1.5 text-left"><IconChevronDown size={11} className={cn("shrink-0 text-ink-4 transition-transform", folds[project.id] && "-rotate-90")} /><IconFolder size={12} className="shrink-0 text-ink-3" /><span className="truncate text-[12px] font-medium text-ink-2">{project.name}</span>{isDemoProject(project.id) && <span className="rounded-[3px] bg-iris-tint px-1 py-px font-mono text-[8px] font-semibold tracking-wide text-iris-soft">DEMO</span>}{attention > 0 && <span className="rounded-full bg-amber-tint px-1.5 font-mono text-[9px] text-amber">{attention}</span>}</button><button onClick={() => props.onNew(project.id)} className="flex size-[22px] items-center justify-center rounded text-ink-4 opacity-0 hover:bg-hover hover:text-ink group-hover:opacity-100 group-focus-within:opacity-100" aria-label={`New session in ${project.name}`}><IconPlus size={12} /></button></div>
-          {!folds[project.id] && <div className="pl-4">{items.map(renderSession)}{!items.length && <button onClick={() => props.onNew(project.id)} className="w-full py-1.5 pl-2 text-left text-[10.5px] text-ink-4 hover:text-ink-2">Start a session</button>}</div>}
+        const isDemo = workspace.isDemoProject(project.id);
+        return <section key={project.id} onDragOver={(e) => { if (!dragId) return; e.preventDefault(); setDropId(project.id); }} onDragLeave={() => setDropId(null)} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); if (id) props.onMoveProject(id, project.id); setDropId(null); setDragId(null); }} className={cn("sidebar-project-group", dropId === project.id && "drop-target", project.pinned && "is-pinned")}>
+          <div className="group flex items-center gap-1 py-1.5">
+            <button onClick={() => setFolds((allFolds) => ({ ...allFolds, [project.id]: !allFolds[project.id] }))} className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-0.5 py-0.5 text-left transition-colors hover:bg-hover/60 focus-visible:ring-focus" aria-label={`${folds[project.id] ? "Expand" : "Collapse"} ${project.name}`}>
+              <IconChevronDown size={11} className={cn("shrink-0 text-ink-4 transition-transform duration-200", folds[project.id] && "-rotate-90")} />
+              <IconFolder size={12} className={cn("shrink-0", project.pinned ? "text-iris-soft" : "text-ink-3")} />
+              <span className="truncate text-[12px] font-medium text-ink-2">{project.name}</span>
+              {isDemo && <span className="rounded-[3px] bg-iris-tint px-1 py-px font-mono text-[8px] font-semibold tracking-wide text-iris-soft">DEMO</span>}
+              {project.pinned && <IconPin size={9} className="shrink-0 text-iris-soft" />}
+              {attention > 0 && <span className="rounded-full bg-amber-tint px-1.5 font-mono text-[9px] text-amber">{attention}</span>}
+              <span className="ml-auto shrink-0 font-mono text-[9px] text-ink-4 opacity-0 transition-opacity group-hover:opacity-100">{all.length || ""}</span>
+            </button>
+            <Tip label={`New session in ${project.name}`}><button onClick={() => props.onNew(project.id)} className="flex size-[22px] items-center justify-center rounded text-ink-4 opacity-0 transition-all hover:bg-hover hover:text-ink focus-visible:ring-focus group-hover:opacity-100 group-focus-within:opacity-100" aria-label={`New session in ${project.name}`}><IconPlus size={12} /></button></Tip>
+            <Menu align="right" width={215} trigger={() => <button className="session-row-more" aria-label={`Actions for ${project.name}`} title="Project actions"><IconMore size={12} /></button>}>
+              {(close) => <>
+                <MenuItem icon={<IconPin size={12} />} label={project.pinned ? "Unpin project" : "Pin project"} disabled={isDemo} hint={project.pinned ? undefined : "stays on top"} onClick={() => { if (isDemo) { toast("The reference demo can't be pinned.", "amber"); close(); return; } workspace.toggleProjectPin(project.id); close(); toast(project.pinned ? "Project unpinned" : "Project pinned", "mint"); }} />
+                <MenuItem icon={<IconPencil size={12} />} label="Rename project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be renamed.", "amber"); close(); return; } setRenamingProject(project); setProjectName(project.name); close(); }} />
+                <MenuItem icon={<IconPlus size={12} />} label="New session here" onClick={() => { props.onNew(project.id); close(); }} />
+                <MenuSep />
+                <MenuItem icon={<IconArchive size={12} />} label="Archive project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be archived. Toggle Demo off instead.", "amber"); close(); return; } workspace.archiveProject(project.id, true); close(); toast("Project archived — restore it from the archive view", "mint"); }} />
+                <MenuItem danger icon={<IconTrash size={12} />} label="Delete project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be deleted. Toggle Demo off instead.", "amber"); close(); return; } setDeletingProject(project); close(); }} />
+              </>}
+            </Menu>
+          </div>
+          {!folds[project.id] && <div className="pl-4">{items.map(renderSession)}{!items.length && <button onClick={() => props.onNew(project.id)} className="w-full py-1.5 pl-2 text-left text-[10.5px] text-ink-4 transition-colors hover:text-ink-2">Start a session</button>}</div>}
         </section>;
       })}
       {!props.projects.length && !search && <div className="px-2 py-3"><p className="text-[11px] leading-relaxed text-ink-4">Projects keep your sources and sessions together.</p><button onClick={props.onRequestProject} className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-ink-3 hover:text-ink"><IconPlus size={11} />Create project</button></div>}
       {unassigned.length > 0 && <div className="mt-2"><p className="sidebar-section-label">Unassigned sessions</p>{unassigned.map(renderSession)}</div>}
       {search && !visible.length && <p className="py-5 text-center text-[11px] text-ink-4">No matching sessions.</p>}
+        </>
+      )}
     </div>
     <div className="sidebar-footer"><button onClick={() => setTodoOpen(true)} className="sidebar-navigation-row"><IconCheck size={14} />Todo{todos.length > 0 && <span className="ml-auto text-[10px] text-ink-4">{todos.filter((t) => t.state !== "done").length}</span>}</button><button onClick={() => props.setView("settings")} className={cn("sidebar-navigation-row", props.view === "settings" && "active")}><IconSettings size={14} />Settings<Kbd className="ml-auto">⌘,</Kbd></button><p className="mt-2.5 px-2 text-[9px] text-ink-4">{product === "code" ? "Code workspace" : "Agent workspace"} · saved on this device</p></div>
     <Modal open={Boolean(renaming)} onClose={() => setRenaming(null)} title="Rename session" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renaming && name.trim()) props.onRename(renaming.id, name.trim()); setRenaming(null); }}><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus /><div className="flex justify-end"><Button type="submit" disabled={!name.trim()}>Save</Button></div></form></Modal>
     <Modal open={Boolean(deleting)} onClose={() => setDeleting(null)} title="Delete session?" sub="This permanently removes this conversation from this device." width={420}><div className="p-5"><p className="text-[12px] text-ink-2">{deleting?.title}</p><div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button><Button variant="danger" onClick={() => { if (deleting) props.onDelete(deleting.id); setDeleting(null); }}>Delete</Button></div></div></Modal>
+    <Modal open={Boolean(renamingProject)} onClose={() => setRenamingProject(null)} title="Rename project" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renamingProject && projectName.trim()) { workspace.renameProject(renamingProject.id, projectName.trim()); toast("Project renamed", "mint"); } setRenamingProject(null); }}><Input value={projectName} onChange={(e) => setProjectName(e.target.value)} autoFocus maxLength={60} /><div className="flex justify-end"><Button type="submit" disabled={!projectName.trim() || projectName.trim() === renamingProject?.name}>Save</Button></div></form></Modal>
+    <Modal open={Boolean(deletingProject)} onClose={() => setDeletingProject(null)} title="Delete project?" sub="This removes the project, its sources and every session filed under it from this device." width={440}><div className="p-5">
+      <p className="text-[12px] text-ink-2"><span className="font-medium">{deletingProject?.name}</span>{deletingProject && props.sessions.filter((s) => s.projectId === deletingProject.id).length > 0 && <span className="text-ink-4"> · {props.sessions.filter((s) => s.projectId === deletingProject.id).length} session{props.sessions.filter((s) => s.projectId === deletingProject.id).length === 1 ? "" : "s"} will be deleted</span>}</p>
+      <div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={() => setDeletingProject(null)}>Cancel</Button><Button variant="danger" onClick={() => { if (deletingProject) props.onDeleteProject(deletingProject.id); setDeletingProject(null); }}>Delete project</Button></div>
+    </div></Modal>
   </aside>;
 }

@@ -31,6 +31,7 @@ import { CommandPalette } from "./components/CommandPalette";
 import { ShortcutHelp } from "./components/ShortcutHelp";
 import { TerminalPanel } from "./components/Terminal";
 import { VoiceAgent } from "./components/VoiceAgent";
+import { extractPlanTodos } from "./components/PlanTodoCorner";
 import { Sheet } from "./components/Sheet";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PRESETS, type LayoutState } from "./components/LayoutControl";
@@ -48,6 +49,16 @@ const LABELS: Record<ProductMode, string[]> = {
 
 /* run token — bumped on stop/switch so any in-flight scripted loop halts */
 let runToken = 0;
+
+/* seed the plan-capture signature from the persisted agent plan so revisiting
+   a session with the same plan doesn't re-trigger the reveal */
+function readPersistedPlanSig(): string | null {
+  try {
+    const raw = localStorage.getItem("conductor.agentplan.v1");
+    const plan = raw ? (JSON.parse(raw) as { sessionId?: string; items?: { text: string }[] }) : null;
+    return plan?.sessionId && Array.isArray(plan.items) ? `${plan.sessionId}:${plan.items.map((i) => i.text).join("|")}` : null;
+  } catch { return null; }
+}
 
 function loadSessions(): Session[] {
   const legacy: Session[] = [];
@@ -84,7 +95,7 @@ function buildCodeResponse(prompt: string, agentId: string, mode: ModeId): Step[
 
 function Shell() {
   const { product, setProduct, design, theme, setTheme, providers, toast, toasts, termOpen, setTermOpen, termPush, setTodos, setDockOpen, setTodoOpen, todoOpen, setSettingsSection } = useApp();
-  const { projects, addProject, updateProject, requestProject, rules, demoEnabled } = useWorkspace();
+  const { projects, addProject, updateProject, requestProject, rules, demoEnabled, setAgentPlan, deleteProject: deleteWorkspaceProject } = useWorkspace();
   void demoEnabled;
   const [userSessions, setSessions] = useState<Session[]>(loadSessions);
   const sessions = useMemo(() => demoEnabled ? [...DEMO_SESSIONS.filter((d) => !userSessions.some((u) => u.id === d.id)), ...userSessions] : userSessions, [userSessions, demoEnabled]);
@@ -131,6 +142,36 @@ function Shell() {
 
   useEffect(() => writeStored("conductor.workspace.v3.sessions", userSessions), [userSessions]);
   useEffect(() => localStorage.setItem("conductor.sidebar.collapsed", String(!listOpen)), [listOpen]);
+
+  /* ---------------- sticky agent plan (composer corner) ----------------
+     Whenever a session's steps contain an agent plan, capture it into the
+     workspace-sticky plan so it stays visible at the composer corner across
+     session/project switches until cleared or replaced by a newer plan. */
+  const capturedPlanSig = useRef<string | null>(null);
+  if (capturedPlanSig.current === null) capturedPlanSig.current = readPersistedPlanSig();
+  useEffect(() => {
+    const planLines = extractPlanTodos(active.steps);
+    if (planLines.length === 0) return;
+    const signature = `${active.id}:${planLines.join("|")}`;
+    if (signature === capturedPlanSig.current) return;
+    const fresh = capturedPlanSig.current !== null;
+    capturedPlanSig.current = signature;
+    setAgentPlan({
+      items: planLines.map((text, i) => ({ id: `plan-${active.id}-${i}`, text, state: i === 0 ? "doing" as const : "todo" as const })),
+      sessionId: active.id,
+      title: active.title,
+      updatedAt: Date.now(),
+    });
+    /* pop the corner panel open when the plan lands live during a run */
+    if (fresh && runningId === active.id) window.dispatchEvent(new CustomEvent("conductor:agent-plan"));
+  }, [active.steps, active.id, active.title, setAgentPlan, runningId]);
+  /* agent todos created mid-run (edit checkpoints) extend the corner plan */
+  const trackAgentTodo = useCallback((text: string) => {
+    setAgentPlan((plan) => plan
+      ? { ...plan, items: [...plan.items, { id: `ap${Date.now()}`, text, state: "doing" as const }], updatedAt: Date.now() }
+      : { items: [{ id: `ap${Date.now()}`, text, state: "doing" as const }], title: "Agent checklist", updatedAt: Date.now() });
+  }, [setAgentPlan]);
+
   useEffect(() => {
     const profile = specFor(design);
     sidebar.setSize(profile.panels.sidebar);
@@ -228,10 +269,10 @@ function Shell() {
     script.forEach((s, i) => timers.current.push(window.setTimeout(() => {
       appendSteps(sid, [s]);
       if (s.type === "tool" && (s.tool === "bash" || s.tool === "test")) termPush([{ t: `$ ${s.target}`, k: "cmd" as const }, ...(s.output ?? []).map((t) => ({ t, k: t.trim().startsWith("✓") ? ("ok" as const) : t.trim().startsWith("✗") ? ("err" as const) : undefined }))]);
-      if (s.type === "tool" && s.tool === "edit") { termPush([{ t: `[agent] edited ${s.target}`, k: "dim" as const }]); setTodos((t) => [{ id: `ag${Date.now()}`, text: `Verify ${s.target?.split("/").pop()} change`, state: "doing", by: "agent" as const }, ...t]); }
+      if (s.type === "tool" && s.tool === "edit") { termPush([{ t: `[agent] edited ${s.target}`, k: "dim" as const }]); setTodos((t) => [{ id: `ag${Date.now()}`, text: `Verify ${s.target?.split("/").pop()} change`, state: "doing", by: "agent" as const }, ...t]); trackAgentTodo(`Verify ${s.target?.split("/").pop()} change`); }
       if (i === script.length - 1) finishTurn();
     }, 320 + i * 1100)));
-  }, [product, agentId, mode, appendSteps, appendText, setStatus, termPush, setTodos]);
+  }, [product, agentId, mode, appendSteps, appendText, setStatus, termPush, setTodos, trackAgentTodo]);
 
   /* agent backend: real tool loop through the aro bridge (aro.jsonl/1) */
   const runAgentTurn = useCallback(async (sid: string, history: HistoryTurn[]) => {
@@ -341,6 +382,19 @@ function Shell() {
   const duplicate = (id: string) => { const source = sessions.find((s) => s.id === id); if (!source) return; const copy = { ...source, id: makeId("session"), title: `${source.title} (copy)`, status: "idle" as const, archived: false }; setSessions((all) => [copy, ...all]); selectSession(copy.id); setActiveIds((all) => ({ ...all, [product]: copy.id })); };
   const createProject = (name: string) => addProject({ name, sources: [] }).id;
 
+  /* project lifecycle: deleting a project removes its sessions; the active
+     session escapes to a fresh draft if its project disappears */
+  const deleteProject = (id: string) => {
+    const doomed = projects.find((p) => p.id === id);
+    if (!doomed) return;
+    if (doomed.id === "demo-sofia-ui") { toast("Reference demo can't be deleted. Toggle Demo off instead.", "amber"); return; }
+    const sessionCount = sessions.filter((s) => s.projectId === id).length;
+    deleteWorkspaceProject(id);
+    setSessions((all) => all.filter((s) => s.projectId !== id));
+    if (sessions.some((s) => s.id === active.id && s.projectId === id)) { resetUtilities(); newSession(); }
+    toast(sessionCount > 0 ? `Deleted ${doomed.name} and its ${sessionCount} session${sessionCount === 1 ? "" : "s"}.` : `Deleted ${doomed.name}.`, "amber");
+  };
+
   const layout: LayoutState = { list: listOpen, terminal: termOpen, panel: rightOpen, status: statusOpen };
   const setLayout = (state: LayoutState) => { setListOpen(state.list); setTermOpen(state.terminal); setRightOpen(state.panel); setStatusOpen(state.status); };
   const cyclePermission = () => { const definitions = modeDefs(product); setMode(definitions[(definitions.findIndex((m) => m.id === mode) + 1) % definitions.length].id); };
@@ -383,7 +437,7 @@ function Shell() {
 
   const latestReply = [...active.steps].reverse().find((s): s is Extract<Step, { type: "text" }> => s.type === "text")?.text.replace(/[`*#]/g, "") ?? "";
   const empty = !active.steps.length;
-  const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false) };
+  const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false), onDeleteProject: deleteProject };
 
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
     <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} />

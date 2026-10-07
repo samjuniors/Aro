@@ -110,9 +110,9 @@ export function Menu({ trigger, children, align = "left", width = 220, className
     </Popover.Root>
   );
 }
-export function MenuItem({ icon, label, hint, active, onClick, danger }: { icon?: React.ReactNode; label: React.ReactNode; hint?: React.ReactNode; active?: boolean; onClick?: () => void; danger?: boolean }) {
+export function MenuItem({ icon, label, hint, active, onClick, danger, disabled }: { icon?: React.ReactNode; label: React.ReactNode; hint?: React.ReactNode; active?: boolean; onClick?: () => void; danger?: boolean; disabled?: boolean }) {
   return (
-    <button role="menuitem" onClick={onClick} className={cn("flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors", active ? "bg-iris-tint text-iris-soft" : danger ? "text-rose hover:bg-rose-tint" : "text-ink-2 hover:bg-hover hover:text-ink")}>
+    <button role="menuitem" disabled={disabled} onClick={onClick} className={cn("flex w-full items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors", disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer", active ? "bg-iris-tint text-iris-soft" : danger ? "text-rose hover:bg-rose-tint" : "text-ink-2 hover:bg-hover hover:text-ink")}>
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {hint && <span className="shrink-0 font-mono text-[10px] text-ink-4">{hint}</span>}

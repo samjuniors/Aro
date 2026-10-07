@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn";
-import { useApp, type Todo } from "../lib/app";
-import type { ModeId, Session, Step } from "../data/catalog";
-import { IconCheck, IconChevronDown, IconPlus, IconSpark } from "./Icons";
+import type { Step } from "../data/catalog";
+import { useWorkspace } from "../lib/workspace";
+import { IconCheck, IconChevronDown, IconPlus, IconSpark, IconTrash, IconX } from "./Icons";
 import { Bar } from "./ui";
 
+/** Pull the plan lines out of an agent's tool step ("plan" tool) or numbered text. */
 export function extractPlanTodos(steps: Step[]): string[] {
   for (const s of steps) {
     if (s.type === "tool" && s.tool === "plan" && s.lines && s.lines.length > 0) {
@@ -26,130 +27,63 @@ export function extractPlanTodos(steps: Step[]): string[] {
   return [];
 }
 
-export function PlanTodoCorner({
-  session,
-  mode,
-}: {
-  session: Session;
-  mode?: ModeId;
-}) {
-  const { todos, setTodos } = useApp();
-  // Open by default when a new plan is created, but collapsible via small arrow
+/**
+ * Agent plan pinned to the top-right corner of the composer.
+ * Visible ONLY while the agent has a plan (workspace-sticky: it survives
+ * switching sessions/projects until cleared or replaced by a new plan).
+ */
+export function PlanTodoCorner() {
+  const { agentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [newText, setNewText] = useState("");
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
-  const planItems = useMemo(() => extractPlanTodos(session.steps), [session.steps]);
+  /* a fresh plan captured from an agent run → pop the panel open once */
+  useEffect(() => {
+    const reveal = () => setOpen(true);
+    window.addEventListener("conductor:agent-plan", reveal);
+    return () => window.removeEventListener("conductor:agent-plan", reveal);
+  }, []);
 
-  const sessionTodos = useMemo(() => {
-    return todos.filter((t) => t.by === "agent");
-  }, [todos]);
-
-  const hasAgentPlan = planItems.length > 0 || sessionTodos.length > 0;
-  // Visible when in plan mode or when agent has drafted a plan
-  const isVisible = hasAgentPlan || mode === "plan";
-
-  // Auto-open once when an agent plan actually lands in the session —
-  // render-time transition check (avoids react-hooks/set-state-in-effect)
-  const [prevPlanCount, setPrevPlanCount] = useState(planItems.length);
-  if (planItems.length !== prevPlanCount) {
-    setPrevPlanCount(planItems.length);
-    if (planItems.length > 0 && prevPlanCount === 0) setOpen(true);
-  }
-
-  // Click outside to close the popup if open
+  /* click outside to close */
   useEffect(() => {
     if (!open) return;
     const handleDown = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (anchorRef.current && !anchorRef.current.contains(e.target as Node)) setOpen(false);
     };
     window.addEventListener("mousedown", handleDown);
     return () => window.removeEventListener("mousedown", handleDown);
   }, [open]);
 
-  if (!isVisible) {
-    return null;
-  }
+  if (!agentPlan || agentPlan.items.length === 0) return null;
 
-  const effectiveTodos: Todo[] = sessionTodos.length > 0
-    ? sessionTodos
-    : planItems.length > 0
-    ? planItems.map((text, i) => ({
-        id: `plan-${i}`,
-        text,
-        state: "todo" as const,
-        by: "agent" as const,
-      }))
-    : [
-        {
-          id: "plan-default-1",
-          text: "Outline project requirements and architecture",
-          state: "doing" as const,
-          by: "agent" as const,
-        },
-        {
-          id: "plan-default-2",
-          text: "Identify files and endpoints to modify",
-          state: "todo" as const,
-          by: "agent" as const,
-        },
-        {
-          id: "plan-default-3",
-          text: "Review proposed changes before executing",
-          state: "todo" as const,
-          by: "agent" as const,
-        },
-      ];
-
-  const doneCount = effectiveTodos.filter((t) => t.state === "done").length;
-  const totalCount = effectiveTodos.length;
+  const items = agentPlan.items;
+  const doneCount = items.filter((t) => t.state === "done").length;
+  const totalCount = items.length;
   const progressPct = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+  const allDone = doneCount === totalCount && totalCount > 0;
 
-  const toggleItem = (todoId: string, current: Todo["state"]) => {
-    const nextState: Todo["state"] = current === "done" ? "todo" : current === "todo" ? "doing" : "done";
-    setTodos((prev: Todo[]) => {
-      const exists = prev.some((t) => t.id === todoId);
-      if (exists) {
-        return prev.map((t) => (t.id === todoId ? { ...t, state: nextState } : t));
-      } else {
-        return [
-          ...prev,
-          ...effectiveTodos.map((et) => (et.id === todoId ? { ...et, state: nextState } : et)),
-        ];
-      }
-    });
+  const toggleItem = (id: string, current: string) => {
+    const next = current === "done" ? "todo" : current === "todo" ? "doing" : "done";
+    updateAgentPlanItem(id, { state: next as "todo" | "doing" | "done" });
   };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newText.trim()) return;
-    setTodos((prev: Todo[]) => [
-      ...prev,
-      {
-        id: `plan-user-${Date.now()}`,
-        text: newText.trim(),
-        state: "todo",
-        by: "agent",
-      },
-    ]);
+    addAgentPlanItem(newText.trim());
     setNewText("");
   };
 
   return (
-    <div ref={popoverRef} className="plan-todo-corner-anchor">
-      {/* Small corner button at top-right of composer */}
+    <div ref={anchorRef} className="plan-todo-corner-anchor">
+      {/* corner pill docked on the composer's top-right border */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={cn(
-          "plan-todo-trigger-pill",
-          open && "is-active",
-          doneCount === totalCount && totalCount > 0 && "is-completed"
-        )}
+        className={cn("plan-todo-trigger-pill", open && "is-active", allDone && "is-completed")}
         aria-expanded={open}
-        aria-label="Toggle agent plan tasks"
+        aria-label={`Agent plan — ${doneCount} of ${totalCount} done`}
       >
         <span className="plan-todo-pill-icon">
           <IconSpark size={11} />
@@ -158,15 +92,16 @@ export function PlanTodoCorner({
         <span className="plan-todo-pill-stats font-mono">
           {doneCount}/{totalCount}
         </span>
+        {allDone && <IconCheck size={10} className="plan-todo-pill-icon" />}
         <IconChevronDown
           size={11}
           className={cn("plan-todo-pill-arrow transition-transform duration-200", open && "rotate-180")}
         />
       </button>
 
-      {/* Floating dropdown panel positioned at top-right */}
+      {/* dropdown panel */}
       {open && (
-        <div className="plan-todo-dropdown animate-slide-down shadow-e4">
+        <div className="plan-todo-dropdown animate-slide-down shadow-e4" role="dialog" aria-label="Agent plan">
           <div className="plan-todo-header">
             <div className="plan-todo-title-wrap">
               <span className="plan-todo-badge">
@@ -174,26 +109,37 @@ export function PlanTodoCorner({
                 <span>Agent plan</span>
               </span>
               <span className="plan-todo-count font-mono">
-                {doneCount} of {totalCount} completed
+                {doneCount} of {totalCount} · sticks to the composer
               </span>
             </div>
-            <button
-              type="button"
-              className="plan-todo-toggle-btn"
-              onClick={() => setOpen(false)}
-              aria-label="Close plan panel"
-            >
-              <IconChevronDown size={12} className="rotate-180" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="plan-todo-toggle-btn"
+                onClick={() => { clearAgentPlan(); setOpen(false); }}
+                title="Clear the plan from the corner"
+                aria-label="Clear agent plan"
+              >
+                <IconTrash size={11} />
+              </button>
+              <button
+                type="button"
+                className="plan-todo-toggle-btn"
+                onClick={() => setOpen(false)}
+                aria-label="Close plan panel"
+              >
+                <IconChevronDown size={12} className="rotate-180" />
+              </button>
+            </div>
           </div>
 
           <div className="plan-todo-body">
             <div className="plan-todo-bar">
-              <Bar value={progressPct} tone={progressPct === 100 ? "mint" : "iris"} height={3} />
+              <Bar value={progressPct} tone={allDone ? "mint" : "iris"} height={3} />
             </div>
 
             <div className="plan-todo-list scroll-thin">
-              {effectiveTodos.map((item) => {
+              {items.map((item) => {
                 const isDone = item.state === "done";
                 const isDoing = item.state === "doing";
                 return (
@@ -201,19 +147,21 @@ export function PlanTodoCorner({
                     <button
                       type="button"
                       onClick={() => toggleItem(item.id, item.state)}
-                      className={cn(
-                        "plan-todo-checkbox",
-                        isDone && "is-done",
-                        isDoing && "is-doing"
-                      )}
+                      className={cn("plan-todo-checkbox", isDone && "is-done", isDoing && "is-doing")}
                       aria-label={`Mark "${item.text}" as ${isDone ? "incomplete" : "complete"}`}
                     >
                       {isDone && <IconCheck size={9} />}
                       {isDoing && <span className="plan-todo-pulse-dot" />}
                     </button>
-                    <span className={cn("plan-todo-text", isDone && "line-through opacity-50")}>
-                      {item.text}
-                    </span>
+                    <span className={cn("plan-todo-text", isDone && "line-through opacity-50")}>{item.text}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAgentPlanItem(item.id)}
+                      className="plan-todo-remove opacity-0 transition-opacity group-hover:opacity-100"
+                      aria-label={`Remove ${item.text} from plan`}
+                    >
+                      <IconX size={10} />
+                    </button>
                   </div>
                 );
               })}

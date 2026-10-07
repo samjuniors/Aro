@@ -154,6 +154,15 @@ export const DEMO_SESSIONS: Session[] = [
     product: "code",
     steps: [
       { id: "demo-s1-u1", type: "user", text: "The Button focus ring disappears on dark backgrounds and there's no loading state. Fix both and keep the API backwards compatible.", at: "09:41" },
+      {
+        id: "demo-s1-plan", type: "tool", tool: "plan", title: "Plan", status: "done", ms: 900,
+        lines: [
+          "Reproduce the focus-ring regression on a dark surface",
+          "Add a `loading` prop with `aria-busy` to Button",
+          "Density-aware focus ring token pass",
+          "Verify backwards compatibility in Storybook",
+        ],
+      },
       { id: "demo-s1-t1", type: "text", text: "On it — I added a `loading` prop with `aria-busy`, a density-aware focus ring, and kept every existing prop working. The diff is in **Changes** (3 files).", agentId: "claude-code" },
       {
         id: "demo-s1-tool", type: "tool", tool: "edit", title: "Edit", target: "src/components/Button/Button.tsx", status: "done", ms: 1840,

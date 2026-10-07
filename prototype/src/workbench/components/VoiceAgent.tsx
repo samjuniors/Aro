@@ -3,6 +3,7 @@ import { cn } from "../utils/cn";
 import { IconArrowUp, IconEye, IconGit, IconList, IconTerminal, IconX } from "./Icons";
 import { Kbd, Toggle } from "./ui";
 import { ORB_LABEL, Orb, useMicLevel, type OrbState } from "./Orb";
+import { speak, stopSpeaking } from "../lib/speak";
 import type { ViewId } from "./Sidebar";
 
 type SpeechResultEvent = { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> };
@@ -33,7 +34,7 @@ const STATE_HINT: Record<OrbState, string> = {
 
 export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (text: string) => void; onNavigate: (view: ViewId) => void; reply: string; streaming: boolean }) {
   const [open, setOpen] = useState(false);
-  const [enabled, setEnabled] = useState(() => localStorage.getItem("conductor.voice.orb") === "true");
+  const [enabled, setEnabled] = useState(() => localStorage.getItem("conductor.voice.orb") !== "false");
   const [handsFree, setHandsFree] = useState(() => localStorage.getItem("conductor.voice.handsFree") === "true");
   const [speakBack, setSpeakBack] = useState(() => localStorage.getItem("conductor.voice.speakBack") === "true");
   const [listening, setListening] = useState(false);
@@ -87,18 +88,14 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
   };
 
   const say = useCallback((text: string) => {
-    if (!text || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.slice(0, 900));
-    u.rate = 1.02;
-    u.onstart = () => setSpeaking(true);
-    u.onend = () => setSpeaking(false);
-    u.onerror = () => setSpeaking(false);
-    spokenRef.current = text;
-    window.speechSynthesis.speak(u);
+    if (!text) return;
+    void speak(text, { onStart: () => setSpeaking(true), onEnd: () => setSpeaking(false) }).then((ok) => { if (!ok) setSpeaking(false); });
   }, []);
   useEffect(() => {
-    if (speakBack && reply && reply !== spokenRef.current && !listening && !streaming) say(reply);
+    if (speakBack && reply && reply !== spokenRef.current && !listening && !streaming) {
+      spokenRef.current = reply;
+      say(reply);
+    }
   }, [reply, speakBack, listening, streaming, say]);
 
   function stopRecognition() {
@@ -106,6 +103,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
     try { recRef.current?.stop(); } catch { /* already stopped */ }
     setListening(false);
     setInterim("");
+    stopSpeaking();
   }
 
   /* window events — registered after stopRecognition is declared (the
@@ -181,7 +179,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
     } catch { setListening(false); flashError("Couldn't start the microphone."); }
   }, [routeCommand, speakBack, say]);
 
-  useEffect(() => () => { try { recRef.current?.abort(); window.speechSynthesis?.cancel(); } catch { /* teardown */ } }, []);
+  useEffect(() => () => { try { recRef.current?.abort(); stopSpeaking(); } catch { /* teardown */ } }, []);
 
   const toggleListen = () => (listening ? stopRecognition() : startRecognition(handsFree));
   const sendDraft = () => { if (!draft.trim()) return; routeCommand(draft); setDraft(""); };
@@ -259,7 +257,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
             onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } setOpen(true); }}
             onDoubleClick={toggleListen}
             className="relative flex size-[54px] cursor-grab items-center justify-center rounded-full transition-transform hover:scale-105 active:cursor-grabbing focus-visible:ring-focus"
-            aria-label={`Aro voice · ${ORB_LABEL[orbState]} · click to open, double-click to talk`}
+            aria-label={`Aro hands-free voice · ${ORB_LABEL[orbState]} · click to open, double-click to talk`}
           >
             <Orb state={orbState} size={46} levelRef={micLevel} />
           </button>

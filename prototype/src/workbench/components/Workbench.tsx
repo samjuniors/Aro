@@ -3,11 +3,12 @@ import { cn } from "../utils/cn";
 import { type ModeId, type Session, type Step } from "../data/catalog";
 import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
-import { useDictation } from "../lib/dictation";
+import { useDictation, engineMeta } from "../lib/dictation";
+import { formatSeconds } from "../lib/speak";
 import { ProjectChooser } from "./ProjectDialog";
 import { DiffSideDrawer, RepoBar, repoStateFor } from "./RepoDock";
 import { PlanTodoCorner } from "./PlanTodoCorner";
-import { IconArrowUp, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconWave, IconX } from "./Icons";
+import { IconArrowUp, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconX } from "./Icons";
 import { Button, IconButton, Menu, MenuItem, MenuLabel, MenuSep, Tip, type Tone } from "./ui";
 import { StepView, StreamingRow } from "./Transcript";
 
@@ -77,6 +78,13 @@ function Composer(props: WorkbenchProps) {
     window.addEventListener("conductor:voice:dictate", toggle);
     return () => window.removeEventListener("conductor:voice:dictate", toggle);
   }, [dictation.toggle]);
+  /* Esc stops dictation without sending */
+  useEffect(() => {
+    if (!dictation.listening) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); dictation.stop(); } };
+    window.addEventListener("keydown", esc, true);
+    return () => window.removeEventListener("keydown", esc, true);
+  }, [dictation.listening, dictation.stop]);
   const submit = async () => {
     if (!value.trim() || submitting || props.streaming) return;
     if (dictation.listening) dictation.stop();
@@ -88,12 +96,24 @@ function Composer(props: WorkbenchProps) {
   const pickerIcon = <span className="model-monogram" aria-hidden>{selectedModel?.provider.glyph ?? "AI"}</span>;
 
   return <div className="reference-composer-container">
-    <PlanTodoCorner session={props.session} mode={props.mode} />
     <ProjectChooser project={props.project} onChoose={props.onChooseProject} />
     <div className={cn("reference-composer", dictation.listening && "is-listening", props.streaming && "is-streaming")}>
-      {dictation.listening && <div className="dictation-status" role="status"><IconWave size={13} className="animate-pulse" /><span>Listening</span><span className="min-w-0 flex-1 truncate italic text-ink-3">{dictation.interim || "Speak to type"}</span><button onClick={dictation.stop} className="text-[11px] text-ink-3 hover:text-ink">Done</button></div>}
+      {/* agent plan — pinned to the composer's top-right corner, sticky across projects */}
+      <PlanTodoCorner />
+
+      {/* Wispr Flow-style dictation bubble floating above the voice button */}
+      {dictation.listening && (
+        <div className="dictation-bubble animate-pop" role="status" aria-live="polite">
+          <span className="dictation-wave" aria-hidden style={{ ["--mic-level" as string]: dictation.level }}>
+            {[0, 1, 2, 3, 4].map((i) => <i key={i} style={{ animationDelay: `${i * 110}ms` }} />)}
+          </span>
+          <span className="dictation-timer font-mono">{formatSeconds(dictation.elapsed)}</span>
+          <span className="dictation-text min-w-0 flex-1">{dictation.interim === "…" ? "Transcribing…" : dictation.interim || (engineMeta(dictation.engine).short === "browser" ? "Speak to type…" : "Listening…")}</span>
+          <button type="button" onClick={dictation.stop} className="dictation-done"><IconCheck size={12} /><span>Done</span></button>
+        </div>
+      )}
       {files.length > 0 && <div className="flex flex-wrap gap-1.5 px-3.5 pt-3">{files.map((file, index) => <span key={`${file.name}-${index}`} className="inline-flex items-center gap-1.5 rounded-[6px] border border-line bg-well px-2 py-1 text-[11px] text-ink-2"><IconPaperclip size={10} />{file.name}<button onClick={() => setFiles((all) => all.filter((_, i) => i !== index))} aria-label={`Remove ${file.name}`} className="text-ink-4 hover:text-ink"><IconX size={10} /></button></span>)}</div>}
-      <textarea ref={textarea} data-composer="true" rows={2} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Do anything" aria-label="Message to the coding agent" spellCheck
+      <textarea ref={textarea} data-composer="true" rows={2} value={value} onChange={(e) => setValue(e.target.value)} placeholder={dictation.listening ? "Listening — speak or press Esc to stop" : "Do anything"} aria-label="Message to the coding agent" spellCheck
         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} className="reference-composer-input" />
       <div className="reference-composer-toolbar">
         <Menu side="top" width={225} trigger={() => <button className="composer-icon-button" aria-label="Add files or context"><IconPlus size={16} /></button>}>
@@ -128,7 +148,11 @@ function Composer(props: WorkbenchProps) {
               <MenuSep /><MenuItem icon={<IconPlus size={12} />} label="Configure providers" onClick={() => { close(); openProviders(); }} />
             </>}
           </Menu>
-          <Tip label={dictation.listening ? "Stop speech-to-text" : "Speech to text · ⌘⇧V"}><button className={cn("composer-icon-button wave-button", dictation.listening && "recording")} onClick={dictation.toggle} aria-label={dictation.listening ? "Stop speech-to-text recording" : "Record speech to text"} aria-pressed={dictation.listening}><IconWave size={16} /></button></Tip>
+          <Tip label={dictation.listening ? "Stop dictation · Esc" : "Talk to type · ⌘⇧V"}>
+            <button className={cn("composer-icon-button wave-button", dictation.listening && "recording")} onClick={dictation.toggle} aria-label={dictation.listening ? "Stop speech-to-text recording" : "Record speech to text"} aria-pressed={dictation.listening}>
+              {dictation.listening ? <IconStop size={13} /> : <IconMic size={16} />}
+            </button>
+          </Tip>
           {props.streaming ? <button onClick={props.onStop} className="reference-send-button sending" aria-label="Stop response"><IconStop size={12} /></button> : <button disabled={!value.trim() || submitting} onClick={() => void submit()} className="reference-send-button" aria-label="Send message"><IconArrowUp size={15} /></button>}
         </div>
       </div>

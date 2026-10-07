@@ -33,6 +33,10 @@ export type Project = {
   color: string;
   kind: "repo" | "workspace";
   sources?: ProjectSource[];
+  /** Pinned projects sort first and stay visible while folded. */
+  pinned?: boolean;
+  /** Archived projects are hidden from the sidebar and composer chooser. */
+  archived?: boolean;
   /** Inherited by every thread in the project unless the thread overrides it. */
   defaults?: { agentId?: string; modelId?: string; mode?: string; rules?: string[]; budget?: string };
 };

@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 import type { Project, ProjectSource } from "../data/providers";
 import { useWorkspace } from "../lib/workspace";
 import { makeId } from "../lib/storage";
-import { IconCheck, IconChevronDown, IconFolder, IconGit, IconPlus, IconSearch, IconX } from "./Icons";
+import { IconCheck, IconChevronDown, IconFolder, IconGit, IconPin, IconPlus, IconSearch, IconX } from "./Icons";
 import { Button, Input, Menu, MenuItem, Modal } from "./ui";
 
 type FileHandle = { kind: "file"; name: string; getFile: () => Promise<File> };
@@ -134,7 +134,7 @@ export function ProjectDialog() {
 }
 
 export function ProjectChooser({ project, onChoose }: { project?: Project; onChoose: (id?: string, createdProject?: Project) => void }) {
-  const { projects, requestProject, isDemoProject } = useWorkspace();
+  const { projects, userProjects, requestProject, isDemoProject } = useWorkspace();
   const [search, setSearch] = useState("");
   const create = () => requestProject((p) => onChoose(p.id, p));
   const label = project
@@ -142,18 +142,30 @@ export function ProjectChooser({ project, onChoose }: { project?: Project; onCho
     : <><IconFolder size={13} className="opacity-70" /><span>Choose project</span></>;
 
   if (!projects.length) return <button type="button" onClick={create} className="composer-project-strip">{label}</button>;
+  const matches = projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+  const sortedMatches = [...matches].sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false));
+  const archived = userProjects.filter((p) => p.archived && p.name.toLowerCase().includes(search.toLowerCase()));
   return <Menu side="top" width={340} className="w-full" trigger={() => <button type="button" className={cn("composer-project-strip", project && "has-project")}>{label}</button>}>
     {(close) => <div className="repo-chooser">
       <div className="repo-chooser-search"><IconSearch size={13} /><input placeholder="Search repositories…" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search repositories" /></div>
       <div className="repo-chooser-list">
-        {projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())).map((p) => (
+        {sortedMatches.map((p) => (
           <button key={p.id} onClick={() => { onChoose(p.id); close(); }} className={cn("repo-chooser-row", p.id === project?.id && "selected")}>
-            <span className="repo-chooser-main"><span className="repo-chooser-name">{p.name}</span>{p.sources?.[0] && <span className="repo-chooser-sub">{p.sources[0].kind === "git" ? p.sources[0].remoteUrl?.replace(/^https?:\/\//, "") : `${p.sources[0].fileCount ?? 0} files`}</span>}</span>
+            <span className="repo-chooser-main"><span className="repo-chooser-name">{p.name}{p.pinned && <IconPin size={9} className="ml-1.5 inline text-iris-soft" />}</span>{p.sources?.[0] && <span className="repo-chooser-sub">{p.sources[0].kind === "git" ? p.sources[0].remoteUrl?.replace(/^https?:\/\//, "") : `${p.sources[0].fileCount ?? 0} files`}</span>}</span>
             {isDemoProject(p.id) && <span className="repo-chooser-demo">DEMO</span>}
             {p.id === project?.id && <IconCheck size={13} className="repo-chooser-check" />}
           </button>
         ))}
-        {!projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())).length && <p className="repo-chooser-empty">No repositories match “{search}”.</p>}
+        {!sortedMatches.length && archived.length === 0 && <p className="repo-chooser-empty">No repositories match “{search}”.</p>}
+        {archived.length > 0 && <>
+          <p className="repo-chooser-archived-label">Archived</p>
+          {archived.map((p) => (
+            <button key={p.id} onClick={() => { onChoose(p.id); close(); }} className="repo-chooser-row" title="This project is archived — open anyway or restore it from the sidebar archive view">
+              <span className="repo-chooser-main"><span className="repo-chooser-name opacity-60">{p.name}</span></span>
+              <span className="repo-chooser-demo">ARCHIVED</span>
+            </button>
+          ))}
+        </>}
       </div>
       <button onClick={() => { close(); create(); }} className="repo-chooser-add"><IconPlus size={12} /> Add repositories…</button>
       {project && <button onClick={() => { onChoose(undefined); close(); }} className="repo-chooser-add repo-chooser-clear"><IconX size={11} /> Continue without a project</button>}
