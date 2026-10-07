@@ -49,14 +49,13 @@ export function PlanTodoCorner({
   // Visible when in plan mode or when agent has drafted a plan
   const isVisible = hasAgentPlan || mode === "plan";
 
-  // Auto-open once when an agent plan actually lands in the session
-  const prevPlanCount = useRef(planItems.length);
-  useEffect(() => {
-    if (planItems.length > 0 && prevPlanCount.current === 0) {
-      setOpen(true);
-    }
-    prevPlanCount.current = planItems.length;
-  }, [planItems.length]);
+  // Auto-open once when an agent plan actually lands in the session —
+  // render-time transition check (avoids react-hooks/set-state-in-effect)
+  const [prevPlanCount, setPrevPlanCount] = useState(planItems.length);
+  if (planItems.length !== prevPlanCount) {
+    setPrevPlanCount(planItems.length);
+    if (planItems.length > 0 && prevPlanCount === 0) setOpen(true);
+  }
 
   // Click outside to close the popup if open
   useEffect(() => {

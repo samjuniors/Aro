@@ -6,9 +6,12 @@ import { IconButton, Kbd } from "./ui";
 
 export function ShortcutHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
+  /* clear the search whenever the sheet reopens — render-time adjustment
+     (avoids react-hooks/set-state-in-effect) */
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) { setWasOpen(open); if (open) setQ(""); }
   useEffect(() => {
     if (!open) return;
-    setQ("");
     const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);

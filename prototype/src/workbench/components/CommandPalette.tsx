@@ -86,7 +86,12 @@ export function CommandPalette({
       .slice(0, 22);
   }, [q, items]);
 
-  useEffect(() => setIdx(0), [q, open]);
+  /* reset the highlight index when the query or visibility changes —
+     adjusted during render (the documented React pattern) instead of a
+     setState-in-effect, which trips react-hooks/set-state-in-effect */
+  const [resetKey, setResetKey] = useState("");
+  const nextResetKey = `${q}|${open}`;
+  if (nextResetKey !== resetKey) { setResetKey(nextResetKey); setIdx(0); }
   useEffect(() => {
     if (!open) return;
     const h = (e: KeyboardEvent) => {

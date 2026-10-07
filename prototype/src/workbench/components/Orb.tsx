@@ -71,7 +71,7 @@ export function useMicLevel(active: boolean) {
 export function Orb({ state, size = 44, levelRef, className }: { state: OrbState; size?: number; levelRef?: React.RefObject<number>; className?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   useEffect(() => {
     const el = canvas.current;

@@ -65,22 +65,13 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
   useEffect(() => localStorage.setItem("conductor.voice.position", JSON.stringify(position)), [position]);
   useEffect(() => localStorage.setItem("conductor.voice.speakBack", String(speakBack)), [speakBack]);
   useEffect(() => localStorage.setItem("conductor.voice.handsFree", String(handsFree)), [handsFree]);
-  useEffect(() => {
-    const on = (name: string, fn: (e: Event) => void) => { window.addEventListener(name, fn); return () => window.removeEventListener(name, fn); };
-    const offs = [
-      on("conductor:voice", () => { setEnabled(true); setOpen(true); }),
-      on("conductor:voice:minimize", () => { stopRecognition(); setOpen(false); }),
-      on("conductor:voice:orb", (e) => setEnabled(Boolean((e as CustomEvent<boolean>).detail))),
-      on("conductor:voice:speakBack", (e) => setSpeakBack(Boolean((e as CustomEvent<boolean>).detail))),
-      on("conductor:voice:handsFree", (e) => setHandsFree(Boolean((e as CustomEvent<boolean>).detail))),
-      on("conductor:dictation", (e) => setDictating(Boolean((e as CustomEvent<boolean>).detail))),
-    ];
-    return () => offs.forEach((off) => off());
-  }, []);
 
-  /* thinking → completed pulse */
+  /* thinking → completed pulse — intentional setState on the streaming
+     true→false transition (animation only); the rule flags the pattern but
+     there is no cascading-render risk here */
   useEffect(() => {
     if (wasStreaming.current && !streaming) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCompleted(true);
       const t = window.setTimeout(() => setCompleted(false), 2800);
       wasStreaming.current = streaming;
@@ -116,6 +107,21 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
     setListening(false);
     setInterim("");
   }
+
+  /* window events — registered after stopRecognition is declared (the
+     react-hooks/immutability rule rejects the forward reference) */
+  useEffect(() => {
+    const on = (name: string, fn: (e: Event) => void) => { window.addEventListener(name, fn); return () => window.removeEventListener(name, fn); };
+    const offs = [
+      on("conductor:voice", () => { setEnabled(true); setOpen(true); }),
+      on("conductor:voice:minimize", () => { stopRecognition(); setOpen(false); }),
+      on("conductor:voice:orb", (e) => setEnabled(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:voice:speakBack", (e) => setSpeakBack(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:voice:handsFree", (e) => setHandsFree(Boolean((e as CustomEvent<boolean>).detail))),
+      on("conductor:dictation", (e) => setDictating(Boolean((e as CustomEvent<boolean>).detail))),
+    ];
+    return () => offs.forEach((off) => off());
+  }, []);
 
   const routeCommand = useCallback((raw: string) => {
     const text = raw.trim();
