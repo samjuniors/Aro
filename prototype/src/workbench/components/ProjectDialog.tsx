@@ -133,24 +133,23 @@ export function ProjectDialog() {
   </Modal>;
 }
 
-export function ProjectChooser({ project, onChoose }: { project?: Project; onChoose: (id?: string, createdProject?: Project) => void }) {
-  const { projects, userProjects, requestProject, isDemoProject } = useWorkspace();
+/**
+ * Project picker used inside the composer's toolbar folder menu (the old
+ * always-visible strip above the composer was removed — attached-project
+ * details live in the repo bar below the composer instead).
+ */
+export function ProjectPickerPanel({ project, onChoose, onClose }: { project?: Project; onChoose: (id?: string, createdProject?: Project) => void; onClose?: () => void }) {
+  const { projects, userProjects, requestProject, isDemoProject, demoProject } = useWorkspace();
   const [search, setSearch] = useState("");
   const create = () => requestProject((p) => onChoose(p.id, p));
-  const label = project
-    ? <><IconFolder size={13} /><span className="truncate">{project.name}</span>{isDemoProject(project.id) && <span className="repo-dock-demo">DEMO</span>}<IconChevronDown size={11} className="ml-auto opacity-60" /></>
-    : <><IconFolder size={13} className="opacity-70" /><span>Choose project</span></>;
-
-  if (!projects.length) return <button type="button" onClick={create} className="composer-project-strip">{label}</button>;
   const matches = projects.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
   const sortedMatches = [...matches].sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false));
-  const archived = userProjects.filter((p) => p.archived && p.name.toLowerCase().includes(search.toLowerCase()));
-  return <Menu side="top" width={340} className="w-full" trigger={() => <button type="button" className={cn("composer-project-strip", project && "has-project")}>{label}</button>}>
-    {(close) => <div className="repo-chooser">
+  const archived = [...(demoProject.archived ? [demoProject] : []), ...userProjects].filter((p) => p.archived && p.name.toLowerCase().includes(search.toLowerCase()));
+  return <div className="repo-chooser">
       <div className="repo-chooser-search"><IconSearch size={13} /><input placeholder="Search repositories…" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search repositories" /></div>
       <div className="repo-chooser-list">
         {sortedMatches.map((p) => (
-          <button key={p.id} onClick={() => { onChoose(p.id); close(); }} className={cn("repo-chooser-row", p.id === project?.id && "selected")}>
+          <button key={p.id} onClick={() => { onChoose(p.id); }} className={cn("repo-chooser-row", p.id === project?.id && "selected")}>
             <span className="repo-chooser-main"><span className="repo-chooser-name">{p.name}{p.pinned && <IconPin size={9} className="ml-1.5 inline text-iris-soft" />}</span>{p.sources?.[0] && <span className="repo-chooser-sub">{p.sources[0].kind === "git" ? p.sources[0].remoteUrl?.replace(/^https?:\/\//, "") : `${p.sources[0].fileCount ?? 0} files`}</span>}</span>
             {isDemoProject(p.id) && <span className="repo-chooser-demo">DEMO</span>}
             {p.id === project?.id && <IconCheck size={13} className="repo-chooser-check" />}
@@ -160,15 +159,14 @@ export function ProjectChooser({ project, onChoose }: { project?: Project; onCho
         {archived.length > 0 && <>
           <p className="repo-chooser-archived-label">Archived</p>
           {archived.map((p) => (
-            <button key={p.id} onClick={() => { onChoose(p.id); close(); }} className="repo-chooser-row" title="This project is archived — open anyway or restore it from the sidebar archive view">
+            <button key={p.id} onClick={() => { onChoose(p.id); }} className="repo-chooser-row" title="This project is archived — open anyway or restore it from the sidebar archive view">
               <span className="repo-chooser-main"><span className="repo-chooser-name opacity-60">{p.name}</span></span>
               <span className="repo-chooser-demo">ARCHIVED</span>
             </button>
           ))}
         </>}
       </div>
-      <button onClick={() => { close(); create(); }} className="repo-chooser-add"><IconPlus size={12} /> Add repositories…</button>
-      {project && <button onClick={() => { onChoose(undefined); close(); }} className="repo-chooser-add repo-chooser-clear"><IconX size={11} /> Continue without a project</button>}
-    </div>}
-  </Menu>;
+      <button onClick={() => { onClose?.(); create(); }} className="repo-chooser-add"><IconPlus size={12} /> Add repositories…</button>
+      {project && <button onClick={() => { onChoose(undefined); }} className="repo-chooser-add repo-chooser-clear"><IconX size={11} /> Continue without a project</button>}
+    </div>;
 }

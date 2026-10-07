@@ -132,7 +132,7 @@ export function VoiceAgent({ onSend, onNavigate, reply, streaming }: { onSend: (
       [["open terminal", "show terminal"], "conductor:terminal", "Terminal toggled."],
       [["open settings", "settings"], "conductor:settings", "Opening settings."],
       [["open providers", "open local models"], "conductor:providers", "Opening model providers."],
-      [["show todos", "open todo"], "conductor:todo", "Opening your todo list."],
+      [["show todos", "show plan", "show my plan", "open todo", "open plan"], "conductor:agent-plan-toggle", "Opening the agent plan."],
       [["new session", "new chat", "start a session"], "conductor:new-session", "Starting a new session."],
       [["code mode", "switch to code mode"], "conductor:product", "Switched to Code.", "code"],
       [["agent mode", "switch to agent mode"], "conductor:product", "Switched to Agent.", "agent"],

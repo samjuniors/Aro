@@ -31,7 +31,6 @@ import { CommandPalette } from "./components/CommandPalette";
 import { ShortcutHelp } from "./components/ShortcutHelp";
 import { TerminalPanel } from "./components/Terminal";
 import { VoiceAgent } from "./components/VoiceAgent";
-import { TodoPopup } from "./components/TodoPopup";
 import { extractPlanTodos } from "./components/PlanTodoCorner";
 import { Sheet } from "./components/Sheet";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -95,8 +94,8 @@ function buildCodeResponse(prompt: string, agentId: string, mode: ModeId): Step[
 }
 
 function Shell() {
-  const { product, setProduct, design, theme, setTheme, providers, toast, toasts, termOpen, setTermOpen, termPush, setTodos, setDockOpen, setTodoOpen, todoOpen, setSettingsSection } = useApp();
-  const { projects, addProject, updateProject, requestProject, rules, demoEnabled, setAgentPlan, deleteProject: deleteWorkspaceProject } = useWorkspace();
+  const { product, setProduct, design, theme, setTheme, providers, toast, toasts, termOpen, setTermOpen, termPush, setTodos, setDockOpen, setSettingsSection } = useApp();
+  const { projects, addProject, updateProject, requestProject, rules, demoEnabled, setAgentPlan, deleteProject: deleteWorkspaceProject, duplicateProject: duplicateWorkspaceProject } = useWorkspace();
   void demoEnabled;
   const [userSessions, setSessions] = useState<Session[]>(loadSessions);
   const sessions = useMemo(() => demoEnabled ? [...DEMO_SESSIONS.filter((d) => !userSessions.some((u) => u.id === d.id)), ...userSessions] : userSessions, [userSessions, demoEnabled]);
@@ -215,7 +214,7 @@ function Shell() {
     }
   };
   const resetUtilities = () => {
-    setRightOpen(false); setTermOpen(false); setDockOpen(false); setTodoOpen(false); setCmdk(false); setHelpOpen(false); setLayoutOpen(false); setStatusOpen(false); setNewOpen(false); closeSheet();
+    setRightOpen(false); setTermOpen(false); setDockOpen(false); setCmdk(false); setHelpOpen(false); setLayoutOpen(false); setStatusOpen(false); setNewOpen(false); closeSheet();
     window.dispatchEvent(new CustomEvent("conductor:voice:minimize"));
   };
   const stop = () => {
@@ -383,12 +382,29 @@ function Shell() {
   const duplicate = (id: string) => { const source = sessions.find((s) => s.id === id); if (!source) return; const copy = { ...source, id: makeId("session"), title: `${source.title} (copy)`, status: "idle" as const, archived: false }; setSessions((all) => [copy, ...all]); selectSession(copy.id); setActiveIds((all) => ({ ...all, [product]: copy.id })); };
   const createProject = (name: string) => addProject({ name, sources: [] }).id;
 
+  /* duplicate a whole project: fresh project shell + a copy of every session filed under it */
+  const duplicateProject = (id: string) => {
+    const source = projects.find((p) => p.id === id);
+    if (!source) return;
+    const copy = duplicateWorkspaceProject(id);
+    const sourceSessions = sessions.filter((s) => s.projectId === id);
+    const copies = sourceSessions.map((s) => ({ ...s, id: makeId("session"), projectId: copy.id, status: "idle" as const, archived: false }));
+    if (copies.length) setSessions((all) => [...copies, ...all]);
+    toast(copies.length > 0 ? `Duplicated ${source.name} — ${copies.length} session${copies.length === 1 ? "" : "s"} copied.` : `Duplicated ${source.name}.`, "mint");
+  };
+
   /* project lifecycle: deleting a project removes its sessions; the active
      session escapes to a fresh draft if its project disappears */
   const deleteProject = (id: string) => {
     const doomed = projects.find((p) => p.id === id);
     if (!doomed) return;
-    if (doomed.id === "demo-sofia-ui") { toast("Reference demo can't be deleted. Toggle Demo off instead.", "amber"); return; }
+    if (doomed.id === "demo-sofia-ui") {
+      /* deleting the reference demo hides the overlay — the Demo toggle brings it back */
+      deleteWorkspaceProject(id);
+      if (sessions.some((s) => s.id === active.id && s.projectId === id)) { resetUtilities(); newSession(); }
+      toast("Reference demo removed — the Demo toggle in the sidebar brings it back.", "amber");
+      return;
+    }
     const sessionCount = sessions.filter((s) => s.projectId === id).length;
     deleteWorkspaceProject(id);
     setSessions((all) => all.filter((s) => s.projectId !== id));
@@ -417,6 +433,7 @@ function Shell() {
       else if (key === "b" && e.shiftKey) { e.preventDefault(); setListOpen((v) => !v); }
       else if (key === "[") { e.preventDefault(); setRightTab((t) => (t === "changes" ? "browser" : "changes")); setRightOpen(true); }
       else if (key === "v" && e.shiftKey) { e.preventDefault(); closeSheet(); window.dispatchEvent(new CustomEvent("conductor:voice:dictate")); }
+      else if (key === "t") { e.preventDefault(); window.dispatchEvent(new CustomEvent("conductor:agent-plan-toggle")); }
       else if (key === "f" && e.shiftKey) { e.preventDefault(); setLayout(PRESETS[1].state); }
       else if (key === "e") { e.preventDefault(); setProduct(product === "code" ? "agent" : "code"); resetUtilities(); }
       else if (/^[1-9]$/.test(key)) { const nav = product === "code" ? NAV_CODE : NAV_AGENT; const item = nav[Number(key) - 1]; if (item) { e.preventDefault(); setView(item.id); } }
@@ -430,15 +447,14 @@ function Shell() {
     const help = () => setHelpOpen(true);
     const create = () => newSession();
     const terminal = () => setTermOpen(!termOpen);
-    const todo = () => setTodoOpen(!todoOpen);
-    const events: [string, EventListener][] = [["conductor:pane", paneEvent], ["conductor:settings", settings], ["conductor:providers", providerSettings], ["conductor:help", help], ["conductor:new-session", create], ["conductor:terminal", terminal], ["conductor:todo", todo]];
+    const events: [string, EventListener][] = [["conductor:pane", paneEvent], ["conductor:settings", settings], ["conductor:providers", providerSettings], ["conductor:help", help], ["conductor:new-session", create], ["conductor:terminal", terminal]];
     events.forEach(([name, fn]) => window.addEventListener(name, fn));
     return () => events.forEach(([name, fn]) => window.removeEventListener(name, fn));
   });
 
   const latestReply = [...active.steps].reverse().find((s): s is Extract<Step, { type: "text" }> => s.type === "text")?.text.replace(/[`*#]/g, "") ?? "";
   const empty = !active.steps.length;
-  const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false), onDeleteProject: deleteProject };
+  const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false), onDeleteProject: deleteProject, onDuplicateProject: duplicateProject };
 
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
     <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} />
@@ -487,7 +503,6 @@ function Shell() {
     <CommandPalette open={cmdk} onClose={() => setCmdk(false)} setView={setView} onSelectSession={selectSession} onNew={newSession} sessions={sessions} />
     <ProjectDialog /><ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     <VoiceAgent onSend={(text) => void send(text)} onNavigate={setView} reply={latestReply} streaming={Boolean(runningId)} />
-    <TodoPopup />
     <Toasts items={toasts} />
 
     <Modal open={newOpen} onClose={() => setNewOpen(false)} title="Start a session" sub="Pick the agent and the starting mode — both change later from the composer." width={660}>

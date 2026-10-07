@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { Project, ProjectSource } from "../data/providers";
 import { DEMO_PROJECT, DEMO_TASKS } from "../data/demo";
 import { makeId, readStored, writeStored } from "./storage";
@@ -15,13 +15,17 @@ export type AgentPlan = { items: AgentPlanItem[]; sessionId?: string; title: str
 
 type WorkspaceContextValue = {
   projects: Project[];
-  userProjects: Project[];
+  userProjects: Project[]
+  /** The reference demo project with the user's overrides (pin/archive/rename) applied. */
+  demoProject: Project;
   addProject: (input: ProjectInput) => Project;
   updateProject: (project: Project) => void;
   toggleProjectPin: (id: string) => void;
   archiveProject: (id: string, archived: boolean) => void;
   deleteProject: (id: string) => void;
   renameProject: (id: string, name: string) => void;
+  /** Copies a project (shell only) into a fresh user project and returns it. */
+  duplicateProject: (id: string) => Project;
   demoEnabled: boolean;
   setDemoEnabled: (v: boolean) => void;
   isDemoProject: (id?: string) => boolean;
@@ -56,6 +60,14 @@ function loadProjects(): Project[] {
   return readStored<Project[]>("conductor.workspace.v3.projects", userProjects);
 }
 
+/* Per-user tweaks applied on top of the overlaid reference demo (SofiaUI):
+   pinning, archiving and renaming work on it like on any other project. */
+type DemoOverrides = { pinned?: boolean; archived?: boolean; name?: string };
+
+function loadDemoOverrides(): DemoOverrides {
+  return readStored<DemoOverrides>("conductor.workspace.v3.demo-over", {});
+}
+
 function loadAgentPlan(): AgentPlan | null {
   const stored = readStored<AgentPlan | null>("conductor.agentplan.v1", null);
   return stored && Array.isArray(stored.items) && stored.items.length > 0 ? stored : null;
@@ -71,11 +83,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [connectors, setConnectors] = useState<WorkspaceConnector[]>(() => readStored("conductor.workspace.v3.connectors", []));
   const [rules, setRules] = useState<string[]>(() => readStored("conductor.workspace.v3.rules", []));
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [demoOver, setDemoOver] = useState<DemoOverrides>(loadDemoOverrides);
   const [agentPlan, setAgentPlan] = useState<AgentPlan | null>(loadAgentPlan);
   const afterCreate = useRef<((project: Project) => void) | undefined>(undefined);
 
+  /* the demo project with overrides applied — pinned/archived/renamed by the user */
+  const demoProject = useMemo<Project>(() => ({ ...DEMO_PROJECT, ...(demoOver.name ? { name: demoOver.name } : {}), pinned: Boolean(demoOver.pinned), archived: Boolean(demoOver.archived) }), [demoOver]);
   const projects = demoEnabled
-    ? [DEMO_PROJECT, ...userProjects.filter((p) => p.id !== DEMO_PROJECT.id && !p.archived)]
+    ? [...(demoProject.archived ? [] : [demoProject]), ...userProjects.filter((p) => p.id !== DEMO_PROJECT.id && !p.archived)]
     : userProjects.filter((p) => !p.archived);
   const tasks = demoEnabled ? [...DEMO_TASKS, ...userTasks] : userTasks;
 
@@ -85,6 +100,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => writeStored("conductor.workspace.v3.connectors", connectors), [connectors]);
   useEffect(() => writeStored("conductor.workspace.v3.rules", rules), [rules]);
   useEffect(() => writeStored("conductor.workspace.v3.demo", demoEnabled), [demoEnabled]);
+  useEffect(() => writeStored("conductor.workspace.v3.demo-over", demoOver), [demoOver]);
   useEffect(() => { if (agentPlan) writeStored("conductor.agentplan.v1", agentPlan); else localStorage.removeItem("conductor.agentplan.v1"); }, [agentPlan]);
 
   const addProject = useCallback((input: ProjectInput): Project => {
@@ -104,22 +120,33 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     setUserProjects((all) => all.map((p) => p.id === project.id ? project : p));
   }, []);
   const toggleProjectPin = useCallback((id: string) => {
-    if (id === DEMO_PROJECT.id) return;
+    if (id === DEMO_PROJECT.id) { setDemoOver((o) => ({ ...o, pinned: !o.pinned })); return; }
     setUserProjects((all) => all.map((p) => p.id === id ? { ...p, pinned: !p.pinned } : p));
   }, []);
   const archiveProject = useCallback((id: string, archived: boolean) => {
-    if (id === DEMO_PROJECT.id) return;
+    if (id === DEMO_PROJECT.id) { setDemoOver((o) => ({ ...o, archived })); return; }
     setUserProjects((all) => all.map((p) => p.id === id ? { ...p, archived } : p));
   }, []);
   const deleteProject = useCallback((id: string) => {
-    if (id === DEMO_PROJECT.id) return;
+    /* deleting the reference demo hides the overlay — the Demo toggle brings it back */
+    if (id === DEMO_PROJECT.id) { setDemoOver({}); setDemoEnabledState(false); return; }
     setUserProjects((all) => all.filter((p) => p.id !== id));
     setSourceFiles((all) => { const next = { ...all }; delete next[id]; return next; });
   }, []);
   const renameProject = useCallback((id: string, name: string) => {
-    if (id === DEMO_PROJECT.id) return;
+    if (id === DEMO_PROJECT.id) { setDemoOver((o) => ({ ...o, name })); return; }
     setUserProjects((all) => all.map((p) => p.id === id ? { ...p, name } : p));
   }, []);
+  const duplicateProject = useCallback((id: string): Project => {
+    const source = id === DEMO_PROJECT.id ? demoProject : userProjects.find((p) => p.id === id);
+    if (!source) return demoProject;
+    const taken = new Set(userProjects.map((p) => p.name.toLowerCase()));
+    let name = `${source.name} copy`;
+    for (let i = 2; taken.has(name.toLowerCase()); i += 1) name = `${source.name} copy ${i}`;
+    const copy: Project = { ...source, id: makeId("project"), name, pinned: false, archived: false, defaults: source.defaults ? { ...source.defaults } : undefined };
+    setUserProjects((all) => [...all, copy]);
+    return copy;
+  }, [userProjects, demoProject]);
 
   /* ---- sticky agent plan ---- */
   const updateAgentPlanItem = useCallback((id: string, patch: Partial<AgentPlanItem>) => {
@@ -148,5 +175,5 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     return project;
   }, [addProject]);
 
-  return <WorkspaceContext.Provider value={{ projects, userProjects, addProject, updateProject, toggleProjectPin, archiveProject, deleteProject, renameProject, demoEnabled, setDemoEnabled, isDemoProject, sourceFiles, tasks, setTasks: setUserTasks as Dispatch<SetStateAction<WorkspaceTask[]>>, skills, setSkills, connectors, setConnectors, rules, setRules, projectDialogOpen, requestProject, closeProjectDialog, finishProject, agentPlan, setAgentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ projects, userProjects, demoProject, addProject, updateProject, toggleProjectPin, archiveProject, deleteProject, renameProject, duplicateProject, demoEnabled, setDemoEnabled, isDemoProject, sourceFiles, tasks, setTasks: setUserTasks as Dispatch<SetStateAction<WorkspaceTask[]>>, skills, setSkills, connectors, setConnectors, rules, setRules, projectDialogOpen, requestProject, closeProjectDialog, finishProject, agentPlan, setAgentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan }}>{children}</WorkspaceContext.Provider>;
 }

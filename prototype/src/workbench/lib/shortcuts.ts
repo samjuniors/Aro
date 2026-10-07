@@ -8,7 +8,7 @@ export const SHORTCUTS: Shortcut[] = [
   { id: "close-panel", label: "Close panel · back to chat", keys: ["Esc"], group: "Global", note: "Or click the same sidebar item again" },
   { id: "switch-product", label: "Switch Code / Agent", keys: ["⌘", "E"], group: "Global" },
   { id: "new", label: "New session", keys: ["⌘", "N"], group: "Global" },
-  { id: "todo", label: "Todo list", keys: ["⌘", "T"], group: "Global" },
+  { id: "todo", label: "Agent plan (composer)", keys: ["⌘", "T"], group: "Global", note: "The plan pinned above the composer" },
   { id: "voice", label: "Dictate", keys: ["⌘", "⇧", "V"], group: "Composer", note: "Speech → text in the composer" },
 
   { id: "v-sessions", label: "Sessions", keys: ["⌘", "1"], group: "Navigate" },

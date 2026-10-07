@@ -5,7 +5,7 @@ import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
 import { useWorkspace } from "../lib/workspace";
 import { readStored, writeStored } from "../lib/storage";
-import { IconArchive, IconBrain, IconCheck, IconChevronDown, IconClock, IconCopy, IconFolder, IconList, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, IconUndo, LogoMark } from "./Icons";
+import { IconArchive, IconBrain, IconChevronDown, IconClock, IconCopy, IconFolder, IconList, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, IconUndo, LogoMark } from "./Icons";
 import { Button, IconButton, Input, Kbd, Menu, MenuItem, MenuLabel, MenuSep, Modal, Tip } from "./ui";
 
 export type ViewId = "workbench" | "tasks" | "skills" | "connectors" | "projects" | "automations" | "memory" | "artifacts" | "runs" | "agents" | "bridges" | "git" | "browser" | "review" | "design" | "settings";
@@ -25,11 +25,11 @@ export type SidebarProps = {
   onNew: (projectId?: string) => void; projects: Project[]; onUpdateProject: (project: Project) => void; onCreateProject: (name: string) => string; onRequestProject: () => void;
   onArchive: (id: string, archived: boolean) => void; onDelete: (id: string) => void; onMoveProject: (id: string, projectId: string) => void;
   onDuplicate: (id: string) => void; onTogglePin: (id: string) => void; onRename: (id: string, title: string) => void; onCollapse: () => void;
-  onDeleteProject: (id: string) => void;
+  onDeleteProject: (id: string) => void; onDuplicateProject: (id: string) => void;
 };
 
 export function Sidebar(props: SidebarProps) {
-  const { product, todos, setTodoOpen, toast } = useApp();
+  const { product, toast } = useApp();
   const workspace = useWorkspace();
   const { demoEnabled, setDemoEnabled, userProjects } = workspace;
   const [search, setSearch] = useState("");
@@ -50,7 +50,7 @@ export function Sidebar(props: SidebarProps) {
   const unassigned = visible.filter((s) => !s.projectId && !pinned.includes(s));
   /* pinned projects float to the top of the list; archived ones only render in the archive view */
   const sortedProjects = useMemo(() => [...props.projects].sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false)), [props.projects]);
-  const archivedProjects = useMemo(() => userProjects.filter((p) => p.archived), [userProjects]);
+  const archivedProjects = useMemo(() => [...(workspace.demoProject.archived ? [workspace.demoProject] : []), ...userProjects.filter((p) => p.archived)], [workspace.demoProject, userProjects]);
   const ordered = useMemo(() => [...pinned, ...sortedProjects.flatMap((p) => folds[p.id] ? [] : visible.filter((s) => s.projectId === p.id && !pinned.includes(s))), ...unassigned], [sortedProjects, folds, visible, pinned, unassigned]);
   useEffect(() => writeStored("conductor.sidebar.v3.folds", folds), [folds]);
   useEffect(() => { list.current?.querySelector<HTMLElement>(`[data-session="${cursor}"]`)?.scrollIntoView({ block: "nearest" }); }, [cursor]);
@@ -125,12 +125,13 @@ export function Sidebar(props: SidebarProps) {
             <Tip label={`New session in ${project.name}`}><button onClick={() => props.onNew(project.id)} className="flex size-[22px] items-center justify-center rounded text-ink-4 opacity-0 transition-all hover:bg-hover hover:text-ink focus-visible:ring-focus group-hover:opacity-100 group-focus-within:opacity-100" aria-label={`New session in ${project.name}`}><IconPlus size={12} /></button></Tip>
             <Menu align="right" width={215} trigger={() => <button className="session-row-more" aria-label={`Actions for ${project.name}`} title="Project actions"><IconMore size={12} /></button>}>
               {(close) => <>
-                <MenuItem icon={<IconPin size={12} />} label={project.pinned ? "Unpin project" : "Pin project"} disabled={isDemo} hint={project.pinned ? undefined : "stays on top"} onClick={() => { if (isDemo) { toast("The reference demo can't be pinned.", "amber"); close(); return; } workspace.toggleProjectPin(project.id); close(); toast(project.pinned ? "Project unpinned" : "Project pinned", "mint"); }} />
-                <MenuItem icon={<IconPencil size={12} />} label="Rename project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be renamed.", "amber"); close(); return; } setRenamingProject(project); setProjectName(project.name); close(); }} />
+                <MenuItem icon={<IconPin size={12} />} label={project.pinned ? "Unpin project" : "Pin project"} onClick={() => { workspace.toggleProjectPin(project.id); close(); toast(project.pinned ? "Project unpinned" : "Project pinned — it stays on top", "mint"); }} />
+                <MenuItem icon={<IconPencil size={12} />} label="Rename project" onClick={() => { setRenamingProject(project); setProjectName(project.name); close(); }} />
+                <MenuItem icon={<IconCopy size={12} />} label="Duplicate project" onClick={() => { props.onDuplicateProject(project.id); close(); }} />
                 <MenuItem icon={<IconPlus size={12} />} label="New session here" onClick={() => { props.onNew(project.id); close(); }} />
                 <MenuSep />
-                <MenuItem icon={<IconArchive size={12} />} label="Archive project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be archived. Toggle Demo off instead.", "amber"); close(); return; } workspace.archiveProject(project.id, true); close(); toast("Project archived — restore it from the archive view", "mint"); }} />
-                <MenuItem danger icon={<IconTrash size={12} />} label="Delete project" disabled={isDemo} onClick={() => { if (isDemo) { toast("The reference demo can't be deleted. Toggle Demo off instead.", "amber"); close(); return; } setDeletingProject(project); close(); }} />
+                <MenuItem icon={<IconArchive size={12} />} label="Archive project" onClick={() => { workspace.archiveProject(project.id, true); close(); toast("Project archived — restore it from the archive view", "mint"); }} />
+                <MenuItem danger icon={<IconTrash size={12} />} label="Delete project" onClick={() => { setDeletingProject(project); close(); }} />
               </>}
             </Menu>
           </div>
@@ -143,12 +144,13 @@ export function Sidebar(props: SidebarProps) {
         </>
       )}
     </div>
-    <div className="sidebar-footer"><button onClick={() => setTodoOpen(true)} className="sidebar-navigation-row"><IconCheck size={14} />Todo{todos.length > 0 && <span className="ml-auto text-[10px] text-ink-4">{todos.filter((t) => t.state !== "done").length}</span>}</button><button onClick={() => props.setView("settings")} className={cn("sidebar-navigation-row", props.view === "settings" && "active")}><IconSettings size={14} />Settings<Kbd className="ml-auto">⌘,</Kbd></button><p className="mt-2.5 px-2 text-[9px] text-ink-4">{product === "code" ? "Code workspace" : "Agent workspace"} · saved on this device</p></div>
+    <div className="sidebar-footer"><button onClick={() => props.setView("settings")} className={cn("sidebar-navigation-row", props.view === "settings" && "active")}><IconSettings size={14} />Settings<Kbd className="ml-auto">⌘,</Kbd></button><p className="mt-2.5 px-2 text-[9px] text-ink-4">{product === "code" ? "Code workspace" : "Agent workspace"} · saved on this device</p></div>
     <Modal open={Boolean(renaming)} onClose={() => setRenaming(null)} title="Rename session" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renaming && name.trim()) props.onRename(renaming.id, name.trim()); setRenaming(null); }}><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus /><div className="flex justify-end"><Button type="submit" disabled={!name.trim()}>Save</Button></div></form></Modal>
     <Modal open={Boolean(deleting)} onClose={() => setDeleting(null)} title="Delete session?" sub="This permanently removes this conversation from this device." width={420}><div className="p-5"><p className="text-[12px] text-ink-2">{deleting?.title}</p><div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button><Button variant="danger" onClick={() => { if (deleting) props.onDelete(deleting.id); setDeleting(null); }}>Delete</Button></div></div></Modal>
     <Modal open={Boolean(renamingProject)} onClose={() => setRenamingProject(null)} title="Rename project" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renamingProject && projectName.trim()) { workspace.renameProject(renamingProject.id, projectName.trim()); toast("Project renamed", "mint"); } setRenamingProject(null); }}><Input value={projectName} onChange={(e) => setProjectName(e.target.value)} autoFocus maxLength={60} /><div className="flex justify-end"><Button type="submit" disabled={!projectName.trim() || projectName.trim() === renamingProject?.name}>Save</Button></div></form></Modal>
     <Modal open={Boolean(deletingProject)} onClose={() => setDeletingProject(null)} title="Delete project?" sub="This removes the project, its sources and every session filed under it from this device." width={440}><div className="p-5">
       <p className="text-[12px] text-ink-2"><span className="font-medium">{deletingProject?.name}</span>{deletingProject && props.sessions.filter((s) => s.projectId === deletingProject.id).length > 0 && <span className="text-ink-4"> · {props.sessions.filter((s) => s.projectId === deletingProject.id).length} session{props.sessions.filter((s) => s.projectId === deletingProject.id).length === 1 ? "" : "s"} will be deleted</span>}</p>
+      {deletingProject && workspace.isDemoProject(deletingProject.id) && <p className="mt-2 text-[11px] leading-relaxed text-ink-3">This is the reference demo — deleting it hides the pre-filled project. The <span className="font-medium">Demo</span> toggle in the sidebar brings it back anytime.</p>}
       <div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={() => setDeletingProject(null)}>Cancel</Button><Button variant="danger" onClick={() => { if (deletingProject) props.onDeleteProject(deletingProject.id); setDeletingProject(null); }}>Delete project</Button></div>
     </div></Modal>
   </aside>;

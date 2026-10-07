@@ -5,7 +5,7 @@ import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
 import { useDictation, engineMeta } from "../lib/dictation";
 import { formatSeconds } from "../lib/speak";
-import { ProjectChooser } from "./ProjectDialog";
+import { ProjectPickerPanel } from "./ProjectDialog";
 import { DiffSideDrawer, RepoBar, repoStateFor } from "./RepoDock";
 import { PlanTodoCorner } from "./PlanTodoCorner";
 import { IconArrowUp, IconCheck, IconChevronDown, IconFile, IconFolder, IconList, IconMic, IconMore, IconPaperclip, IconPlus, IconSearch, IconShield, IconStop, IconX } from "./Icons";
@@ -66,6 +66,7 @@ function Composer(props: WorkbenchProps) {
   const dictationError = useCallback((message: string) => toast(message, "amber"), [toast]);
   const dictation = useDictation(appendDictation, dictationError);
   const [diffOpen, setDiffOpen] = useState(false);
+  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const repoState = repoStateFor(props.project);
 
   useEffect(() => {
@@ -78,6 +79,12 @@ function Composer(props: WorkbenchProps) {
     window.addEventListener("conductor:voice:dictate", toggle);
     return () => window.removeEventListener("conductor:voice:dictate", toggle);
   }, [dictation.toggle]);
+  /* open the project picker from anywhere (e.g. external "choose project" hooks) */
+  useEffect(() => {
+    const choose = () => setProjectMenuOpen(true);
+    window.addEventListener("conductor:choose-project", choose);
+    return () => window.removeEventListener("conductor:choose-project", choose);
+  }, []);
   /* Esc stops dictation without sending */
   useEffect(() => {
     if (!dictation.listening) return;
@@ -96,11 +103,10 @@ function Composer(props: WorkbenchProps) {
   const pickerIcon = <span className="model-monogram" aria-hidden>{selectedModel?.provider.glyph ?? "AI"}</span>;
 
   return <div className="reference-composer-container">
-    <ProjectChooser project={props.project} onChoose={props.onChooseProject} />
+    {/* agent plan — slim strip directly above the composer (replaces the old
+        project bar), sticky across projects; the panel opens upward */}
+    <PlanTodoCorner />
     <div className={cn("reference-composer", dictation.listening && "is-listening", props.streaming && "is-streaming")}>
-      {/* agent plan — pinned to the composer's top-right corner, sticky across projects */}
-      <PlanTodoCorner />
-
       {/* Wispr Flow-style dictation bubble floating above the voice button */}
       {dictation.listening && (
         <div className="dictation-bubble animate-pop" role="status" aria-live="polite">
@@ -119,8 +125,17 @@ function Composer(props: WorkbenchProps) {
         <Menu side="top" width={225} trigger={() => <button className="composer-icon-button" aria-label="Add files or context"><IconPlus size={16} /></button>}>
           {(close) => <>
                 <MenuItem icon={<IconPaperclip size={13} />} label="Attach text or code files" onClick={() => { close(); fileInput.current?.click(); }} />
-            <MenuItem icon={<IconFolder size={13} />} label="Choose project" onClick={() => { close(); window.dispatchEvent(new CustomEvent("conductor:choose-project")); }} />
+            <MenuItem icon={<IconFolder size={13} />} label="Choose project" onClick={() => { close(); window.setTimeout(() => setProjectMenuOpen(true), 16); }} />
           </>}
+        </Menu>
+        {/* project attach / switch — the only project control in the composer;
+            attached-project details live in the repo bar below */}
+        <Menu side="top" width={340} open={projectMenuOpen} onOpenChange={setProjectMenuOpen} trigger={() => (
+          <button className={cn("composer-icon-button", props.project && "has-project")} aria-label={props.project ? `Switch project — ${props.project.name}` : "Attach a project"} title={props.project ? `Project: ${props.project.name}` : "Attach a project"}>
+            <IconFolder size={15} />
+          </button>
+        )}>
+          {(close) => <ProjectPickerPanel project={props.project} onChoose={(id, created) => { props.onChooseProject(id, created); close(); }} />}
         </Menu>
         <input ref={fileInput} type="file" multiple accept=".txt,.md,.js,.jsx,.ts,.tsx,.json,.py,.html,.css,.scss,.yaml,.yml,.toml,.rs,.go,.java,.c,.cpp,.sql,.sh" className="hidden" onChange={(e) => { const selected = Array.from(e.target.files ?? []); const readable = selected.filter((file) => file.size <= 128_000 && !/^(image|video|audio)\//.test(file.type)); if (readable.length < selected.length) toast("Attach text/code files smaller than 128 KB. Unsupported files were not added.", "amber"); setFiles((all) => [...all, ...readable].slice(0, 8)); e.target.value = ""; }} />
         <Menu side="top" width={310} trigger={() => <button className={cn("permission-control", props.mode === "full" && "full-permission")} aria-label={`Permissions: ${permission.label}`}><IconShield size={13} /><span>{permission.short}</span></button>}>
@@ -179,17 +194,12 @@ export function Workbench(props: WorkbenchProps) {
   const recordedModel = provider?.models.find((m) => m.id === route.slice(2).join(":"));
   const persona = { name: provider?.name ?? "Assistant", glyph: provider?.glyph ?? "AI", from: provider?.accent ?? "#9a9eaa", to: provider?.accent ?? "#9a9eaa", model: recordedModel?.label ?? "Selected model" };
   useEffect(() => { if (following) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: props.streaming ? "auto" : "smooth" }); }, [props.steps, following, props.streaming]);
-  useEffect(() => {
-    const choose = () => document.querySelector<HTMLButtonElement>(".composer-project-strip")?.click();
-    window.addEventListener("conductor:choose-project", choose);
-    return () => window.removeEventListener("conductor:choose-project", choose);
-  }, []);
   if (fresh) return <div className="fresh-workbench">
     <div className="fresh-session-stage animate-fade">
       <div className="fresh-session-heading">
         {props.project?.id === "demo-sofia-ui" && <span className="fresh-demo-pill">REFERENCE DEMO · pre-filled so you can compare</span>}
         <h1>{props.project ? `Let's work on ${props.project.name}.` : "What would you like to build?"}</h1>
-        {!props.project && <p className="fresh-sub">Pick a project above, or just start typing — you can attach one later.</p>}
+        {!props.project && <p className="fresh-sub">Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.</p>}
       </div>
       <Composer {...props} />
       <p className="fresh-composer-hint">{props.project ? "Project, model and permissions stay with this session." : "Blank canvas — nothing is connected until you choose a project and model."}</p>

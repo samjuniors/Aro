@@ -517,8 +517,6 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .fresh-session-heading h1 { margin: 0; font-family: var(--d-font-display); font-size: clamp(24px, 2.5vw, 32px); font-weight: 500; line-height: 1.2; letter-spacing: -.04em; color: var(--color-ink); }
 .fresh-composer-hint { margin: 17px 0 0; text-align: center; font-size: 11px; color: var(--color-ink-4); }
 .reference-composer-container { position: relative; width: 100%; }
-.composer-project-strip { position: relative; z-index: 1; display: flex; width: calc(100% - 28px); height: 48px; margin: 0 14px -12px; padding: 0 15px 11px; align-items: center; gap: 7px; border-radius: 15px 15px 0 0; background: color-mix(in srgb, var(--color-ink) 4%, var(--color-base)); color: var(--color-ink-3); font-size: 11.5px; text-align: left; transition: color 140ms ease, background-color 140ms ease; }
-.composer-project-strip:hover { color: var(--color-ink-2); background: color-mix(in srgb, var(--color-ink) 7%, var(--color-base)); }
 .reference-composer { position: relative; z-index: 2; border: 1px solid var(--color-line); border-radius: calc(var(--d-composer-radius) + 5px); background: var(--color-overlay); box-shadow: 0 3px 12px -5px var(--t-shadow-b); transition: border-color 160ms ease, box-shadow 160ms ease; }
 /* Aro composer glow — kept from the first prototype (user request):
    iris ring + iris bloom on focus, cyan pulse while streaming. */
@@ -531,6 +529,9 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .reference-composer-toolbar { display: flex; min-height: 40px; gap: 5px; align-items: center; padding: 2px 7px 8px; }
 .composer-icon-button { display: inline-flex; height: 29px; width: 29px; flex-shrink: 0; align-items: center; justify-content: center; border: 0; border-radius: 7px; background: transparent; color: var(--color-ink-2); transition: color 140ms, background-color 140ms; }
 .composer-icon-button:hover { background: var(--color-hover); color: var(--color-ink); }
+/* folder button while a project is attached — subtle iris hint, details live in the repo bar below */
+.composer-icon-button.has-project { color: var(--color-iris-soft); }
+.composer-icon-button.has-project:hover { background: var(--color-iris-tint); color: var(--color-iris-soft); }
 .permission-control { display: flex; height: 27px; align-items: center; gap: 5px; padding: 0 5px; border-radius: 6px; font-size: 11.5px; white-space: nowrap; color: var(--color-ink-3); transition: color 140ms, background 140ms; }
 .permission-control:hover { color: var(--color-ink-2); background: var(--color-hover); }
 .permission-control.full-permission { color: var(--color-amber); }
@@ -682,74 +683,91 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .titlebar-divider-v { width: 1px; height: 16px; background: var(--color-line-soft); margin: 0 3px; flex-shrink: 0; }
 .minimal-titlebar { display: flex; align-items: center; gap: 6px; padding-inline: 12px; height: var(--d-chrome-height); background: var(--color-base); border-bottom: 1px solid var(--color-line-soft); }
 
-/* ---------- Plan Todo Corner Box (Docked on the composer's top-right corner) ---------- */
-.plan-todo-corner-anchor {
-  position: absolute;
-  top: -14px;
-  right: 14px;
-  z-index: 25;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+/* ---------- Agent plan strip (slim bar above the composer, opens upward) ---------- */
+.plan-todo-anchor {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  margin: 0 0 7px;
 }
-.plan-todo-trigger-pill {
-  display: inline-flex;
+.plan-todo-strip {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px 0 8px;
-  border-radius: 99px;
-  background: var(--color-overlay);
-  border: 1px solid var(--color-line);
-  font-size: 11.5px;
-  font-weight: 550;
+  gap: 8px;
+  width: 100%;
+  height: 27px;
+  padding: 0 8px 0 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--color-iris) 5%, var(--color-base));
+  border: 1px solid color-mix(in srgb, var(--color-iris) 20%, var(--color-line-soft));
   color: var(--color-ink-2);
-  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.35);
+  font-size: 11px;
+  font-weight: 550;
+  text-align: left;
   cursor: pointer;
   transition: all 150ms ease;
 }
-.plan-todo-trigger-pill:hover {
-  background: var(--color-raise);
+.plan-todo-strip:hover {
+  background: color-mix(in srgb, var(--color-iris) 9%, var(--color-base));
   color: var(--color-ink);
-  border-color: var(--color-line-strong);
+  border-color: color-mix(in srgb, var(--color-iris) 32%, var(--color-line-soft));
 }
-.plan-todo-trigger-pill.is-active {
+.plan-todo-strip.is-active {
   background: var(--color-raise);
   border-color: var(--color-iris);
-  color: var(--color-iris-soft);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-iris) 25%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-iris) 16%, transparent);
 }
-.plan-todo-trigger-pill.is-completed {
-  border-color: var(--color-mint);
-  color: var(--color-mint);
+.plan-todo-strip.is-completed {
+  border-color: color-mix(in srgb, var(--color-mint) 45%, var(--color-line-soft));
 }
-.plan-todo-pill-icon {
+.plan-todo-strip-icon {
   display: flex;
-  align-items: center;
   color: var(--color-iris-soft);
 }
-.plan-todo-trigger-pill.is-completed .plan-todo-pill-icon {
+.plan-todo-strip.is-completed .plan-todo-strip-icon {
   color: var(--color-mint);
 }
-.plan-todo-pill-label {
+.plan-todo-strip-label {
   font-weight: 600;
+  white-space: nowrap;
 }
-.plan-todo-pill-stats {
+.plan-todo-strip-stats {
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 99px;
   background: var(--color-sunken);
   color: var(--color-ink-3);
 }
-.plan-todo-pill-arrow {
+.plan-todo-strip-track {
+  flex: 1;
+  min-width: 36px;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--color-sunken);
+  overflow: hidden;
+}
+.plan-todo-strip-fill {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--color-iris);
+  transition: width 300ms ease;
+}
+.plan-todo-strip.is-completed .plan-todo-strip-fill {
+  background: var(--color-mint);
+}
+.plan-todo-strip-done {
+  color: var(--color-mint);
+}
+.plan-todo-strip-arrow {
   color: var(--color-ink-4);
 }
 
 .plan-todo-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  bottom: calc(100% + 6px);
+  left: 0;
   right: 0;
-  width: min(340px, calc(100vw - 32px));
   border-radius: 12px;
   background: var(--color-overlay);
   border: 1px solid var(--color-line);
@@ -1390,7 +1408,7 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 
 .active-composer-area { width: min(100%, var(--d-content-max)); margin: 0 auto; padding: 0 var(--d-page-gutter) 18px; }
 html[data-design="editorial"] .reference-composer { border-radius: 4px; box-shadow: none; }
-html[data-design="editorial"] .composer-project-strip { border-radius: 3px 3px 0 0; }
+html[data-design="editorial"] .plan-todo-strip, html[data-design="editorial"] .plan-todo-dropdown { border-radius: 3px; }
 .reference-project-modal { background: var(--color-overlay); }
 @media (max-width: 560px) {
   html[data-design] { --d-chrome-height: 44px !important; }

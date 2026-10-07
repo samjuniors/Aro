@@ -28,9 +28,11 @@ export function extractPlanTodos(steps: Step[]): string[] {
 }
 
 /**
- * Agent plan pinned to the top-right corner of the composer.
- * Visible ONLY while the agent has a plan (workspace-sticky: it survives
- * switching sessions/projects until cleared or replaced by a new plan).
+ * Agent plan docked directly ABOVE the composer — slim, minimal strip that
+ * replaces the old project bar. Visible ONLY while the agent has a plan
+ * (workspace-sticky: it survives switching sessions/projects until cleared
+ * or replaced by a new plan). The panel opens UPWARD, over the transcript,
+ * so it never covers the composer.
  */
 export function PlanTodoCorner() {
   const { agentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan } = useWorkspace();
@@ -38,11 +40,14 @@ export function PlanTodoCorner() {
   const [newText, setNewText] = useState("");
   const anchorRef = useRef<HTMLDivElement>(null);
 
-  /* a fresh plan captured from an agent run → pop the panel open once */
+  /* a fresh plan captured from an agent run → pop the panel open once;
+     ⌘T (and the hands-free "show todos" voice command) toggle it */
   useEffect(() => {
     const reveal = () => setOpen(true);
+    const toggle = () => setOpen((v) => !v);
     window.addEventListener("conductor:agent-plan", reveal);
-    return () => window.removeEventListener("conductor:agent-plan", reveal);
+    window.addEventListener("conductor:agent-plan-toggle", toggle);
+    return () => { window.removeEventListener("conductor:agent-plan", reveal); window.removeEventListener("conductor:agent-plan-toggle", toggle); };
   }, []);
 
   /* click outside to close */
@@ -76,32 +81,35 @@ export function PlanTodoCorner() {
   };
 
   return (
-    <div ref={anchorRef} className="plan-todo-corner-anchor">
-      {/* corner pill docked on the composer's top-right border */}
+    <div ref={anchorRef} className="plan-todo-anchor">
+      {/* slim strip above the composer — opens the panel upward */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={cn("plan-todo-trigger-pill", open && "is-active", allDone && "is-completed")}
+        className={cn("plan-todo-strip", open && "is-active", allDone && "is-completed")}
         aria-expanded={open}
         aria-label={`Agent plan — ${doneCount} of ${totalCount} done`}
       >
-        <span className="plan-todo-pill-icon">
+        <span className="plan-todo-strip-icon">
           <IconSpark size={11} />
         </span>
-        <span className="plan-todo-pill-label">Plan</span>
-        <span className="plan-todo-pill-stats font-mono">
+        <span className="plan-todo-strip-label">Agent plan</span>
+        <span className="plan-todo-strip-stats font-mono">
           {doneCount}/{totalCount}
         </span>
-        {allDone && <IconCheck size={10} className="plan-todo-pill-icon" />}
+        <span className="plan-todo-strip-track" aria-hidden>
+          <span className="plan-todo-strip-fill" style={{ width: `${progressPct}%` }} />
+        </span>
+        {allDone && <IconCheck size={10} className="plan-todo-strip-done" />}
         <IconChevronDown
           size={11}
-          className={cn("plan-todo-pill-arrow transition-transform duration-200", open && "rotate-180")}
+          className={cn("plan-todo-strip-arrow transition-transform duration-200", !open && "rotate-180")}
         />
       </button>
 
-      {/* dropdown panel */}
+      {/* dropdown panel — floats UPWARD over the transcript */}
       {open && (
-        <div className="plan-todo-dropdown animate-slide-down shadow-e4" role="dialog" aria-label="Agent plan">
+        <div className="plan-todo-dropdown animate-slide-up shadow-e4" role="dialog" aria-label="Agent plan">
           <div className="plan-todo-header">
             <div className="plan-todo-title-wrap">
               <span className="plan-todo-badge">
@@ -115,9 +123,9 @@ export function PlanTodoCorner() {
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                className="plan-todo-toggle-btn"
+                className="plan-todo-toggle-btn hover:text-rose"
                 onClick={() => { clearAgentPlan(); setOpen(false); }}
-                title="Clear the plan from the corner"
+                title="Clear the plan from the composer"
                 aria-label="Clear agent plan"
               >
                 <IconTrash size={11} />
@@ -128,7 +136,7 @@ export function PlanTodoCorner() {
                 onClick={() => setOpen(false)}
                 aria-label="Close plan panel"
               >
-                <IconChevronDown size={12} className="rotate-180" />
+                <IconChevronDown size={12} />
               </button>
             </div>
           </div>
