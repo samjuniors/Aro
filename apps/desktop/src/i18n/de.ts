@@ -5448,6 +5448,7 @@ export const deOverrides = {
   },
   assistant: {
     thread: {
+      you: 'Du',
       loadingSession: 'Session wird geladen',
       showEarlier: 'Frühere Nachrichten anzeigen',
       loadingResponse: 'Hermes lädt eine Antwort',

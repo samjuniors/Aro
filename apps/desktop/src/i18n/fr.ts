@@ -5465,6 +5465,7 @@ export const frOverrides = {
   },
   assistant: {
     thread: {
+      you: 'Vous',
       loadingSession: 'Chargement de la session',
       showEarlier: 'Afficher les messages précédents',
       loadingResponse: 'Hermes charge une réponse',

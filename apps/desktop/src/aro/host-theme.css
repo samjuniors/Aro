@@ -1078,14 +1078,339 @@
   color: currentColor;
 }
 
-/* ── Composer surface border refinements ────────────────────────────── */
-[data-aro-composer] [data-slot='composer-surface'] {
-  border-color: color-mix(in srgb, var(--aro-line) 88%, transparent);
+/* ── Aro reference-composer glow ──────────────────────────────────────
+   Ported from prototype globals.css `.reference-composer`. The codex grid
+   IS the composer surface (editor above, footer rail below); the outer
+   Hermes composer-surface goes chromeless so exactly ONE frame shows.
+   State layering matches the prototype:
+     :focus-within           → iris ring + iris bloom + iris→cyan beam (3.2s)
+     [data-aro-listening]    → rose ring + rose beam (2.4s)
+     [data-aro-streaming]    → cyan ring + cyan pulse + hot beam (1.5s)   */
+@keyframes aro-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--aro-cyan) 26%, transparent),
+      0 0 16px -6px color-mix(in srgb, var(--aro-cyan) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--aro-cyan) 45%, transparent),
+      0 0 26px -4px color-mix(in srgb, var(--aro-cyan) 60%, transparent);
+  }
 }
 
-[data-aro-composer] [data-slot='composer-surface'] > div:last-child {
-  border-top-color: color-mix(in srgb, var(--aro-line) 72%, transparent);
+/* Outer Hermes surface: chromeless under Aro — the codex grid owns the frame. */
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
 }
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']::before {
+  content: none;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* The travelling shimmer beam: a border-only conic gradient (mask trick). */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.3px;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-iris-soft) 90%, transparent) 46deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 80deg,
+    transparent 122deg,
+    transparent 198deg,
+    color-mix(in srgb, var(--aro-iris-soft) 65%, transparent) 238deg,
+    transparent 302deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 240ms ease;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within {
+  border-color: color-mix(in srgb, var(--aro-iris) 50%, var(--aro-line));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--aro-iris) 40%, transparent),
+    0 8px 30px -10px color-mix(in srgb, var(--aro-iris) 55%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within::before {
+  opacity: 0.85;
+  animation: shimmerSpin 3.2s linear infinite;
+}
+
+/* Dictation live: rose beam, faster. */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening] {
+  border-color: color-mix(in srgb, var(--aro-rose) 55%, var(--aro-line));
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening]::before {
+  opacity: 1;
+  animation: shimmerSpin 2.4s linear infinite;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-rose) 90%, transparent) 52deg,
+    transparent 116deg,
+    transparent 208deg,
+    color-mix(in srgb, var(--aro-rose) 70%, transparent) 258deg,
+    transparent 322deg
+  );
+}
+
+/* Turn streaming: cyan pulse + hot beam, fastest. */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming] {
+  border-color: color-mix(in srgb, var(--aro-cyan) 45%, var(--aro-line));
+  animation: aro-glow-pulse 2.2s ease-in-out infinite;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]::before {
+  opacity: 1;
+  animation: shimmerSpin 1.5s linear infinite;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 48deg,
+    color-mix(in srgb, var(--aro-iris-soft) 85%, transparent) 82deg,
+    transparent 124deg,
+    transparent 200deg,
+    color-mix(in srgb, var(--aro-cyan) 70%, transparent) 240deg,
+    transparent 304deg
+  );
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]:focus-within {
+  border-color: color-mix(in srgb, var(--aro-cyan) 55%, var(--aro-line));
+}
+
+/* Reduced motion: the states stay legible (border + glow) without the spin. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex']::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening]::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]::before {
+    animation: none;
+    opacity: 0.9;
+  }
+
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming] {
+    animation: none;
+  }
+}
+
+/* ── Aro model control + menu (prototype .model-control / .model-menu) ── */
+/* Effort chip in the trigger: colored glow dot + level label. */
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort {
+  color: var(--effort-color, var(--aro-ink-3));
+}
+
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--effort-color, var(--aro-ink-3));
+  box-shadow: 0 0 7px color-mix(in srgb, var(--effort-color, var(--aro-ink-3)) 55%, transparent);
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+/* The level → color ramp for the chip (JSX sets data-level). */
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='low'] {
+  --effort-color: var(--aro-cyan);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='medium'] {
+  --effort-color: var(--aro-iris-soft);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='high'] {
+  --effort-color: var(--aro-amber);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='xhigh'] {
+  --effort-color: color-mix(in srgb, var(--aro-amber) 45%, var(--aro-rose));
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='max'] {
+  --effort-color: var(--aro-rose);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='ultra'] {
+  --effort-color: color-mix(in srgb, var(--aro-rose) 55%, var(--aro-iris));
+}
+
+/* The effort slider: gradient track + glowing thumb (prototype grammar). */
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range {
+  --effort-fill: 50%;
+  width: 100%;
+  height: 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--effort-color, var(--aro-iris)) 75%, transparent) 0,
+    color-mix(in srgb, var(--effort-color, var(--aro-iris)) 75%, transparent) var(--effort-fill),
+    var(--aro-track) var(--effort-fill),
+    var(--aro-track) 100%
+  );
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range::-moz-range-track {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--aro-track);
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--effort-color, var(--aro-iris)) 75%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border: 2px solid var(--aro-bg);
+  border-radius: 50%;
+  background: var(--effort-color, var(--aro-iris));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--effort-color, var(--aro-iris)) 22%, transparent),
+    0 1px 4px rgb(0 0 0 / 40%);
+  transition: background-color 200ms ease;
+}
+
+:root[data-aro-ui='true'] [data-aro-effort-slider] .aro-effort-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--aro-bg);
+  border-radius: 50%;
+  background: var(--effort-color, var(--aro-iris));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--effort-color, var(--aro-iris)) 22%, transparent);
+}
+
+/* The power bars under the slider. */
+:root[data-aro-ui='true'] .aro-effort-bar {
+  flex: 1;
+  max-width: 14px;
+  border-radius: 2px;
+  background: var(--aro-track);
+  transition: background-color 200ms ease;
+}
+
+:root[data-aro-ui='true'] .aro-effort-bar[data-on] {
+  background: var(--bar-color, var(--aro-iris-soft));
+}
+
+/* ── Aro code cards (prototype .prose-code) ─────────────────────────── */
+:root[data-aro-ui='true'] [data-slot='code-card'] {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.5625rem;
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] [data-slot='code-card-body'] pre {
+  color: var(--aro-ink-2);
+}
+
+/* ── Aro tool cards (prototype .tool-card) ────────────────────────────
+   The real DisclosureRow keeps its behavior; these give it the prototype's
+   card grammar: bordered well, icon tile, mono uppercase label, live status. */
+:root[data-aro-ui='true'] [data-slot='tool-block'] {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.5625rem;
+  background: var(--aro-well);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='disclosure-row'] {
+  padding-block: 0.5rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [role='button'] {
+  font-family: var(--font-aro-mono);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='tool-glyph'] {
+  border-radius: 0.3125rem;
+  border: 1px solid var(--aro-line-soft);
+  background: var(--aro-raise);
+}
+
+/* Running tools breathe cyan; the real status text carries the meaning. */
+@keyframes aro-tool-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+:root[data-aro-ui='true'] [data-tool-row][data-tool-running='true'] [data-slot='tool-glyph'] {
+  animation: aro-tool-breathe 2.2s ease-in-out infinite;
+}
+
+/* ── Aro approval cards (prototype amber grammar) ───────────────────── */
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_approval-card'],
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-approval-card] {
+  border-color: color-mix(in srgb, var(--aro-amber) 40%, var(--aro-line-soft));
+  border-radius: 0.5625rem;
+  background: var(--aro-well);
+}
+
+/* ── Aro transcript attributed rows (prototype grammar) ─────────────────
+   User + assistant rows share the 28px avatar / name / meta header anatomy.
+   All content stays the real Hermes transcript — only the row chrome changes. */
+:root[data-aro-ui='true'] .aro-assistant-avatar {
+  background: linear-gradient(135deg, var(--aro-iris) 26%, transparent 130%),
+    linear-gradient(135deg, color-mix(in srgb, var(--aro-iris) 16%, var(--aro-bg)), var(--aro-raise));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--aro-iris-soft) 33%, transparent),
+    0 1px 2px var(--aro-shadow-a);
+  color: var(--aro-iris-soft);
+}
+
+/* Tool/approval cards + thinking indent under the avatar column (pl-40 in the
+   prototype: 28px avatar + 12px gap). */
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='tool-block'],
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-conversation-scaffold] {
+  margin-left: 2.5rem;
+}
+
+/* ── Composer surface border refinements ── superseded by the reference-
+   composer glow section above: the outer Hermes surface is chromeless and
+   the codex grid owns the one visible frame. The footer top-border rides
+   on the codex grid itself. */
 
 /* ── Responsive: hide reasoning pill on narrow viewports ────────────── */
 @media (max-width: 720px) {

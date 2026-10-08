@@ -16,11 +16,10 @@ import { COMPOSER_HEART_CONFIG, HeartField } from '@/components/chat/vibe-hearts
 import { usePaneGroup, usePaneVisible } from '@/components/pane-shell/pane-visibility'
 import { $hoveredTreeGroup, $sessionTileDragging, $sessionTileEdgeHover } from '@/components/pane-shell/tree/store'
 import { PromptOverlays } from '@/components/prompt-overlays'
-import { TitleMenuTrigger } from '@/components/ui/title-menu-trigger'
 import { type HermesGateway, type ResolvedOwner } from '@/hermes'
 import { useI18n } from '@/i18n'
 import type { ChatMessage } from '@/lib/chat-messages'
-import { NEW_SESSION_TITLE, quickModelOptions, sessionTitle } from '@/lib/chat-runtime'
+import { quickModelOptions } from '@/lib/chat-runtime'
 import { useIncrementalExternalStoreRuntime } from '@/lib/incremental-external-store-runtime'
 import { currentModelCapabilities, modelOptionsQueryKey, requestModelOptions } from '@/lib/model-options'
 import { useStoreSelector } from '@/lib/use-session-slice'
@@ -28,11 +27,10 @@ import { cn } from '@/lib/utils'
 import { migrateSessionDraft } from '@/store/composer'
 import { migrateQueuedPrompts, parkQueuedPrompts } from '@/store/composer-queue'
 import { $introSplash } from '@/store/intro-splash'
-import { $pinnedSessionIds } from '@/store/layout'
 import { $guideOpening, $onboardingGate } from '@/store/onboarding-gate'
 import { $petActive } from '@/store/pet'
 import { $petOverlayActive } from '@/store/pet-overlay'
-import { $activeGatewayProfile, $gatewaySwapTarget, $hydrationSyncProfile, $profiles } from '@/store/profile'
+import { $activeGatewayProfile, $gatewaySwapTarget, $hydrationSyncProfile } from '@/store/profile'
 import {
   $connection,
   $contextSuggestions,
@@ -46,7 +44,6 @@ import {
   getSessionOwnerHint,
   resolveComposerSessionKey,
   sessionMatchesStoredId,
-  sessionPinId,
   shouldMigrateComposerScope
 } from '@/store/session'
 import { $focusedStoredSessionId } from '@/store/session-focus'
@@ -55,10 +52,8 @@ import { $transcriptTailBySessionId, transcriptTailState } from '@/store/transcr
 import { isAuxiliaryWindow, isWatchWindow } from '@/store/windows'
 
 import { primaryRouteSelectedSessionId, routeSessionId } from '../routes'
-import { titlebarHeaderBaseClass, titlebarHeaderShadowClass, titlebarHeaderTitleClass } from '../shell/titlebar'
 
 import { ChatDropOverlay } from './chat-drop-overlay'
-import { VoiceAgentOrb } from './voice-agent-orb'
 import { ChatSwapOverlay, ChatSyncBadge } from './chat-swap-overlay'
 import { ChatBar, ChatBarFallback } from './composer'
 import { FloatingComposerSurface } from './composer/floating-surface'
@@ -75,14 +70,12 @@ import { useHistoryWindow } from './history-window'
 import { type DroppedFile, partitionDroppedFiles } from './hooks/use-composer-actions'
 import { type DragKind, useFileDropZone } from './hooks/use-file-drop-zone'
 import { shouldShowIntro } from './intro-visibility'
-import { ProfileTag } from './profile-tag'
 import { ResumeExhaustedOverlay } from './resume-exhausted-overlay'
 import { isRouteSessionMismatch } from './route-session-state'
 import { useRuntimeMessageRepository } from './runtime-repository'
 import { ScrollToBottomButton } from './scroll-to-bottom-button'
 import { SessionHeader } from './session-header'
 import { useSessionView } from './session-view'
-import { SessionActionsMenu } from './sidebar/session-actions-menu'
 import { composerStaysMounted, routedSessionIsLoading, threadLoadingState } from './thread-loading'
 import {
   backfillOlderTranscriptPage,
@@ -98,6 +91,8 @@ interface ChatViewProps extends Omit<React.ComponentProps<'div'>, 'onSubmit'> {
   modelOptionsProfile?: string
   modelMenuContent?: React.ReactNode
   reasoningMenuContent?: React.ReactNode
+  /** The Aro model control's dropdown content (effort slider + catalog). */
+  aroModelMenuContent?: React.ReactNode
   requestModelOptionsForOwner?: <T>(method: string, params?: Record<string, unknown>) => Promise<T>
   onToggleSelectedPin: () => void
   onDeleteSelectedSession: () => void
@@ -414,6 +409,7 @@ const ChatViewContent = memo(function ChatViewContent({
   modelOptionsProfile,
   modelMenuContent,
   reasoningMenuContent,
+  aroModelMenuContent,
   requestModelOptionsForOwner,
   onToggleSelectedPin,
   onDeleteSelectedSession,
@@ -662,6 +658,7 @@ const ChatViewContent = memo(function ChatViewContent({
         modelMenuContent,
         quickModels,
         reasoningMenuContent,
+        aroMenu: aroModelMenuContent,
         supportsReasoning
       },
       tools: {
@@ -675,6 +672,7 @@ const ChatViewContent = memo(function ChatViewContent({
       }
     }),
     [
+      aroModelMenuContent,
       contextSuggestions,
       currentModel,
       currentProvider,
@@ -732,7 +730,7 @@ const ChatViewContent = memo(function ChatViewContent({
         'relative isolate flex h-full min-w-0 flex-col overflow-hidden bg-(--ui-chat-surface-background)',
         className
       )}
-      data-chat-surface="" data-aro-chat-screen=""
+      data-aro-chat-screen="" data-chat-surface=""
       data-chat-unfocused={surfaceFocused || surfaceHovered ? undefined : ''}
       data-composer-surface-id={composerSurfaceId}
       data-composer-target={composerScope.target}
@@ -848,7 +846,6 @@ const ChatViewContent = memo(function ChatViewContent({
             </Suspense>
           </FloatingComposerSurface>
         )}
-        <VoiceAgentOrb busy={busy} onSend={onSubmit} />
       </ChatRuntimeBoundary>
     </div>
   )

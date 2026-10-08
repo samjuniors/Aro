@@ -46,17 +46,25 @@ export function StickyHumanMessageContainer({
 }) {
   return (
     // Fragment, not a wrapper: a wrapping element becomes the sticky's
-    // containing block (it'd stick within its own height = never). The bubble
-    // and attachments are flow siblings so the bubble pins against the scroller
-    // while attachments below it scroll away.
+    // containing block (it'd stick within its own height = never). The Aro
+    // row (avatar + attributed column) and attachments are flow siblings so
+    // the row pins against the scroller while attachments below it scroll
+    // away.
     <>
       <div
-        className="group/user-message sticky z-40 -mx-4 flex w-[calc(100%+2rem)] min-w-0 max-w-none flex-col items-stretch gap-0 self-end overflow-visible px-4 pb-(--conversation-turn-gap) pt-1"
+        className="group/user-message sticky z-40 -mx-4 flex w-[calc(100%+2rem)] min-w-0 max-w-none flex-row gap-3 self-stretch overflow-visible px-4 pb-(--conversation-turn-gap) pt-1"
         data-message-id={messageId}
         data-role="user"
         data-slot="aui_user-message-root"
       >
-        {children}
+        {/* Prototype grammar: 28px monogram avatar, left-aligned row. */}
+        <div
+          aria-hidden
+          className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-aro-line-soft bg-aro-hover font-aro-mono text-[10.5px] font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
+        >
+          Y
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
       </div>
       {attachments}
     </>
@@ -251,6 +259,7 @@ export const UserMessage: FC<{
   const messageId = useAuiState(s => s.message.id)
   const content = useAuiState(s => s.message.content)
   const messageText = messageContentText(content)
+  const createdAt = useAuiState(s => s.message.createdAt)
   const threadRunning = useAuiState(s => s.thread.isRunning)
 
   const latestUserId = useAuiState(s => {
@@ -422,6 +431,15 @@ export const UserMessage: FC<{
       >
         <ActionBarPrimitive.Root className="relative w-full max-w-full" data-slot="aui_user-bubble-actions">
           <div className="human-message-with-todos-wrapper flex w-full flex-col gap-0">
+            {/* Aro attributed header: "You" + real timestamp, above the bubble. */}
+            <div className="mb-1.5 flex flex-wrap items-center gap-2 px-0.5">
+              <span className="text-[12.5px] font-semibold text-aro-ink">{copy.you}</span>
+              {createdAt !== undefined && (
+                <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                  {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
             <ReactionPicker
               onOpenChange={setPickerOpen}
               onSelect={pickEmoji}

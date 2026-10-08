@@ -5020,6 +5020,7 @@ export const en: Translations = {
 
   assistant: {
     thread: {
+      you: 'You',
       loadingSession: 'Loading session',
       showEarlier: 'Show earlier messages',
       loadingResponse: 'Hermes is loading a response',

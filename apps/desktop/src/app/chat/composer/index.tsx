@@ -12,6 +12,7 @@ import {
 } from 'react'
 
 import { useTourMarker } from '@/app/chat/tour-marker'
+import { VoiceAgentOrb } from '@/app/chat/voice-agent-orb'
 import { useHudComposerDrag } from '@/app/hud/composer-drag'
 import { composerFloatingStrip, composerInputBacking } from '@/components/chat/composer-dock'
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
@@ -27,14 +28,14 @@ import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { interceptsTypedVoiceStop } from '@/lib/voice-stop-word'
-import { sessionCompacting } from '@/store/compaction'
 import { openWorktreeDialog } from '@/store/coding-status'
-import { requestStartWorkSession } from '@/store/projects'
+import { sessionCompacting } from '@/store/compaction'
 import { browseBackward, browseForward, deriveUserHistory, isBrowsingHistory } from '@/store/composer-input-history'
 import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
 import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
+import { requestStartWorkSession } from '@/store/projects'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1442,10 +1443,10 @@ export function ChatBar({
               // Ctrl+primary-button drag. pt-4 is the carved-out grab band.
               hudNativeDrag && 'hud-native-drag pt-4 [-webkit-app-region:drag]'
             )}
+            data-aro-composer=""
             data-drag-active={dragActive ? '' : undefined}
             data-hud-grabbing={hudGrabbing ? '' : undefined}
-            data-popped-out={poppedOut ? '' : undefined}
-            data-slot="composer-root" data-aro-composer=""
+            data-popped-out={poppedOut ? '' : undefined} data-slot="composer-root"
             data-status-stack={statusStackVisible && !statusDrawerCollapsed ? '' : undefined}
             data-thread-scrolled-up={scrolledUp ? '' : undefined}
             data-tip-region=""
@@ -1588,21 +1589,20 @@ export function ChatBar({
                     </div>
                   )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
-                  {/* Aro/Codex composition: editor first, dedicated action footer second. */}
+                  {/* Aro reference-composer (prototype grammar): editor field
+                      above, compact action footer below. The travelling
+                      shimmer glow — iris on focus, rose while dictating, cyan
+                      + pulse while a turn streams — lives in host-theme.css,
+                      keyed on these data-aro-state attributes. CSS owns the
+                      state layering so the three modes compose instead of
+                      competing as inline classes (prototype: focus-within >
+                      .is-listening > .is-streaming). */}
                   <div
-                    className={cn(
-                      "relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[16px] border transition-all duration-200 shadow-aro-e2 [grid-template-areas:'input'_'footer']",
-                      busy
-                        ? 'border-aro-cyan/50 shadow-[0_0_0_1px_rgba(34,211,238,0.25)]'
-                        : 'border-aro-line bg-aro-raise focus-within:border-aro-iris/50 focus-within:shadow-aro-glow-iris'
-                    )}
+                    className="relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[21px] border border-aro-line bg-aro-overlay shadow-aro-e2 transition-[border-color,box-shadow] duration-200 [grid-template-areas:'input'_'footer']"
                     data-aro-composer-layout="codex"
+                    data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
+                    data-aro-streaming={busy ? '' : undefined}
                   >
-                    {busy && (
-                      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[2px] overflow-hidden rounded-t-[inherit]">
-                        <div className="animate-aro-sweep absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-cyan to-transparent" />
-                      </div>
-                    )}
                     <div className="min-w-0 [grid-area:input] px-4 pt-3.5 pb-2">{input}</div>
                     <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 border-t border-aro-line-soft/60 bg-aro-base/40 px-1.5 py-1.5 [grid-area:footer]">
                       <ContribSlot area={COMPOSER_AREAS.leading} />
@@ -1633,6 +1633,24 @@ export function ChatBar({
             <p className="mt-2 text-center text-[10.5px] text-(--ui-text-quaternary) select-none pointer-events-none">
               Blank canvas — nothing is connected until you choose a project and model.
             </p>
+          )}
+          {/* The floating voice orb, driven by THIS composer's real voice
+              engine (dictation pipeline + VAD conversation). Fixed-position,
+              so the dock column is just its React home. */}
+          {typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true' && !hudMode && !poppedOut && (
+            <VoiceAgentOrb
+              busy={busy}
+              conversationActive={voiceConversationActive}
+              conversationStatus={conversation.status}
+              dictate={dictate}
+              onEndConversation={endConversation}
+              onStartConversation={startConversation}
+              onSubmit={text => {
+                void onSubmit(text)
+              }}
+              voiceActivity={voiceActivityState}
+              voiceStatus={voiceStatus}
+            />
           )}
         </div>
       </ComposerPrimitive.Unstable_TriggerPopoverRoot>

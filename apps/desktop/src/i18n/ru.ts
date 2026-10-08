@@ -3951,6 +3951,7 @@ export const ru = defineLocale({
   },
   assistant: {
     thread: {
+      you: 'Вы',
       loadingSession: 'Загрузка сеанса',
       showEarlier: 'Показать ранние сообщения',
       loadingResponse: 'Hermes загружает ответ',

@@ -3753,6 +3753,7 @@ export const ja = defineLocale({
       credentialsHeading: '認証情報'
     },
     thread: {
+      you: 'あなた',
       loadingSession: 'セッションを読み込み中',
       showEarlier: '以前のメッセージを表示',
       loadingResponse: 'Hermes が応答を読み込み中',

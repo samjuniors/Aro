@@ -23,6 +23,7 @@ import { ChatView } from '../chat'
 import { ChatSidebar } from '../chat/sidebar'
 import { TerminalPaneChrome } from '../right-sidebar/terminal/chrome'
 import { contributedRoutes, NEW_CHAT_ROUTE, ROUTES_AREA, sessionRoute } from '../routes'
+import { AroModelMenuPanel } from '../shell/aro-model-menu-panel'
 import { useStatusSnapshot } from '../shell/hooks/use-status-snapshot'
 import { useStatusbarItems } from '../shell/hooks/use-statusbar-items'
 import { ModelMenuPanel } from '../shell/model-menu-panel'
@@ -158,8 +159,28 @@ export const ChatRoutesSurface = memo(function ChatRoutesSurface({
 
   const chatActions = useMemo(() => latestChatActions(actions), [actions])
 
+  // The Aro model control's menu: the effort slider + thinking + fast rows
+  // (collapsed) over the SAME live catalog content (expanded). Same gateway
+  // host props as the two panels above — one controller, one code path.
+  const aroModelMenuContent = useMemo(
+    () =>
+      gatewayState === 'open' ? (
+        <AroModelMenuPanel
+          gateway={gateway || undefined}
+          onSelectModel={actions.selectModel}
+          ownerConnectionId={activeConnectionId || undefined}
+          profile={activeGatewayProfile}
+          requestGateway={actions.requestGateway}
+        >
+          {modelMenuContent}
+        </AroModelMenuPanel>
+      ) : null,
+    [actions, activeConnectionId, activeGatewayProfile, gateway, gatewayState, modelMenuContent]
+  )
+
   const chatView = (
     <ChatView
+      aroModelMenuContent={aroModelMenuContent}
       gateway={gateway}
       maxVoiceRecordingSeconds={maxVoiceRecordingSeconds}
       modelMenuContent={modelMenuContent}

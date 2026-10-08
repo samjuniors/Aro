@@ -10,9 +10,9 @@ import { ActivityTimerText } from '@/components/chat/activity-timer-text'
 import { SCAFFOLD_LABEL_CLASS } from '@/components/chat/scaffold-row'
 import { Codicon } from '@/components/ui/codicon'
 import { Loader } from '@/components/ui/loader'
-import { StatusPulse } from '@/components/ui/status-pulse'
 import { getLocalModelsStatus } from '@/hermes'
 import { useI18n } from '@/i18n'
+import { Zap } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { sessionBackgroundResume } from '@/store/background-delegation'
 import { sessionCompacting } from '@/store/compaction'
@@ -53,6 +53,25 @@ const COMPACTION_LABEL = 'Summarizing thread'
 
 const HintText: FC<{ children: ReactNode }> = ({ children }) => (
   <span className={cn(SCAFFOLD_LABEL_CLASS, 'shimmer min-w-0 flex-1 truncate')}>{children}</span>
+)
+
+/** The Aro stream tile (prototype StreamingRow grammar): 26px iris tile with
+ *  a breathing bolt + three staggered breathing dots. Pure presentation over
+ *  the REAL wait signal — the label/timer/hint logic beside it is untouched. */
+const AroStreamPulse: FC = () => (
+  <>
+    <span
+      aria-hidden="true"
+      className="flex size-[26px] shrink-0 items-center justify-center rounded-[8px] border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"
+    >
+      <Zap className="size-3 animate-aro-breathe" />
+    </span>
+    <span aria-hidden="true" className="flex shrink-0 items-center gap-[3px] pl-1">
+      {[0, 1, 2].map(index => (
+        <span className="size-1 animate-aro-breathe rounded-full bg-aro-iris-soft" key={index} style={{ animationDelay: `${index * 0.16}s` }} />
+      ))}
+    </span>
+  </>
 )
 
 /** Renderer-side load synthesis: poll the local-models status while a turn
@@ -252,11 +271,7 @@ export const ResponseLoadingIndicator: FC = () => {
 
   return (
     <StatusRow data-slot="aui_response-loading" label={hint || t.assistant.thread.loadingResponse}>
-      <StatusPulse
-        aria-hidden="true"
-        className="dither inline-block size-3 rounded-[2px] text-midground/80"
-        kind="opacity"
-      />
+      <AroStreamPulse />
       {hint ? (
         <WaitHint hint={hint} />
       ) : localLoad ? (
@@ -385,11 +400,7 @@ export const TurnActivityIndicator: FC = () => {
     >
       {active && (
         <>
-          <StatusPulse
-            aria-hidden="true"
-            className="dither inline-block size-3 rounded-[2px] text-midground/80"
-            kind="opacity"
-          />
+          <AroStreamPulse />
           {hint ? (
             <WaitHint hint={hint} />
           ) : localLoad ? (

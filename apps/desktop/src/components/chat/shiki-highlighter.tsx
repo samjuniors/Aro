@@ -4,14 +4,15 @@ import type { SyntaxHighlighterProps } from '@assistant-ui/react-streamdown'
 import { type FC, lazy, Suspense, useMemo } from 'react'
 
 import { hasHttpUrlHost } from '@/app/chat/composer/url-refs'
-import { referenceRe, unquoteReferenceValue } from '@/components/assistant-ui/reference-kinds'
-import { CodeCard, CodeCardBody } from '@/components/chat/code-card'
-import { ExpandableBlock } from '@/components/chat/expandable-block'
 // Theme constants live in shiki-config (dependency-free) so the lazy shiki
 // chunk can import them without pulling this module into the shiki bundle.
 import { runInTerminal } from '@/app/right-sidebar/store'
-import { CopyButton } from '@/components/ui/copy-button'
+import { referenceRe, unquoteReferenceValue } from '@/components/assistant-ui/reference-kinds'
+import { CodeCard, CodeCardBody } from '@/components/chat/code-card'
+import { ExpandableBlock } from '@/components/chat/expandable-block'
+import { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME } from '@/components/chat/shiki-config'
 import { Codicon } from '@/components/ui/codicon'
+import { CopyButton } from '@/components/ui/copy-button'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { isLikelyProseCodeBlock } from '@/lib/markdown-code'
@@ -19,7 +20,6 @@ import { isLikelyProseCodeBlock } from '@/lib/markdown-code'
 import type { CachedShikiBlockProps } from './shiki-block'
 import { isChunkLoadError, ShikiChunkBoundary } from './shiki-chunk-boundary'
 import { PlainShiki } from './shiki-plain'
-import { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME } from '@/components/chat/shiki-config'
 export { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME }
 
 /**
@@ -191,25 +191,32 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
 
   return (
     <CodeCard data-streaming={defer ? 'true' : undefined}>
-      <div className="absolute right-4 top-1.5 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover/code:opacity-100 focus-within:opacity-100">
-        <Tip label="Run in terminal">
-          <button
-            aria-label="Run in terminal"
-            className="flex h-5 cursor-pointer items-center justify-center rounded-md px-1 text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
-            onClick={() => runInTerminal(copyableCodeText(content))}
-            type="button"
-          >
-            <Codicon name="terminal" size="0.75rem" />
-          </button>
-        </Tip>
-        <CopyButton
-          appearance="inline"
-          className="h-5 gap-0 rounded-md px-1 text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
-          iconClassName="size-3"
-          label={t.assistant.tool.copyCode}
-          showLabel={false}
-          text={() => copyableCodeText(content)}
-        />
+      {/* Aro prose-code header (prototype grammar): mono uppercase language
+          label + the real hover actions (run in terminal / copy). */}
+      <div className="flex h-[26px] items-center justify-between gap-2 border-b border-aro-line-soft bg-aro-code/50 pl-2.5 pr-1">
+        <span className="min-w-0 truncate font-aro-mono text-[9px] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
+          {language || 'code'}
+        </span>
+        <div className="flex shrink-0 items-center gap-1 opacity-60 transition-opacity group-hover/code:opacity-100 focus-within:opacity-100">
+          <Tip label="Run in terminal">
+            <button
+              aria-label="Run in terminal"
+              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+              onClick={() => runInTerminal(copyableCodeText(content))}
+              type="button"
+            >
+              <Codicon name="terminal" size="0.75rem" />
+            </button>
+          </Tip>
+          <CopyButton
+            appearance="inline"
+            className="h-5 gap-0 rounded-md px-1 text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+            iconClassName="size-3"
+            label={t.assistant.tool.copyCode}
+            showLabel={false}
+            text={() => copyableCodeText(content)}
+          />
+        </div>
       </div>
       <CodeCardBody className="[&_pre]:px-3 [&_pre]:py-2.5">
         <ExpandableBlock>

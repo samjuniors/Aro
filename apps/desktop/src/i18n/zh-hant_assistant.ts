@@ -26,6 +26,7 @@ export const zhHantAssistant = {
       credentialsHeading: '憑證'
     },
     thread: {
+      you: '你',
       loadingSession: '正在載入工作階段',
       showEarlier: '顯示較早的訊息',
       loadingResponse: 'Hermes 正在載入回覆',

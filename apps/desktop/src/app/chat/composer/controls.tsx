@@ -11,6 +11,7 @@ import { recordAction } from '@/store/desktop-metrics'
 import { $hudMode, closeHud, resetHudLayout } from '@/store/hud'
 import { $wakeWord, toggleWakeWord } from '@/store/wake-word'
 
+import { AroModelControl } from './aro-model-control'
 import { ACTIVE_ICON_BTN, GHOST_ICON_BTN, PRIMARY_ICON_BTN } from './control-classes'
 import type { ConversationStatus } from './hooks/use-voice-conversation'
 import { ModelPill } from './model-pill'
@@ -125,7 +126,11 @@ export function ComposerControls({
 
   const modelPillCluster = minimal ? null : (
     <>
-      {hideModelPill ? null : (
+      {hideModelPill ? null : isAro && state.model.aroMenu ? (
+        // Aro: one control — monogram + model + effort chip — opening the
+        // Aro model menu (effort slider + thinking + live catalog).
+        <AroModelControl disabled={disabled} model={state.model} />
+      ) : (
         <>
           <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
           {compactModelPill ? null : <ReasoningPill disabled={disabled} model={state.model} />}

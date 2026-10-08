@@ -4710,6 +4710,7 @@ export const zh = defineLocale({
 
   assistant: {
     thread: {
+      you: '你',
       loadingSession: '正在加载会话',
       showEarlier: '显示更早的消息',
       loadingResponse: 'Hermes 正在加载回复',

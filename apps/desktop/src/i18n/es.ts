@@ -5443,6 +5443,7 @@ export const esOverrides = {
   },
   assistant: {
     thread: {
+      you: 'Tú',
       loadingSession: 'Cargando sesión',
       showEarlier: 'Mostrar mensajes anteriores',
       loadingResponse: 'Hermes está cargando una respuesta',
