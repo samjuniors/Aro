@@ -42,6 +42,7 @@ export function EnvPill({
               isWorktree && 'text-aro-iris-soft border-aro-iris/30',
               disabled && 'pointer-events-none opacity-50'
             )}
+            data-aro-env-pill=""
             disabled={disabled}
             type="button"
           >
