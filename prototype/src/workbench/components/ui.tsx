@@ -256,11 +256,20 @@ export function Stat({ label, value, sub, tone = "neutral", chart }: { label: st
 }
 
 /* ================================ MISC ================================ */
-export function Tip({ label, children, side = "top" }: { label: string; children: React.ReactNode; side?: "top" | "bottom" }) {
+export function Tip({ label, children, side = "top" }: { label: string; children: React.ReactNode; side?: "top" | "bottom" | "left" | "right" }) {
+  const sidePlacement =
+    side === "top"
+      ? "left-1/2 bottom-[calc(100%+7px)] -translate-x-1/2"
+      : side === "bottom"
+      ? "left-1/2 top-[calc(100%+7px)] -translate-x-1/2"
+      : side === "left"
+      ? "right-[calc(100%+8px)] top-1/2 -translate-y-1/2"
+      : "left-[calc(100%+8px)] top-1/2 -translate-y-1/2";
+
   return (
     <span className="group/tip relative inline-flex">
       {children}
-      <span className={cn("pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-line-strong bg-overlay px-2 py-1 text-[11px] whitespace-nowrap text-ink-2 opacity-0 shadow-e3 transition-[opacity,transform] duration-150 [transition-timing-function:var(--ease-out-expo)] group-hover/tip:scale-100 group-hover/tip:opacity-100", side === "top" ? "bottom-[calc(100%+7px)]" : "top-[calc(100%+7px)]")}>{label}</span>
+      <span className={cn("pointer-events-none absolute z-[70] scale-95 rounded-[6px] border border-line-strong bg-overlay px-2 py-1 text-[11px] whitespace-nowrap text-ink-2 opacity-0 shadow-e3 transition-[opacity,transform] duration-150 [transition-timing-function:var(--ease-out-expo)] group-hover/tip:scale-100 group-hover/tip:opacity-100", sidePlacement)}>{label}</span>
     </span>
   );
 }

@@ -75,9 +75,24 @@ export const IconChevron = (p: P) => (
     <path d="m9 6 6 6-6 6" />
   </svg>
 );
+export const IconChevronLeft = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+export const IconChevronRight = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m9 6 6 6-6 6" />
+  </svg>
+);
 export const IconChevronDown = (p: P) => (
   <svg {...base(p)}>
     <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+export const IconChevronUp = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m18 15-6-6-6 6" />
   </svg>
 );
 export const IconCheck = (p: P) => (
@@ -244,6 +259,11 @@ export const IconLayout = (p: P) => (
   <svg {...base(p)}>
     <rect x="3" y="4" width="18" height="16" rx="2.5" />
     <path d="M3 15.5h18M9.5 4v11.5M15.5 15.5V11" />
+  </svg>
+);
+export const IconWrapText = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 6h16M4 12h10a3 3 0 1 1 0 6H10m0 0 2.5-2.5M10 18l2.5 2.5M4 18h2" />
   </svg>
 );
 export const IconUser = (p: P) => (
@@ -565,3 +585,50 @@ export function IdeMark({ kind, size = 16, className = "" }: MarkProps & { kind:
     </span>
   );
 }
+
+export const IconPanelClose = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 4v16" />
+    <path d="M15.5 12H3.5" />
+    <path d="m8 6.5-5.5 5.5 5.5 5.5" />
+  </svg>
+);
+
+export const IconExternalIde = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  </svg>
+);
+
+export const IconCursor = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="m3.5 2 17 8.5-7.5 2.5-2.5 7.5L3.5 2Z" fill="currentColor" />
+  </svg>
+);
+
+export const IconVSCode = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M17.5 2.5 7.5 10.5 3 7 1.5 8.5 5 12l-3.5 3.5L3 17l4.5-3.5 10 8 4.5-2V4.5l-4.5-2Z" fill="#2489CA" opacity="0.9" />
+    <path d="M17.5 2.5v19l4.5-2V4.5l-4.5-2Z" fill="#1F7BB6" />
+    <path d="m17.5 6.5-7.5 5.5 7.5 5.5V6.5Z" fill="#0066B8" opacity="0.4" />
+  </svg>
+);
+
+export const IconWindsurf = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M7 14c2-4 8-4 10 0M9 10.5c1.5-2 4.5-2 6 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+export const IconZed = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M5 6.5h14L7 17.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export const IconSliders = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+  </svg>
+);

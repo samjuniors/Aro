@@ -1629,6 +1629,11 @@ export function ChatBar({
           <div className={cn(composerFloatingStrip, 'px-[5px] pt-1.5 empty:hidden')}>
             <ContribSlot area={COMPOSER_AREAS.underside} />
           </div>
+          {typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true' && !sessionId && (
+            <p className="mt-2 text-center text-[10.5px] text-(--ui-text-quaternary) select-none pointer-events-none">
+              Blank canvas — nothing is connected until you choose a project and model.
+            </p>
+          )}
         </div>
       </ComposerPrimitive.Unstable_TriggerPopoverRoot>
 

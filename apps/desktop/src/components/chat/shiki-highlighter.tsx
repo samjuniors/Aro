@@ -9,15 +9,18 @@ import { CodeCard, CodeCardBody } from '@/components/chat/code-card'
 import { ExpandableBlock } from '@/components/chat/expandable-block'
 // Theme constants live in shiki-config (dependency-free) so the lazy shiki
 // chunk can import them without pulling this module into the shiki bundle.
-import { SHIKI_COLOR_REPLACEMENTS } from '@/components/chat/shiki-config'
+import { runInTerminal } from '@/app/right-sidebar/store'
 import { CopyButton } from '@/components/ui/copy-button'
+import { Codicon } from '@/components/ui/codicon'
+import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { isLikelyProseCodeBlock } from '@/lib/markdown-code'
 
 import type { CachedShikiBlockProps } from './shiki-block'
 import { isChunkLoadError, ShikiChunkBoundary } from './shiki-chunk-boundary'
 import { PlainShiki } from './shiki-plain'
-export { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME } from '@/components/chat/shiki-config'
+import { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME } from '@/components/chat/shiki-config'
+export { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME }
 
 /**
  * Streamdown's code adapter renders header + body as inline siblings, so we
@@ -188,14 +191,26 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
 
   return (
     <CodeCard data-streaming={defer ? 'true' : undefined}>
-      <CopyButton
-        appearance="inline"
-        className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-md px-1 opacity-0 transition-opacity group-hover/code:opacity-100 focus-visible:opacity-100"
-        iconClassName="size-3"
-        label={t.assistant.tool.copyCode}
-        showLabel={false}
-        text={() => copyableCodeText(content)}
-      />
+      <div className="absolute right-4 top-1.5 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover/code:opacity-100 focus-within:opacity-100">
+        <Tip label="Run in terminal">
+          <button
+            aria-label="Run in terminal"
+            className="flex h-5 cursor-pointer items-center justify-center rounded-md px-1 text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
+            onClick={() => runInTerminal(copyableCodeText(content))}
+            type="button"
+          >
+            <Codicon name="terminal" size="0.75rem" />
+          </button>
+        </Tip>
+        <CopyButton
+          appearance="inline"
+          className="h-5 gap-0 rounded-md px-1 text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
+          iconClassName="size-3"
+          label={t.assistant.tool.copyCode}
+          showLabel={false}
+          text={() => copyableCodeText(content)}
+        />
+      </div>
       <CodeCardBody className="[&_pre]:px-3 [&_pre]:py-2.5">
         <ExpandableBlock>
           <Pre className="aui-shiki m-0 overflow-hidden bg-transparent p-0">

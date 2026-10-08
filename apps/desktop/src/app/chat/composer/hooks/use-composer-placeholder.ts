@@ -48,14 +48,68 @@ export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: Us
     setRestingPlaceholder(pickPlaceholder(sessionId ? followUpPlaceholders : newSessionPlaceholders))
   }, [followUpPlaceholders, newSessionPlaceholders, sessionId])
 
+  const [typewriterText, setTypewriterText] = useState('')
+
+  useEffect(() => {
+    if (sessionId || disabled) {
+      setTypewriterText('')
+      return
+    }
+
+    const phrases = [
+      'Ask Aro anything or describe what you want to build…',
+      'Drag a project from the sidebar to connect…',
+      'Plan a refactor, fix a bug, or write tests…',
+      'Explain code architecture and design patterns…'
+    ]
+    let phraseIdx = 0
+    let charIdx = 0
+    let isDeleting = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const tick = () => {
+      const phrase = phrases[phraseIdx]!
+      if (!isDeleting) {
+        charIdx++
+        setTypewriterText(phrase.slice(0, charIdx))
+        if (charIdx >= phrase.length) {
+          isDeleting = true
+          timer = setTimeout(tick, 2400)
+          return
+        }
+        timer = setTimeout(tick, 38)
+      } else {
+        charIdx -= 2
+        if (charIdx <= 0) {
+          charIdx = 0
+          isDeleting = false
+          phraseIdx = (phraseIdx + 1) % phrases.length
+          timer = setTimeout(tick, 450)
+          return
+        }
+        setTypewriterText(phrase.slice(0, charIdx))
+        timer = setTimeout(tick, 22)
+      }
+    }
+
+    timer = setTimeout(tick, 400)
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [sessionId, disabled])
+
   // When the transport is disabled it's because the gateway isn't open.
   // Distinguish a cold start ("Starting Hermes...") from a dropped connection
   // we're trying to restore. During reconnect, keep the textbox editable so a
   // flaky network doesn't block drafting; only submit/backend actions stay
   // disabled until the gateway is open again.
-  return disabled
-    ? reconnecting
-      ? t.composer.placeholderReconnecting
-      : t.composer.placeholderStarting
-    : restingPlaceholder
+  if (disabled) {
+    return reconnecting ? t.composer.placeholderReconnecting : t.composer.placeholderStarting
+  }
+
+  if (!sessionId && typewriterText) {
+    return `${typewriterText}▍`
+  }
+
+  return restingPlaceholder
 }

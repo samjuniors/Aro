@@ -3,10 +3,11 @@ import { cn } from "../utils/cn";
 import type { Session } from "../data/catalog";
 import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
-import { useWorkspace } from "../lib/workspace";
+import { useWorkspace, PROJECT_COLORS } from "../lib/workspace";
 import { readStored, writeStored } from "../lib/storage";
-import { IconArchive, IconChevronDown, IconCopy, IconFolder, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, IconUndo, LogoMark } from "./Icons";
+import { IconArchive, IconCheck, IconChevronDown, IconCopy, IconFolder, IconMore, IconPanelLeft, IconPencil, IconPin, IconPlug, IconPlus, IconPulse, IconSearch, IconSettings, IconSpark, IconTrash, IconUndo, LogoMark } from "./Icons";
 import { Button, IconButton, Input, Kbd, Menu, MenuItem, MenuLabel, MenuSep, Modal, Tip } from "./ui";
+import { ProfileControl } from "./Titlebar";
 
 export type ViewId = "workbench" | "tasks" | "skills" | "connectors" | "projects" | "automations" | "memory" | "artifacts" | "runs" | "agents" | "bridges" | "git" | "browser" | "review" | "design" | "settings";
 /* Navigation keeps only the surfaces that DON'T already live in the workspace
@@ -77,7 +78,7 @@ export function Sidebar(props: SidebarProps) {
     </Menu>
   </div>;
 
-  return <aside className="app-sidebar codex-sidebar">
+  return <aside className="app-sidebar codex-sidebar overflow-x-hidden">
     <div className="sidebar-brand"><LogoMark size={22} /><span className="rail-label font-display text-[15px] font-semibold tracking-[-.025em]">Aro</span><IconButton icon={IconPanelLeft} label="Collapse sidebar" className="ml-auto" size={25} onClick={props.onCollapse} /></div>
     <div className="sidebar-primary-actions"><button className="new-session-action" onClick={() => props.onNew()}><IconPlus size={16} /><span className="rail-label">New session</span><span className="rail-kbd ml-auto text-[9px] text-ink-4">⌘N</span></button><div className="sidebar-search-wrap relative mt-1.5"><IconSearch size={13} className="pointer-events-none absolute top-1/2 left-[11px] -translate-y-1/2 text-ink-4" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search sessions" className="sidebar-search" /></div></div>
     <nav className="sidebar-main-nav" aria-label="Workspace navigation">{NAV_CODE.filter((item) => item.id !== "workbench").map((item) => <button key={item.id} onClick={() => props.setView(item.id)} className={cn("sidebar-navigation-row", props.view === item.id && "active")} aria-current={props.view === item.id ? "page" : undefined}><item.icon size={16} /><span className="rail-label">{item.label}</span></button>)}</nav>
@@ -85,7 +86,7 @@ export function Sidebar(props: SidebarProps) {
       <button onClick={() => setDemoEnabled(!demoEnabled)} aria-pressed={demoEnabled} title={demoEnabled ? "Hide the reference demo to see a blank workspace" : "Show the reference demo project"}
         className={cn("demo-toggle", demoEnabled && "on")}><span className="demo-toggle-dot" /><span className="rail-hide">{demoEnabled ? "Demo on" : "Demo"}</span></button>
       <Tip label="Create project"><button onClick={props.onRequestProject} aria-label="Create project" className="ml-auto text-ink-4 hover:text-ink"><IconPlus size={14} /></button></Tip><Menu align="right" width={175} trigger={() => <button aria-label="Session list options" className="text-ink-4 hover:text-ink"><IconMore size={14} /></button>}>{(close) => <MenuItem icon={<IconArchive size={12} />} label={archive ? "Active sessions" : "Archived sessions"} onClick={() => { setArchive((value) => !value); close(); }} />}</Menu></div>
-    <div ref={list} className="scroll-thin min-h-0 flex-1 overflow-y-auto px-2.5 pb-3" onKeyDown={handleKeyboard}>
+    <div ref={list} className="scroll-thin min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5 pb-3" onKeyDown={handleKeyboard}>
       {archive ? (
         /* ---------- archive view: archived projects + archived sessions ---------- */
         <>
@@ -110,24 +111,81 @@ export function Sidebar(props: SidebarProps) {
         const items = all.filter((s) => !pinned.includes(s));
         const attention = all.filter((s) => s.status === "waiting" || s.status === "failed").length;
         const isDemo = workspace.isDemoProject(project.id);
-        return <section key={project.id} onDragOver={(e) => { if (!dragId) return; e.preventDefault(); setDropId(project.id); }} onDragLeave={() => setDropId(null)} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); if (id) props.onMoveProject(id, project.id); setDropId(null); setDragId(null); }} className={cn("sidebar-project-group", dropId === project.id && "drop-target", project.pinned && "is-pinned")}>
-          <div className="group flex items-center gap-1 py-1.5">
+        return <section key={project.id} onDragOver={(e) => { if (!dragId) return; e.preventDefault(); setDropId(project.id); }} onDragLeave={() => setDropId(null)} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); if (id) props.onMoveProject(id, project.id); setDropId(null); setDragId(null); }} className={cn("sidebar-project-group overflow-x-hidden", dropId === project.id && "drop-target", project.pinned && "is-pinned")}>
+          <div
+            className="group flex items-center gap-1 py-1.5 cursor-grab active:cursor-grabbing select-none"
+            draggable
+            title={`Drag ${project.name} to composer to attach`}
+            onDragStart={(e) => {
+              e.dataTransfer.setData("application/aro-project", project.id);
+              e.dataTransfer.setData("text/plain", project.name);
+              e.dataTransfer.effectAllowed = "copyMove";
+            }}
+          >
             <button onClick={() => setFolds((allFolds) => ({ ...allFolds, [project.id]: !allFolds[project.id] }))} className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-0.5 py-0.5 text-left transition-colors hover:bg-hover/60 focus-visible:ring-focus" aria-label={`${folds[project.id] ? "Expand" : "Collapse"} ${project.name}`}>
               <IconChevronDown size={12} className={cn("shrink-0 text-ink-4 transition-transform duration-200", folds[project.id] && "-rotate-90")} />
-              <IconFolder size={13} className={cn("shrink-0", project.pinned ? "text-iris-soft" : "text-ink-3")} />
+              <IconFolder
+                size={14}
+                className="shrink-0 transition-transform duration-150 group-hover:scale-105"
+                style={{
+                  color: project.color || "#818cf8",
+                  fill: `${project.color || "#818cf8"}25`,
+                }}
+              />
               <span className="rail-label truncate text-[13px] font-medium text-ink-2">{project.name}</span>
               {isDemo && <span className="rail-hide rounded-[3px] bg-iris-tint px-1 py-px font-mono text-[8px] font-semibold tracking-wide text-iris-soft">DEMO</span>}
-              {project.pinned && <IconPin size={10} className="shrink-0 text-iris-soft" />}
               {attention > 0 && <span className="rounded-full bg-amber-tint px-1.5 font-mono text-[9px] text-amber">{attention}</span>}
               <span className="ml-auto shrink-0 font-mono text-[10px] text-ink-4 opacity-0 transition-opacity group-hover:opacity-100">{all.length || ""}</span>
             </button>
+            <Tip label={project.pinned ? "Unpin project" : "Pin project"}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  workspace.toggleProjectPin(project.id);
+                  toast(project.pinned ? "Project unpinned" : "Project pinned — stays on top", "mint");
+                }}
+                className={cn(
+                  "flex size-[22px] items-center justify-center rounded transition-all",
+                  project.pinned
+                    ? "text-iris-soft hover:bg-hover hover:text-ink"
+                    : "text-ink-4 opacity-0 group-hover:opacity-100 hover:text-ink hover:bg-hover"
+                )}
+                aria-label={project.pinned ? "Unpin project" : "Pin project"}
+              >
+                <IconPin size={13} className={project.pinned ? "fill-current" : ""} />
+              </button>
+            </Tip>
             <Tip label={`New session in ${project.name}`}><button onClick={() => props.onNew(project.id)} className="flex size-[22px] items-center justify-center rounded text-ink-4 opacity-0 transition-all hover:bg-hover hover:text-ink focus-visible:ring-focus group-hover:opacity-100 group-focus-within:opacity-100" aria-label={`New session in ${project.name}`}><IconPlus size={13} /></button></Tip>
-            <Menu align="right" width={215} trigger={() => <button className="session-row-more" aria-label={`Actions for ${project.name}`} title="Project actions"><IconMore size={13} /></button>}>
+            <Menu align="right" width={220} trigger={() => <button className="session-row-more" aria-label={`Actions for ${project.name}`} title="Project actions"><IconMore size={13} /></button>}>
               {(close) => <>
                 <MenuItem icon={<IconPin size={12} />} label={project.pinned ? "Unpin project" : "Pin project"} onClick={() => { workspace.toggleProjectPin(project.id); close(); toast(project.pinned ? "Project unpinned" : "Project pinned — it stays on top", "mint"); }} />
                 <MenuItem icon={<IconPencil size={12} />} label="Rename project" onClick={() => { setRenamingProject(project); setProjectName(project.name); close(); }} />
                 <MenuItem icon={<IconCopy size={12} />} label="Duplicate project" onClick={() => { props.onDuplicateProject(project.id); close(); }} />
                 <MenuItem icon={<IconPlus size={12} />} label="New session here" onClick={() => { props.onNew(project.id); close(); }} />
+                <MenuSep />
+                <MenuLabel>Project Color</MenuLabel>
+                <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5">
+                  {PROJECT_COLORS.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      title={c.label}
+                      onClick={() => {
+                        workspace.setProjectColor(project.id, c.value);
+                        toast(`Project color set to ${c.label}`, "mint");
+                        close();
+                      }}
+                      className={cn(
+                        "relative flex size-[18px] cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-115",
+                        (project.color || "#818cf8") === c.value && "ring-2 ring-ink ring-offset-1 scale-105"
+                      )}
+                      style={{ backgroundColor: c.value }}
+                    >
+                      {(project.color || "#818cf8") === c.value && <IconCheck size={9} className="text-white drop-shadow-sm" />}
+                    </button>
+                  ))}
+                </div>
                 <MenuSep />
                 <MenuItem icon={<IconArchive size={12} />} label="Archive project" onClick={() => { workspace.archiveProject(project.id, true); close(); toast("Project archived — restore it from the archive view", "mint"); }} />
                 <MenuItem danger icon={<IconTrash size={12} />} label="Delete project" onClick={() => { setDeletingProject(project); close(); }} />
@@ -143,7 +201,13 @@ export function Sidebar(props: SidebarProps) {
         </>
       )}
     </div>
-    <div className="sidebar-footer"><button onClick={() => props.setView("settings")} className={cn("sidebar-navigation-row", props.view === "settings" && "active")}><IconSettings size={16} /><span className="rail-label">Settings</span><Kbd className="rail-kbd ml-auto">⌘,</Kbd></button><p className="rail-hide mt-2.5 px-2 text-[9.5px] text-ink-4">{product === "code" ? "Code workspace" : "Agent workspace"} · saved on this device</p></div>
+    <div className="sidebar-footer">
+      <div className="mb-2 px-1">
+        <ProfileControl onOpenSettings={() => props.setView("settings")} inSidebar />
+      </div>
+      <button onClick={() => props.setView("settings")} className={cn("sidebar-navigation-row", props.view === "settings" && "active")}><IconSettings size={16} /><span className="rail-label">Settings</span><Kbd className="rail-kbd ml-auto">⌘,</Kbd></button>
+      <p className="rail-hide mt-2.5 px-2 text-[9.5px] text-ink-4">{product === "code" ? "Code workspace" : "Agent workspace"} · saved on this device</p>
+    </div>
     <Modal open={Boolean(renaming)} onClose={() => setRenaming(null)} title="Rename session" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renaming && name.trim()) props.onRename(renaming.id, name.trim()); setRenaming(null); }}><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus /><div className="flex justify-end"><Button type="submit" disabled={!name.trim()}>Save</Button></div></form></Modal>
     <Modal open={Boolean(deleting)} onClose={() => setDeleting(null)} title="Delete session?" sub="This permanently removes this conversation from this device." width={420}><div className="p-5"><p className="text-[12px] text-ink-2">{deleting?.title}</p><div className="mt-5 flex justify-end gap-2"><Button variant="ghost" onClick={() => setDeleting(null)}>Cancel</Button><Button variant="danger" onClick={() => { if (deleting) props.onDelete(deleting.id); setDeleting(null); }}>Delete</Button></div></div></Modal>
     <Modal open={Boolean(renamingProject)} onClose={() => setRenamingProject(null)} title="Rename project" width={400}><form className="space-y-4 p-5" onSubmit={(e) => { e.preventDefault(); if (renamingProject && projectName.trim()) { workspace.renameProject(renamingProject.id, projectName.trim()); toast("Project renamed", "mint"); } setRenamingProject(null); }}><Input value={projectName} onChange={(e) => setProjectName(e.target.value)} autoFocus maxLength={60} /><div className="flex justify-end"><Button type="submit" disabled={!projectName.trim() || projectName.trim() === renamingProject?.name}>Save</Button></div></form></Modal>

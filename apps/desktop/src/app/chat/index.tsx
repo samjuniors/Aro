@@ -58,6 +58,7 @@ import { primaryRouteSelectedSessionId, routeSessionId } from '../routes'
 import { titlebarHeaderBaseClass, titlebarHeaderShadowClass, titlebarHeaderTitleClass } from '../shell/titlebar'
 
 import { ChatDropOverlay } from './chat-drop-overlay'
+import { VoiceAgentOrb } from './voice-agent-orb'
 import { ChatSwapOverlay, ChatSyncBadge } from './chat-swap-overlay'
 import { ChatBar, ChatBarFallback } from './composer'
 import { FloatingComposerSurface } from './composer/floating-surface'
@@ -847,6 +848,7 @@ const ChatViewContent = memo(function ChatViewContent({
             </Suspense>
           </FloatingComposerSurface>
         )}
+        <VoiceAgentOrb busy={busy} onSend={onSubmit} />
       </ChatRuntimeBoundary>
     </div>
   )

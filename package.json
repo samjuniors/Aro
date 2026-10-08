@@ -22,6 +22,10 @@
     "audit:fix:root": "npm audit fix --workspaces=false",
     "audit:fix:web": "npm audit fix --workspace web",
     "audit:fix:tui": "npm audit fix --workspace ui-tui",
+    "dev": "npm run dev --workspace apps/desktop",
+    "dev:desktop": "npm run dev --workspace apps/desktop",
+    "dev:web": "npm run dev --workspace web",
+    "dev:tui": "npm run dev --workspace ui-tui",
     "check": "npm run --ws check",
     "fix": "npm run --ws fix"
   },

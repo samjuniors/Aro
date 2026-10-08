@@ -172,10 +172,51 @@
 
 :root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sessions-mode] {
   scrollbar-color: var(--aro-line) transparent;
+  scrollbar-width: thin;
+  overflow-x: hidden;
 }
 
 :root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sessions-mode] > * {
   border-color: var(--aro-line-soft);
+}
+
+/* ── Phase 2: Sidebar Session Rows & Ergonomics ────────────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row] {
+  border-radius: 0.45rem;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row]:hover {
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row][data-selected='true'],
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row][aria-selected='true'] {
+  background: var(--aro-iris-tint);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-pinned='true'] .codicon-pin {
+  color: var(--aro-amber);
+}
+
+/* ── Phase 2: Project Presentation ─────────────────────────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-project-folder] {
+  border-radius: 0.5rem;
+  border: 1px solid var(--aro-line-soft);
+  background: var(--aro-raise);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-project-folder]:hover {
+  background: var(--aro-hover);
+  border-color: var(--aro-line);
+}
+
+/* ── Phase 2: Profile Switcher Presentation in Sidebar ─────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-profile-rail] {
+  border-top: 1px solid var(--aro-line-soft);
+  padding-top: 0.5rem;
+  background: transparent;
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-root'] {
@@ -443,14 +484,40 @@
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--aro-void) 92%, transparent));
 }
 
+@property --shimmer-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes shimmerSpin { to { --shimmer-angle: 360deg; } }
+
 :root[data-aro-ui='true'] [data-slot='composer-surface'] {
-  min-height: 108px;
+  position: relative;
+  min-height: 96px;
   border: 1px solid var(--aro-line);
-  border-radius: 1rem;
-  background: var(--aro-raise);
-  box-shadow:
-    0 14px 38px rgb(0 0 0 / 24%),
-    0 1px 0 rgb(255 255 255 / 3%) inset;
+  border-radius: 14px;
+  background: var(--aro-overlay);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.45);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.3px;
+  background: conic-gradient(from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-iris-soft) 90%, transparent) 46deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 80deg,
+    transparent 122deg, transparent 198deg,
+    color-mix(in srgb, var(--aro-iris-soft) 65%, transparent) 238deg,
+    transparent 302deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 240ms ease;
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-fade'] {
@@ -459,10 +526,13 @@
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
-  border-color: color-mix(in srgb, var(--aro-iris) 58%, var(--aro-line));
-  box-shadow:
-    0 14px 38px rgb(0 0 0 / 24%),
-    0 0 0 3px color-mix(in srgb, var(--aro-iris) 8%, transparent);
+  border-color: color-mix(in srgb, var(--aro-iris) 55%, var(--aro-line));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--aro-iris) 50%, transparent), 0 0 24px -2px color-mix(in srgb, var(--aro-iris) 40%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within::before {
+  opacity: 0.85;
+  animation: shimmerSpin 3.2s linear infinite;
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true'] {
@@ -500,6 +570,81 @@
 
 :root[data-aro-ui='true'] [data-slot='composer-dock'] [data-slot='composer-floating-strip'] {
   font-family: var(--dt-font-mono);
+}
+
+/* ── Phase 1: Trigger Popovers (/ slash & @ mentions) ──────────────── */
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] {
+  border: 1px solid var(--aro-line-strong);
+  border-radius: 0.75rem;
+  background: var(--aro-raise);
+  box-shadow:
+    0 16px 40px rgb(0 0 0 / 38%),
+    0 1px 0 rgb(255 255 255 / 3%) inset;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button {
+  border-radius: 0.5rem;
+  color: var(--aro-ink-2);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button[data-highlighted],
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button[data-highlighted] [data-ref],
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button:hover [data-ref] {
+  color: var(--aro-iris);
+}
+
+/* ── Phase 1: Drag & Drop Overlay ─────────────────────────────────── */
+:root[data-aro-ui='true'] [data-slot='chat-drop-overlay'] > div:first-child {
+  border: 2px dashed var(--aro-iris) !important;
+  background: color-mix(in srgb, var(--aro-sunken) 85%, transparent) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.875rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='chat-drop-overlay'] span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--aro-line-strong);
+  background: var(--aro-raise);
+  padding: 0.5rem 1rem;
+  font-family: var(--dt-font-sans);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: var(--aro-iris-soft);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
+}
+
+/* ── Phase 1: Voice Activity Bubble (Wispr Flow style) ─────────────── */
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] {
+  border-color: color-mix(in srgb, var(--aro-iris) 55%, var(--aro-line));
+  background: var(--aro-raise);
+  border-radius: 0.75rem;
+  color: var(--aro-ink);
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 24%),
+    0 0 0 1px color-mix(in srgb, var(--aro-iris) 18%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] .bg-primary\/15,
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] .bg-primary\/10 {
+  background: color-mix(in srgb, var(--aro-iris) 22%, transparent);
+  color: var(--aro-iris);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] span[style*='height'] {
+  background: var(--aro-iris);
 }
 
 @media (max-width: 900px) {
@@ -635,17 +780,32 @@
 }
 
 :root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit'],
-:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message'] {
-  min-width: 4.25rem;
-  border-radius: 0.6rem;
-  background: var(--aro-iris);
-  color: var(--aro-on-iris);
+:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message'],
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit'] {
+  display: inline-flex !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: var(--aro-ink) !important;
+  color: var(--aro-bg) !important;
+  transition: opacity 140ms ease, transform 100ms ease !important;
 }
 
-:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit']:hover,
-:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message']:hover {
-  background: var(--aro-iris-soft);
-  color: var(--aro-on-iris);
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit']:hover:not(:disabled),
+:root[data-aro-ui='true'] [data-aro-composer] [aria-label='Send message']:hover:not(:disabled),
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit']:hover:not(:disabled) {
+  opacity: 0.85 !important;
+  background: var(--aro-ink) !important;
+  color: var(--aro-bg) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface'] button[type='submit']:active:not(:disabled),
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit']:active:not(:disabled) {
+  transform: scale(0.93) !important;
 }
 
 :root[data-aro-ui='true'] [data-aro-composer] [data-slot='composer-surface']:focus-within {
@@ -782,3 +942,322 @@
     display: none;
   }
 }
+
+/* Phase 3 — Center View: Fresh stage suggestion chips */
+:root[data-aro-ui='true'] [data-slot='fresh-suggestions'] {
+  max-width: 48rem;
+  margin-top: 1.5rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'] {
+  background: var(--aro-panel-raised);
+  border-color: var(--aro-border);
+  color: var(--aro-text-secondary);
+  border-radius: 9999px;
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover {
+  background: color-mix(in srgb, var(--aro-panel-raised) 70%, var(--aro-iris));
+  border-color: color-mix(in srgb, var(--aro-iris) 40%, var(--aro-border));
+  color: var(--aro-text);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  transform: translateY(-1px);
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:active {
+  transform: translateY(0);
+}
+
+/* Phase 3 — FindBar transcript search */
+:root[data-aro-ui='true'] [role='search'] {
+  background: var(--aro-panel-raised);
+  border-color: var(--aro-border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  border-radius: 0.75rem;
+}
+
+:root[data-aro-ui='true'] [role='search'] input {
+  color: var(--aro-text);
+}
+
+/* Phase 3 — Run in terminal code card button */
+:root[data-aro-ui='true'] [data-slot='code-card'] button[title='Run in terminal'] {
+  transition: all 120ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] button[title='Run in terminal']:hover {
+  color: var(--aro-iris);
+  background: color-mix(in srgb, var(--aro-iris) 12%, transparent);
+}
+
+/* Phase 4 — Workspace Panel & Multi-Tab Terminal Dock */
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] {
+  background: var(--aro-raise);
+  border-left-color: var(--aro-line);
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab'] {
+  transition: all 140ms ease;
+  border-radius: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab'][aria-selected='true'] {
+  background: color-mix(in srgb, var(--aro-iris) 16%, transparent);
+  color: var(--aro-iris);
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab']:hover:not([aria-selected='true']) {
+  background: color-mix(in srgb, var(--aro-ink) 8%, transparent);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [role='tablist'] {
+  --pane-tab-active-accent: var(--aro-iris);
+  --pane-tab-active-bg: var(--aro-raise);
+  --pane-tab-strip-bg: var(--aro-bg);
+}
+
+:root[data-aro-ui='true'] .group\/tab {
+  transition: all 120ms ease;
+}
+
+/* Zone header tabs: hide redundant VS Code tab strip on sessions and main chat in Aro UI */
+:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] > [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-zone-tabstrip] {
+  display: none !important;
+}
+
+/* Zone header tabs: right workspace dock (Context, Changes, Terminal) styled as prototype WorkspacePanel */
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] > [data-zone-tabstrip] {
+  background: var(--aro-sunken);
+  border-bottom: 1px solid var(--aro-line-soft);
+  height: 38px;
+  padding-inline: 8px;
+  gap: 4px;
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'] {
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--aro-ink-3);
+  padding: 4px 10px;
+  background: transparent;
+  box-shadow: none;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  transition: all 140ms ease;
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'][aria-selected='true'],
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'][data-active='true'] {
+  color: var(--aro-ink);
+  background: var(--aro-raise);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab']:hover {
+  color: var(--aro-ink-2);
+  background: var(--aro-hover);
+}
+
+/* Prototype Sidebar visual grammar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] {
+  background: var(--aro-sunken);
+  border-right: 1px solid var(--aro-line-soft);
+  overflow-x: hidden !important;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] * {
+  max-width: 100%;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-content'],
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] nav,
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] ul {
+  overflow-x: hidden !important;
+  padding-inline: 10px;
+}
+
+/* Larger, clear pin icon beside action buttons */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] .codicon-pin,
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='pin-indicator'] {
+  font-size: 13px !important;
+  opacity: 0.9 !important;
+  color: var(--aro-iris-soft) !important;
+}
+
+/* New session button in sidebar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] button[data-tour='sidebar-nav-new-session'],
+:root[data-aro-ui='true'] .new-session-action {
+  display: flex !important;
+  height: 36px !important;
+  width: 100% !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-radius: 8px !important;
+  padding-inline: 10px !important;
+  background: var(--aro-raise) !important;
+  border: 1px solid var(--aro-line) !important;
+  color: var(--aro-ink) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 18%) !important;
+  transition: all 140ms ease !important;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] button[data-tour='sidebar-nav-new-session']:hover,
+:root[data-aro-ui='true'] .new-session-action:hover {
+  background: var(--aro-hover) !important;
+  border-color: color-mix(in srgb, var(--aro-iris) 45%, var(--aro-line)) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 24%) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+/* Sidebar navigation rows */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button'] {
+  height: 32px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  color: var(--aro-ink-3);
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button']:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button'][data-active='true'] {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  font-weight: 550;
+}
+
+/* Session rows in sidebar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row'],
+:root[data-aro-ui='true'] .session-list-row {
+  min-height: 32px;
+  border-radius: 7px;
+  padding: 0 6px 0 9px;
+  color: var(--aro-ink-3);
+  font-size: 12.5px;
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row']:hover,
+:root[data-aro-ui='true'] .session-list-row:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row'][data-active='true'],
+:root[data-aro-ui='true'] .session-list-row.selected {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  box-shadow: inset 2px 0 0 var(--aro-iris);
+}
+
+/* Sidebar search input */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input {
+  height: 32px;
+  background: var(--aro-bg);
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--aro-ink);
+  transition: border-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input:focus {
+  border-color: var(--aro-iris);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro-iris) 15%, transparent);
+}
+
+/* Workspace panel arrow toggle on top right of workbench */
+.workspace-arrow-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  color: var(--aro-ink-3);
+  cursor: pointer;
+  box-shadow: var(--shadow-e1);
+  transition: all 140ms ease;
+}
+.workspace-arrow-toggle:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  border-color: var(--aro-line-strong);
+  transform: scale(1.05);
+}
+
+/* Phase 5 — Titlebar cleanup & Theme polish */
+:root[data-aro-ui='true'] button[data-tool-id='layout'] {
+  display: none !important;
+}
+
+:root[data-aro-ui='true'] [data-titlebar-cluster] button {
+  transition: all 120ms ease;
+  border-radius: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-titlebar-cluster] button:hover {
+  background: color-mix(in srgb, var(--aro-ink) 8%, transparent);
+}
+
+/* Micro-animations and breathable UI transitions */
+:root[data-aro-ui='true'] button,
+:root[data-aro-ui='true'] [role='button'] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Titlebar product switcher & search pill */
+:root[data-aro-ui='true'] .product-switcher {
+  background: var(--aro-sunken);
+  border: 1px solid var(--aro-line);
+  border-radius: 8px;
+  padding: 2px;
+}
+:root[data-aro-ui='true'] .product-switcher button {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  transition: all 140ms ease;
+}
+:root[data-aro-ui='true'] .product-switcher button[aria-pressed='true'] {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+:root[data-aro-ui='true'] .titlebar-search {
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  color: var(--aro-ink-3);
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+:root[data-aro-ui='true'] .titlebar-search:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 45%, transparent);
+  background: var(--aro-bg);
+  color: var(--aro-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--aro-iris) 10%, transparent), 0 4px 14px -6px color-mix(in srgb, var(--aro-iris) 40%, transparent);
+}
+
+/* Voice Agent floating assistant */
+:root[data-aro-ui='true'] .voice-agent {
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.45));
+}
+:root[data-aro-ui='true'] .voice-agent canvas {
+  pointer-events: auto;
+}
+
+
+
+

@@ -6,20 +6,32 @@ import { makeId, readStored, writeStored } from "./storage";
 export type WorkspaceTask = { id: string; title: string; projectId?: string; status: "todo" | "doing" | "done"; createdAt: string };
 export type WorkspaceSkill = { id: string; name: string; instructions: string; enabled: boolean };
 export type WorkspaceConnector = { id: string; name: string; endpoint: string; transport: "http" | "stdio"; enabled: boolean };
-export type ProjectInput = { name: string; sources: ProjectSource[]; sourceFiles?: Record<string, File[]> };
+export type ProjectInput = { name: string; color?: string; sources: ProjectSource[]; sourceFiles?: Record<string, File[]> };
 
 /* Sticky agent plan: captured whenever an agent run creates a plan, kept at the
    composer corner across sessions and projects until cleared. */
 export type AgentPlanItem = { id: string; text: string; state: "todo" | "doing" | "done" };
 export type AgentPlan = { items: AgentPlanItem[]; sessionId?: string; title: string; updatedAt: number };
 
-type WorkspaceContextValue = {
+export const PROJECT_COLORS = [
+  { value: "#818cf8", label: "Iris" },
+  { value: "#38bdf8", label: "Sky" },
+  { value: "#34d399", label: "Mint" },
+  { value: "#fbbf24", label: "Amber" },
+  { value: "#f472b6", label: "Rose" },
+  { value: "#a78bfa", label: "Purple" },
+  { value: "#fb923c", label: "Orange" },
+  { value: "#94a3b8", label: "Slate" },
+];
+
+export type WorkspaceContextValue = {
   projects: Project[];
-  userProjects: Project[]
+  userProjects: Project[];
   /** The reference demo project with the user's overrides (pin/archive/rename) applied. */
   demoProject: Project;
   addProject: (input: ProjectInput) => Project;
   updateProject: (project: Project) => void;
+  setProjectColor: (id: string, color: string) => void;
   toggleProjectPin: (id: string) => void;
   archiveProject: (id: string, archived: boolean) => void;
   deleteProject: (id: string) => void;
@@ -61,8 +73,8 @@ function loadProjects(): Project[] {
 }
 
 /* Per-user tweaks applied on top of the overlaid reference demo (SofiaUI):
-   pinning, archiving and renaming work on it like on any other project. */
-type DemoOverrides = { pinned?: boolean; archived?: boolean; name?: string };
+   pinning, archiving, renaming and color tweaks work on it like on any other project. */
+type DemoOverrides = { pinned?: boolean; archived?: boolean; name?: string; color?: string };
 
 function loadDemoOverrides(): DemoOverrides {
   return readStored<DemoOverrides>("conductor.workspace.v3.demo-over", {});
@@ -87,8 +99,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [agentPlan, setAgentPlan] = useState<AgentPlan | null>(loadAgentPlan);
   const afterCreate = useRef<((project: Project) => void) | undefined>(undefined);
 
-  /* the demo project with overrides applied — pinned/archived/renamed by the user */
-  const demoProject = useMemo<Project>(() => ({ ...DEMO_PROJECT, ...(demoOver.name ? { name: demoOver.name } : {}), pinned: Boolean(demoOver.pinned), archived: Boolean(demoOver.archived) }), [demoOver]);
+  /* the demo project with overrides applied — pinned/archived/renamed/colored by the user */
+  const demoProject = useMemo<Project>(() => ({
+    ...DEMO_PROJECT,
+    ...(demoOver.name ? { name: demoOver.name } : {}),
+    pinned: Boolean(demoOver.pinned),
+    archived: Boolean(demoOver.archived),
+    color: demoOver.color ?? DEMO_PROJECT.color ?? "#818cf8",
+  }), [demoOver]);
   const projects = demoEnabled
     ? [...(demoProject.archived ? [] : [demoProject]), ...userProjects.filter((p) => p.id !== DEMO_PROJECT.id && !p.archived)]
     : userProjects.filter((p) => !p.archived);
@@ -104,10 +122,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (agentPlan) writeStored("conductor.agentplan.v1", agentPlan); else localStorage.removeItem("conductor.agentplan.v1"); }, [agentPlan]);
 
   const addProject = useCallback((input: ProjectInput): Project => {
-    const colors = ["#a89cff", "#6ab6a0", "#ca9b68", "#8bacdb", "#c989af"];
+    const colors = ["#818cf8", "#38bdf8", "#34d399", "#fbbf24", "#f472b6", "#a78bfa", "#fb923c", "#94a3b8"];
     const project: Project = {
       id: makeId("project"), name: input.name.trim(), kind: input.sources.some((s) => s.kind === "git" || Boolean(s.branch)) ? "repo" : "workspace",
-      color: colors[Math.floor(Math.random() * colors.length)], sources: input.sources,
+      color: input.color || colors[Math.floor(Math.random() * colors.length)], sources: input.sources,
       path: input.sources[0]?.path ?? input.sources[0]?.remoteUrl,
       defaults: { agentId: "claude-code", mode: "agent", rules: [] },
     };
@@ -116,8 +134,18 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     return project;
   }, []);
   const updateProject = useCallback((project: Project) => {
-    if (project.id === DEMO_PROJECT.id) return;
+    if (project.id === DEMO_PROJECT.id) {
+      if (project.color) setDemoOver((o) => ({ ...o, color: project.color }));
+      return;
+    }
     setUserProjects((all) => all.map((p) => p.id === project.id ? project : p));
+  }, []);
+  const setProjectColor = useCallback((id: string, color: string) => {
+    if (id === DEMO_PROJECT.id) {
+      setDemoOver((o) => ({ ...o, color }));
+      return;
+    }
+    setUserProjects((all) => all.map((p) => p.id === id ? { ...p, color } : p));
   }, []);
   const toggleProjectPin = useCallback((id: string) => {
     if (id === DEMO_PROJECT.id) { setDemoOver((o) => ({ ...o, pinned: !o.pinned })); return; }
@@ -175,5 +203,5 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     return project;
   }, [addProject]);
 
-  return <WorkspaceContext.Provider value={{ projects, userProjects, demoProject, addProject, updateProject, toggleProjectPin, archiveProject, deleteProject, renameProject, duplicateProject, demoEnabled, setDemoEnabled, isDemoProject, sourceFiles, tasks, setTasks: setUserTasks as Dispatch<SetStateAction<WorkspaceTask[]>>, skills, setSkills, connectors, setConnectors, rules, setRules, projectDialogOpen, requestProject, closeProjectDialog, finishProject, agentPlan, setAgentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ projects, userProjects, demoProject, addProject, updateProject, setProjectColor, toggleProjectPin, archiveProject, deleteProject, renameProject, duplicateProject, demoEnabled, setDemoEnabled, isDemoProject, sourceFiles, tasks, setTasks: setUserTasks as Dispatch<SetStateAction<WorkspaceTask[]>>, skills, setSkills, connectors, setConnectors, rules, setRules, projectDialogOpen, requestProject, closeProjectDialog, finishProject, agentPlan, setAgentPlan, updateAgentPlanItem, addAgentPlanItem, removeAgentPlanItem, clearAgentPlan }}>{children}</WorkspaceContext.Provider>;
 }

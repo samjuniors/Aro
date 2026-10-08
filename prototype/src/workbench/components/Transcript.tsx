@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 import type { DiffFile, DiffLine, Step } from "../data/catalog";
 import { agentById } from "../data/catalog";
 import { useApp } from "../lib/app";
-import { IconBrain, IconCheck, IconChevronDown, IconCopy, IconFile, IconMcp, IconPencil, IconRefresh, IconSearch, IconShield, IconSpark, IconTerminal, IconUndo, IconWarning, IconList, IconEye, IconX, IconGrid } from "./Icons";
+import { IconBrain, IconBranch, IconCheck, IconChevronDown, IconChevronUp, IconCopy, IconFile, IconMcp, IconPencil, IconPlay, IconRefresh, IconSearch, IconShield, IconSpark, IconTerminal, IconUndo, IconWarning, IconList, IconEye, IconX, IconGrid } from "./Icons";
 import { Badge, Button, Kbd, Segmented } from "./ui";
 
 /* ===================== inline markdown-ish ===================== */
@@ -20,11 +20,18 @@ function CodeBlock({ lang, code }: { lang?: string; code: string }) {
   const copy = () => {
     navigator.clipboard?.writeText(code).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1400); toast("Code copied", "mint"); }).catch(() => { });
   };
+  const runInTerminal = () => {
+    window.dispatchEvent(new CustomEvent("conductor:terminal:run", { detail: code }));
+    toast("Command sent to terminal", "iris");
+  };
   return (
-    <div className="prose-code">
+    <div className="prose-code group/code">
       <div className="prose-code-head">
         <span>{lang || "code"}</span>
-        <button type="button" onClick={copy} aria-label="Copy code" className="prose-code-copy">{copied ? <IconCheck size={11} /> : <IconCopy size={11} />}</button>
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={runInTerminal} aria-label="Run in terminal" title="Run in terminal" className="prose-code-copy hover:text-ink"><IconTerminal size={11} /></button>
+          <button type="button" onClick={copy} aria-label="Copy code" title="Copy code" className="prose-code-copy">{copied ? <IconCheck size={11} /> : <IconCopy size={11} />}</button>
+        </div>
       </div>
       <pre className="scroll-thin overflow-x-auto">{code.replace(/\n$/, "")}</pre>
     </div>
@@ -51,15 +58,23 @@ export function Prose({ text, className }: { text: string; className?: string })
 }
 
 /* ===================== message hover actions ===================== */
-function MessageActions({ text, onEdit, onRetry }: { text: string; onEdit?: () => void; onRetry?: () => void }) {
+function MessageActions({ text, onEdit, onRetry, onFork }: { text: string; onEdit?: () => void; onRetry?: () => void; onFork?: () => void }) {
   const { toast } = useApp();
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard?.writeText(text).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1300); toast("Message copied", "mint"); }).catch(() => { });
   };
+  const fork = () => {
+    if (onFork) onFork();
+    else {
+      window.dispatchEvent(new CustomEvent("conductor:session:fork", { detail: { text } }));
+      toast("Branched new session from this turn", "mint");
+    }
+  };
   return (
     <span className="msg-actions" role="toolbar" aria-label="Message actions">
       <button type="button" className="msg-action-btn" onClick={copy} aria-label="Copy message" title="Copy">{copied ? <IconCheck size={11} /> : <IconCopy size={11} />}</button>
+      <button type="button" className="msg-action-btn" onClick={fork} aria-label="Fork session from here" title="Fork branch from here"><IconBranch size={11} /></button>
       {onEdit && <button type="button" className="msg-action-btn" onClick={onEdit} aria-label="Edit and resend" title="Edit & resend"><IconPencil size={11} /></button>}
       {onRetry && <button type="button" className="msg-action-btn" onClick={onRetry} aria-label="Retry this response" title="Retry"><IconRefresh size={11} /></button>}
     </span>
@@ -81,14 +96,16 @@ function pairLines(lines: DiffLine[]) {
   }
   return rows;
 }
-export function DiffView({ file, maxLines = 22, mode: forced, showToggle }: { file: DiffFile; maxLines?: number; mode?: "unified" | "split"; showToggle?: boolean }) {
+export function DiffView({ file, maxLines = 22, mode: forced, showToggle, wrap = false }: { file: DiffFile; maxLines?: number; mode?: "unified" | "split"; showToggle?: boolean; wrap?: boolean }) {
+  const { toast } = useApp();
   const [all, setAll] = useState(false);
   const [mode, setMode] = useState<"unified" | "split">(forced ?? "unified");
+  const [stagedHunks, setStagedHunks] = useState<Record<number, boolean>>({});
   const shown = all ? file.lines : file.lines.slice(0, maxLines);
   const Cell = ({ l, side }: { l?: DiffLine; side: "l" | "r" }) => (
     <div className={cn("flex min-w-0 flex-1 items-start", l?.t === "add" && "diff-add", l?.t === "del" && "diff-del", !l && "bg-well/40")}>
       <span className="w-8 shrink-0 py-[1px] pr-2 text-right text-ink-4/70 select-none">{l ? (side === "l" ? l.o ?? "" : l.n ?? "") : ""}</span>
-      <span className={cn("truncate py-[1px] pr-3 whitespace-pre", l?.t === "add" ? "text-mint" : l?.t === "del" ? "text-rose" : "text-ink-2")}>{l?.text || " "}</span>
+      <span className={cn("py-[1px] pr-3", wrap ? "whitespace-pre-wrap break-all flex-1 min-w-0" : "truncate whitespace-pre", l?.t === "add" ? "text-mint" : l?.t === "del" ? "text-rose" : "text-ink-2")}>{l?.text || " "}</span>
     </div>
   );
   return (
@@ -100,18 +117,55 @@ export function DiffView({ file, maxLines = 22, mode: forced, showToggle }: { fi
           {showToggle && <Segmented value={mode} onChange={setMode} items={[{ value: "unified", label: "Unified" }, { value: "split", label: "Split" }]} className="ml-1 scale-90" />}
         </div>
       </div>
-      <div className="scroll-thin overflow-x-auto font-mono text-[11.5px] leading-[1.65]">
+      <div className={cn("scroll-thin font-mono text-[11.5px] leading-[1.65]", wrap ? "overflow-x-hidden" : "overflow-x-auto")}>
         {mode === "unified" ? shown.map((l, i) => (
-          <div key={i} className={cn("flex items-start whitespace-pre", l.t === "add" && "diff-add", l.t === "del" && "diff-del", l.t === "hunk" && "bg-iris-tint/50")}>
+          <div key={i} className={cn("flex items-start", wrap ? "whitespace-pre-wrap break-all" : "whitespace-pre", l.t === "add" && "diff-add", l.t === "del" && "diff-del", l.t === "hunk" && "bg-iris-tint/30")}>
             {l.t !== "hunk" ? (<>
               <span className="w-8 shrink-0 py-[1px] pr-2 text-right text-ink-4/70 select-none">{l.o ?? ""}</span>
               <span className="w-8 shrink-0 py-[1px] pr-2 text-right text-ink-4/70 select-none">{l.n ?? ""}</span>
               <span className="w-3 shrink-0 py-[1px] text-ink-4/60 select-none">{l.t === "add" ? "+" : l.t === "del" ? "−" : " "}</span>
-              <span className={cn("py-[1px] pr-3", l.t === "add" ? "text-mint" : l.t === "del" ? "text-rose" : "text-ink-2")}>{l.text || " "}</span>
-            </>) : <span className="py-[2px] pl-3 text-ink-3">{l.text}</span>}
+              <span className={cn("py-[1px] pr-3", wrap ? "whitespace-pre-wrap break-all flex-1 min-w-0" : "", l.t === "add" ? "text-mint" : l.t === "del" ? "text-rose" : "text-ink-2")}>{l.text || " "}</span>
+            </>) : (
+              <div className="flex w-full items-center justify-between py-[2px] px-2 text-ink-3 text-[10.5px]">
+                <span className="truncate">{l.text}</span>
+                <div className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">
+                  {stagedHunks[i] ? (
+                    <span className="flex items-center gap-1 text-[9.5px] text-mint font-semibold">
+                      <IconCheck size={10} /> Staged
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStagedHunks((p) => ({ ...p, [i]: true }));
+                          toast("Hunk accepted & staged", "mint");
+                        }}
+                        className="flex items-center gap-1 rounded bg-mint/15 px-1.5 py-0.5 text-[9.5px] font-medium text-mint hover:bg-mint/25 transition-colors"
+                        title="Accept this hunk"
+                      >
+                        <IconCheck size={9} /> Accept
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toast("Hunk reverted", "amber")}
+                        className="flex items-center gap-1 rounded bg-rose/15 px-1.5 py-0.5 text-[9.5px] font-medium text-rose hover:bg-rose/25 transition-colors"
+                        title="Discard this hunk"
+                      >
+                        <IconX size={9} /> Discard
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )) : pairLines(shown).map((r, i) => r.hunk ? <div key={i} className="bg-iris-tint/50 py-[2px] pl-3 text-ink-3">{r.hunk}</div>
-          : <div key={i} className="flex divide-x divide-line-soft"><Cell l={r.l} side="l" /><Cell l={r.r} side="r" /></div>)}
+        )) : pairLines(shown).map((r, i) => r.hunk ? (
+          <div key={i} className="flex items-center justify-between bg-iris-tint/30 py-[2px] px-2 text-ink-3 text-[10.5px]">
+            <span>{r.hunk}</span>
+            <span className="text-[9.5px] text-ink-4">split mode</span>
+          </div>
+        ) : <div key={i} className="flex divide-x divide-line-soft"><Cell l={r.l} side="l" /><Cell l={r.r} side="r" /></div>)}
       </div>
       {file.lines.length > maxLines && (
         <button onClick={() => setAll((a) => !a)} className="flex w-full cursor-pointer items-center justify-center gap-1.5 border-t border-line-soft py-[6px] text-[11px] text-ink-3 transition-colors hover:bg-hover hover:text-ink">
@@ -305,4 +359,87 @@ export function StreamingRow({ label }: { label: string }) {
     </div>
   );
 }
+
+/* ============================ FIND IN TRANSCRIPT ============================ */
+export function FindBar({
+  open,
+  onClose,
+  searchQuery,
+  setSearchQuery,
+  matchCount,
+  currentMatchIndex,
+  onNext,
+  onPrev,
+}: {
+  open: boolean;
+  onClose: () => void;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  matchCount: number;
+  currentMatchIndex: number;
+  onNext: () => void;
+  onPrev: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="sticky top-2 right-4 ml-auto z-40 flex w-fit items-center gap-1.5 rounded-[9px] border border-line-strong bg-raise/95 p-1.5 shadow-e3 backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-150">
+      <IconSearch size={13} className="text-ink-4 ml-1 shrink-0" />
+      <input
+        ref={inputRef}
+        type="text"
+        placeholder="Find in conversation…"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onClose();
+          if (e.key === "Enter") {
+            if (e.shiftKey) onPrev();
+            else onNext();
+          }
+        }}
+        className="h-[26px] w-[180px] bg-transparent text-[12px] text-ink outline-none placeholder:text-ink-4"
+      />
+      <span className="font-mono text-[10px] text-ink-4 shrink-0 px-1 border-r border-line-soft select-none">
+        {matchCount > 0 ? `${currentMatchIndex + 1}/${matchCount}` : searchQuery ? "0/0" : ""}
+      </span>
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={matchCount === 0}
+        title="Previous match (Shift+Enter)"
+        className="flex size-[22px] items-center justify-center rounded text-ink-3 hover:text-ink hover:bg-hover disabled:opacity-40"
+      >
+        <IconChevronUp size={12} />
+      </button>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={matchCount === 0}
+        title="Next match (Enter)"
+        className="flex size-[22px] items-center justify-center rounded text-ink-3 hover:text-ink hover:bg-hover disabled:opacity-40"
+      >
+        <IconChevronDown size={12} />
+      </button>
+      <button
+        type="button"
+        onClick={onClose}
+        title="Close (Esc)"
+        className="flex size-[22px] items-center justify-center rounded text-ink-4 hover:text-ink hover:bg-hover ml-0.5"
+      >
+        <IconX size={12} />
+      </button>
+    </div>
+  );
+}
+
 export { IconGrid };

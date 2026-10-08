@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn";
 import type { Project, ProjectSource } from "../data/providers";
-import { useWorkspace } from "../lib/workspace";
+import { useWorkspace, PROJECT_COLORS } from "../lib/workspace";
 import { makeId } from "../lib/storage";
 import { IconCheck, IconChevronDown, IconFolder, IconGit, IconPin, IconPlus, IconSearch, IconX } from "./Icons";
 import { Button, Input, Menu, MenuItem, Modal } from "./ui";
@@ -13,6 +13,7 @@ type PickerWindow = Window & { showDirectoryPicker?: (options?: { mode: "read" }
 export function ProjectDialog() {
   const { projects, projectDialogOpen: open, closeProjectDialog, finishProject } = useWorkspace();
   const [name, setName] = useState("");
+  const [color, setColor] = useState(PROJECT_COLORS[0].value);
   const [sources, setSources] = useState<ProjectSource[]>([]);
   const [files, setFiles] = useState<Record<string, File[]>>({});
   const [error, setError] = useState("");
@@ -24,7 +25,7 @@ export function ProjectDialog() {
 
   useEffect(() => {
     if (!open) return;
-    setName(""); setSources([]); setFiles({}); setError(""); setAddingGit(false); setGitUrl("");
+    setName(""); setColor(PROJECT_COLORS[0].value); setSources([]); setFiles({}); setError(""); setAddingGit(false); setGitUrl("");
     const timer = window.setTimeout(() => nameInput.current?.focus(), 80);
     folderInput.current?.setAttribute("webkitdirectory", "");
     folderInput.current?.setAttribute("directory", "");
@@ -95,7 +96,7 @@ export function ProjectDialog() {
     const trimmed = name.trim();
     if (!trimmed) { nameInput.current?.focus(); return; }
     if (projects.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) { setError("A project with this name already exists."); return; }
-    finishProject({ name: trimmed, sources, sourceFiles: files });
+    finishProject({ name: trimmed, color, sources, sourceFiles: files });
   };
 
   return <Modal open={open} onClose={closeProjectDialog} title="Create project" width={520} plain>
@@ -103,6 +104,29 @@ export function ProjectDialog() {
       <div className="project-name-field flex h-[40px] items-center rounded-[12px] border border-line bg-base focus-within:border-sky focus-within:ring-1 focus-within:ring-sky/30">
         <span className="flex h-5 w-11 shrink-0 items-center justify-center border-r border-line-soft text-ink-2"><IconFolder size={14} /></span>
         <input ref={nameInput} value={name} onChange={(e) => { setName(e.target.value); setError(""); }} placeholder="Project name" aria-label="Project name" autoComplete="off" maxLength={100} className="h-full min-w-0 flex-1 bg-transparent px-3 text-[13px] text-ink placeholder:text-ink-4 focus:outline-none" />
+      </div>
+
+      {/* Project Color Picker */}
+      <div className="mt-3 flex items-center justify-between px-0.5">
+        <label className="text-[12px] font-medium text-ink-3">Project Color</label>
+        <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Project accent color">
+          {PROJECT_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => setColor(c.value)}
+              title={c.label}
+              aria-label={`Select ${c.label} color`}
+              className={cn(
+                "relative flex size-[19px] cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110",
+                color === c.value && "ring-2 ring-ink ring-offset-2 ring-offset-base scale-105"
+              )}
+              style={{ backgroundColor: c.value }}
+            >
+              {color === c.value && <IconCheck size={9} className="text-white drop-shadow-sm" />}
+            </button>
+          ))}
+        </div>
       </div>
 
       <label className="mt-3.5 mb-2 block text-[12px] font-medium text-ink">Source folders</label>
@@ -150,7 +174,14 @@ export function ProjectPickerPanel({ project, onChoose, onClose }: { project?: P
       <div className="repo-chooser-list">
         {sortedMatches.map((p) => (
           <button key={p.id} onClick={() => { onChoose(p.id); }} className={cn("repo-chooser-row", p.id === project?.id && "selected")}>
-            <span className="repo-chooser-main"><span className="repo-chooser-name">{p.name}{p.pinned && <IconPin size={9} className="ml-1.5 inline text-iris-soft" />}</span>{p.sources?.[0] && <span className="repo-chooser-sub">{p.sources[0].kind === "git" ? p.sources[0].remoteUrl?.replace(/^https?:\/\//, "") : `${p.sources[0].fileCount ?? 0} files`}</span>}</span>
+            <span className="repo-chooser-main">
+              <span className="repo-chooser-name flex items-center gap-1.5">
+                <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: p.color || "#818cf8" }} />
+                <span>{p.name}</span>
+                {p.pinned && <IconPin size={9} className="ml-1 inline text-iris-soft" />}
+              </span>
+              {p.sources?.[0] && <span className="repo-chooser-sub">{p.sources[0].kind === "git" ? p.sources[0].remoteUrl?.replace(/^https?:\/\//, "") : `${p.sources[0].fileCount ?? 0} files`}</span>}
+            </span>
             {isDemoProject(p.id) && <span className="repo-chooser-demo">DEMO</span>}
             {p.id === project?.id && <IconCheck size={13} className="repo-chooser-check" />}
           </button>

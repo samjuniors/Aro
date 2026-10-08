@@ -1287,60 +1287,65 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
   border-left: 0; animation: panelIn .18s var(--ease-out-expo) both;
 }
 .workspace-tabstrip {
-  display: flex; height: 34px; flex-shrink: 0; align-items: center; gap: 2px;
-  padding: 0 6px; border-bottom: 1px solid var(--color-line-soft); background: var(--color-sunken);
+  display: flex; height: 38px; flex-shrink: 0; align-items: center; gap: 4px;
+  padding: 0 8px; border-bottom: 1px solid var(--color-line-soft); background: var(--color-sunken);
 }
-/* the tabs area takes every spare pixel — with one tab open, that tab fills
-   the whole strip (icon + full label, close at its end); with more tabs
-   they share it and the strip scrolls once it truly overflows */
+/* the tabs area takes every spare pixel — scrollable with edge mask */
 .workspace-tabs-scroll {
-  display: flex; min-width: 0; flex: 1 1 auto; align-items: center; gap: 2px;
+  display: flex; min-width: 0; flex: 1 1 auto; align-items: center; gap: 4px;
   overflow-x: auto; scrollbar-width: none;
 }
 .workspace-tabs-scroll::-webkit-scrollbar { display: none; }
 .workspace-tabs-scroll.is-overflowing {
-  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
 }
 .workspace-tab {
-  display: inline-flex; align-items: center; height: 24px; min-width: 0; flex-shrink: 0;
-  border-radius: 6px; padding-right: 2px; color: var(--color-ink-3); position: relative;
+  display: inline-flex; align-items: center; height: 28px; max-width: 156px; min-width: 0; flex: 0 0 auto;
+  border-radius: 7px; padding: 0 3px 0 2px; color: var(--color-ink-3); position: relative;
+  border: 1px solid transparent;
   animation: pop 0.2s var(--ease-spring) both;
-  transition: background-color 130ms, color 130ms;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
-.workspace-tab:hover { color: var(--color-ink-2); background: var(--color-hover); }
-.workspace-tab.is-active { background: var(--color-raise); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-line); }
-/* the focused tab absorbs the strip's free space — a lone tab reads as the
-   panel's single full header instead of a small icon floating in emptiness */
-.workspace-tab.is-active { flex: 1 1 auto; }
-.workspace-tab.is-active .workspace-tab-main { flex: 1 1 auto; }
-.workspace-tab.is-active .workspace-tab-title { max-width: none; }
-.workspace-tab.is-active::after {
-  content: ""; position: absolute; left: 9px; right: 9px; bottom: 1px; height: 2px;
-  border-radius: 99px; background: var(--color-iris);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-iris) 55%, transparent);
+.workspace-tab:hover {
+  color: var(--color-ink-2);
+  background: color-mix(in srgb, var(--color-hover) 85%, transparent);
 }
+.workspace-tab.is-active {
+  flex: 0 0 auto;
+  background: var(--color-raise);
+  color: var(--color-ink);
+  border-color: var(--color-line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04);
+}
+.workspace-tab.is-active .workspace-tab-main { flex: 0 1 auto; }
+.workspace-tab.is-active .workspace-tab-title { max-width: 96px; font-weight: 550; }
 .workspace-tab-main {
-  display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 5px 0 9px;
-  background: none; border: 0; cursor: pointer; color: inherit; font-size: 11.5px; font-weight: 550;
+  display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 4px 0 8px;
+  background: none; border: 0; cursor: pointer; color: inherit; font-size: 12px; font-weight: 500;
+  letter-spacing: -0.01em;
 }
-.workspace-tab-main svg { color: var(--color-ink-4); flex-shrink: 0; }
+.workspace-tab-main svg { color: var(--color-ink-4); flex-shrink: 0; transition: color 130ms; }
+.workspace-tab:hover .workspace-tab-main svg { color: var(--color-ink-2); }
 .workspace-tab.is-active .workspace-tab-main svg { color: var(--color-iris-soft); }
-.workspace-tab-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 104px; }
+.workspace-tab-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 92px; }
 .workspace-tab-close {
   display: flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; margin: 0 2px; border-radius: 4px;
+  width: 18px; height: 18px; margin: 0 2px; border-radius: 5px;
   color: var(--color-ink-4); opacity: 0;
   transition: opacity 130ms, background-color 120ms, color 120ms;
 }
-.workspace-tab:hover .workspace-tab-close, .workspace-tab-close:focus-visible { opacity: 1; }
-.workspace-tab-close:hover { background: var(--color-rose-tint); color: var(--color-rose); }
-.workspace-tab-new, .workspace-panel-close, .workspace-panel-full {
+.workspace-tab:hover .workspace-tab-close, .workspace-tab-close:focus-visible { opacity: 0.8; }
+.workspace-tab.is-active .workspace-tab-close { opacity: 0.85; }
+.workspace-tab-close:hover { background: var(--color-rose-tint); color: var(--color-rose); opacity: 1; }
+.workspace-tab-new, .workspace-tab-toolbar, .workspace-panel-close, .workspace-panel-full {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; flex-shrink: 0; border-radius: 6px; color: var(--color-ink-3);
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 6px; color: var(--color-ink-3);
   transition: background-color 130ms, color 130ms;
 }
-.workspace-tab-new:hover, .workspace-panel-close:hover, .workspace-panel-full:hover { background: var(--color-hover); color: var(--color-ink); }
+.workspace-tab-new:hover, .workspace-tab-toolbar:hover, .workspace-panel-close:hover, .workspace-panel-full:hover {
+  background: var(--color-hover); color: var(--color-ink);
+}
 .workspace-panel-full.is-on { color: var(--color-iris-soft); background: var(--color-iris-tint); }
 .workspace-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .workspace-tabpane { display: none; flex: 1; min-width: 0; min-height: 0; flex-direction: column; }
@@ -1387,21 +1392,22 @@ html[data-motion="reduced"] *::after { animation-duration: .001ms !important; an
 .workspace-picker-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: var(--color-iris-tint); color: var(--color-iris-soft); }
 .workspace-picker-name { font-size: 12.5px; font-weight: 600; color: var(--color-ink); }
 .workspace-picker-desc { font-size: 10.5px; line-height: 1.45; color: var(--color-ink-3); }
-/* the single corner affordance that summons the workspace */
-.workspace-corner-open {
-  position: absolute; top: 9px; right: 9px; z-index: 20;
+/* Arrow toggle button to switch on the workspace panel on the main view */
+.workspace-arrow-toggle {
+  position: relative;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 9px;
+  width: 28px; height: 28px; border-radius: 8px;
   border: 1px solid var(--color-line); background: var(--color-raise);
-  color: var(--color-ink-3); box-shadow: var(--shadow-e1); opacity: .82;
-  transition: opacity 150ms, color 150ms, border-color 150ms, background-color 150ms, transform 150ms;
+  color: var(--color-ink-2); box-shadow: var(--shadow-e1);
+  cursor: pointer; user-select: none;
+  transition: all 140ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.workspace-corner-open:hover {
-  opacity: 1; color: var(--color-iris-soft);
-  border-color: color-mix(in srgb, var(--color-iris) 45%, transparent);
-  background: var(--color-iris-tint);
+.workspace-arrow-toggle:hover {
+  background: var(--color-hover); color: var(--color-iris-soft);
+  border-color: var(--color-line-strong); box-shadow: var(--shadow-e2);
+  transform: translateY(-0.5px);
 }
-.workspace-corner-open:active { transform: scale(.94); }
+.workspace-arrow-toggle:active { transform: scale(.95); }
 
 /* ---------- Files tab — project tree + preview ---------- */
 .files-tree-root { display: flex; align-items: center; gap: 6px; padding: 6px 10px 8px; border-bottom: 1px solid var(--color-line-soft); font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-3); }

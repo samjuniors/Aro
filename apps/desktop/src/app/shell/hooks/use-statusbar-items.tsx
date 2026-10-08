@@ -9,6 +9,7 @@ import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { useApprovalModeStatusbarItem } from '@/app/shell/approval-mode-menu'
 import { ContextMeterDetail, ContextUsagePanel } from '@/app/shell/context-usage-panel'
 import { GatewayMenuPanel } from '@/app/shell/gateway-menu-panel'
+import { ExternalIdeControl } from '@/app/shell/external-ide-control'
 import { useContextBreakdown } from '@/app/shell/hooks/use-context-breakdown'
 import { useSystemResourcesStatusbarItem } from '@/app/shell/system-resources-statusbar'
 import { $paneVisible } from '@/components/pane-shell/tree/store'
@@ -737,6 +738,15 @@ export function useStatusbarItems({
         toggleLabel: copy.toggleTerminal,
         variant: 'action'
       },
+      ...(typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+        ? [
+            {
+              id: 'external-ide',
+              lockedVisible: true,
+              render: () => <ExternalIdeControl compact />
+            }
+          ]
+        : []),
       clientVersionItem,
       ...(backendVersionItem ? [backendVersionItem] : [])
     ],

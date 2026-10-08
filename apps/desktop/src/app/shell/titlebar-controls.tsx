@@ -16,6 +16,8 @@ import { triggerHaptic } from '@/lib/haptics'
 import { formatModifierToken } from '@/lib/keybinds/combo'
 import { cn } from '@/lib/utils'
 import { recordAction } from '@/store/desktop-metrics'
+import { openCommandPalette } from '@/store/command-palette'
+import { Codicon } from '@/components/ui/codicon'
 import { toggleHud } from '@/store/hud'
 import { $interfaceMode, shownInMode, type Tiered } from '@/store/interface-mode'
 import {
@@ -314,6 +316,7 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
   const visibleSystemTools = appActionsSide === 'right' ? systemTools.filter(visibleTool) : []
   const visiblePaneTools = tools.filter(visibleTool)
   const visibleRightFixedTools = [flipTool, rightSidebarTool].filter(visibleTool)
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
 
   return (
     <>
@@ -321,9 +324,69 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
         {visibleLeftTools.map(tool => (
           <TitlebarToolButton key={tool.id} navigate={navigate} tool={tool} />
         ))}
+        {isAro && (
+          <div
+            className="product-switcher inline-flex items-center gap-0.5 rounded-[7px] border border-(--ui-border) bg-(--ui-bg-muted)/70 p-[2px] ml-1.5"
+            role="group"
+            aria-label="Workspace mode"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic('tap')
+                $interfaceMode.set('advanced')
+              }}
+              aria-pressed={interfaceMode !== 'simple'}
+              className={cn(
+                'h-[22px] px-2.5 rounded-[5px] text-[11px] font-medium transition-colors select-none',
+                interfaceMode !== 'simple'
+                  ? 'bg-(--ui-bg-chrome) text-foreground shadow-xs'
+                  : 'text-(--ui-text-tertiary) hover:text-foreground'
+              )}
+            >
+              Code
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic('tap')
+                $interfaceMode.set('simple')
+              }}
+              aria-pressed={interfaceMode === 'simple'}
+              className={cn(
+                'h-[22px] px-2.5 rounded-[5px] text-[11px] font-medium transition-colors select-none',
+                interfaceMode === 'simple'
+                  ? 'bg-(--ui-bg-chrome) text-foreground shadow-xs'
+                  : 'text-(--ui-text-tertiary) hover:text-foreground'
+              )}
+            >
+              Agent
+            </button>
+          </div>
+        )}
         <Slot area="titleBar.left" />
         <Slot area="titleBar.center" />
       </div>
+
+      {isAro && (
+        <div className="pointer-events-none fixed top-[calc(var(--titlebar-controls-top)+1px)] left-1/2 -translate-x-1/2 z-20 hidden md:block">
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic('open')
+              openCommandPalette()
+            }}
+            className="pointer-events-auto inline-flex h-[26px] items-center gap-2 rounded-full border border-(--ui-border) bg-(--ui-bg-chrome)/90 px-3 text-[11px] text-(--ui-text-secondary) shadow-xs backdrop-blur-md transition-all duration-150 hover:border-aro-iris/40 hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.98]"
+            aria-label="Search sessions and commands"
+          >
+            <Codicon name="search" className="size-3 text-(--ui-text-tertiary)" />
+            <span className="font-medium text-[11px]">Search</span>
+            <kbd className="rounded border border-(--ui-border) bg-(--ui-bg-muted) px-1 py-0.2 font-mono text-[9px] text-(--ui-text-quaternary)">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+      )}
 
       {visiblePaneTools.length > 0 && (
         <div
@@ -393,6 +456,7 @@ function TitlebarToolButton({ navigate, tool }: { navigate: ReturnType<typeof us
         aria-label={tool.label}
         aria-pressed={tool.active ?? undefined}
         className={className}
+        data-tool-id={tool.id}
         data-tour={tool.tour}
         disabled={tool.disabled}
         onClick={event => {

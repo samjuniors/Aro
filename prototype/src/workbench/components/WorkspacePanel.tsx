@@ -6,8 +6,9 @@ import type { Project } from "../data/providers";
 import { useApp } from "../lib/app";
 import { makeId, readStored, writeStored } from "../lib/storage";
 import { DEMO_FILES, flattenFiles, type FileNode } from "../data/files";
-import { IconBrain, IconChevron, IconChevronDown, IconClock, IconFolder, IconGit, IconGlobe, IconGrid, IconList, IconMaximize, IconMinimize, IconPin, IconPlus, IconPuzzle, IconSearch, IconTerminal, IconX } from "./Icons";
+import { IconBrain, IconCheck, IconChevron, IconChevronDown, IconChevronRight, IconClock, IconFolder, IconGit, IconGlobe, IconGrid, IconList, IconMaximize, IconMinimize, IconPanelClose, IconPin, IconPlay, IconPlus, IconPuzzle, IconSearch, IconSliders, IconStop, IconTerminal, IconTrash, IconX } from "./Icons";
 import { Menu, MenuLabel, MenuSep, Tip } from "./ui";
+import { usePrototypeConfig } from "../config/prototypeConfig";
 import { BrowserView } from "./views2";
 import { FleetView, ReviewView } from "./views";
 import { TasksView } from "./views2";
@@ -63,6 +64,12 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpen
   onConnectTools?: () => void;
 }) {
   const { toast } = useApp();
+  const { config } = usePrototypeConfig();
+  const enabledToolIds = config.workspace.enabledTools ?? [];
+  const filteredTools = useMemo(
+    () => WORKSPACE_TOOLS.filter((t) => enabledToolIds.includes(t.id)),
+    [enabledToolIds]
+  );
   const [panel, setPanel] = useState<PersistedPanel>(() => {
     const saved = readStored<PersistedPanel>(PANEL_KEY, { tabs: [], activeId: null, size: DEFAULT_SIZE });
     return { tabs: Array.isArray(saved.tabs) ? saved.tabs.filter((t) => WORKSPACE_TOOLS.some((tool) => tool.id === t.tool)) : [], activeId: saved.activeId, size: Math.max(MIN_SIZE, Math.min(1100, saved.size || DEFAULT_SIZE)) };
@@ -208,38 +215,145 @@ export function WorkspacePanel({ open, onOpenChange, project, onAskAgent, onOpen
               </div>
             );
           })}
+          <div className="shrink-0 inline-flex items-center">
+            <Menu align="left" width={252} trigger={() => <Tip label="Add a tool tab" side="bottom"><button type="button" className="workspace-tab-new" aria-label="Add a tool tab"><IconPlus size={13} /></button></Tip>}>
+              {(close) => <>
+                {(["Workspace", "Project", "Autonomy"] as ToolGroup[]).map((group, gi) => {
+                  const groupTools = filteredTools.filter((tool) => tool.group === group);
+                  if (groupTools.length === 0) return null;
+                  return (
+                    <div key={group}>
+                      {gi > 0 && <div className="mt-1 border-t border-line-soft" />}
+                      <MenuLabel>{group}</MenuLabel>
+                      {groupTools.map((tool) => (
+                        <button key={tool.id} onClick={() => { addTab(tool.id); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-ink-2 transition-colors hover:bg-hover hover:text-ink">
+                          <span className="flex w-4 shrink-0 items-center justify-center text-ink-3"><tool.icon size={13} /></span>
+                          <span className="min-w-0 flex-1"><span className="block text-[12.5px]">{tool.label}</span><span className="block text-[10.5px] leading-tight text-ink-4">{tool.desc}</span></span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
+                {config.workspace.showConnectTools && (
+                  <>
+                    <MenuSep />
+                    <button onClick={() => { close(); if (onConnectTools) onConnectTools(); else toast("Connectors live in Settings → Connectors", "iris"); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-iris-soft transition-colors hover:bg-iris-tint">
+                      <span className="flex w-4 shrink-0 items-center justify-center"><IconPuzzle size={13} /></span>
+                      <span className="min-w-0 flex-1"><span className="block">Connect more tools</span><span className="block text-[10.5px] leading-tight text-ink-4">MCP connectors, channels and skills</span></span>
+                    </button>
+                  </>
+                )}
+                {config.workspace.showCloseAll && (
+                  <button disabled={panel.tabs.length === 0} onClick={() => { setPanel((p) => ({ ...p, tabs: [], activeId: null })); onOpenChange(false); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-ink-3 transition-colors hover:bg-hover hover:text-ink disabled:cursor-not-allowed disabled:opacity-40">
+                    <span className="flex w-4 shrink-0 items-center justify-center"><IconX size={12} /></span>Close all tabs
+                  </button>
+                )}
+              </>}
+            </Menu>
+          </div>
         </div>
-        <Menu align="right" width={252} trigger={() => <button type="button" className="workspace-tab-new" aria-label="Add a tool tab" title="Add a tool tab"><IconPlus size={13} /></button>}>
-          {(close) => <>
-            {(["Workspace", "Project", "Autonomy"] as ToolGroup[]).map((group, gi) => <div key={group}>
-              {gi > 0 && <div className="mt-1 border-t border-line-soft" />}
-              <MenuLabel>{group}</MenuLabel>
-              {WORKSPACE_TOOLS.filter((tool) => tool.group === group).map((tool) => (
-                <button key={tool.id} onClick={() => { addTab(tool.id); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-ink-2 transition-colors hover:bg-hover hover:text-ink">
-                  <span className="flex w-4 shrink-0 items-center justify-center text-ink-3"><tool.icon size={13} /></span>
-                  <span className="min-w-0 flex-1"><span className="block text-[12.5px]">{tool.label}</span><span className="block text-[10.5px] leading-tight text-ink-4">{tool.desc}</span></span>
-                </button>
-              ))}
-            </div>)}
-            <MenuSep />
-            <button onClick={() => { close(); if (onConnectTools) onConnectTools(); else toast("Connectors live in Settings → Connectors", "iris"); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-iris-soft transition-colors hover:bg-iris-tint">
-              <span className="flex w-4 shrink-0 items-center justify-center"><IconPuzzle size={13} /></span>
-              <span className="min-w-0 flex-1"><span className="block">Connect more tools</span><span className="block text-[10.5px] leading-tight text-ink-4">MCP connectors, channels and skills</span></span>
-            </button>
-            <button disabled={panel.tabs.length === 0} onClick={() => { setPanel((p) => ({ ...p, tabs: [], activeId: null })); onOpenChange(false); close(); }} className="flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] text-ink-3 transition-colors hover:bg-hover hover:text-ink disabled:cursor-not-allowed disabled:opacity-40">
-              <span className="flex w-4 shrink-0 items-center justify-center"><IconX size={12} /></span>Close all tabs
-            </button>
-          </>}
+        {/* Browser-style Toolbar Icon — Quick tools shelf & view settings */}
+        <Menu
+          align="right"
+          width={264}
+          trigger={() => (
+            <Tip label="Workspace Toolbar & Tools" side="bottom">
+              <button
+                type="button"
+                className="workspace-tab-toolbar"
+                aria-label="Workspace tools and toolbar options"
+              >
+                <IconGrid size={13} />
+              </button>
+            </Tip>
+          )}
+        >
+          {(close) => (
+            <div className="p-1">
+              <MenuLabel>Tools Shelf</MenuLabel>
+              <div className="grid grid-cols-2 gap-1 py-1">
+                {filteredTools.map((t) => {
+                  const isOpen = panel.tabs.some((tab) => tab.tool === t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        addTab(t.id);
+                        close();
+                      }}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-1.5 rounded-[6px] px-2 py-1.5 text-left text-[11.5px] transition-colors",
+                        isOpen
+                          ? "bg-iris-tint text-iris-soft font-medium"
+                          : "text-ink-2 hover:bg-hover hover:text-ink"
+                      )}
+                    >
+                      <t.icon size={12} />
+                      <span className="truncate">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <MenuSep />
+              <MenuLabel>View & Layout</MenuLabel>
+              <button
+                type="button"
+                onClick={() => {
+                  setFullscreen((v) => !v);
+                  close();
+                }}
+                className="flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-left text-[12px] text-ink-2 hover:bg-hover hover:text-ink"
+              >
+                <span className="flex size-4 items-center justify-center text-ink-4">
+                  {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
+                </span>
+                <span className="flex-1">{fullscreen ? "Exit full screen" : "Full screen tool"}</span>
+                <span className="font-mono text-[10px] text-ink-4">Esc</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  close();
+                  window.dispatchEvent(new CustomEvent("aro:open-studio"));
+                }}
+                className="flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-left text-[12px] text-ink-2 hover:bg-hover hover:text-ink"
+              >
+                <span className="flex size-4 items-center justify-center text-ink-4">
+                  <IconSliders size={12} />
+                </span>
+                <span className="flex-1">Customize in Prototype Studio</span>
+              </button>
+              {panel.tabs.length > 0 && (
+                <>
+                  <MenuSep />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPanel((p) => ({ ...p, tabs: [], activeId: null }));
+                      onOpenChange(false);
+                      close();
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-left text-[12px] text-rose hover:bg-rose-tint"
+                  >
+                    <span className="flex size-4 items-center justify-center">
+                      <IconX size={11} />
+                    </span>
+                    <span className="flex-1">Close all workspace tabs</span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </Menu>
-        {panel.tabs.length > 0 && (
+        {panel.tabs.length > 0 && config.workspace.showFullscreen && (
           <Tip label={fullscreen ? "Exit full screen · Esc" : "Full screen this tool"} side="bottom">
             <button type="button" className={cn("workspace-panel-full", fullscreen && "is-on")} onClick={() => setFullscreen((v) => !v)} aria-label={fullscreen ? "Exit full screen" : "Full screen the workspace tool"} aria-pressed={fullscreen}>
               {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
             </button>
           </Tip>
         )}
-        <Tip label="Hide workspace · ⌘L">
-          <button type="button" className="workspace-panel-close" onClick={() => onOpenChange(false)} aria-label="Hide workspace panel"><IconX size={13} /></button>
+        <Tip label="Close workspace panel · ⌘L">
+          <button type="button" className="workspace-panel-close text-ink-3 hover:text-ink hover:bg-hover" onClick={() => onOpenChange(false)} aria-label="Close workspace panel" title="Close workspace panel · ⌘L"><IconChevronRight size={15} /></button>
         </Tip>
       </div>
       <div className="workspace-body">
@@ -395,20 +509,294 @@ function CodeSearchView({ project }: { project?: Project }) {
 }
 
 /* --------------------------- terminal tab body --------------------------- */
+interface TermLine {
+  t: string;
+  k?: "cmd" | "ok" | "err" | "warn" | "dim" | "info" | "regular";
+}
+
+interface TermTab {
+  id: string;
+  label: string;
+  status: "running" | "idle";
+  lines: TermLine[];
+}
+
+const INITIAL_TABS: TermTab[] = [
+  {
+    id: "term-1",
+    label: "zsh (local)",
+    status: "idle",
+    lines: [
+      { t: "Aro Terminal Environment v1.5.0", k: "info" },
+      { t: "Workspace attached to local branch 'main'.", k: "dim" },
+      { t: "Type 'help' for built-in commands or run shell tools.", k: "dim" },
+    ],
+  },
+  {
+    id: "term-2",
+    label: "Aro Agent PTY",
+    status: "idle",
+    lines: [
+      { t: "Aro Background Agent PTY bridge initialized.", k: "info" },
+      { t: "Ready to accept delegated shell executions.", k: "dim" },
+    ],
+  },
+  {
+    id: "term-3",
+    label: "dev server",
+    status: "running",
+    lines: [
+      { t: "▲ Next.js 15.3.0 (turbo)", k: "ok" },
+      { t: "  - Local:        http://localhost:3000", k: "ok" },
+      { t: "  - Environments: .env.local", k: "dim" },
+      { t: "✓ Compiled / in 420ms (124 modules)", k: "ok" },
+    ],
+  },
+];
+
 function PanelTerminal({ onAskAgent }: { onAskAgent: (text: string) => void }) {
-  const { termFeed, toast } = useApp();
-  const [prompt, setPrompt] = useState("");
-  const toneFor = (k?: string) => k === "cmd" ? "text-ink-2" : k === "ok" ? "text-mint" : k === "err" ? "text-rose" : k === "warn" ? "text-amber" : k === "dim" ? "text-ink-4" : k === "info" ? "text-cyan" : "text-ink-3";
-  return <div className="flex min-h-0 flex-1 flex-col">
-    <div className="scroll-thin min-h-0 flex-1 overflow-auto p-3 font-mono text-[11px] leading-[1.7]">
-      {termFeed.length ? termFeed.map((line, index) => <div key={index} className={toneFor(line.k)}>{line.t}</div>) : <>
-        <p className="text-ink-3">No shell is connected.</p>
-        <p className="mt-1 text-[10px] text-ink-4">Agent commands stream here once a runtime is connected. Until then you can ask the assistant about commands below.</p>
-      </>}
+  const { toast } = useApp();
+  const [tabs, setTabs] = useState<TermTab[]>(INITIAL_TABS);
+  const [activeTabId, setActiveTabId] = useState<string>("term-1");
+  const [cmdInput, setCmdInput] = useState("");
+  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
+  const [histIndex, setHistIndex] = useState(-1);
+  const outputEndRef = useRef<HTMLDivElement>(null);
+
+  const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
+
+  const appendLines = useCallback((tabId: string, newLines: TermLine[]) => {
+    setTabs((prev) =>
+      prev.map((tab) => (tab.id === tabId ? { ...tab, lines: [...tab.lines, ...newLines] } : tab))
+    );
+  }, []);
+
+  // Listen to cross-app run command events (e.g. from CodeBlock in chat)
+  useEffect(() => {
+    const handleRun = (e: Event) => {
+      const code = (e as CustomEvent<string>).detail;
+      if (!code) return;
+      executeCommand(code.trim());
+    };
+    window.addEventListener("conductor:terminal:run", handleRun);
+    return () => window.removeEventListener("conductor:terminal:run", handleRun);
+  }, [activeTabId]);
+
+  useEffect(() => {
+    outputEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeTab?.lines.length]);
+
+  const executeCommand = (cmd: string) => {
+    if (!cmd.trim()) return;
+    const clean = cmd.trim();
+    setCmdHistory((prev) => [...prev, clean]);
+    setHistIndex(-1);
+
+    const echoLine: TermLine = { t: `$ ${clean}`, k: "cmd" };
+
+    if (clean === "clear") {
+      setTabs((prev) =>
+        prev.map((t) => (t.id === activeTabId ? { ...t, lines: [] } : t))
+      );
+      setCmdInput("");
+      return;
+    }
+
+    if (clean === "help") {
+      appendLines(activeTabId, [
+        echoLine,
+        { t: "Available terminal shortcuts:", k: "info" },
+        { t: "  ls / dir       - List project files", k: "dim" },
+        { t: "  git status     - Show working tree status", k: "dim" },
+        { t: "  git branch     - Display current branch", k: "dim" },
+        { t: "  npm test       - Run test suite verification", k: "dim" },
+        { t: "  npm run build  - Build production artifacts", k: "dim" },
+        { t: "  clear          - Clear terminal output", k: "dim" },
+      ]);
+      setCmdInput("");
+      return;
+    }
+
+    if (clean === "ls" || clean === "dir") {
+      appendLines(activeTabId, [
+        echoLine,
+        { t: "package.json      tsconfig.json      README.md", k: "dim" },
+        { t: "src/              prototype/         apps/            tools/", k: "ok" },
+      ]);
+      setCmdInput("");
+      return;
+    }
+
+    if (clean.startsWith("git status")) {
+      appendLines(activeTabId, [
+        echoLine,
+        { t: "On branch main", k: "info" },
+        { t: "Your branch is up to date with 'origin/main'.", k: "dim" },
+        { t: "Changes to be committed:", k: "dim" },
+        { t: "  modified:   src/workbench/components/Transcript.tsx", k: "ok" },
+        { t: "  modified:   src/workbench/components/Workbench.tsx", k: "ok" },
+      ]);
+      setCmdInput("");
+      return;
+    }
+
+    if (clean === "npm test" || clean === "test") {
+      appendLines(activeTabId, [
+        echoLine,
+        { t: "RUNS  tests/workbench.test.ts", k: "warn" },
+        { t: "PASS  tests/workbench.test.ts (24 tests, 1.8s)", k: "ok" },
+        { t: "✓ All 24 tests passed in 1.84s", k: "ok" },
+      ]);
+      setCmdInput("");
+      return;
+    }
+
+    // Default simulation response
+    appendLines(activeTabId, [
+      echoLine,
+      { t: `[Process completed with exit code 0]`, k: "dim" },
+    ]);
+    setCmdInput("");
+  };
+
+  const clearCurrentTab = () => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === activeTabId ? { ...t, lines: [] } : t))
+    );
+    toast("Terminal cleared", "mint");
+  };
+
+  const killCurrentProcess = () => {
+    appendLines(activeTabId, [{ t: "^C [Process terminated by user]", k: "err" }]);
+    setTabs((prev) =>
+      prev.map((t) => (t.id === activeTabId ? { ...t, status: "idle" } : t))
+    );
+    toast("Process stopped", "amber");
+  };
+
+  const toneFor = (k?: string) =>
+    k === "cmd"
+      ? "text-ink font-semibold"
+      : k === "ok"
+      ? "text-mint font-medium"
+      : k === "err"
+      ? "text-rose"
+      : k === "warn"
+      ? "text-amber"
+      : k === "dim"
+      ? "text-ink-4"
+      : k === "info"
+      ? "text-cyan"
+      : "text-ink-2";
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col bg-well/70 font-mono text-[11px]">
+      {/* Terminal sub-tab strip */}
+      <div className="flex items-center gap-1 border-b border-line-soft bg-raise/50 px-2 py-1 select-none">
+        <div className="flex items-center gap-1 overflow-x-auto scroll-thin">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTabId(tab.id)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-[5px] px-2 py-1 text-[11px] transition-colors",
+                tab.id === activeTabId
+                  ? "bg-hover text-ink font-medium shadow-sm"
+                  : "text-ink-3 hover:text-ink hover:bg-hover/60"
+              )}
+            >
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  tab.status === "running" ? "bg-mint animate-pulse" : "bg-ink-4"
+                )}
+              />
+              <span className="truncate max-w-[110px]">{tab.label}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              const newId = `term-${tabs.length + 1}`;
+              setTabs((p) => [
+                ...p,
+                { id: newId, label: `zsh (${tabs.length + 1})`, status: "idle", lines: [{ t: "New shell session started.", k: "info" }] },
+              ]);
+              setActiveTabId(newId);
+            }}
+            className="flex size-[22px] items-center justify-center rounded text-ink-4 hover:bg-hover hover:text-ink"
+            title="New terminal tab"
+          >
+            <IconPlus size={11} />
+          </button>
+        </div>
+        <div className="ml-auto flex items-center gap-1 shrink-0">
+          <Tip label="Clear terminal">
+            <button
+              type="button"
+              onClick={clearCurrentTab}
+              className="flex size-[22px] items-center justify-center rounded text-ink-4 hover:bg-hover hover:text-ink"
+            >
+              <IconTrash size={12} />
+            </button>
+          </Tip>
+          <Tip label="Stop / Kill process">
+            <button
+              type="button"
+              onClick={killCurrentProcess}
+              className="flex size-[22px] items-center justify-center rounded text-ink-4 hover:bg-rose-tint hover:text-rose"
+            >
+              <IconStop size={12} />
+            </button>
+          </Tip>
+        </div>
+      </div>
+
+      {/* Terminal Output */}
+      <div className="scroll-thin min-h-0 flex-1 overflow-auto p-3 font-mono leading-[1.65]">
+        {activeTab.lines.map((line, index) => (
+          <div key={index} className={toneFor(line.k)}>
+            {line.t}
+          </div>
+        ))}
+        <div ref={outputEndRef} />
+      </div>
+
+      {/* Interactive Command Input */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          executeCommand(cmdInput);
+        }}
+        className="flex items-center gap-2 border-t border-line-soft bg-raise/30 px-3 py-2"
+      >
+        <span className="shrink-0 text-cyan select-none font-semibold">~/repo $</span>
+        <input
+          value={cmdInput}
+          onChange={(e) => setCmdInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowUp" && cmdHistory.length > 0) {
+              e.preventDefault();
+              const nextIdx = histIndex === -1 ? cmdHistory.length - 1 : Math.max(0, histIndex - 1);
+              setHistIndex(nextIdx);
+              setCmdInput(cmdHistory[nextIdx]);
+            } else if (e.key === "ArrowDown" && histIndex >= 0) {
+              e.preventDefault();
+              if (histIndex < cmdHistory.length - 1) {
+                setHistIndex(histIndex + 1);
+                setCmdInput(cmdHistory[histIndex + 1]);
+              } else {
+                setHistIndex(-1);
+                setCmdInput("");
+              }
+            }
+          }}
+          placeholder="Type shell command or 'help'…"
+          className="h-[26px] min-w-0 flex-1 bg-transparent font-mono text-[11px] text-ink outline-none placeholder:text-ink-4"
+        />
+        <span className="font-mono text-[9px] tracking-[.12em] text-ink-4 uppercase select-none">⏎ run</span>
+      </form>
     </div>
-    <div className="flex items-center gap-2 border-t border-line-soft px-3 py-2">
-      <input value={prompt} onChange={(e) => setPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && prompt.trim()) { onAskAgent(prompt); setPrompt(""); toast("The request was sent to your composer model, not executed in a shell.", "iris"); } }} placeholder="Ask the assistant about a command" className="h-[26px] min-w-0 flex-1 bg-transparent font-mono text-[11px] outline-none" />
-      <span className="font-mono text-[9px] tracking-[.12em] text-ink-4 uppercase">⏎ ask</span>
-    </div>
-  </div>;
+  );
 }

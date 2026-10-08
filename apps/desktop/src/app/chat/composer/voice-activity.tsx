@@ -180,6 +180,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
         'flex h-8 items-center gap-2 rounded-xl border border-border/55 bg-muted/55 px-2.5 text-xs text-muted-foreground',
         'shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm'
       )}
+      data-slot="composer-voice-activity"
       role="status"
     >
       <div

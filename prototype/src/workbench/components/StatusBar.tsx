@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { cn } from "../utils/cn";
 import { useApp } from "../lib/app";
+import type { Project } from "../data/providers";
+import { ExternalIdeControl } from "./ExternalIdeControl";
 
 /* =====================================================================
    STATUS BAR — the dynamic footer. Every item is state-driven: it only
    appears when it has something to say (streaming label, model + effort,
    thinking flag, permission, project/branch, token usage, workspace tabs,
-   terminal). Clickable items toggle the surface they describe.
+   terminal, external IDE). Clickable items toggle the surface they describe.
    ===================================================================== */
 
 export const EFFORT_FOOT = [
@@ -19,7 +21,7 @@ export const EFFORT_FOOT = [
   { label: "Ultra", color: "var(--color-rose)" },
 ];
 
-export function StatusBar({ streaming, streamLabel, modelLabel, modelGlyph, permission, backend, projectName, projectBranch, tokens, panelOpen, onTogglePanel, onOpenLayout }: {
+export function StatusBar({ streaming, streamLabel, modelLabel, modelGlyph, permission, backend, projectName, projectBranch, tokens, panelOpen, onTogglePanel, onOpenLayout, project }: {
   streaming: boolean;
   streamLabel: string;
   modelLabel: string;
@@ -32,6 +34,7 @@ export function StatusBar({ streaming, streamLabel, modelLabel, modelGlyph, perm
   panelOpen: boolean;
   onTogglePanel: () => void;
   onOpenLayout: () => void;
+  project?: Project;
 }) {
   const { termOpen, setTermOpen } = useApp();
   /* effort + thinking live in the composer's model menu — mirror them here
@@ -84,7 +87,12 @@ export function StatusBar({ streaming, streamLabel, modelLabel, modelGlyph, perm
       {panelOpen ? `workspace · ${tabCount} tab${tabCount === 1 ? "" : "s"}` : "workspace closed"}
     </button>
     {termOpen && <button type="button" className="status-item status-click" onClick={() => setTermOpen(false)} title="Hide terminal · ⌘J">terminal live</button>}
-    <button type="button" className="status-item status-click" onClick={onOpenLayout} title="Layout presets · ⌘⇧L">layout</button>
+    {/* Open in connected IDE — right side bottom, ONLY visible when there is a project */}
+    {project && (
+      <div className="status-item status-ide flex items-center pl-1">
+        <ExternalIdeControl project={project} compact={false} />
+      </div>
+    )}
     <span className="status-item status-secondary" aria-hidden>⌘K</span>
   </footer>;
 }

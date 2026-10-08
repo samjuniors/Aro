@@ -179,6 +179,8 @@
 }
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */
+:root,
+:root[data-aro-ui='true'],
 html[data-theme='obsidian'],
 [data-theme='obsidian'] {
   color-scheme: dark;
@@ -212,6 +214,75 @@ html[data-theme='obsidian'],
   --aro-shadow-b: rgba(0, 0, 0, 0.55);
   --aro-shadow-c: rgba(0, 0, 0, 0.7);
   --aro-shadow-d: rgba(0, 0, 0, 0.85);
+
+  /* Prototype alias variables */
+  --t-void: var(--aro-void);
+  --t-sunken: var(--aro-sunken);
+  --t-base: var(--aro-bg);
+  --t-raise: var(--aro-raise);
+  --t-hover: var(--aro-hover);
+  --t-overlay: var(--aro-overlay);
+  --t-well: var(--aro-well);
+  --t-code: var(--aro-code);
+  --t-track: var(--aro-track);
+  --t-line: var(--aro-line);
+  --t-line-soft: var(--aro-line-soft);
+  --t-line-strong: var(--aro-line-strong);
+  --t-ink: var(--aro-ink);
+  --t-ink-2: var(--aro-ink-2);
+  --t-ink-3: var(--aro-ink-3);
+  --t-ink-4: var(--aro-ink-4);
+  --t-iris: var(--aro-iris);
+  --t-iris-soft: var(--aro-iris-soft);
+  --t-iris-deep: var(--aro-iris-deep);
+  --t-on-iris: var(--aro-on-iris);
+  --t-cyan: var(--aro-cyan);
+  --t-mint: var(--aro-mint);
+  --t-amber: var(--aro-amber);
+  --t-rose: var(--aro-rose);
+  --t-sky: var(--aro-sky);
+  --t-plum: var(--aro-plum);
+  --t-shadow-a: var(--aro-shadow-a);
+  --t-shadow-b: var(--aro-shadow-b);
+  --t-shadow-c: var(--aro-shadow-c);
+  --t-shadow-d: var(--aro-shadow-d);
+
+  --color-base: var(--aro-bg);
+  --color-ink: var(--aro-ink);
+  --color-ink-2: var(--aro-ink-2);
+  --color-ink-3: var(--aro-ink-3);
+  --color-ink-4: var(--aro-ink-4);
+  --color-void: var(--aro-void);
+  --color-sunken: var(--aro-sunken);
+  --color-raise: var(--aro-raise);
+  --color-hover: var(--aro-hover);
+  --color-overlay: var(--aro-overlay);
+  --color-well: var(--aro-well);
+  --color-line: var(--aro-line);
+  --color-line-soft: var(--aro-line-soft);
+  --color-line-strong: var(--aro-line-strong);
+  --color-iris: var(--aro-iris);
+  --color-iris-soft: var(--aro-iris-soft);
+  --color-iris-deep: var(--aro-iris-deep);
+  --color-iris-tint: color-mix(in srgb, var(--aro-iris) 14%, var(--aro-bg));
+  --color-cyan: var(--aro-cyan);
+  --color-cyan-tint: color-mix(in srgb, var(--aro-cyan) 12%, var(--aro-bg));
+  --color-mint: var(--aro-mint);
+  --color-mint-tint: color-mix(in srgb, var(--aro-mint) 12%, var(--aro-bg));
+  --color-amber: var(--aro-amber);
+  --color-amber-tint: color-mix(in srgb, var(--aro-amber) 13%, var(--aro-bg));
+  --color-rose: var(--aro-rose);
+  --color-rose-tint: color-mix(in srgb, var(--aro-rose) 12%, var(--aro-bg));
+  --color-sky: var(--aro-sky);
+  --color-sky-tint: color-mix(in srgb, var(--aro-sky) 12%, var(--aro-bg));
+
+  --d-chrome-height: 40px;
+  --d-composer-radius: 16px;
+  --shadow-e1: 0 1px 2px var(--aro-shadow-a);
+  --shadow-e2: 0 2px 8px -2px var(--aro-shadow-b);
+  --shadow-e3: 0 12px 32px -8px var(--aro-shadow-c);
+  --shadow-e4: 0 32px 80px -24px var(--aro-shadow-d);
+  --shadow-glow-iris: 0 0 0 1px color-mix(in srgb, var(--aro-iris) 40%, transparent), 0 8px 30px -10px color-mix(in srgb, var(--aro-iris) 55%, transparent);
 }
 
 /* ---- daylight · clean light, high legibility ------------------------------- */

@@ -25,6 +25,7 @@ import {
   IconSettings,
   IconSplitVertical,
   IconUndo,
+  IconWrapText,
   IconX,
 } from "./Icons";
 import { Menu, MenuItem, MenuLabel, MenuSep } from "./ui";
@@ -196,6 +197,7 @@ export function ChangesPanelContent({
   const [diffMode, setDiffMode] = useState<"unified" | "split">("unified");
   const [branchMenu, setBranchMenu] = useState("main");
   const [showRightFiles, setShowRightFiles] = useState(true);
+  const [wrapText, setWrapText] = useState(false);
 
   const effectiveState = state ?? (project ? repoStateFor(project) : null);
   const isDemo = effectiveState?.isDemo ?? false;
@@ -339,6 +341,16 @@ export function ChangesPanelContent({
 
           <button
             type="button"
+            className={cn("codex-changes-action-icon", wrapText && "text-iris-soft bg-hover/80")}
+            title={wrapText ? "Disable word wrap" : "Enable word wrap"}
+            aria-pressed={wrapText}
+            onClick={() => setWrapText((w) => !w)}
+          >
+            <IconWrapText size={13} />
+          </button>
+
+          <button
+            type="button"
             className={cn("codex-changes-action-icon", !showRightFiles && "opacity-50")}
             title={showRightFiles ? "Hide the file list" : "Show the file list"}
             aria-pressed={showRightFiles}
@@ -375,7 +387,7 @@ export function ChangesPanelContent({
                   <span className="text-rose font-semibold">−{formatCount(activeDiff.dels)}</span>
                 </div>
               </div>
-              <DiffView file={activeDiff} mode={diffMode} showToggle maxLines={200} />
+              <DiffView file={activeDiff} mode={diffMode} showToggle maxLines={200} wrap={wrapText} />
             </div>
           ) : (
             <div className="codex-changes-empty-stage">

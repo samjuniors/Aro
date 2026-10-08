@@ -55,8 +55,11 @@ export function useComposerDrop({
     terminalBackend: $terminalBackend.get()
   })
 
+  const isDropSupported = (dt: DataTransfer) =>
+    dragHasAttachments(dt, HERMES_PATHS_MIME) || dt.types.includes('application/aro-project')
+
   const handleDragEnter = (event: ReactDragEvent<HTMLFormElement>) => {
-    if (!onAttachDroppedItems || !dragHasAttachments(event.dataTransfer, HERMES_PATHS_MIME)) {
+    if (!onAttachDroppedItems || !isDropSupported(event.dataTransfer)) {
       return
     }
 
@@ -69,7 +72,7 @@ export function useComposerDrop({
   }
 
   const handleDragOver = (event: ReactDragEvent<HTMLFormElement>) => {
-    if (!onAttachDroppedItems || !dragHasAttachments(event.dataTransfer, HERMES_PATHS_MIME)) {
+    if (!onAttachDroppedItems || !isDropSupported(event.dataTransfer)) {
       return
     }
 
@@ -97,6 +100,16 @@ export function useComposerDrop({
 
     event.preventDefault()
     resetDragState()
+
+    const aroProject = event.dataTransfer.getData('application/aro-project')
+    if (aroProject) {
+      const textPath = event.dataTransfer.getData('text/plain')
+      if (textPath) {
+        insertInlineRefs([{ kind: 'file', label: textPath, value: textPath }])
+        triggerHaptic('selection')
+      }
+      return
+    }
 
     const candidates = extractDroppedFiles(event.dataTransfer)
 

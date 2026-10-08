@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router'
 
 import { openSession } from '@/app/open-session'
 import { NEW_CHAT_ROUTE } from '@/app/routes'
-import { IconBranch, IconChevronDown, IconMore, IconPlus, IconSearch } from '@/aro/Icons'
+import { IconBranch, IconChevronDown, IconChevronLeft, IconMore, IconPlus, IconSearch } from '@/aro/Icons'
 import { Tip } from '@/components/ui/tooltip'
 import { formatMessageTimestamp } from '@/components/assistant-ui/thread/timestamp'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -12,7 +12,7 @@ import { useI18n } from '@/i18n'
 import { NEW_SESSION_TITLE, sessionTitle } from '@/lib/chat-runtime'
 import { cn } from '@/lib/utils'
 import { repoStatusForCwd } from '@/store/coding-status'
-import { $pinnedSessionIds } from '@/store/layout'
+import { $fileBrowserOpen, $pinnedSessionIds, toggleRightSide } from '@/store/layout'
 import { $profiles } from '@/store/profile'
 import { $sessions, sessionMatchesStoredId, sessionPinId } from '@/store/session'
 import { isAuxiliaryWindow } from '@/store/windows'
@@ -43,6 +43,7 @@ export function SessionHeader({
   const { t } = useI18n()
   const sessions = useStore($sessions)
   const pinnedSessionIds = useStore($pinnedSessionIds)
+  const fileBrowserOpen = useStore($fileBrowserOpen)
   const profiles = useStore($profiles)
   const $repoStatus = repoStatusForCwd(cwd)
   const repoStatus = useStore($repoStatus)
@@ -76,7 +77,7 @@ export function SessionHeader({
       .slice(0, 20)
   }, [sessions, search])
 
-  if (isAuxiliaryWindow() || (!selectedSessionId && !activeSessionId && !isRoutedSessionView)) {
+  if (isAuxiliaryWindow()) {
     return null
   }
 
@@ -194,7 +195,20 @@ export function SessionHeader({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
+        {!fileBrowserOpen && Boolean(cwd || activeStoredSession?.cwd) && (
+          <Tip label="Workspace panel · ⌘J" placement="toolbar" side="bottom">
+            <button
+              aria-label="Toggle workspace panel"
+              className="workspace-arrow-toggle"
+              onClick={toggleRightSide}
+              type="button"
+            >
+              <IconChevronLeft size={13} />
+            </button>
+          </Tip>
+        )}
+
         <Tip label="New session (⌘N)">
           <button
             aria-label="New session"

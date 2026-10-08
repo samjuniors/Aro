@@ -62,7 +62,15 @@ import { useProfilePrewarm } from './use-profile-prewarm'
  * plain-dropdown door for people who run profiles as bots and don't want a
  * strip of them.
  */
-export function ProfileSwitcher({ compact = false }: { compact?: boolean }) {
+export function ProfileSwitcher({
+  className,
+  compact = false,
+  variant
+}: {
+  className?: string
+  compact?: boolean
+  variant?: 'card' | 'compact' | 'dropdown'
+}) {
   const { t } = useI18n()
   const p = t.profiles
   const navigate = useNavigate()
@@ -162,46 +170,86 @@ export function ProfileSwitcher({ compact = false }: { compact?: boolean }) {
 
   const triggerLabel = showAll ? p.allProfiles : active ? profileLabel(active) : p.title
 
+  const isCard = variant === 'card'
+
   return (
     <div
       aria-busy={pendingRoute !== null}
       aria-label={p.title}
-      className={cn('min-w-16 shrink overflow-hidden', compact ? 'h-full max-w-40' : 'max-w-72')}
+      className={cn(
+        'shrink overflow-hidden',
+        isCard ? 'w-full max-w-full' : compact ? 'h-full max-w-40 min-w-16' : 'max-w-72 min-w-16',
+        className
+      )}
       data-slot="profile-switcher"
       role="group"
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            aria-label={`${p.title}: ${triggerLabel}`}
-            className={cn(
-              'w-full min-w-0 justify-between overflow-hidden px-1 text-(--ui-text-secondary) data-[state=open]:bg-(--ui-control-active-background) data-[state=open]:text-foreground',
-              compact && 'h-full min-h-0 rounded-none px-1.5 text-[0.6875rem] font-normal'
-            )}
-            size="xs"
-            type="button"
-            variant="ghost"
-          >
-            <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
-              {pendingRoute !== null ? (
-                <Loader2 aria-hidden="true" className="size-3 shrink-0 animate-spin" />
-              ) : showAll || !active ? (
-                <Codicon aria-hidden="true" className="shrink-0" name="layers" size="0.75rem" />
-              ) : (
-                <ProfileGlyph
-                  aria-hidden="true"
-                  className="size-3 text-[0.4375rem]"
-                  color={resolveProfileColor(active.name, colors)}
-                  isDefault={active.is_default}
-                  name={active.name}
-                />
+          {isCard ? (
+            <button
+              type="button"
+              aria-label={`${p.title}: ${triggerLabel}`}
+              title={`Active profile: ${triggerLabel}`}
+              className="group flex h-[38px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.99] data-[state=open]:bg-(--ui-control-hover-background) data-[state=open]:text-foreground"
+            >
+              <span
+                className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
+                style={{ backgroundColor: resolveProfileColor(active?.name ?? 'default', colors) ?? undefined }}
+              >
+                {pendingRoute !== null ? (
+                  <Loader2 aria-hidden="true" className="size-3 shrink-0 animate-spin text-white" />
+                ) : (
+                  (active?.name ?? 'P').slice(0, 2).toUpperCase()
+                )}
+                <span className="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 ring-1 ring-(--ui-bg-chrome)" />
+              </span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="block truncate font-medium text-foreground leading-tight text-[12.5px]">
+                  {triggerLabel}
+                </span>
+                <span className="block truncate text-[10px] text-(--ui-text-tertiary) leading-tight">
+                  {active?.is_default ? 'Personal · local' : `${active?.name ?? 'user'}@local`}
+                </span>
+              </span>
+              <Codicon
+                aria-hidden="true"
+                className="size-3 text-(--ui-text-quaternary) transition-transform group-hover:text-(--ui-text-secondary) shrink-0"
+                name="chevron-down"
+              />
+            </button>
+          ) : (
+            <Button
+              aria-label={`${p.title}: ${triggerLabel}`}
+              className={cn(
+                'w-full min-w-0 justify-between overflow-hidden px-1 text-(--ui-text-secondary) data-[state=open]:bg-(--ui-control-active-background) data-[state=open]:text-foreground',
+                compact && 'h-full min-h-0 rounded-none px-1.5 text-[0.6875rem] font-normal'
               )}
-              <span className="truncate">{triggerLabel}</span>
-            </span>
-            <Codicon aria-hidden="true" className="shrink-0 opacity-60" name="chevron-down" size="0.875rem" />
-          </Button>
+              size="xs"
+              type="button"
+              variant="ghost"
+            >
+              <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+                {pendingRoute !== null ? (
+                  <Loader2 aria-hidden="true" className="size-3 shrink-0 animate-spin" />
+                ) : showAll || !active ? (
+                  <Codicon aria-hidden="true" className="shrink-0" name="layers" size="0.75rem" />
+                ) : (
+                  <ProfileGlyph
+                    aria-hidden="true"
+                    className="size-3 text-[0.4375rem]"
+                    color={resolveProfileColor(active.name, colors)}
+                    isDefault={active.is_default}
+                    name={active.name}
+                  />
+                )}
+                <span className="truncate">{triggerLabel}</span>
+              </span>
+              <Codicon aria-hidden="true" className="shrink-0 opacity-60" name="chevron-down" size="0.875rem" />
+            </Button>
+          )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-48 max-w-72" collisionPadding={8} side="top">
+        <DropdownMenuContent align="start" className="min-w-56 max-w-72" collisionPadding={8} side="top">
           <DropdownMenuRadioGroup onValueChange={choose} value={value}>
             {ordered.map(profile => (
               <ProfileItem

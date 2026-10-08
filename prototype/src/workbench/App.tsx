@@ -16,8 +16,9 @@ import { runAgentBridge } from "./lib/bridge";
 import { Sidebar, NAV_AGENT, NAV_CODE, type ViewId } from "./components/Sidebar";
 import { Workbench, modeDefs } from "./components/Workbench";
 import { Titlebar } from "./components/Titlebar";
-import { AgentMark, IconBolt, IconCheck, IconPanelOpen, IconTerminal, LogoMark } from "./components/Icons";
-import { Badge, Button, Kbd, Modal, Segmented, Toasts } from "./components/ui";
+import { AgentMark, IconBolt, IconCheck, IconChevronLeft, IconChevronRight, IconPanelClose, IconPanelOpen, IconTerminal, LogoMark } from "./components/Icons";
+import { PrototypeStudio } from "./components/PrototypeStudio";
+import { Badge, Button, Kbd, Modal, Segmented, Tip, Toasts } from "./components/ui";
 import { ConnectorsView, ProjectsView, SkillsView } from "./components/views3";
 import { BrowserView, GitView, TasksView } from "./components/views2";
 import { FleetView, ReviewView } from "./components/views";
@@ -112,6 +113,7 @@ function Shell() {
   const [runningId, setRunningId] = useState<string | null>(null);
   const [cmdk, setCmdk] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [listOpen, setListOpen] = useState(() => window.innerWidth > 820 && localStorage.getItem("conductor.sidebar.collapsed") !== "true");
   /* Sidebar width — straight drag: the content stays full at every size
@@ -120,9 +122,8 @@ function Shell() {
   const [sidebarSize, setSidebarSize] = useState(() => Math.max(240, readStored("conductor.sidebar.size", 292)));
   const [sidebarHint, setSidebarHint] = useState(false);
   const sidebarSnap = useRef(false);
-  /* Right workspace panel — Codex-style docked tabs. First launch keeps it
-     closed (minimal: chat + composer + one corner icon); the layout persists. */
-  const [rightOpen, setRightOpen] = useState(() => readStored("conductor.workspace.panel.open", false));
+  /* Right workspace panel — Codex-style docked tabs. Default hidden. */
+  const [rightOpen, setRightOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(true);
   /* rotating stream label + first-run onboarding + agent-picker modal */
   const [label, setLabel] = useState(LABELS.code[0]);
@@ -269,6 +270,7 @@ function Shell() {
     const session: Session = { ...EMPTY_SESSION(product), projectId: selected?.id, agentId: adapter ?? selected?.defaults?.agentId ?? "aro", modelId: selected?.defaults?.modelId ?? DEFAULT_MODEL, permission: (selected?.defaults?.mode as ModeId) ?? readStored<ModeId>("conductor.pref.permission", "agent") };
     setSessions((all) => [session, ...all]); setActiveIds((all) => ({ ...all, [product]: session.id }));
     setAgentId(session.agentId); setMode(session.permission!); setModelId(session.modelId!); resetUtilities();
+    setRightOpen(false);
   };
   const openNew = (agent?: string) => { if (agent) setNewAgent(agent); setNewOpen(true); };
   const selectSession = (id: string) => {
@@ -520,7 +522,16 @@ function Shell() {
     const help = () => setHelpOpen(true);
     const create = () => newSession();
     const terminal = () => setTermOpen(!termOpen);
-    const events: [string, EventListener][] = [["conductor:pane", paneEvent], ["conductor:settings", settings], ["conductor:providers", providerSettings], ["conductor:help", help], ["conductor:new-session", create], ["conductor:terminal", terminal]];
+    const openStudio = () => setStudioOpen(true);
+    const events: [string, EventListener][] = [
+      ["conductor:pane", paneEvent],
+      ["conductor:settings", settings],
+      ["conductor:providers", providerSettings],
+      ["conductor:help", help],
+      ["conductor:new-session", create],
+      ["conductor:terminal", terminal],
+      ["aro:open-studio", openStudio],
+    ];
     events.forEach(([name, fn]) => window.addEventListener(name, fn));
     return () => events.forEach(([name, fn]) => window.removeEventListener(name, fn));
   });
@@ -535,7 +546,7 @@ function Shell() {
   const sidebarProps = { view, setView, sessions: productSessions, activeId: active.id, onSelect: selectSession, onNew: (projectId?: string) => newSession(undefined, projectId), projects, onUpdateProject: updateProject, onCreateProject: createProject, onRequestProject: () => requestProject(), onArchive: archive, onDelete: deleteSession, onMoveProject: moveSession, onDuplicate: duplicate, onTogglePin: (id: string) => { if (isDemoSession(id)) { toast("Reference demo can't be pinned. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, favorite: !s.favorite, pinned: false } : s)); }, onRename: (id: string, title: string) => { if (isDemoSession(id)) { toast("Reference demo can't be renamed. Duplicate it first.", "amber"); return; } setSessions((all) => all.map((s) => s.id === id ? { ...s, title } : s)); }, onCollapse: () => setListOpen(false), onDeleteProject: deleteProject, onDuplicateProject: duplicateProject };
 
   return <div className="app-shell flex h-full flex-col bg-base text-ink">
-    <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} />
+    <Titlebar onOpenCmdk={() => setCmdk(true)} onNew={() => openNew()} setView={setView} layout={layout} setLayout={setLayout} panelLabel="Workspace panel" layoutOpen={layoutOpen} setLayoutOpen={setLayoutOpen} onHelp={() => setHelpOpen(true)} project={project} onOpenStudio={() => setStudioOpen(true)} />
     <div className="flex min-h-0 flex-1">
       {listOpen && <><button className="mobile-pane-scrim" aria-label="Close sidebar" onClick={() => setListOpen(false)} /><div style={{ width: sidebarSize }} className={cn("app-sidebar-shell shrink-0", sidebarHint && "is-snapping")}><Sidebar {...sidebarProps} /></div><div onMouseDown={onSidebarResizeDown} onDoubleClick={() => setSidebarSize(292)} data-active={sidebarHint} data-snap={sidebarHint} className="app-sidebar-resizer resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar — drag to the edge to hide" title="Drag to resize · double-click to reset" /></>}
       <div className="flex min-w-0 flex-1 flex-col">
@@ -556,11 +567,20 @@ function Shell() {
                 {view === "browser" && <BrowserView onAskAgent={(text) => void send(text)} />}
                 {view === "runs" && <FleetView />}{view === "review" && <ReviewView project={project} />}
               </ErrorBoundary></Sheet>}
-              {/* the one corner affordance — opens the workspace (or creates its first tab) */}
-              {!rightOpen && view === "workbench" && (
-                <button className="workspace-corner-open" onClick={() => setRightOpen(true)} aria-label="Open the workspace panel" title="Workspace · ⌘L">
-                  <IconPanelOpen size={15} />
-                </button>
+              {/* Arrow toggle to open workspace: only visible when there is a project, AND hidden when workspace is open */}
+              {Boolean(project) && !rightOpen && (
+                <div className="absolute top-[10px] right-[12px] z-[25]">
+                  <Tip label="Open workspace panel · ⌘L" side="left">
+                    <button
+                      type="button"
+                      className="workspace-arrow-toggle"
+                      onClick={() => setRightOpen(true)}
+                      aria-label="Open workspace panel"
+                    >
+                      <IconChevronLeft size={13} />
+                    </button>
+                  </Tip>
+                </div>
               )}
             </div>
           </main>
@@ -571,9 +591,10 @@ function Shell() {
       </div>
     </div>
     {/* dynamic status bar — every item is state-driven; toggle it from Layout ▸ Status bar */}
-    {statusOpen && <StatusBar streaming={streaming} streamLabel={label} modelLabel={footerModel?.label ?? "select a model"} modelGlyph={footerProvider?.glyph ?? "AI"} permission={permissionShort} backend={backendMode === "agent" ? "agent bridge" : backendMode === "live" ? "live endpoint" : "demo harness"} projectName={project?.name} projectBranch={active.branch || project?.sources?.find((s) => s.branch)?.branch} tokens={active.tokens} panelOpen={rightOpen} onTogglePanel={() => setRightOpen((v) => !v)} onOpenLayout={() => setLayoutOpen(true)} />}
+    {statusOpen && <StatusBar streaming={streaming} streamLabel={label} modelLabel={footerModel?.label ?? "select a model"} modelGlyph={footerProvider?.glyph ?? "AI"} permission={permissionShort} backend={backendMode === "agent" ? "agent bridge" : backendMode === "live" ? "live endpoint" : "demo harness"} projectName={project?.name} projectBranch={active.branch || project?.sources?.find((s) => s.branch)?.branch} tokens={active.tokens} panelOpen={rightOpen} onTogglePanel={() => setRightOpen((v) => !v)} onOpenLayout={() => setLayoutOpen(true)} project={project} />}
     <CommandPalette open={cmdk} onClose={() => setCmdk(false)} setView={setView} onSelectSession={selectSession} onNew={newSession} sessions={sessions} />
     <ProjectDialog /><ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+    <PrototypeStudio open={studioOpen} onClose={() => setStudioOpen(false)} />
     <VoiceAgent onSend={(text) => void send(text)} onNavigate={setView} reply={latestReply} streaming={Boolean(runningId)} />
     <Toasts items={toasts} />
 

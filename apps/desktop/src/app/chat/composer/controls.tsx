@@ -121,26 +121,31 @@ export function ComposerControls({
     />
   )
 
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+
+  const modelPillCluster = minimal ? null : (
+    <>
+      {hideModelPill ? null : (
+        <>
+          <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
+          {compactModelPill ? null : <ReasoningPill disabled={disabled} model={state.model} />}
+        </>
+      )}
+    </>
+  )
+
   return (
     <div className="flex w-full min-w-0 items-center justify-between gap-1.5" data-aro-composer-controls="">
-      {/* Left: [+] [/] [@] | Mode | Model | Reasoning */}
+      {/* Left: [+] [/] [@] | Mode | (Model if not Aro) */}
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         {leadingCluster}
         {modeControl}
-        {minimal ? null : (
-          <>
-            {hideModelPill ? null : (
-              <>
-                <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
-                {compactModelPill ? null : <ReasoningPill disabled={disabled} model={state.model} />}
-              </>
-            )}
-          </>
-        )}
+        {!isAro && modelPillCluster}
       </div>
 
-      {/* Right: Env | Context | Voice | Queue | Send / Stop */}
+      {/* Right: (Model if Aro) | Env | Context | Voice | Queue | Send / Stop */}
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        {isAro && modelPillCluster}
         {envControl}
         {contextControl}
         {minimal ? null : voiceControls}
