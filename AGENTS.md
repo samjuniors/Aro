@@ -551,3 +551,335 @@ Long-form background lives in `website/docs/developer-guide/` (agent-loop, promp
 context-compression-and-caching, gateway-internals, tools-runtime, plugins/, cron-internals,
 session-storage, ...). Workflow rules (PR/issue/review/salvage process) live in the
 `hermes-agent-dev` skill, not here.
+
+
+# ARO / HERMES UI MAPPING MASTER
+
+> **Mandatory:** Any agent performing Aro prototype → Desktop UI mapping must read this section before changing `apps/desktop`. The prototype is the visual/UX source of truth; Hermes is the complete functional source of truth.
+
+## 1. Core rule
+
+**Do not copy the prototype literally. Translate it.**
+
+- **Aro Prototype** defines visual language, information architecture, interaction patterns, hierarchy, composition, and UX intent.
+- **Hermes** defines functional capability, authoritative state, actions, RPC contracts, runtime, backend, sessions, tools, models, permissions, files, Git, terminal, voice, and live data.
+- Production = **Aro design language + complete Hermes functionality**.
+
+## 2. Semantic mapping, not name matching
+
+Prototype and Hermes intentionally use different vocabulary. Never map by component name, filename, label, or terminology alone.
+
+For every prototype concept:
+
+1. Determine what it means to the user.
+2. Identify the Hermes capability representing that meaning.
+3. Trace the authoritative Hermes state/store/hook.
+4. Trace the Hermes action/RPC.
+5. Build the Aro visual control around that real capability.
+6. Determine what happens when it is unavailable.
+7. Check whether Hermes has important additional functionality the prototype does not show.
+
+Use:
+
+```
+PROTOTYPE CONCEPT
+      ↓
+SEMANTIC MEANING
+      ↓
+HERMES CAPABILITY
+      ↓
+HERMES STATE / STORE / HOOK / ACTION / RPC
+      ↓
+ARO PRESENTATION
+```
+
+### Example
+
+If the prototype displays:
+
+**Agent · ● Ready**
+
+but Hermes uses gateway/runtime/session terminology, do **not** search for a Hermes component literally named `Ready`.
+
+Determine what Hermes state actually means:
+
+> the active agent/runtime can accept and execute work
+
+Then compose the appropriate real Hermes signals and present them as the Aro Ready indicator.
+
+Never invent `ready = true`.
+
+Other examples:
+
+| Aro concept | Hermes may represent it with | Rule |
+|---|---|---|
+| Agent | session + runtime | map semantic meaning |
+| Ready | gateway/runtime/session readiness | derive from real state |
+| Code | workspace/project/coding context | use real workspace/session state |
+| Session | `$sessions` + `openSession()` | use real session lifecycle |
+| Model | `$model`, `$provider`, model options | use live model state |
+| Permissions | Hermes approval configuration | translate verified semantics |
+| Context | `useContextBreakdown()` | use live telemetry |
+| Changes | review/git state | use live review/Git state |
+| Plan | Hermes todos | use live todo state |
+| Terminal | Hermes terminal/PTy | use real terminal capability |
+
+## 3. Prototype is NOT the feature ceiling
+
+Evaluate every capability in both directions.
+
+### A. Prototype + Hermes
+
+Reproduce the prototype UX and connect it to Hermes.
+
+### B. Prototype only
+
+Do not fake it.
+
+Search Hermes for an equivalent capability first. If none exists, omit it or show an honest unavailable state and document the gap.
+
+### C. Hermes only
+
+**Do not remove it because the prototype does not show it.**
+
+Find the natural Aro location and extend the prototype's design language using its:
+- typography
+- spacing
+- radius
+- borders
+- shadows
+- iconography
+- color tokens
+- chip/card/popover/disclosure grammar
+- interaction density
+
+Examples of possible locations include overflow menus, contextual actions, secondary toolbars, right-rail sections, session actions, or contextual popovers. Choose based on actual capability and information architecture.
+
+## 4. Required capability inventory
+
+Before declaring a surface complete, perform both:
+
+**Prototype → Hermes**
+> What Hermes capability powers every prototype concept?
+
+**Hermes → Aro**
+> What important Hermes functionality is currently invisible, and where should it live?
+
+A migration is incomplete if it achieves visual similarity by deleting important Hermes functionality.
+
+## 5. Functional authority
+
+Hermes remains authoritative for:
+
+- sessions and session lifecycle
+- messages and streaming
+- model/provider selection
+- reasoning
+- permissions/approvals
+- tools and execution
+- attachments
+- voice
+- workspace/cwd
+- Git/worktrees
+- review/diffs
+- todos
+- terminal/PTy
+- MCP/connectors
+- context telemetry
+- backend execution
+- Electron/native capabilities
+
+Aro may reorganize and present these differently, but must not replace their authoritative state.
+
+## 6. Never duplicate Hermes state
+
+Do not create local state that duplicates a Hermes state machine.
+
+Bad:
+```ts
+const [ready, setReady] = useState(true)
+```
+
+when Hermes already exposes readiness.
+
+Bad:
+```ts
+const [selectedModel, setSelectedModel] = useState(...)
+```
+
+when Hermes owns the model.
+
+Bad:
+```ts
+const [tokenPercent, setTokenPercent] = useState(62)
+```
+
+when Hermes exposes context telemetry.
+
+Local state is fine for purely presentational concerns such as popover visibility, hover, temporary expansion, animation phase, or an unapplied search query.
+
+## 7. Never fake functionality
+
+Never add fake:
+- sessions
+- agents
+- readiness
+- models
+- token counts
+- Git status
+- terminal output
+- tool results
+- approvals
+- MCP servers
+- worktrees
+- provider state
+
+If a capability cannot connect to real Hermes behavior, stop and report the exact gap.
+
+## 8. Structural fidelity, not a token pass
+
+When production hierarchy differs from the prototype, change the production JSX/component structure.
+
+Do not try to force fundamentally different structures together with increasingly complex CSS.
+
+Visual fidelity includes:
+
+1. component/DOM hierarchy
+2. composition
+3. width/height
+4. positioning
+5. padding
+6. gaps
+7. alignment
+8. typography hierarchy
+9. iconography
+10. borders/radius
+11. shadows
+12. colors/tokens
+13. hover/active/disabled states
+14. streaming/loading states
+15. responsive behavior
+16. animation
+
+A few colors, rounded corners, and CSS variables do **not** constitute a prototype migration.
+
+## 9. Preserve Hermes behavior under rebuilt structure
+
+Rebuilding production JSX is allowed and often required.
+
+Examples:
+
+- Prototype model selector → Aro model selector shell → existing Hermes model state/action
+- Prototype Send → Aro Send → Hermes submit
+- Prototype Stop → Aro Stop → Hermes cancellation/halt
+- Prototype Ready → Aro Ready → real Hermes runtime/session/gateway state
+- Prototype Context ring → Aro Context ring → `useContextBreakdown()`
+
+## 10. Prototype data is never production data
+
+Never import prototype:
+- demo sessions
+- fake messages
+- mock agents
+- seeded Git changes
+- fake token percentages
+- fake terminal output
+- catalog data
+- fake MCP servers
+- simulated tool results
+
+Empty live state is preferable to fabricated data.
+
+## 11. Visual QA is separate from functional QA
+
+Passing TypeScript/tests proves behavior, not visual parity.
+
+For visual work:
+
+```
+Prototype
+   ↓
+Production at same viewport/state
+   ↓
+side-by-side comparison
+   ↓
+identify geometry/hierarchy differences
+   ↓
+fix
+   ↓
+repeat
+```
+
+Do not claim visual parity without actually comparing the running UI.
+
+## 12. Required mapping table
+
+For every significant surface, produce before implementation:
+
+| Prototype Concept | User Meaning | Prototype UI | Hermes Source | Hermes Action | Aro Production Surface | Hermes-Only Capability |
+|---|---|---|---|---|---|---|
+
+Also answer:
+
+1. What does the user think this control means?
+2. What Hermes capability performs it?
+3. What Hermes state determines its displayed value?
+4. What happens when unavailable?
+5. What Hermes capability is missing from the prototype?
+6. Where should that capability live?
+7. Is the control presentation-only or stateful?
+8. Is there already a Hermes control that must be reused?
+9. Will a JSX restructure preserve Hermes behavior?
+10. What test proves it?
+
+## 13. Scope discipline
+
+If the task says **"implement the composer footer"**, only implement the composer footer.
+
+Do not simultaneously redesign the sidebar, transcript, titlebar, right rail, terminal, or session header.
+
+Required loop:
+
+**map → implement → typecheck/tests → run → visually inspect → stop**
+
+This makes visual review deterministic.
+
+## 14. Safe extension rule
+
+Do not modify Hermes backend semantics merely to make the prototype easier to port.
+
+Do not change gateway contracts, agent state machines, streaming protocols, session semantics, or Electron IPC unless a genuinely missing capability is discovered and the change is explicitly justified.
+
+If a bridge/backend change is actually necessary, document:
+1. missing capability;
+2. closest existing capability;
+3. why renderer-only implementation is insufficient;
+4. exact boundary changed;
+5. compatibility impact;
+6. tests.
+
+## 15. Final product principle
+
+The goal is NOT:
+
+> "Make Hermes look exactly like the prototype."
+
+The goal is:
+
+> **Make Hermes feel like the Aro product without losing Hermes capability.**
+
+```
+ARO VISUAL LANGUAGE
+        +
+ARO INFORMATION ARCHITECTURE
+        +
+COMPLETE HERMES CAPABILITY SET
+        +
+HERMES AUTHORITATIVE STATE
+        +
+HERMES BACKEND / RPC
+        =
+ARO DESKTOP
+```
+
+Any agent working on Aro UI mapping should treat this section as the first-pass contract before inspecting or modifying production UI.
