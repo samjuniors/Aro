@@ -883,3 +883,142 @@ ARO DESKTOP
 ```
 
 Any agent working on Aro UI mapping should treat this section as the first-pass contract before inspecting or modifying production UI.
+
+
+## 16. Prototype-required functionality may require real Hermes implementation
+
+**Important exception to "renderer-only" thinking: if the prototype intentionally designs a real user-facing capability that Hermes does not currently provide, the agent must not simply remove, fake, or visually downgrade that capability.**
+
+The migration goal is both:
+
+> **prototype visual/interaction fidelity AND complete real functionality.**
+
+If a prototype control or workflow represents a useful product capability that is genuinely absent from Hermes:
+
+1. Identify the missing capability precisely.
+2. Search the entire Hermes codebase for an existing partial/equivalent capability before adding anything.
+3. If no adequate capability exists, **implement the missing functionality in Hermes at the correct architectural layer**.
+4. Expose it through the existing Hermes state/action/RPC/IPC patterns.
+5. Then build the Aro presentation on top of that real capability.
+6. Add tests for the new capability and its renderer integration.
+7. Keep the implementation general and reusable; do not hard-code it solely for the prototype.
+8. Do not invent fake data or simulated behavior while the real capability is being implemented.
+
+### This means prototype gaps can become product requirements
+
+A prototype feature is not automatically "fake" merely because Hermes does not currently implement it.
+
+For example, if the prototype genuinely provides a useful:
+- composer action;
+- session workflow;
+- search interaction;
+- terminal operation;
+- workspace operation;
+- model/provider interaction;
+- approval workflow;
+- context operation;
+- project interaction;
+- agent/runtime control;
+
+and Hermes lacks the underlying capability, the correct response may be to **add that capability to Hermes**, not to delete the UI.
+
+The agent must distinguish:
+
+**Prototype-only decoration**
+→ do not create backend functionality.
+
+**Prototype-designed product behavior**
+→ implement the real Hermes capability if it is missing.
+
+### Architecture rule for missing capabilities
+
+Do NOT bypass Hermes architecture by placing business logic directly inside an Aro React component.
+
+Use the appropriate existing layer:
+
+```
+Aro UI
+   ↓
+Desktop state/action adapter
+   ↓
+Hermes desktop gateway / RPC / service boundary
+   ↓
+Hermes capability
+   ↓
+real runtime/backend state
+```
+
+The exact layer must be determined from the existing architecture. Do not guess.
+
+### Before adding a Hermes capability
+
+The agent must document:
+
+| Question | Required answer |
+|---|---|
+| What prototype behavior requires it? | Exact user-facing behavior |
+| Why is existing Hermes insufficient? | Existing capability search |
+| Where should the capability live? | Correct Hermes architectural layer |
+| What is the authoritative state? | Store/service/runtime state |
+| What action/API changes it? | Existing or new contract |
+| What does failure look like? | Honest UI state |
+| How is it tested? | Unit/integration/E2E as appropriate |
+| Does it benefit non-Aro Hermes clients? | Prefer reusable capability |
+
+### Do not use the safety rail as an excuse for incomplete migration
+
+The rule "do not modify Hermes backend semantics merely to make the prototype easier to port" means:
+
+**Do not mutate Hermes semantics unnecessarily.**
+
+It does **not** mean:
+
+**Never add a genuinely missing capability.**
+
+If a prototype interaction requires a real capability and there is no existing Hermes equivalent, implementing that capability is part of the migration when justified.
+
+### Example
+
+If the prototype has a meaningful control:
+
+```
+[ Agent ] ● Ready
+```
+
+and Hermes has no reliable user-facing readiness concept:
+
+- do not render a fake green dot;
+- determine what readiness actually means;
+- design the appropriate Hermes runtime/session readiness state;
+- expose it through the correct boundary;
+- render the Aro control from that real state.
+
+If the prototype has a feature that genuinely requires new backend behavior:
+
+```
+Prototype interaction
+       ↓
+missing capability discovered
+       ↓
+implement Hermes capability
+       ↓
+expose real state/action
+       ↓
+Aro UI presentation
+```
+
+That is a valid and sometimes required migration path.
+
+### Definition of done for a missing capability
+
+A missing prototype capability is complete only when:
+
+- the real Hermes capability exists;
+- its state is authoritative;
+- the Aro UI is driven by that state;
+- user actions invoke the real implementation;
+- failures are represented honestly;
+- no mock/demo state is used;
+- relevant tests pass;
+- the feature is not unnecessarily coupled to prototype-only code.
+
