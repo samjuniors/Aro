@@ -232,14 +232,13 @@ export function VoiceAgentOrb({
               value={draft}
             />
             <button
-              aria-label="Dictate once"
+              aria-label="Dictate once — inserts into the composer"
               className={cn(
                 'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-colors',
                 voiceStatus === 'idle' ? 'bg-aro-raise text-aro-ink-2 hover:bg-aro-hover' : 'bg-aro-rose-tint text-aro-rose'
               )}
               disabled={conversationActive}
               onClick={() => dictate()}
-              title="Dictate once — inserts into the composer"
               type="button"
             >
               <Codicon name={voiceStatus === 'idle' ? 'mic' : 'mic'} size="0.9rem" />

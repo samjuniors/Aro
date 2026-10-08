@@ -188,10 +188,9 @@ export function ProfileSwitcher({
         <DropdownMenuTrigger asChild>
           {isCard ? (
             <button
-              type="button"
-              aria-label={`${p.title}: ${triggerLabel}`}
-              title={`Active profile: ${triggerLabel}`}
+              aria-label={`Active profile: ${triggerLabel} — ${p.title}`}
               className="group flex h-[38px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.99] data-[state=open]:bg-(--ui-control-hover-background) data-[state=open]:text-foreground"
+              type="button"
             >
               <span
                 className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"

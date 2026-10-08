@@ -11,8 +11,18 @@ import type { WiringActions } from './types'
 vi.mock('@/contrib/react/use-contributions', () => ({ useContributions: vi.fn() }))
 vi.mock('@/store/connections', () => ({ $activeConnectionId: atom('local') }))
 vi.mock('@/store/gateway', () => ({ $gateway: atom<unknown>(null) }))
-vi.mock('@/store/profile', () => ({ $activeGatewayProfile: atom('default') }))
-vi.mock('@/store/session', () => ({
+vi.mock('@/store/profile', async importOriginal => ({
+  // Same reason as the session mock: the Aro model menu's controller chain
+  // reads more of this store at module scope than the old mock provided.
+  ...(await importOriginal()),
+  $activeGatewayProfile: atom('default')
+}))
+vi.mock('@/store/session', async importOriginal => ({
+  // The Aro model menu (rendered by ChatRoutesSurface) pulls the real
+  // model-controller chain, whose transitive imports read more of this
+  // store than the old hand-written mock provided. Spread the actual
+  // module and pin only what these tests need deterministic.
+  ...(await importOriginal()),
   $freshDraftReady: atom(false),
   $gatewayState: atom('open')
 }))
