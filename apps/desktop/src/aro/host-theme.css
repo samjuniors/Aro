@@ -915,7 +915,7 @@
   color: var(--aro-ink);
 }
 
-/* Dedicated project action: opens the real remote-aware folder picker. */
+/* Project action: choose a live workspace for this chat or its next session. */
 [data-aro-composer-controls] [data-aro-project-control] {
   flex: 0 0 30px;
   width: 30px;
