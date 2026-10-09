@@ -317,6 +317,8 @@ declare global {
        *  back to readFileText and must reject a `truncated` result. */
       readPluginSource?: (filePath: string) => Promise<HermesReadFileTextResult>
       selectPaths: (options?: HermesSelectPathsOptions) => Promise<string[]>
+      /** Clone a remote Git repository into a user-selected local parent directory. */
+      cloneRepository?: (repositoryUrl: string) => Promise<null | { path: string; repositoryName: string }>
       /** Native save dialog; returns the chosen path or null on cancel. */
       selectSavePath?: (options?: {
         defaultPath?: string
