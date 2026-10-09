@@ -17974,6 +17974,82 @@ ipcMain.handle('hermes:selectPaths', async (_event, options: any = {}) => {
   return result.filePaths
 })
 
+// Clone a repository into a user-selected local parent directory. Keep git and
+// filesystem access in Electron's main process; the renderer receives only the
+// resulting path. Credentials are inherited from the user's configured Git
+// credential helper / SSH agent — never accept tokens in the URL or UI.
+ipcMain.handle('hermes:git:cloneRepository', async (_event, rawUrl: unknown) => {
+  const repositoryUrl = typeof rawUrl === 'string' ? rawUrl.trim() : ''
+
+  if (!repositoryUrl || repositoryUrl.length > 2048) {
+    throw new Error('Enter a valid repository URL.')
+  }
+
+  let repositoryName = ''
+  const scpMatch = repositoryUrl.match(/^[^@\s]+@[^:\s]+:(.+)$/)
+
+  if (scpMatch) {
+    repositoryName = path.posix.basename(scpMatch[1].replace(/\\/g, '/'))
+  } else {
+    let parsed: URL
+
+    try {
+      parsed = new URL(repositoryUrl)
+    } catch {
+      throw new Error('Use an HTTPS or SSH Git repository URL.')
+    }
+
+    if (!['https:', 'ssh:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+      throw new Error('Use an HTTPS or SSH repository URL without embedded credentials.')
+    }
+
+    repositoryName = path.posix.basename(parsed.pathname.replace(/\\/g, '/'))
+  }
+
+  repositoryName = repositoryName.replace(/\.git$/i, '')
+
+  if (!repositoryName || !/^[a-zA-Z0-9._-]+$/.test(repositoryName) || repositoryName === '.' || repositoryName === '..') {
+    throw new Error('Could not determine a safe folder name from that repository URL.')
+  }
+
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    title: 'Choose where to clone the repository',
+    properties: ['openDirectory', 'createDirectory']
+  })
+
+  if (picked.canceled || !picked.filePaths[0]) {
+    return null
+  }
+
+  const parentPath = path.resolve(picked.filePaths[0])
+  const destination = path.resolve(parentPath, repositoryName)
+
+  if (path.dirname(destination) !== parentPath) {
+    throw new Error('The repository folder name is invalid.')
+  }
+
+  if (fs.existsSync(destination)) {
+    throw new Error(`A folder named "${repositoryName}" already exists in the selected location.`)
+  }
+
+  const result = await execGit(resolveGitBinary(), ['clone', '--', repositoryUrl, destination], {
+    timeoutMs: 10 * 60 * 1000
+  })
+
+  if (result.code !== 0) {
+    try {
+      await fs.promises.rm(destination, { force: true, recursive: true })
+    } catch {
+      // Preserve the clone error below; cleanup is best-effort.
+    }
+
+    const detail = (result.stderr || result.stdout).trim().slice(-3000)
+    throw new Error(detail || 'Git clone failed. Check the repository URL and your Git credentials.')
+  }
+
+  return { path: destination, repositoryName }
+})
+
 ipcMain.handle('hermes:writeClipboard', (_event, text) => {
   clipboard.writeText(String(text || ''))
 
