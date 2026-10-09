@@ -2194,6 +2194,7 @@
    ========================================================================= */
 :root[data-aro-ui='true'] .workspace-tabstrip {
   box-sizing: border-box;
+  overflow: hidden;
   display: flex;
   width: 100%;
   max-width: 100%;
@@ -2364,10 +2365,14 @@
 :root[data-aro-ui='true'] aside.is-fullscreen {
   position: absolute !important;
   inset: 0 !important;
+  box-sizing: border-box !important;
   width: 100% !important;
+  height: 100% !important;
   max-width: 100% !important;
+  max-height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
+  overflow: hidden !important;
   z-index: 50 !important;
 }
 
