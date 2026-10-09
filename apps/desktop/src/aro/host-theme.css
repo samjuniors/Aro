@@ -894,14 +894,14 @@
 }
 
 /* ── Leading cluster: the [+ / @] icon group ────────────────────────── */
-[data-aro-composer-controls] > div:first-child > div:first-child {
+[data-aro-composer-controls] > div:first-child {
   border: none;
   background: transparent;
   padding: 0;
   gap: 2px;
 }
 
-[data-aro-composer-controls] > div:first-child > div:first-child button {
+[data-aro-composer-controls] > div:first-child > button {
   width: 30px !important;
   height: 30px !important;
   padding: 0;
@@ -910,7 +910,7 @@
   color: var(--aro-ink-2);
 }
 
-[data-aro-composer-controls] > div:first-child > div:first-child button:hover {
+[data-aro-composer-controls] > div:first-child > button:hover {
   background: var(--aro-hover);
   color: var(--aro-ink);
 }
