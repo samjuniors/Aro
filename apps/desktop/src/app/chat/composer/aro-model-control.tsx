@@ -55,6 +55,7 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
           aria-label={currentModel || 'Model'}
           className="h-[30px] shrink-0 gap-[5px] rounded-[6px] border-none bg-transparent px-[5px] text-[11.5px] font-normal whitespace-nowrap text-aro-ink-2 shadow-none hover:bg-aro-hover hover:text-aro-ink"
           data-aro-model-control=""
+          data-aro-model-pill=""
           disabled={disabled}
           type="button"
           variant="ghost"
@@ -64,7 +65,7 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
           {pending ? (
             <GlyphSpinner className="opacity-50" spinner="braille" />
           ) : effortLabel ? (
-            <span className="model-effort inline-flex items-center gap-[5px] font-[550]" data-level={reasoningEffort}>
+            <span className="model-effort inline-flex items-center gap-[5px] font-[550]" data-aro-reasoning-pill="" data-level={reasoningEffort}>
               <span className="model-effort-dot" />
               {effortLabel}
             </span>
