@@ -1613,7 +1613,7 @@ export function ChatBar({
                       competing as inline classes (prototype: focus-within >
                       .is-listening > .is-streaming). */}
                   <div
-                    className="relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[12px] border border-aro-line-soft bg-aro-overlay shadow-aro-e2 transition-[border-color,box-shadow] duration-200 [grid-template-areas:'input'_'footer']"
+                    className="relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[21px] border border-aro-line-soft bg-aro-overlay shadow-aro-e2 transition-[border-color,box-shadow] duration-200 [grid-template-areas:'input'_'footer']"
                     data-aro-composer-layout="codex"
                     data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
                     data-aro-streaming={busy ? '' : undefined}
@@ -1624,7 +1624,7 @@ export function ChatBar({
                     >
                       {input}
                     </div>
-                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 border-t border-aro-line-soft/60 bg-aro-base/40 px-2 py-1.5 [grid-area:footer]"
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 px-0 py-0 [grid-area:footer]"
                       data-slot="footer">
                       <ContribSlot area={COMPOSER_AREAS.leading} />
                       {controls}
