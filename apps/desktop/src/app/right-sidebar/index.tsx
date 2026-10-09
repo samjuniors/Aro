@@ -10,18 +10,9 @@ import {
   IconList,
   IconMaximize,
   IconMinimize,
-  IconPlus,
   IconRefresh,
   IconTerminal
 } from '@/aro/Icons'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Button } from '@/components/ui/button'
@@ -160,15 +151,6 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       notifyError(error, r.previewUnavailable)
     }
   }
-
-  const currentCount =
-    section === 'plan'
-      ? (activeTodos > 0 ? activeTodos : undefined)
-      : section === 'changes'
-        ? (reviewFiles.length > 0 ? reviewFiles.length : undefined)
-        : section === 'git'
-          ? (dirtyCount > 0 ? dirtyCount : undefined)
-          : undefined
 
   return (
     <aside
