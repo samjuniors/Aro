@@ -240,6 +240,23 @@ describe('resolveNewSessionCwd', () => {
     expect(resolveNewSessionCwd()).toBe('/home/user/configured')
   })
 
+  it('uses the selected project as the new-session workspace in the overview', () => {
+    $projectScope.set(ALL_PROJECTS)
+    $activeProjectId.set('p_selected')
+    $projectTree.set([
+      {
+        id: 'p_selected',
+        label: 'Selected project',
+        path: '/work/selected',
+        repos: [],
+        sessionCount: 0
+      } satisfies SidebarProjectTree
+    ])
+
+    expect(resolveNewSessionCwd()).toBe('/work/selected')
+  })
+
+
   it('does not inherit the focused session workspace — new chat uses the configured default', () => {
     // Regression for #71873 / #80213: after a restart the focused session is
     // usually the just-resumed one, whose stored cwd can be a stale fallback
