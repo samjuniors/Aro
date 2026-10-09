@@ -222,6 +222,8 @@ describe('resolveNewSessionCwd', () => {
 
   afterEach(() => {
     applyConfiguredDefaultProjectDir(null)
+    $activeProjectId.set(null)
+    $projectTree.set([])
     $projectScope.set(ALL_PROJECTS)
     $currentCwd.set('')
     $selectedStoredSessionId.set(null)
@@ -254,7 +256,6 @@ describe('resolveNewSessionCwd', () => {
     ])
 
     expect(resolveNewSessionCwd()).toBe('/work/selected')
-    $activeProjectId.set(null)
   })
 
   it('does not inherit the focused session workspace — new chat uses the configured default', () => {
