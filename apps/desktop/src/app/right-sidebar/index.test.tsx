@@ -50,7 +50,7 @@ describe('RightSidebarPane', () => {
 
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const refresh = await screen.findByRole('button', { name: 'Refresh tree' })
+    const refresh = await screen.findByRole('button', { name: 'Refresh workspace' })
 
     readDir.mockClear()
     fireEvent.click(refresh)
@@ -97,7 +97,7 @@ describe('RightSidebarPane', () => {
 
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const refresh = await screen.findByRole('button', { name: 'Refresh tree' })
+    const refresh = await screen.findByRole('button', { name: 'Refresh workspace' })
     readDir.mockClear()
     repoStatus.mockClear()
     fireEvent.click(refresh)
@@ -125,7 +125,7 @@ describe('RightSidebarPane', () => {
 
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const refresh = await screen.findByRole('button', { name: 'Refresh tree' })
+    const refresh = await screen.findByRole('button', { name: 'Refresh workspace' })
     readDir.mockClear()
     repoStatus.mockClear()
     fireEvent.click(refresh)
