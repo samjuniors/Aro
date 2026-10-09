@@ -161,7 +161,6 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     }
   }
 
-  const currentSection = SECTIONS.find(s => s.id === section) ?? SECTIONS[0]
   const currentCount =
     section === 'plan'
       ? (activeTodos > 0 ? activeTodos : undefined)
@@ -221,32 +220,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
               </div>
             )
           })}
-          <div className="shrink-0 inline-flex items-center">
-            <DropdownMenu>
-              <Tip label="Add a tool tab" side="bottom">
-                <DropdownMenuTrigger asChild>
-                  <button type="button" className="workspace-tab-new" aria-label="Add a tool tab">
-                    <IconPlus size={13} />
-                  </button>
-                </DropdownMenuTrigger>
-              </Tip>
-              <DropdownMenuContent align="start" className="w-56 p-1 bg-aro-sunken border-aro-line-soft">
-                <DropdownMenuLabel className="text-[10.5px] uppercase font-semibold text-aro-ink-4 px-2 py-1">
-                  Workspace Tools
-                </DropdownMenuLabel>
-                {SECTIONS.map(tool => (
-                  <DropdownMenuItem
-                    key={tool.id}
-                    onClick={() => setRightSidebarSection(tool.id)}
-                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[12px] text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink"
-                  >
-                    <tool.icon size={13} className="text-aro-ink-3" />
-                    <span>{tool.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
           <Tip label={fullscreen ? 'Exit full screen · Esc' : 'Full screen workspace tool'} side="bottom">
