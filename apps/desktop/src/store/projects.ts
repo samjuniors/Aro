@@ -151,19 +151,26 @@ export function goToProject(id: string, options?: { newSession?: boolean }): voi
 // instead of the configured default (#71873, #80213, #77496).
 export function resolveNewSessionCwd(): string {
   const scope = $projectScope.get()
+  const tree = $projectTree.get()
 
-  // Inside Home, "no folder" is the point: a new chat must stay detached rather
-  // than silently attaching to the configured default dir and leaving Home.
+  // Home is intentionally detached. Never attach it to the configured default.
   if (scope === NO_PROJECT_ID) {
     return ''
   }
 
+  // A project currently being viewed takes precedence over the active-project
+  // preference, because the user's current scope is the most explicit choice.
   if (scope !== ALL_PROJECTS) {
-    const cwd = projectRootCwd($projectTree.get().find(node => node.id === scope))
+    const cwd = projectRootCwd(tree.find(node => node.id === scope))
+    if (cwd) return cwd
+  }
 
-    if (cwd) {
-      return cwd
-    }
+  // In the overview, inherit the explicitly selected active project before
+  // falling back to the configured default directory.
+  const activeId = $activeProjectId.get()
+  if (activeId) {
+    const cwd = projectRootCwd(tree.find(node => node.id === activeId))
+    if (cwd) return cwd
   }
 
   return workspaceCwdForNewSession()
@@ -1605,4 +1612,11 @@ export async function openFolderAsProject(dir?: string): Promise<void> {
   }
 
   requestStartWorkSession(target, undefined, { openTab: true })
+
+  // Discovery scans only configured roots. Probe the folder the user actually
+  // opened so Git context is available immediately, even outside those roots.
+  void desktopGit()
+    ?.repoStatus(target)
+    .then(() => refreshProjectTree())
+    .catch(() => undefined)
 }
