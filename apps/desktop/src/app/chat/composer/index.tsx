@@ -1764,6 +1764,7 @@ function ProjectPickerControl({
             currentLabel && 'text-aro-iris-soft'
           )}
           data-aro-project-control=""
+          data-aro-project-selected={currentLabel ? '' : undefined}
           disabled={disabled}
           title={currentLabel ? `Project: ${currentLabel}` : 'Attach a project'}
           size="icon"
