@@ -154,8 +154,8 @@ export function ComposerControls({
       {/* Right: (Model if Aro) | Env | Context | Voice | Queue | Send / Stop */}
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         {isAro && modelPillCluster}
-        {envControl}
-        {contextControl}
+        {!isAro && envControl}
+        {!isAro && contextControl}
         {minimal ? null : voiceControls}
         {showQueueButton ? (
           <Tip label={<TipKeybindLabel actionId="composer.queue" text={c.queueMessage} />} placement="control">

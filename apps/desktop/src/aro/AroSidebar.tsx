@@ -59,7 +59,10 @@ import {
   moveSessionToProject,
   openProjectCreate,
   projectRootCwd,
+  refreshProjects,
+  refreshProjectTree,
   renameProject,
+  scanAndRecordRepos,
   updateProject
 } from '@/store/projects'
 import { liveSessionProjectId } from '@/app/chat/sidebar/projects/workspace-groups'
@@ -67,6 +70,7 @@ import { WorktreeDialog } from '@/app/chat/sidebar/projects/worktree-dialog'
 import { AroProjectDialog } from './AroProjectDialog'
 import {
   $activeSessionId,
+  $gatewayState,
   $selectedStoredSessionId,
   $sessions,
   setActiveSessionId,
@@ -275,32 +279,111 @@ export function AroSidebar({
     return visibleSessions.filter(s => pinnedIds.includes(s.id))
   }, [visibleSessions, pinnedIds, archiveMode])
 
+  const gatewayState = useStore($gatewayState)
+  const gatewayReady = gatewayState === 'open'
+
+  // Refresh projects, authoritative tree, and discovered repos on load & whenever gateway connects or profile changes
+  useEffect(() => {
+    void refreshProjects()
+    void refreshProjectTree().finally(() => void scanAndRecordRepos())
+  }, [gatewayReady, activeGatewayProfile])
+
+  // Unified authoritative projects combining explicit $projects, $projectTree, and child repos (matching Composer)
+  const effectiveProjects = useMemo(() => {
+    const list: Array<{
+      id: string
+      name: string
+      color?: string | null
+      path?: string | null
+      folders?: Array<{ path: string }>
+      archived?: boolean
+    }> = []
+    const seen = new Set<string>()
+
+    // 1. Explicit projects from $projects
+    for (const p of projects) {
+      if (p.id && !p.archived) {
+        seen.add(p.id)
+        const pPath = p.primary_path || p.folders?.[0]?.path
+        const pName = p.name || (pPath ? pPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || p.id
+        list.push({
+          id: p.id,
+          name: pName,
+          color: p.color,
+          path: pPath,
+          folders: p.folders,
+          archived: p.archived
+        })
+      }
+    }
+
+    // 2. Authoritative project tree from $projectTree (the exact tree seen in composer!)
+    for (const node of projectTree) {
+      if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
+        seen.add(node.id)
+        const rootPath = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
+        const label = node.label || (rootPath ? rootPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
+        list.push({
+          id: node.id,
+          name: label,
+          color: node.color,
+          path: rootPath,
+          folders: rootPath ? [{ path: rootPath }] : [],
+          archived: node.archived
+        })
+      }
+    }
+
+    // 3. Child repos from project tree nodes (ensures auto-discovered repos appear as folders)
+    for (const node of projectTree) {
+      if (node.repos && node.repos.length > 0) {
+        for (const repo of node.repos) {
+          if (repo.id && repo.id !== '__no_project__' && !seen.has(repo.id)) {
+            seen.add(repo.id)
+            const repoPath = repo.path || ''
+            const repoLabel = repo.label || (repoPath ? repoPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || repo.id
+            list.push({
+              id: repo.id,
+              name: repoLabel,
+              color: node.color,
+              path: repoPath,
+              folders: repoPath ? [{ path: repoPath }] : [],
+              archived: false
+            })
+          }
+        }
+      }
+    }
+
+    return list
+  }, [projects, projectTree])
+
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
 
   // Grouped sessions by project using Aro + Hermes authoritative ownership
   const projectSessionsMap = useMemo(() => {
     const map: Record<string, SessionInfo[]> = {}
-    for (const p of projects) {
+    for (const p of effectiveProjects) {
       map[p.id] = []
     }
     for (const s of visibleSessions) {
       if (!pinnedIds.includes(s.id)) {
-        const pId = resolveAroSessionProjectId(s, projects, projectOwners, aroSessionProjectMap)
+        const pId = resolveAroSessionProjectId(s, effectiveProjects, projectOwners, aroSessionProjectMap)
         if (pId && map[pId]) {
           map[pId].push(s)
         }
       }
     }
     return map
-  }, [visibleSessions, projects, pinnedIds, projectOwners, aroSessionProjectMap])
+  }, [visibleSessions, effectiveProjects, pinnedIds, projectOwners, aroSessionProjectMap])
 
   const unassignedSessions = useMemo(() => {
     return visibleSessions.filter(s => {
       if (pinnedIds.includes(s.id) && !archiveMode) return false
-      const pId = resolveAroSessionProjectId(s, projects, projectOwners, aroSessionProjectMap)
+      const pId = resolveAroSessionProjectId(s, effectiveProjects, projectOwners, aroSessionProjectMap)
       return !pId
     })
-  }, [visibleSessions, pinnedIds, archiveMode, projects, projectOwners, aroSessionProjectMap])
+  }, [visibleSessions, pinnedIds, archiveMode, effectiveProjects, projectOwners, aroSessionProjectMap])
 
   // Bot conversations (Bots / Agents mode)
   const botSessions = useMemo(() => {
@@ -323,11 +406,11 @@ export function AroSidebar({
       setWorkspaceScope('sessions')
       if (projectId) {
         const treeNode = projectTree.find(n => n.id === projectId)
-        const project = projects.find(p => p.id === projectId)
+        const proj = effectiveProjects.find(p => p.id === projectId)
         const cwd =
           projectRootCwd(treeNode) ||
-          project?.folders?.[0]?.path ||
-          project?.primary_path ||
+          proj?.path ||
+          proj?.folders?.[0]?.path ||
           null
 
         setAroDraftProject(projectId)
@@ -361,7 +444,7 @@ export function AroSidebar({
         navigate(NEW_CHAT_ROUTE)
       }
     },
-    [onNewSessionInWorkspace, navigate, projectTree, projects]
+    [onNewSessionInWorkspace, navigate, projectTree, effectiveProjects]
   )
 
   // Handle Move Session to Project
@@ -369,13 +452,13 @@ export function AroSidebar({
     async (sessionId: string, targetProjectId: string) => {
       try {
         await assignSessionToProject(sessionId, targetProjectId)
-        const proj = projects.find(p => p.id === targetProjectId)
+        const proj = effectiveProjects.find(p => p.id === targetProjectId)
         notify({ kind: 'info', message: proj ? `Session moved to '${proj.name}'` : 'Session moved to project' })
       } catch (err) {
         console.error('Failed to move session to project:', err)
       }
     },
-    [projects]
+    [effectiveProjects]
   )
 
   // Handle Select Session
@@ -539,14 +622,14 @@ export function AroSidebar({
                   close()
                 }}
               />
-              {projects.length > 0 && (
+              {effectiveProjects.length > 0 && (
                 <>
                   <MenuSep />
                   <MenuLabel>Move to project</MenuLabel>
-                  {projects.map(p => {
+                  {effectiveProjects.map(p => {
                     const currentPid = resolveAroSessionProjectId(
                       session,
-                      projects,
+                      effectiveProjects,
                       projectOwners,
                       aroSessionProjectMap
                     )
@@ -573,7 +656,7 @@ export function AroSidebar({
                   })}
                   {resolveAroSessionProjectId(
                     session,
-                    projects,
+                    effectiveProjects,
                     projectOwners,
                     aroSessionProjectMap
                   ) && (
@@ -789,7 +872,7 @@ export function AroSidebar({
                 )}
 
                 {/* Project Folders */}
-                {projects.map(project => {
+                {effectiveProjects.map(project => {
                   const items = projectSessionsMap[project.id] || []
                   const color = projectColors[project.id] || project.color || '#818cf8'
                   const isFolded = Boolean(folds[project.id])
@@ -824,7 +907,16 @@ export function AroSidebar({
                         }
                       }}
                     >
-                      <div className="group flex items-center gap-1 py-1 select-none">
+                      <div
+                        className="group flex items-center gap-1 py-1 cursor-grab active:cursor-grabbing select-none"
+                        draggable
+                        onDragStart={e => {
+                          e.dataTransfer.setData('application/aro-project', project.id)
+                          e.dataTransfer.setData('text/plain', project.name)
+                          e.dataTransfer.effectAllowed = 'copyMove'
+                        }}
+                        title={`Drag ${project.name} to composer to attach`}
+                      >
                         <button
                           aria-label={`${isFolded ? 'Expand' : 'Collapse'} ${project.name}`}
                           className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1 py-0.5 text-left transition-colors hover:bg-aro-hover/60"
@@ -960,31 +1052,27 @@ export function AroSidebar({
                   )
                 })}
 
-                {/* Unassigned / Recent Sessions */}
-                {unassignedSessions.length > 0 && (
-                  <div className="mt-2">
-                    <p className="sidebar-section-label">
-                      {projects.length > 0 ? 'Unassigned sessions' : 'Recent sessions'}
+                {!effectiveProjects.length && !search && (
+                  <div className="px-2 py-3">
+                    <p className="text-[11.5px] leading-relaxed text-aro-ink-4">
+                      Projects keep your sources and sessions together.
                     </p>
-                    {unassignedSessions.map(renderSessionRow)}
+                    <button
+                      className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-aro-ink-3 hover:text-aro-ink cursor-pointer"
+                      onClick={() => openProjectCreate()}
+                      type="button"
+                    >
+                      <IconPlus size={12} />
+                      <span>Create project</span>
+                    </button>
                   </div>
                 )}
 
-                {/* Clean Empty State (Zero Mock/Demo Data) */}
-                {projects.length === 0 && unassignedSessions.length === 0 && pinnedSessions.length === 0 && (
-                  <div className="py-8 px-4 text-center">
-                    <p className="text-[12.5px] font-medium text-aro-ink-3">No sessions yet</p>
-                    <p className="mt-1 text-[11px] text-aro-ink-4">
-                      Start a new session to begin.
-                    </p>
-                    <button
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-[6px] border border-aro-line bg-aro-raise px-3 py-1.5 text-[12px] font-medium text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink transition-colors cursor-pointer"
-                      onClick={() => handleNewSession()}
-                      type="button"
-                    >
-                      <IconPlus size={13} />
-                      <span>New Session</span>
-                    </button>
+                {/* Unassigned sessions */}
+                {unassignedSessions.length > 0 && (
+                  <div className="mt-2">
+                    <p className="sidebar-section-label">Unassigned sessions</p>
+                    {unassignedSessions.map(renderSessionRow)}
                   </div>
                 )}
 

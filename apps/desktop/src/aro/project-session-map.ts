@@ -128,7 +128,7 @@ export function removeProjectFromMap(projectId: string): void {
  */
 export function resolveAroSessionProjectId(
   session: SessionInfo,
-  projects: ProjectInfo[],
+  projects: Array<{ id: string; name?: string; color?: string | null; archived?: boolean; primary_path?: string | null; folders?: Array<{ path: string }> }>,
   owners?: ReadonlyMap<string, string>,
   aroMap: Record<string, string> = $aroSessionProjectMap.get()
 ): string | null {
@@ -142,7 +142,7 @@ export function resolveAroSessionProjectId(
   }
 
   // 2. Authoritative Hermes backend matching (checks project folders)
-  const backendPid = liveSessionProjectId(session, projects, owners)
+  const backendPid = liveSessionProjectId(session, projects as any, owners)
   if (backendPid && backendPid !== '__no_project__') {
     const matchingProject = projects.find(p => p.id === backendPid)
     if (matchingProject && !matchingProject.archived) {

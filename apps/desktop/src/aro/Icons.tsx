@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ARO DESIGN SYSTEM â€” ICON SET (desktop port)
  *
  * Self-contained inline SVGs ported from the Aro Workbench prototype

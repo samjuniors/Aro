@@ -1241,7 +1241,14 @@ function acquireSingleInstanceLock(): boolean {
 const isPrimaryInstance: boolean = acquireSingleInstanceLock()
 
 if (!isPrimaryInstance) {
-  console.error('[hermes] another Hermes Desktop instance holds the single-instance lock; exiting')
+  // A live owner is normal (the app is already open and this launch just routes
+  // into it), so it is not an error worth failing a dev run over. Say what to
+  // do about it, because the indistinguishable case -- an owner wedged with no
+  // window -- looks identical here and leaves every later launch dead too.
+  console.error(
+    '[hermes] another Hermes Desktop instance holds the single-instance lock; exiting\n' +
+      '[hermes] if that instance has no window, end it (Task Manager, or `taskkill /IM electron.exe /F`) and launch again.'
+  )
   app.exit(0)
 }
 
@@ -19692,6 +19699,15 @@ app.on('before-quit', event => {
 
   if (quitTeardown.begin(teardownTasks)) {
     event.preventDefault()
+
+    // Admitting a deferred quit is the last point before this process can be
+    // left resident with no window. `will-quit` arms the same watchdog, but a
+    // teardown that never settles never reaches it -- and a windowless Electron
+    // process still holds the single-instance lock, so every later launch dies
+    // with "another Hermes Desktop instance holds the lock" and can never
+    // recover (#116376 family). Arm here so the deadline covers the whole
+    // admitted quit, not just its final phase; `quit` still cancels it.
+    quitFinalization.armAdmitted()
   }
 
   // Clean quit mid-boot should not trip next-launch --no-sandbox (#38216).

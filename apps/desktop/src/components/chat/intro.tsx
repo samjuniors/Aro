@@ -1,9 +1,13 @@
+import { useStore } from '@nanostores/react'
 import { useState } from 'react'
 
 import { requestComposerFocus, requestComposerInsert } from '@/app/chat/composer/focus'
+import { IconFolder, IconList, IconPulse, IconSpark } from '@/aro/Icons'
 import { Codicon } from '@/components/ui/codicon'
 import { useI18n } from '@/i18n'
 import { capitalize, normalize } from '@/lib/text'
+import { $projectScope, ALL_PROJECTS } from '@/store/project-scope'
+import { $projectTree, openProjectCreate } from '@/store/projects'
 
 import introCopyJsonl from './intro-copy.jsonl?raw'
 import { Wordmark } from './wordmark'
@@ -181,6 +185,32 @@ export const FRESH_IDEAS = [
   }
 ] as const
 
+const ARO_FRESH_IDEAS = [
+  {
+    chooseProject: true,
+    icon: IconFolder,
+    label: 'Attach a project',
+  },
+  {
+    icon: IconPulse,
+    label: 'Explain a repository',
+    prompt:
+      'Walk through the architecture of this repository — the main pieces, how they connect, and where the tricky parts live.',
+  },
+  {
+    icon: IconList,
+    label: 'Plan a refactor',
+    prompt:
+      'Plan a refactor of this module so flushes are throttled and the state machine is cleanly separated. Start with a plan, no edits yet.',
+  },
+  {
+    icon: IconSpark,
+    label: 'Build a landing page',
+    prompt:
+      'Draft and build a minimal, well-typographed landing page for a developer tool — one hero, three feature cards, no clutter.',
+  },
+] as const
+
 export function Intro({ personality, seed }: IntroProps) {
   const [mountSeed] = useState(() => Math.floor(Math.random() * 100000))
   const { t } = useI18n()
@@ -193,6 +223,12 @@ export function Intro({ personality, seed }: IntroProps) {
   const body = bodies?.[Math.abs(rotationSeed) % bodies.length] ?? copy.body
 
   const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  const projectScope = useStore($projectScope)
+  const projects = useStore($projectTree)
+  const activeProject =
+    isAro && projectScope && projectScope !== ALL_PROJECTS
+      ? (projects.find(p => p.id === projectScope && !p.isNoProject) ?? null)
+      : null
 
   return (
     <div
@@ -203,11 +239,13 @@ export function Intro({ personality, seed }: IntroProps) {
         {isAro ? (
           <>
             <h1 className="m-0 font-display text-[26px] sm:text-[32px] font-medium tracking-tight text-aro-ink">
-              What would you like to build?
+              {activeProject ? `Let's work on ${activeProject.label}.` : 'What would you like to build?'}
             </h1>
-            <p className="mt-2 text-center text-xs text-aro-ink-3 max-w-md mx-auto leading-relaxed">
-              Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.
-            </p>
+            {!activeProject && (
+              <p className="mt-2 text-center text-xs text-aro-ink-3 max-w-md mx-auto leading-relaxed">
+                Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -221,24 +259,49 @@ export function Intro({ personality, seed }: IntroProps) {
         className="pointer-events-auto mt-5 flex flex-wrap items-center justify-center gap-2"
         data-slot="fresh-suggestions"
       >
-        {FRESH_IDEAS.map(idea => (
-          <button
-            key={idea.label}
-            type="button"
-            className="group inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise/80 px-3.5 py-1.5 text-xs font-medium text-aro-ink-2 shadow-sm backdrop-blur-md transition-all hover:border-aro-iris/50 hover:bg-aro-hover hover:text-aro-ink active:scale-[0.98]"
-            data-slot="fresh-suggestion-chip"
-            onClick={() => {
-              requestComposerInsert(idea.prompt, { mode: 'block', target: 'active' })
-              requestComposerFocus('active')
-            }}
-          >
-            <Codicon
-              name={idea.icon}
-              className="size-3 text-aro-iris-soft transition-colors group-hover:text-aro-cyan"
-            />
-            <span>{idea.label}</span>
-          </button>
-        ))}
+        {isAro ? (
+          ARO_FRESH_IDEAS.map(idea => {
+            const Icon = idea.icon
+            return (
+              <button
+                className="fresh-suggestion"
+                data-slot="fresh-suggestion-chip"
+                key={idea.label}
+                onClick={() => {
+                  if ('chooseProject' in idea && idea.chooseProject) {
+                    openProjectCreate()
+                  } else if ('prompt' in idea && idea.prompt) {
+                    requestComposerInsert(idea.prompt, { mode: 'block', target: 'active' })
+                    requestComposerFocus('active')
+                  }
+                }}
+                type="button"
+              >
+                <Icon size={12} />
+                <span>{idea.label}</span>
+              </button>
+            )
+          })
+        ) : (
+          FRESH_IDEAS.map(idea => (
+            <button
+              key={idea.label}
+              type="button"
+              className="group inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise/80 px-3.5 py-1.5 text-xs font-medium text-aro-ink-2 shadow-sm backdrop-blur-md transition-all hover:border-aro-iris/50 hover:bg-aro-hover hover:text-aro-ink active:scale-[0.98]"
+              data-slot="fresh-suggestion-chip"
+              onClick={() => {
+                requestComposerInsert(idea.prompt, { mode: 'block', target: 'active' })
+                requestComposerFocus('active')
+              }}
+            >
+              <Codicon
+                name={idea.icon}
+                className="size-3 text-aro-iris-soft transition-colors group-hover:text-aro-cyan"
+              />
+              <span>{idea.label}</span>
+            </button>
+          ))
+        )}
       </div>
     </div>
   )

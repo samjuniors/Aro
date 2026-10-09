@@ -13,10 +13,10 @@ import { $activeGatewayProfile } from '@/store/profile'
 const APPROVAL_MODES = [
   {
     desc: 'Edits and runs commands. Prompts before risky actions.',
-    icon: IconBolt,
+    icon: IconShield,
     id: 'smart' as ApprovalMode,
-    label: 'Agent (Smart)',
-    short: 'Agent',
+    label: 'Approve for me (Smart)',
+    short: 'Approve for me',
     tone: 'text-aro-cyan',
   },
   {
@@ -29,9 +29,9 @@ const APPROVAL_MODES = [
   },
   {
     desc: 'Autonomous edits and shell. Guarded by hardline deny rules.',
-    icon: IconShield,
+    icon: IconBolt,
     id: 'off' as ApprovalMode,
-    label: 'Autonomous (Full)',
+    label: 'Full access (Autonomous)',
     short: 'Full access',
     tone: 'text-aro-rose',
   },

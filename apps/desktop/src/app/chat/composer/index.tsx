@@ -28,6 +28,7 @@ import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
 import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { desktopGit } from '@/lib/desktop-git'
 import { triggerHaptic } from '@/lib/haptics'
+import { IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
 import { FolderOpen } from '@/lib/icons'
 import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
@@ -41,18 +42,22 @@ import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/st
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
 import { notifyError } from '@/store/notifications'
-import { $projectScope } from '@/store/project-scope'
+import { $projectScope, exitProjectScope } from '@/store/project-scope'
 import {
   $projectTree,
   $projectTreeLoading,
+  $projects,
   enterProject,
   moveSessionToProject,
+  openFolderAsProject,
+  openProjectCreate,
   projectIdForCwd,
   projectRootCwd,
-  openFolderAsProject,
+  refreshProjects,
   refreshProjectTree,
   requestStartWorkSession
 } from '@/store/projects'
+import { assignSessionToProject, setAroDraftProject } from '@/aro/project-session-map'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1547,6 +1552,7 @@ export function ChatBar({
                 )}
                 data-slot="composer-surface"
                 data-aro-composer-surface=""
+                data-aro-composer-layout="codex"
                 data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
                 data-aro-streaming={busy ? '' : undefined}
                 ref={composerSurfaceRef}
@@ -1630,13 +1636,6 @@ export function ChatBar({
                     {controls}
                     <ContribSlot area={COMPOSER_AREAS.actions} />
                   </div>
-                  <p className="mt-1.5 hidden select-none items-center justify-center gap-2 font-aro-mono text-[9.5px] text-aro-ink-4 sm:flex">
-                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⏎</kbd> send <span>·</span>
-                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⇧⏎</kbd> newline <span>·</span>
-                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⇧Tab</kbd> mode <span>·</span>
-                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">/</kbd> commands <span>·</span>
-                    <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⌘⇧V</kbd> voice
-                  </p>
                   <ContribSlot area={COMPOSER_AREAS.bottom} />
                 </div>
               </div>
@@ -1719,14 +1718,18 @@ function ProjectPickerControl({
   sessionId?: null | string
 }) {
   const projects = useStore($projectTree)
+  const explicitProjects = useStore($projects)
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const [open, setOpen] = useState(false)
   const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
+  const [search, setSearch] = useState('')
   const currentProjectId = sessionId ? (cwd ? projectIdForCwd(cwd) : null) : projectScope
-  const currentProject = projects.find(project => project.id === currentProjectId)
-  const currentLabel = currentProject && !currentProject.isNoProject ? currentProject.label : undefined
-  const currentRoot = projectRootCwd(currentProject)
+  const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
+  const currentLabel = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : undefined
+  const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
+    || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
+    || (cwd || null)
 
   useEffect(() => {
     let cancelled = false
@@ -1760,23 +1763,100 @@ function ProjectPickerControl({
     }
   }, [currentRoot, open])
 
-  const chooseProject = async (projectId: string) => {
-    const project = projects.find(item => item.id === projectId)
-    const root = project && projectRootCwd(project)
+  const availableProjects = useMemo(() => {
+    const list: Array<{ id: string; label: string; path: string; color?: string; isDemo?: boolean }> = []
+    const seen = new Set<string>()
 
-    if (!project || !root || project.id === currentProjectId) {
+    // 1. From explicit projects ($projects)
+    for (const p of explicitProjects) {
+      if (p.id && !p.archived) {
+        seen.add(p.id)
+        const pPath = p.primary_path || p.folders?.[0]?.path || ''
+        list.push({
+          id: p.id,
+          label: p.name || p.id,
+          path: pPath,
+          color: p.color || undefined,
+          isDemo: p.id.includes('demo') || (p.name || '').toLowerCase().includes('demo')
+        })
+      }
+    }
+
+    // 2. From project tree ($projectTree)
+    for (const node of projects) {
+      if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
+        seen.add(node.id)
+        const root = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
+        const label = node.label || (root ? root.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
+        list.push({
+          id: node.id,
+          label,
+          path: root,
+          color: node.color || undefined,
+          isDemo: node.id.includes('demo') || label.toLowerCase().includes('demo')
+        })
+      }
+    }
+
+    // 3. Child repos from project tree nodes (ensures auto-discovered repos appear in chooser)
+    for (const node of projects) {
+      if (node.repos && node.repos.length > 0) {
+        for (const repo of node.repos) {
+          if (repo.id && repo.id !== '__no_project__' && !seen.has(repo.id)) {
+            seen.add(repo.id)
+            const repoPath = repo.path || ''
+            const repoLabel = repo.label || (repoPath ? repoPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || repo.id
+            list.push({
+              id: repo.id,
+              label: repoLabel,
+              path: repoPath,
+              color: node.color || undefined,
+              isDemo: repo.id.includes('demo') || repoLabel.toLowerCase().includes('demo')
+            })
+          }
+        }
+      }
+    }
+
+    return list
+  }, [projects, explicitProjects])
+
+  const filteredProjects = useMemo(() => {
+    if (!search.trim()) return availableProjects
+    const query = search.toLowerCase()
+    return availableProjects.filter(p =>
+      p.label.toLowerCase().includes(query) ||
+      (p.path || '').toLowerCase().includes(query)
+    )
+  }, [availableProjects, search])
+
+  const chooseProject = async (projectId?: string) => {
+    if (!projectId) {
+      exitProjectScope()
       setOpen(false)
+      return
+    }
 
+    const project = availableProjects.find(item => item.id === projectId)
+
+    if (!project || project.id === currentProjectId) {
+      setOpen(false)
       return
     }
 
     try {
       if (sessionId) {
-        await moveSessionToProject(sessionId, projectId, profile || undefined)
+        await assignSessionToProject(sessionId, projectId)
+      } else {
+        setAroDraftProject(projectId)
       }
 
       enterProject(projectId)
       setOpen(false)
+      void Promise.all([
+        refreshProjects().catch(() => {}),
+        refreshProjectTree().catch(() => {})
+      ])
     } catch (error) {
       notifyError(error, 'Could not switch project')
     }
@@ -1786,9 +1866,13 @@ function ProjectPickerControl({
     <DropdownMenu
       onOpenChange={next => {
         setOpen(next)
-
-        if (next) {
-          void refreshProjectTree().catch(error => notifyError(error, 'Could not load projects'))
+        if (!next) {
+          setSearch('')
+        } else {
+          void Promise.all([
+            refreshProjects().catch(() => {}),
+            refreshProjectTree().catch(() => {})
+          ])
         }
       }}
       open={open}
@@ -1808,55 +1892,95 @@ function ProjectPickerControl({
           type="button"
           variant="ghost"
         >
-          <FolderOpen className="size-[15px]" />
+          <IconFolder size={15} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 p-1.5" side="top" sideOffset={6}>
-        <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-aro-ink-4 uppercase">
-          {currentLabel ? `Project · ${currentLabel}` : 'Choose project'}
-        </div>
-        {currentRoot && gitStatus ? (
-          <div className="mx-1 mb-1 flex items-center gap-1.5 rounded-md bg-aro-base/50 px-2 py-1.5 text-[10px] text-aro-ink-3">
-            <Codicon name="git-branch" size="0.75rem" />
-            <span className="min-w-0 flex-1 truncate">{gitStatus.branch || 'Detached HEAD'}</span>
-            {gitStatus.changed > 0 ? <span className="shrink-0">{gitStatus.changed} changed</span> : <span className="shrink-0">Clean</span>}
+      <DropdownMenuContent align="start" className="w-[340px] p-0" side="top" sideOffset={8}>
+        <div className="repo-chooser">
+          {currentRoot && gitStatus ? (
+            <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-md bg-aro-base/70 px-2.5 py-1.5 text-[11px] text-aro-ink-3 border border-aro-border-subtle">
+              <Codicon name="git-branch" size="0.75rem" />
+              <span className="min-w-0 flex-1 truncate font-mono">{gitStatus.branch || 'Detached HEAD'}</span>
+              {gitStatus.changed > 0 ? <span className="shrink-0 text-amber-500 font-medium">{gitStatus.changed} changed</span> : <span className="shrink-0 text-emerald-500 font-medium">Clean</span>}
+            </div>
+          ) : null}
+          <div className="repo-chooser-search">
+            <IconSearch size={13} />
+            <input
+              placeholder="Search repositories…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              aria-label="Search repositories"
+            />
           </div>
-        ) : null}
-        {loading && projects.length === 0 ? (
-          <div className="px-2 py-3 text-xs text-aro-ink-3">Loading projects…</div>
-        ) : projects.filter(project => !project.isNoProject && projectRootCwd(project)).length === 0 ? (
-          <div className="px-2 py-3 text-xs text-aro-ink-3">No projects available. Add a project from the sidebar first.</div>
-        ) : (
-          projects
-            .filter(project => !project.isNoProject && projectRootCwd(project))
-            .map(project => (
-              <DropdownMenuItem
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-xs',
-                  project.id === currentProjectId && 'bg-aro-hover text-aro-ink'
-                )}
-                key={project.id}
-                onSelect={() => void chooseProject(project.id)}
-              >
-                <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" />
-                <span className="min-w-0 flex-1 truncate">{project.label}</span>
-                {project.id === currentProjectId ? <Codicon name="check" size="0.75rem" /> : null}
-              </DropdownMenuItem>
-            ))
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-xs"
-          onSelect={() => {
-            setOpen(false)
-            void openFolderAsProject().catch(error => notifyError(error, 'Could not open project'))
-          }}
-        >
-          <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" />
-          <span className="min-w-0 flex-1">Open local project…</span>
-        </DropdownMenuItem>
-        <div className="px-2 py-1 text-[10px] leading-relaxed text-aro-ink-4">
-          {sessionId ? 'Switching moves this chat to the selected project workspace.' : 'The next chat will start in the selected project workspace.'}
+          <div className="repo-chooser-list">
+            {loading && projects.length === 0 ? (
+              <div className="p-3 text-center text-xs text-aro-ink-3">Loading projects…</div>
+            ) : filteredProjects.length === 0 ? (
+              <p className="repo-chooser-empty">
+                {search ? `No repositories match “${search}”.` : 'No repositories attached yet.'}
+              </p>
+            ) : (
+              filteredProjects.map(project => {
+                const isSelected = project.id === currentProjectId
+                const root = project.path
+                const isDemo = project.id.includes('demo') || project.label.toLowerCase().includes('demo')
+
+                return (
+                  <button
+                    key={project.id}
+                    onClick={() => void chooseProject(project.id)}
+                    className={cn('repo-chooser-row', isSelected && 'selected')}
+                    type="button"
+                  >
+                    <span className="repo-chooser-main">
+                      <span className="repo-chooser-name flex items-center gap-1.5">
+                        <span
+                          className="size-2 rounded-full shrink-0"
+                          style={{ backgroundColor: (project as { color?: string }).color || '#818cf8' }}
+                        />
+                        <span>{project.label}</span>
+                      </span>
+                      {root ? (
+                        <span className="repo-chooser-sub">{root}</span>
+                      ) : null}
+                    </span>
+                    {isDemo ? <span className="repo-chooser-demo">DEMO</span> : null}
+                    {isSelected ? <IconCheck size={13} className="repo-chooser-check" /> : null}
+                  </button>
+                )
+              })
+            )}
+          </div>
+          <button
+            onClick={() => {
+              setOpen(false)
+              void openFolderAsProject().catch(error => notifyError(error, 'Could not open project'))
+            }}
+            className="repo-chooser-add"
+            type="button"
+          >
+            <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" /> Open local project…
+          </button>
+          <button
+            onClick={() => {
+              setOpen(false)
+              openProjectCreate()
+            }}
+            className="repo-chooser-add"
+            type="button"
+          >
+            <IconPlus size={12} /> Add repositories…
+          </button>
+          {currentProjectId ? (
+            <button
+              onClick={() => void chooseProject(undefined)}
+              className="repo-chooser-add repo-chooser-clear"
+              type="button"
+            >
+              <IconX size={11} /> Continue without a project
+            </button>
+          ) : null}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -3,13 +3,13 @@ import { type ReactNode, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { SETTINGS_ROUTE } from '@/app/routes'
-import { Codicon } from '@/components/ui/codicon'
+import { IconBrain, IconChevronDown, IconPlus } from '@/aro/Icons'
 import { Switch } from '@/components/ui/switch'
 import { useI18n } from '@/i18n'
-import { Brain } from '@/lib/icons'
 import { catalogProviderMatches, currentModelCapabilities } from '@/lib/model-options'
 import { providerDisplayName } from '@/lib/model-status-label'
 import { isThinkingEnabled, reasoningEffortClamp, resolveReasoningEffort } from '@/lib/reasoning-effort'
+import { cn } from '@/lib/utils'
 
 import { ModelOptionsContent, resolveFastControl } from './model-edit-submenu'
 import { ModelMenuCloseContext } from './model-menu-panel'
@@ -33,7 +33,6 @@ import { type ModelMenuHostProps, useModelMenuController } from './use-model-men
 export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & { children?: ReactNode }) {
   const { t } = useI18n()
   const copy = t.shell.modelOptions
-  const menuCopy = t.shell.modelMenu
   const navigate = useNavigate()
   const { controller, defaultEffort, modelOptions } = useModelMenuController(props)
   const { effort, effortPending, effortWire, fast, model, provider } = controller.current
@@ -72,30 +71,29 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
     <div data-aro-model-menu="" data-expanded={expanded ? '' : undefined}>
       {/* Head: monogram + live model + provider line; clicking expands the catalog. */}
       <button
-        className="flex w-full items-center gap-2.5 rounded-[7px] px-2 py-2 text-left transition-colors hover:bg-aro-hover"
+        className="model-menu-head"
         onClick={() => setExpanded(value => !value)}
         type="button"
       >
         <span className="flex size-7 shrink-0 items-center justify-center rounded-[7px] border border-aro-line-soft bg-aro-raise font-aro-mono text-[10px] font-semibold text-aro-ink-3">
           {monogram}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[12.5px] font-semibold text-aro-ink">{model}</span>
+        <span className="min-w-0 flex-1 text-left">
+          <span className="block truncate text-[12.5px] font-medium text-aro-ink">{model}</span>
           <span className="block truncate font-aro-mono text-[9.5px] text-aro-ink-4">
-            {providerDisplayName(provider || '')}
+            {providerDisplayName(provider || '')} · {provider?.toLowerCase().includes('local') || provider?.toLowerCase().includes('ollama') ? 'on-device' : 'cloud'}
           </span>
         </span>
-        <Codicon
-          className={expanded ? 'rotate-180 text-aro-ink-4 transition-transform' : 'text-aro-ink-4 transition-transform'}
-          name="chevron-up"
-          size="0.75rem"
+        <IconChevronDown
+          className={cn('size-3 shrink-0 text-aro-ink-4 transition-transform duration-200', expanded && 'rotate-180')}
+          size={12}
         />
       </button>
 
       {expanded ? (
-        <div className="max-h-[340px] overflow-y-auto overflow-x-visible px-0.5 pb-1 pt-0.5">{children}</div>
+        <div className="model-menu-list max-h-[340px] overflow-y-auto overflow-x-visible px-0.5 pb-1 pt-0.5">{children}</div>
       ) : (
-        <div className="px-0.5 pb-1 pt-0.5">
+        <div className="model-menu-compact px-0.5 pb-1 pt-0.5">
           {supportsReasoning ? (
             <EffortSliderRow
               disabled={Boolean(effortPending)}
@@ -106,10 +104,13 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
           ) : null}
 
           {showThinkingToggle ? (
-            <div className="flex items-center gap-2.5 rounded-[7px] px-2 py-2">
-              <Brain className="size-3.5 shrink-0 text-aro-plum" />
+            <div className="model-thinking-row">
+              <IconBrain className="size-[13px] shrink-0 text-aro-plum" size={13} />
               <span className="min-w-0 flex-1">
-                <span className="block text-[12px] font-medium text-aro-ink-2">{copy.thinking}</span>
+                <span className="block text-[12px] font-medium text-aro-ink-2">Thinking</span>
+                <span className="block text-[10px] leading-tight text-aro-ink-4">
+                  Show the model's reasoning before it replies
+                </span>
               </span>
               <Switch
                 checked={thinkingOn}
@@ -147,8 +148,8 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
                 }}
                 type="button"
               >
-                <Codicon name="settings-gear" size="0.75rem" />
-                {menuCopy.editModels}
+                <IconPlus size={12} />
+                Configure providers
               </button>
             )}
           </ModelMenuCloseContext.Consumer>
@@ -158,12 +159,20 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
   )
 }
 
+/* Reasoning-effort levels — Codex-style strength ramp: the further right,
+   the hotter the accent color (neutral → cyan → iris → amber → rose). */
+const EFFORTS = [
+  { id: 'minimal', label: 'Minimal', color: 'var(--aro-ink-3)', desc: 'Straight to the point — no visible reasoning. Fastest and cheapest for lookups.' },
+  { id: 'low', label: 'Low', color: 'var(--aro-cyan)', desc: 'Light reasoning for small edits, renames and quick fixes.' },
+  { id: 'medium', label: 'Medium', color: 'var(--aro-iris-soft)', desc: 'Balanced thinking for everyday coding — the sensible default.' },
+  { id: 'high', label: 'High', color: 'var(--aro-amber)', desc: 'Deep multi-step reasoning for tricky bugs and cross-file refactors.' },
+  { id: 'ultra', label: 'Ultra', color: 'var(--aro-rose)', desc: 'Maximum reasoning power — architecture, migrations, hard proofs.' },
+] as const
+
 /**
  * The effort slider: a compact UI over Hermes' REAL reasoning levels
  * (`REASONING_EFFORTS` — minimal…ultra). Moving it calls the same controller
- * action the reasoning menu's radio rows perform; nothing is faked. A clamped
- * pick ("ultra" that the route sends as "max") spells that out underneath,
- * exactly like the pills do.
+ * action the reasoning menu's radio rows perform; nothing is faked.
  */
 function EffortSliderRow({
   disabled,
@@ -178,83 +187,72 @@ function EffortSliderRow({
 }) {
   const { t } = useI18n()
   const copy = t.shell.modelOptions
-  const stops = REASONING_EFFORTS
-  const activeIndex = stops.indexOf(effort as (typeof stops)[number])
-  const level = activeIndex >= 0 ? effort : stops[0]
 
-  // `copy` also carries functions (sendsOnRoute) — only lift the string labels.
+  const activeIdx = useMemo(() => {
+    switch (effort) {
+      case 'minimal':
+        return 0
+      case 'low':
+        return 1
+      case 'medium':
+        return 2
+      case 'high':
+      case 'xhigh':
+        return 3
+      case 'max':
+      case 'ultra':
+        return 4
+      default:
+        return 2
+    }
+  }, [effort])
+
+  const effortLevel = EFFORTS[activeIdx] ?? EFFORTS[2]
+
   const levelLabel = (value: string) => {
     const entry = copy[value as keyof typeof copy]
-
     return typeof entry === 'string' ? entry : value
   }
 
-  const label = levelLabel(level)
   const clamp = reasoningEffortClamp(effort, effortWire)
-  const color = EFFORT_COLORS[level] ?? 'var(--aro-ink-3)'
 
   return (
-    <div className="rounded-[7px] px-2 py-2" data-aro-effort-slider="">
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[11px] font-medium text-aro-ink-3">
-          <span
-            className="size-1.5 rounded-full transition-colors"
-            style={{ background: color, boxShadow: `0 0 7px color-mix(in srgb, ${color} 55%, transparent)` }}
-          />
-          {copy.effort}
+    <div className="effort-slider" style={{ ['--effort-color' as string]: effortLevel.color }}>
+      <div className="effort-slider-head">
+        <span className="effort-level-name">
+          <i className="effort-level-dot" aria-hidden />
+          {effortLevel.label}
         </span>
-        <span className="truncate text-[11.5px] font-semibold" style={{ color }}>
-          {label}
+        <span className="effort-bars" aria-hidden>
+          {EFFORTS.map((_, i) => (
+            <i key={i} className={cn(i <= activeIdx && 'is-on')} style={{ height: `${4 + i * 2}px` }} />
+          ))}
         </span>
       </div>
       <input
-        aria-label={copy.effort}
-        className="aro-effort-range"
+        aria-label={`Reasoning effort — ${effortLevel.label}`}
+        aria-valuetext={effortLevel.label}
+        className="effort-range"
         disabled={disabled}
-        max={stops.length - 1}
+        max={EFFORTS.length - 1}
         min={0}
         onChange={event => {
-          const next = stops[Number(event.target.value)]
-
+          const next = EFFORTS[Number(event.target.value)]
           if (next) {
-            onSetEffort(next)
+            onSetEffort(next.id)
           }
         }}
         step={1}
+        style={{ ['--effort-fill' as string]: `${(activeIdx / (EFFORTS.length - 1)) * 100}%` }}
         type="range"
-        value={activeIndex >= 0 ? activeIndex : 0}
+        value={activeIdx}
       />
-      <div aria-hidden className="mt-1.5 flex items-end justify-between gap-[3px]">
-        {stops.map((stop, index) => (
-          <span
-            className="aro-effort-bar"
-            data-on={index <= activeIndex ? '' : undefined}
-            key={stop}
-            style={
-              {
-                height: `${4 + index * 1.5}px`,
-                '--bar-color': EFFORT_COLORS[stop] ?? 'var(--aro-ink-3)'
-              } as React.CSSProperties
-            }
-          />
-        ))}
+      <div className="effort-slider-scale">
+        <span>Minimal</span>
+        <span>Ultra</span>
       </div>
-      <div className="mt-1 flex items-center justify-between font-aro-mono text-[9px] text-aro-ink-4">
-        <span>{copy.minimal}</span>
-        <span>{copy.ultra}</span>
-      </div>
+      <p className="effort-slider-desc">{effortLevel.desc}</p>
       {clamp ? <p className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-4">{copy.sendsOnRoute(levelLabel(clamp.wire))}</p> : null}
     </div>
   )
-}
-
-/** Prototype effort ramp, extended over Hermes' full 7-level scale. */
-const EFFORT_COLORS: Record<string, string> = {
-  minimal: 'var(--aro-ink-3)',
-  low: 'var(--aro-cyan)',
-  medium: 'var(--aro-iris-soft)',
-  high: 'var(--aro-amber)',
-  xhigh: 'color-mix(in srgb, var(--aro-amber) 45%, var(--aro-rose))',
-  max: 'var(--aro-rose)',
-  ultra: 'color-mix(in srgb, var(--aro-rose) 55%, var(--aro-iris))'
 }
