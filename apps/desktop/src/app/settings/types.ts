@@ -9,6 +9,7 @@ export type SettingsView =
   | 'billing'
   | 'connections'
   | 'gateway'
+  | 'git'
   | 'keybinds'
   | 'keys'
   | 'notifications'
