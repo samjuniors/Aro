@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 import { useSessionView } from '@/app/chat/session-view'
 import { ModelMenuCloseContext } from '@/app/shell/model-menu-panel'
+import { IconChevronDown } from '@/aro/Icons'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -10,6 +11,7 @@ import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { releaseTypingFocus } from '@/components/ui/keyboard-first'
 import { providerDisplayName } from '@/lib/model-status-label'
 import { reasoningEffortLabel } from '@/lib/reasoning-effort'
+import { cn } from '@/lib/utils'
 
 import type { ChatBarState } from './types'
 
@@ -70,7 +72,10 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
               {effortLabel}
             </span>
           ) : null}
-          <Codicon className="size-2.5 shrink-0 opacity-50" name="chevron-up" />
+          <IconChevronDown
+            className={cn('size-[11px] shrink-0 text-aro-ink-4 transition-transform duration-200', open && 'rotate-180')}
+            size={11}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[330px] p-0" side="top" sideOffset={8}>

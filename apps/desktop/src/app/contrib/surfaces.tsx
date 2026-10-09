@@ -19,6 +19,7 @@ import { $guideOpening } from '@/store/onboarding-gate'
 import { $activeGatewayProfile } from '@/store/profile'
 import { $freshDraftReady, $gatewayState } from '@/store/session'
 
+import { AroSidebar } from '@/aro/AroSidebar'
 import { ChatView } from '../chat'
 import { ChatSidebar } from '../chat/sidebar'
 import { TerminalPaneChrome } from '../right-sidebar/terminal/chrome'
@@ -55,6 +56,17 @@ export const SidebarSurface = memo(function SidebarSurface({
   currentView: ComponentProps<typeof ChatSidebar>['currentView']
 }) {
   const latestActions = useMemo(() => latestSidebarActions(actions), [actions])
+
+  if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+    return (
+      <AroSidebar
+        currentView={currentView}
+        onArchiveSession={latestActions.onArchiveSession}
+        onDeleteSession={latestActions.onDeleteSession}
+        onNewSessionInWorkspace={latestActions.onNewSessionInWorkspace}
+      />
+    )
+  }
 
   return <ChatSidebar currentView={currentView} {...latestActions} />
 })

@@ -1,9 +1,9 @@
-/**
- * ARO DESIGN SYSTEM — ICON SET (desktop port)
+﻿/**
+ * ARO DESIGN SYSTEM â€” ICON SET (desktop port)
  *
  * Self-contained inline SVGs ported from the Aro Workbench prototype
  * (src/workbench/components/Icons.tsx). No codicon dependency, no external
- * icon library — every glyph is inline `currentColor` line art that
+ * icon library â€” every glyph is inline `currentColor` line art that
  * inherits text colour, so the aro token classes tint them per theme.
  */
 
@@ -409,7 +409,7 @@ export const IconMore = (p: P) => (
 /* ------------------------- brand marks for agents ------------------------ */
 type MarkProps = { size?: number; className?: string }
 
-/** The Aro wordmark glyph — emerald geometric A on near-black. */
+/** The Aro wordmark glyph â€” emerald geometric A on near-black. */
 export function LogoMark({ size = 22, className }: MarkProps) {
   return (
     <svg aria-label="Aro mark" className={className} height={size} role="img" viewBox="0 0 32 32" width={size}>
@@ -422,7 +422,7 @@ export function LogoMark({ size = 22, className }: MarkProps) {
       </defs>
       <rect fill="#101214" height="30" rx="8" width="30" x="1" y="1" />
       <rect fill="none" height="30" rx="8" stroke="#27272a" strokeWidth="1" width="30" x="1" y="1" />
-      {/* geometric A — sharp apex, two legs, high crossbar */}
+      {/* geometric A â€” sharp apex, two legs, high crossbar */}
       <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
       <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
       <path d="M11.6 19.6 H20.4" opacity="0.85" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.2" />
@@ -482,3 +482,17 @@ export function IdeMark({ kind, size = 16, className }: MarkProps & { kind: stri
     </span>
   )
 }
+
+
+export const IconKeyboard = (p: P) => (
+  <svg {...base(p)}>
+    <rect height="12" rx="2.5" width="18" x="3" y="6" />
+    <path d="M7 10h.01M10 10h.01M13 10h.01M16 10h.01M7 13h10" />
+  </svg>
+)
+
+export const IconSliders = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+  </svg>
+)

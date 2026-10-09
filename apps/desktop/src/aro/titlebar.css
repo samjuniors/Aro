@@ -1,0 +1,274 @@
+/* ============================================================================
+   ARO WORKBENCH — TITLEBAR STYLES (Prototype Parity)
+   ============================================================================ */
+
+.app-titlebar {
+  display: flex;
+  height: 40px;
+  min-height: 40px;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 10px;
+  background: var(--color-base, var(--aro-bg, var(--dt-background)));
+  border-bottom: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  user-select: none;
+  z-index: 50;
+  -webkit-app-region: drag;
+  box-sizing: border-box;
+}
+
+.app-titlebar [data-no-drag],
+.app-titlebar button,
+.app-titlebar input,
+.app-titlebar a {
+  -webkit-app-region: no-drag !important;
+}
+
+.minimal-titlebar {
+  gap: 6px;
+  padding-inline: 10px;
+  background: var(--color-base, var(--aro-bg, var(--dt-background)));
+  border-bottom: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+}
+
+.minimal-titlebar .product-switcher {
+  margin-right: 2px;
+}
+
+/* Product mode switcher (Code vs Agent) */
+.product-switcher {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  border-radius: 8px;
+  padding: 2px;
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+  -webkit-app-region: no-drag;
+}
+
+.product-option {
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 6px;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  font-size: 11.5px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: color 140ms, background-color 140ms;
+}
+
+.product-option.selected {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.product-option:hover:not(.selected) {
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+}
+
+.titlebar-spacer {
+  min-width: 0;
+  flex: 1;
+}
+
+/* Project & Branch title */
+.selected-project-title {
+  display: flex;
+  min-width: 0;
+  max-width: 320px;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  font-size: 12px;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-bot-pill {
+  font-family: var(--font-mono, var(--font-aro-mono, monospace));
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--color-iris-soft, var(--aro-iris-soft, #a89cff));
+  background: var(--color-iris-tint, var(--aro-iris-tint, rgba(124, 107, 255, 0.14)));
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Search bar pill in center */
+.titlebar-search {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+  padding: 0 10px;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 140ms, color 140ms, background-color 140ms;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-search:hover {
+  border-color: var(--color-line-strong, var(--aro-line-strong, var(--dt-primary)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  background: var(--color-base, var(--aro-bg, var(--dt-background)));
+}
+
+.titlebar-search-label {
+  font-size: 11.5px;
+}
+
+.titlebar-search-kbd {
+  margin-left: 6px;
+}
+
+/* Quick settings menu popover content */
+.quick-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 8px;
+}
+
+.quick-theme-dot {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: transform 120ms, border-color 120ms;
+}
+
+.quick-theme-dot:hover {
+  transform: scale(1.12);
+}
+
+.quick-theme-dot.is-active {
+  border-color: var(--color-line-strong, var(--aro-line-strong, var(--dt-border)));
+  box-shadow: 0 0 0 2px var(--color-iris, var(--aro-iris, #7c6bff));
+}
+
+.quick-theme-dot i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dot);
+  display: block;
+}
+
+.quick-toggle-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms, color 120ms;
+}
+
+.quick-toggle-row:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.quick-toggle-box {
+  display: flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+  color: var(--color-iris-soft, var(--aro-iris-soft, #a89cff));
+}
+
+.quick-link-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms, color 120ms;
+}
+
+.quick-link-row:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+/* Profile / Agent Bot button & popover */
+.titlebar-profile-btn {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+  padding-left: 5px;
+  padding-right: 8px;
+  font-size: 12px;
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+  cursor: pointer;
+  transition: all 120ms ease;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-profile-btn:hover {
+  border-color: var(--color-line-strong, var(--aro-line-strong, var(--dt-primary)));
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.titlebar-profile-avatar {
+  position: relative;
+  display: flex;
+  width: 19px;
+  height: 19px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.titlebar-profile-status {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 1px var(--color-base, var(--aro-bg, #0b0d11));
+}

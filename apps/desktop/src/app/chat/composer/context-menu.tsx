@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { IconPlus } from '@/aro/Icons'
 import { composerPanelCard } from '@/components/chat/composer-dock'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
@@ -52,15 +53,14 @@ export function ContextMenu({
             <Button
               aria-label={state.tools.label}
               className={cn(
-                GHOST_ICON_BTN,
-                'data-[state=open]:bg-(--chrome-action-hover) data-[state=open]:text-foreground'
+                'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink data-[state=open]:bg-aro-hover data-[state=open]:text-aro-ink'
               )}
               disabled={!state.tools.enabled}
               size="icon"
               type="button"
               variant="ghost"
             >
-              <Codicon name="add" size="0.875rem" />
+              <IconPlus size={15} />
             </Button>
           </DropdownMenuTrigger>
         </Tip>

@@ -74,16 +74,15 @@ export function ApprovalModePill({
             aria-label={`Approval mode: ${activeMeta.label}`}
             data-aro-approval-mode=""
             className={cn(
-              'inline-flex h-(--composer-control-size) cursor-pointer items-center gap-1.5 rounded-[7px] border border-aro-line-soft bg-aro-raise px-2 font-aro-mono text-[11px] font-medium transition-colors hover:bg-aro-hover hover:text-aro-ink',
-              activeMeta.tone,
+              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-[6px] border-none bg-transparent px-[5px] text-[11.5px] font-normal transition-colors text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink-2',
+              activeMeta.id === 'off' && 'text-aro-amber font-medium',
               disabled && 'pointer-events-none opacity-50'
             )}
             disabled={disabled || pending}
             type="button"
           >
-            <Icon className="shrink-0" size={12} />
+            <Icon className="shrink-0" size={14} />
             <span>{activeMeta.short}</span>
-            <IconChevronDown className="shrink-0 text-aro-ink-4 opacity-60" size={10} />
           </button>
         </DropdownMenuTrigger>
       </Tip>

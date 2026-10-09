@@ -1157,32 +1157,38 @@ export function ChatBar({
     />
   )
 
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+
   const leadingCluster = (
-    <div className="flex min-w-0 items-center gap-0.5" data-aro-composer-leading="">
+    <div className="flex min-w-0 items-center gap-1" data-aro-composer-leading="">
       {contextMenu}
       <ProjectPickerControl cwd={cwd} disabled={inputDisabled} profile={profile} sessionId={sessionId} />
-      <Button
-        aria-label="Slash commands"
-        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
-        disabled={inputDisabled}
-        onClick={() => insertText('/')}
-        size="icon"
-        type="button"
-        variant="ghost"
-      >
-        <span aria-hidden className="font-mono text-xs font-semibold">/</span>
-      </Button>
-      <Button
-        aria-label="Path and context references"
-        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
-        disabled={inputDisabled}
-        onClick={() => insertText('@')}
-        size="icon"
-        type="button"
-        variant="ghost"
-      >
-        <span aria-hidden className="font-mono text-xs font-semibold">@</span>
-      </Button>
+      {!isAro && (
+        <>
+          <Button
+            aria-label="Slash commands"
+            className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
+            disabled={inputDisabled}
+            onClick={() => insertText('/')}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <span aria-hidden className="font-mono text-xs font-semibold">/</span>
+          </Button>
+          <Button
+            aria-label="Path and context references"
+            className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
+            disabled={inputDisabled}
+            onClick={() => insertText('@')}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <span aria-hidden className="font-mono text-xs font-semibold">@</span>
+          </Button>
+        </>
+      )}
     </div>
   )
 
@@ -1538,6 +1544,9 @@ export function ChatBar({
                   dragActive && COMPOSER_DROP_ACTIVE_CLASS
                 )}
                 data-slot="composer-surface"
+                data-aro-composer-surface=""
+                data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
+                data-aro-streaming={busy ? '' : undefined}
                 ref={composerSurfaceRef}
               >
                 <div aria-hidden className={composerInputBacking} />
@@ -1605,32 +1614,19 @@ export function ChatBar({
                     </div>
                   )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
-                  {/* Aro reference-composer (prototype grammar): editor field
-                      above, compact action footer below. The travelling
-                      shimmer glow — iris on focus, rose while dictating, cyan
-                      + pulse while a turn streams — lives in host-theme.css,
-                      keyed on these data-aro-state attributes. CSS owns the
-                      state layering so the three modes compose instead of
-                      competing as inline classes (prototype: focus-within >
-                      .is-listening > .is-streaming). */}
                   <div
-                    className="relative grid w-full min-w-0 grid-cols-1 grid-rows-[auto_auto] overflow-hidden rounded-[21px] border border-aro-line-soft bg-aro-overlay shadow-aro-e2 transition-[border-color,box-shadow] duration-200 [grid-template-areas:'input'_'footer']"
-                    data-aro-composer-layout="codex"
-                    data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
-                    data-aro-streaming={busy ? '' : undefined}
+                    className="min-h-[4.25rem] min-w-0 w-full"
+                    data-slot="input"
                   >
-                    <div
-                      className="min-h-[4.75rem] min-w-0 px-3.5 pt-3.5 pb-2 [grid-area:input]"
-                      data-slot="input"
-                    >
-                      {input}
-                    </div>
-                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-1 px-0 py-0 [grid-area:footer]"
-                      data-slot="footer">
-                      <ContribSlot area={COMPOSER_AREAS.leading} />
-                      {controls}
-                      <ContribSlot area={COMPOSER_AREAS.actions} />
-                    </div>
+                    {input}
+                  </div>
+                  <div
+                    className="reference-composer-toolbar flex min-h-[40px] w-full min-w-0 items-center justify-between gap-1"
+                    data-slot="footer"
+                  >
+                    <ContribSlot area={COMPOSER_AREAS.leading} />
+                    {controls}
+                    <ContribSlot area={COMPOSER_AREAS.actions} />
                   </div>
                   <p className="mt-1.5 hidden select-none items-center justify-center gap-2 font-aro-mono text-[9.5px] text-aro-ink-4 sm:flex">
                     <kbd className="rounded border border-aro-line bg-aro-sunken px-1 py-0.5 font-aro-mono text-[9px] text-aro-ink-3">⏎</kbd> send <span>·</span>
@@ -1717,7 +1713,7 @@ function ProjectPickerControl({
 }: {
   cwd?: null | string
   disabled: boolean
-  profile?: string
+  profile?: null | string
   sessionId?: null | string
 }) {
   const projects = useStore($projectTree)
@@ -1734,6 +1730,7 @@ function ProjectPickerControl({
 
     if (!project || !root || project.id === currentProjectId) {
       setOpen(false)
+
       return
     }
 
@@ -1741,6 +1738,7 @@ function ProjectPickerControl({
       if (sessionId) {
         await moveSessionToProject(sessionId, projectId, profile || undefined)
       }
+
       enterProject(projectId)
       setOpen(false)
     } catch (error) {
@@ -1752,7 +1750,10 @@ function ProjectPickerControl({
     <DropdownMenu
       onOpenChange={next => {
         setOpen(next)
-        if (next) void refreshProjectTree().catch(error => notifyError(error, 'Could not load projects'))
+
+        if (next) {
+          void refreshProjectTree().catch(error => notifyError(error, 'Could not load projects'))
+        }
       }}
       open={open}
     >
@@ -1766,8 +1767,8 @@ function ProjectPickerControl({
           data-aro-project-control=""
           data-aro-project-selected={currentLabel ? '' : undefined}
           disabled={disabled}
-          title={currentLabel ? `Project: ${currentLabel}` : 'Attach a project'}
           size="icon"
+          title={currentLabel ? `Project: ${currentLabel}` : 'Attach a project'}
           type="button"
           variant="ghost"
         >

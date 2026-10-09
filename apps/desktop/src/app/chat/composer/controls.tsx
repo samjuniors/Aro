@@ -87,7 +87,12 @@ export function ComposerControls({
     return <ConversationPill {...conversation} disabled={disabled} />
   }
 
-  const showVoicePrimary = !busy && !hasComposerPayload
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+
+  // In Aro mode, match prototype exactly: the send button is always on the far right
+  // (disabled when empty, active when text is entered, stop button while generating).
+  // The mic button sits right next to it, rather than swapping places with send.
+  const showVoicePrimary = !isAro && !busy && !hasComposerPayload
   // Steer is just send: a payload keeps the Send affordance mid-turn. Stop
   // only when the composer is empty and a turn is running.
   const showStop = busy && !hasComposerPayload
@@ -121,8 +126,6 @@ export function ComposerControls({
       voiceStatus={voiceStatus}
     />
   )
-
-  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
 
   const modelPillCluster = minimal ? null : (
     <>
@@ -185,7 +188,7 @@ export function ComposerControls({
             <Button
               aria-label={showStop ? c.stop : c.send}
               className={PRIMARY_ICON_BTN}
-              disabled={disabled || !canSubmit}
+              disabled={disabled || (!showStop && (!canSubmit || (isAro && !hasComposerPayload)))}
               onClick={() => recordAction(showStop ? 'composer.cancel' : 'composer.send', 'click')}
               type="submit"
             >
