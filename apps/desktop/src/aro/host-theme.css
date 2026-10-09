@@ -2192,6 +2192,42 @@
 /* =========================================================================
    WORKSPACE PANEL & TAB STRIP — Prototype Design
    ========================================================================= */
+/* The workspace tool panel is a constrained flex column. Every nested pane
+   must be allowed to shrink before its own content scrolls; otherwise long
+   paths, tabs, or terminal output can push sibling controls underneath it. */
+:root[data-aro-ui='true'] .aro-workspace-sidebar {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar > .workspace-tabstrip {
+  flex: 0 0 38px;
+  min-width: 0;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar > .workspace-body {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-body > * {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow: auto;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabstrip > .workspace-tabs-scroll {
+  width: 0;
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
 :root[data-aro-ui='true'] .workspace-tabstrip {
   box-sizing: border-box;
   overflow: hidden;
@@ -2362,7 +2398,10 @@
   display: flex;
 }
 
-:root[data-aro-ui='true'] aside.is-fullscreen {
+/* Only the workspace tool panel may use this fullscreen geometry.
+   Keeping this scoped prevents unrelated side panels/overlays from inheriting
+   the same absolute positioning and unexpectedly stacking over the workbench. */
+:root[data-aro-ui='true'] .aro-workspace-sidebar.is-fullscreen {
   position: absolute !important;
   inset: 0 !important;
   box-sizing: border-box !important;
