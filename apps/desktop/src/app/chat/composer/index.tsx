@@ -8,7 +8,8 @@ import {
   useEffect,
   useId,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from 'react'
 
 import { useTourMarker } from '@/app/chat/tour-marker'
@@ -18,6 +19,7 @@ import { composerFloatingStrip, composerInputBacking } from '@/components/chat/c
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
@@ -36,7 +38,9 @@ import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
 import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
-import { openFolderAsProject, requestStartWorkSession } from '@/store/projects'
+import { enterProject, moveSessionToProject, projectRootCwd, refreshProjectTree, requestStartWorkSession, $projectTree, $projectTreeLoading } from '@/store/projects'
+import { $projectScope } from '@/store/project-scope'
+import { notifyError } from '@/store/notifications'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1146,18 +1150,7 @@ export function ChatBar({
   const leadingCluster = (
     <div className="flex min-w-0 items-center gap-0.5" data-aro-composer-leading="">
       {contextMenu}
-      <Button
-        aria-label="Open folder as project"
-        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink"
-        data-aro-project-control=""
-        onClick={() => void openFolderAsProject()}
-        size="icon"
-        title="Choose a project folder"
-        type="button"
-        variant="ghost"
-      >
-        <FolderOpen className="size-[15px]" />
-      </Button>
+      <ProjectPickerControl cwd={cwd} disabled={inputDisabled} profile={profile} sessionId={sessionId} />
       <Button
         aria-label="Slash commands"
         className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
@@ -1699,5 +1692,115 @@ export function ChatBarFallback() {
         <div aria-hidden className={composerInputBacking} />
       </div>
     </div>
+  )
+}
+
+
+/** Project selector matching the prototype's "attach/switch project" control.
+ * Existing sessions move through Hermes' workspace RPC; a fresh draft enters
+ * the project scope so the next session is created in that workspace. */
+function ProjectPickerControl({
+  cwd,
+  disabled,
+  profile,
+  sessionId
+}: {
+  cwd?: null | string
+  disabled: boolean
+  profile?: string
+  sessionId?: null | string
+}) {
+  const projects = useStore($projectTree)
+  const loading = useStore($projectTreeLoading)
+  const projectScope = useStore($projectScope)
+  const [open, setOpen] = useState(false)
+  const currentProjectId = cwd ? projects
+    .filter(project => projectRootCwd(project))
+    .filter(project => {
+      const root = projectRootCwd(project).replace(/[/\\\\]+$/, '')
+      const path = cwd.replace(/[/\\\\]+$/, '')
+      return path === root || path.startsWith(root + (root.includes('\\\\') ? '\\\\' : '/'))
+    })
+    .sort((a, b) => projectRootCwd(b).length - projectRootCwd(a).length)[0]?.id : projectScope
+  const currentProject = projects.find(project => project.id === currentProjectId)
+  const currentLabel = currentProject && !currentProject.isNoProject ? currentProject.label : undefined
+
+  const chooseProject = async (projectId: string) => {
+    const project = projects.find(item => item.id === projectId)
+    const root = project && projectRootCwd(project)
+
+    if (!project || !root || project.id === currentProjectId) {
+      setOpen(false)
+      return
+    }
+
+    try {
+      if (sessionId) {
+        await moveSessionToProject(sessionId, projectId, profile || undefined)
+      }
+      enterProject(projectId)
+      setOpen(false)
+    } catch (error) {
+      notifyError(error, 'Could not switch project')
+    }
+  }
+
+  return (
+    <DropdownMenu
+      onOpenChange={next => {
+        setOpen(next)
+        if (next) void refreshProjectTree().catch(error => notifyError(error, 'Could not load projects'))
+      }}
+      open={open}
+    >
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label={currentLabel ? `Switch project — ${currentLabel}` : 'Attach a project'}
+          className={cn(
+            'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
+            currentLabel && 'text-aro-iris-soft'
+          )}
+          data-aro-project-control=""
+          disabled={disabled}
+          title={currentLabel ? `Project: ${currentLabel}` : 'Attach a project'}
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          <FolderOpen className="size-[15px]" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64 p-1.5" side="top" sideOffset={6}>
+        <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-aro-ink-4 uppercase">
+          {currentLabel ? `Project · ${currentLabel}` : 'Choose project'}
+        </div>
+        {loading && projects.length === 0 ? (
+          <div className="px-2 py-3 text-xs text-aro-ink-3">Loading projects…</div>
+        ) : projects.filter(project => !project.isNoProject && projectRootCwd(project)).length === 0 ? (
+          <div className="px-2 py-3 text-xs text-aro-ink-3">No projects available. Add a project from the sidebar first.</div>
+        ) : (
+          projects
+            .filter(project => !project.isNoProject && projectRootCwd(project))
+            .map(project => (
+              <DropdownMenuItem
+                className={cn(
+                  'flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-xs',
+                  project.id === currentProjectId && 'bg-aro-hover text-aro-ink'
+                )}
+                key={project.id}
+                onSelect={() => void chooseProject(project.id)}
+              >
+                <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" />
+                <span className="min-w-0 flex-1 truncate">{project.label}</span>
+                {project.id === currentProjectId ? <Codicon name="check" size="0.75rem" /> : null}
+              </DropdownMenuItem>
+            ))
+        )}
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1 text-[10px] leading-relaxed text-aro-ink-4">
+          {sessionId ? 'Switching moves this chat to the selected project workspace.' : 'The next chat will start in the selected project workspace.'}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
