@@ -931,6 +931,15 @@
   color: var(--aro-iris-soft);
 }
 
+[data-aro-composer-controls] [data-aro-project-selected] {
+  color: var(--aro-iris-soft);
+}
+
+[data-aro-composer-controls] [data-aro-project-selected]:hover:not(:disabled) {
+  background: var(--aro-iris-tint);
+  color: var(--aro-iris-soft);
+}
+
 /* ── Approval / Permission pill ─────────────────────────────────────── */
 [data-aro-composer-controls] [data-aro-approval-mode] {
   height: 28px;
