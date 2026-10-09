@@ -3615,7 +3615,7 @@ export const en: Translations = {
       menuAppearance: 'Appearance',
       noColor: 'No color',
       menuAddFolder: 'Add folder',
-      menuSetActive: 'Set active',
+      menuSetActive: 'Set as default for new sessions',
       menuDelete: 'Delete',
       moveToProject: 'Move to project',
       movedTo: name => `Moved to ${name}`,
