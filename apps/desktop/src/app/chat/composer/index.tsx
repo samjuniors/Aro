@@ -38,9 +38,18 @@ import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
 import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
-import { enterProject, moveSessionToProject, projectRootCwd, refreshProjectTree, requestStartWorkSession, $projectTree, $projectTreeLoading } from '@/store/projects'
-import { $projectScope } from '@/store/project-scope'
 import { notifyError } from '@/store/notifications'
+import { $projectScope } from '@/store/project-scope'
+import {
+  $projectTree,
+  $projectTreeLoading,
+  enterProject,
+  moveSessionToProject,
+  projectIdForCwd,
+  projectRootCwd,
+  refreshProjectTree,
+  requestStartWorkSession
+} from '@/store/projects'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1714,14 +1723,7 @@ function ProjectPickerControl({
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const [open, setOpen] = useState(false)
-  const currentProjectId = cwd ? projects
-    .filter(project => projectRootCwd(project))
-    .filter(project => {
-      const root = projectRootCwd(project).replace(/[/\\\\]+$/, '')
-      const path = cwd.replace(/[/\\\\]+$/, '')
-      return path === root || path.startsWith(root + (root.includes('\\\\') ? '\\\\' : '/'))
-    })
-    .sort((a, b) => projectRootCwd(b).length - projectRootCwd(a).length)[0]?.id : projectScope
+  const currentProjectId = sessionId ? (cwd ? projectIdForCwd(cwd) : null) : projectScope
   const currentProject = projects.find(project => project.id === currentProjectId)
   const currentLabel = currentProject && !currentProject.isNoProject ? currentProject.label : undefined
 
