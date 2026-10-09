@@ -608,14 +608,14 @@ const $hasWorkspace = computed($currentCwd, cwd => Boolean(cwd.trim()))
 // is about.
 bindPaneVisibility(
   'files',
-  computed([$hasWorkspace, $fileBrowserOpen], (workspace, open) => workspace && open),
+  $fileBrowserOpen,
   () => setFileBrowserOpen(false),
   () => setFileBrowserOpen(true)
 )
 // ⌘G — the review sidebar appears/disappears (and comes to the front).
 bindPaneVisibility(
   'review',
-  computed([$reviewOpen, $hasWorkspace], (open, workspace) => open && workspace),
+  $reviewOpen,
   closeReview,
   () => openReview($reviewScopeCwd.get(), $reviewScopeTarget.get())
 )

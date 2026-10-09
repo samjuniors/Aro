@@ -196,7 +196,7 @@ export function SessionHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        {!fileBrowserOpen && Boolean(cwd || activeStoredSession?.cwd) && (
+        {!fileBrowserOpen && (
           <Tip label="Workspace panel · ⌘J" placement="toolbar" side="bottom">
             <button
               aria-label="Toggle workspace panel"

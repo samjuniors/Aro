@@ -18,7 +18,7 @@ export const DEFAULT_TREE = split(
     group(['workspace'], { id: 'grp-main' }),
     group(['files', 'review'], { id: 'grp-context' })
   ],
-  [1, 4.2, 1.35],
+  [1, 3.2, 2.2],
   'spl-root'
 )
 

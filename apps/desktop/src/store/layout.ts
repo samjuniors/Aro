@@ -36,9 +36,9 @@ export const SIDEBAR_MAX_WIDTH = 360
 // Open at the same width as the sessions sidebar so the two rails match, but
 // allow shrinking well below that (~30% under the old 14rem floor) for users who
 // want a narrow tree.
-export const FILE_BROWSER_DEFAULT_WIDTH = `${SIDEBAR_DEFAULT_WIDTH}px`
-export const FILE_BROWSER_MIN_WIDTH = '10rem'
-export const FILE_BROWSER_MAX_WIDTH = '20rem'
+export const FILE_BROWSER_DEFAULT_WIDTH = '520px'
+export const FILE_BROWSER_MIN_WIDTH = '14rem'
+export const FILE_BROWSER_MAX_WIDTH = '55rem'
 
 export const SIDEBAR_SESSIONS_PAGE_SIZE = 50
 // How deep the list reaches once a filter is on. A filter that only searches
@@ -84,7 +84,7 @@ export const FILES_PANE_ID = 'files'
 export type RightRailTabId = `artifact:${string}` | `file:${string}` | `url:${string}`
 
 ensurePaneRegistered(CHAT_SIDEBAR_PANE_ID, { open: true })
-ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: false })
+ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: true })
 
 export const $sidebarOpen: ReadableAtom<boolean> = computed(
   $paneStates,

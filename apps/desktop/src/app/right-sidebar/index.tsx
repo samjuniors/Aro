@@ -1,7 +1,7 @@
 import { useStore } from '@nanostores/react'
 import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo } from 'react'
 
-import { IconBrain, IconFolder, IconGit, IconGrid, IconList, IconTerminal } from '@/aro/Icons'
+import { IconBrain, IconBranch, IconChevronRight, IconFolder, IconGit, IconList, IconRefresh, IconTerminal } from '@/aro/Icons'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import { useI18n } from '@/i18n'
 import { normalizeOrLocalPreviewTarget } from '@/lib/local-preview'
 import { cn } from '@/lib/utils'
 import { refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
-import { $panesFlipped } from '@/store/layout'
+import { $panesFlipped, toggleRightSide } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
 import { openPreview } from '@/store/preview'
 import { openFolderAsProject } from '@/store/projects'
@@ -43,11 +43,11 @@ const SECTIONS: {
   icon: ComponentType<{ size?: number; className?: string }>
 }[] = [
   { id: 'files', label: 'Files', icon: IconFolder },
-  { id: 'plan', label: 'Plan', icon: IconList },
-  { id: 'changes', label: 'Changes', icon: IconGrid },
-  { id: 'context', label: 'Context', icon: IconBrain },
-  { id: 'git', label: 'Git', icon: IconGit },
+  { id: 'changes', label: 'Changes', icon: IconGit },
   { id: 'terminal', label: 'Terminal', icon: IconTerminal },
+  { id: 'plan', label: 'Plan', icon: IconList },
+  { id: 'context', label: 'Context', icon: IconBrain },
+  { id: 'git', label: 'Git', icon: IconBranch },
 ]
 
 export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSidebarPaneProps) {
@@ -147,22 +147,9 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
     >
-      <div className="flex h-[44px] shrink-0 items-center gap-2 border-b border-aro-line-soft bg-aro-base/85 px-3 backdrop-blur-xl">
-        <currentSection.icon size={13} className="text-aro-iris-soft" />
-        <h2 className="font-aro-sans text-[12.5px] font-semibold text-aro-ink">{currentSection.label}</h2>
-        {currentCount !== undefined && (
-          <span className="rounded-full bg-aro-hover px-1.5 font-aro-mono text-[9.5px] text-aro-ink-3">
-            {currentCount}
-          </span>
-        )}
-      </div>
-
-      <div className="flex min-h-0 flex-1">
-        {/* Left icon rail */}
-        <nav
-          aria-label="Context rail sections"
-          className="flex w-[44px] shrink-0 flex-col items-center gap-0.5 border-r border-aro-line-soft bg-aro-sunken/40 py-1.5"
-        >
+      {/* Workspace Tab Strip matching prototype */}
+      <div className="workspace-tabstrip" role="tablist" aria-label="Workspace tools">
+        <div className="workspace-tabs-scroll">
           {SECTIONS.map(item => {
             const active = section === item.id
             const count =
@@ -175,64 +162,84 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                     : undefined
 
             return (
-              <Tip key={item.id} label={item.label}>
+              <div
+                key={item.id}
+                role="tab"
+                aria-selected={active}
+                className={cn('workspace-tab', active && 'is-active')}
+              >
                 <button
                   type="button"
                   aria-label={item.label}
-                  aria-pressed={active}
+                  className="workspace-tab-main"
                   onClick={() => setRightSidebarSection(item.id)}
-                  className={cn(
-                    'group relative flex size-[34px] cursor-pointer items-center justify-center rounded-[9px] transition-all duration-150 active:scale-[.94]',
-                    active
-                      ? 'bg-aro-raise text-aro-iris-soft shadow-aro-e1'
-                      : 'text-aro-ink-3 hover:bg-aro-raise/60 hover:text-aro-ink-2'
-                  )}
+                  title={item.label}
                 >
-                  {active && (
-                    <span className="absolute top-1.5 bottom-1.5 -left-[3px] w-[2px] rounded-full bg-aro-iris" />
-                  )}
-                  <item.icon size={14} />
+                  <item.icon size={11} />
+                  <span className="workspace-tab-title">{item.label}</span>
                   {count !== undefined && count > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-[13px] min-w-[13px] items-center justify-center rounded-full bg-aro-iris px-0.5 font-aro-mono text-[8px] font-bold text-aro-on-iris">
+                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[9px] text-aro-ink-3">
                       {count}
                     </span>
                   )}
                 </button>
-              </Tip>
+              </div>
             )
           })}
-        </nav>
-
-        {/* Section content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {section === 'files' && (
-            <FilesystemTab
-              canCollapse={canCollapse}
-              collapseNonce={collapseNonce}
-              cwd={effectiveCwd}
-              cwdName={cwdName}
-              data={data}
-              error={rootError}
-              hasWorkspace={hasWorkspace}
-              loading={rootLoading}
-              onActivateFile={onActivateFile}
-              onActivateFolder={onActivateFolder}
-              onCollapseAll={collapseAll}
-              onLoadChildren={loadChildren}
-              onNodeOpenChange={setNodeOpen}
-              onPreviewFile={previewFile}
-              onRefresh={handleRefresh}
-              onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
-              openState={openState}
-              showIgnored={showIgnored}
-            />
-          )}
-          {section === 'plan' && <PlanSection />}
-          {section === 'changes' && <ChangesSection />}
-          {section === 'context' && <ContextSection />}
-          {section === 'git' && <GitSection />}
-          {section === 'terminal' && <TerminalSection />}
         </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Tip label="Refresh workspace" side="bottom">
+            <button
+              type="button"
+              className="workspace-tab-toolbar"
+              onClick={handleRefresh}
+              aria-label="Refresh workspace"
+            >
+              <IconRefresh size={12} />
+            </button>
+          </Tip>
+          <Tip label="Close workspace panel · ⌘J" side="bottom">
+            <button
+              type="button"
+              className="workspace-tab-toolbar"
+              onClick={toggleRightSide}
+              aria-label="Close workspace panel"
+            >
+              <IconChevronRight size={13} />
+            </button>
+          </Tip>
+        </div>
+      </div>
+
+      {/* Workspace Body */}
+      <div className="workspace-body flex min-h-0 flex-1 flex-col overflow-hidden">
+        {section === 'files' && (
+          <FilesystemTab
+            canCollapse={canCollapse}
+            collapseNonce={collapseNonce}
+            cwd={effectiveCwd}
+            cwdName={cwdName}
+            data={data}
+            error={rootError}
+            hasWorkspace={hasWorkspace}
+            loading={rootLoading}
+            onActivateFile={onActivateFile}
+            onActivateFolder={onActivateFolder}
+            onCollapseAll={collapseAll}
+            onLoadChildren={loadChildren}
+            onNodeOpenChange={setNodeOpen}
+            onPreviewFile={previewFile}
+            onRefresh={handleRefresh}
+            onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
+            openState={openState}
+            showIgnored={showIgnored}
+          />
+        )}
+        {section === 'changes' && <ChangesSection />}
+        {section === 'terminal' && <TerminalSection />}
+        {section === 'plan' && <PlanSection />}
+        {section === 'context' && <ContextSection />}
+        {section === 'git' && <GitSection />}
       </div>
     </aside>
   )
