@@ -72,6 +72,7 @@ export function ApprovalModePill({
         <DropdownMenuTrigger asChild>
           <button
             aria-label={`Approval mode: ${activeMeta.label}`}
+            data-aro-approval-mode=""
             className={cn(
               'inline-flex h-(--composer-control-size) cursor-pointer items-center gap-1.5 rounded-[7px] border border-aro-line-soft bg-aro-raise px-2 font-aro-mono text-[11px] font-medium transition-colors hover:bg-aro-hover hover:text-aro-ink',
               activeMeta.tone,
