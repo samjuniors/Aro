@@ -915,8 +915,25 @@
   color: var(--aro-ink);
 }
 
+/* Dedicated project action: opens the real remote-aware folder picker. */
+[data-aro-composer-controls] [data-aro-project-control] {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--aro-ink-2);
+}
+
+[data-aro-composer-controls] [data-aro-project-control]:hover:not(:disabled) {
+  background: var(--aro-hover);
+  color: var(--aro-iris-soft);
+}
+
 /* ── Approval / Permission pill ─────────────────────────────────────── */
-[data-aro-composer-controls] [data-tour='approval-mode-pill'] {
+[data-aro-composer-controls] [data-aro-approval-mode] {
   height: 28px;
   gap: 5px;
   padding-inline: 5px;
@@ -930,7 +947,7 @@
   box-shadow: none;
 }
 
-[data-aro-composer-controls] [data-tour='approval-mode-pill']:hover {
+[data-aro-composer-controls] [data-aro-approval-mode]:hover {
   color: var(--aro-ink-2);
   background: var(--aro-hover);
 }
@@ -1421,7 +1438,7 @@
     max-width: 84px;
     font-size: 10.5px;
   }
-  [data-aro-composer-controls] [data-tour='approval-mode-pill'] {
+  [data-aro-composer-controls] [data-aro-approval-mode] {
     font-size: 10.5px;
   }
   [data-aro-composer-controls] > div {
