@@ -867,7 +867,7 @@
 [data-aro-composer-controls] {
   min-height: 40px;
   gap: 5px;
-  padding-block: 2px 4px;
+  padding: 2px 7px 8px;
 }
 
 [data-aro-composer-controls] > div {
