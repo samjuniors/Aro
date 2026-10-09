@@ -26,6 +26,7 @@ import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
 import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
 import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
+import { desktopGit } from '@/lib/desktop-git'
 import { triggerHaptic } from '@/lib/haptics'
 import { FolderOpen } from '@/lib/icons'
 import { isMacPlatform } from '@/lib/platform'
@@ -1721,9 +1722,43 @@ function ProjectPickerControl({
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const [open, setOpen] = useState(false)
+  const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
   const currentProjectId = sessionId ? (cwd ? projectIdForCwd(cwd) : null) : projectScope
   const currentProject = projects.find(project => project.id === currentProjectId)
   const currentLabel = currentProject && !currentProject.isNoProject ? currentProject.label : undefined
+  const currentRoot = projectRootCwd(currentProject)
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!open || !currentRoot) {
+      setGitStatus(null)
+
+      return
+    }
+
+    const git = desktopGit()
+
+    if (!git) {
+      setGitStatus(null)
+
+      return
+    }
+
+    void git.repoStatus(currentRoot).then(status => {
+      if (!cancelled) {
+        setGitStatus(status)
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setGitStatus(null)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentRoot, open])
 
   const chooseProject = async (projectId: string) => {
     const project = projects.find(item => item.id === projectId)
@@ -1780,6 +1815,13 @@ function ProjectPickerControl({
         <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-aro-ink-4 uppercase">
           {currentLabel ? `Project · ${currentLabel}` : 'Choose project'}
         </div>
+        {currentRoot && gitStatus ? (
+          <div className="mx-1 mb-1 flex items-center gap-1.5 rounded-md bg-aro-base/50 px-2 py-1.5 text-[10px] text-aro-ink-3">
+            <Codicon name="git-branch" size="0.75rem" />
+            <span className="min-w-0 flex-1 truncate">{gitStatus.branch || 'Detached HEAD'}</span>
+            {gitStatus.changed > 0 ? <span className="shrink-0">{gitStatus.changed} changed</span> : <span className="shrink-0">Clean</span>}
+          </div>
+        ) : null}
         {loading && projects.length === 0 ? (
           <div className="px-2 py-3 text-xs text-aro-ink-3">Loading projects…</div>
         ) : projects.filter(project => !project.isNoProject && projectRootCwd(project)).length === 0 ? (
