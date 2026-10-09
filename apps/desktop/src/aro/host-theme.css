@@ -825,8 +825,7 @@
 /* Prototype composer structure: editor field above, compact action footer below. */
 :root[data-aro-ui='true'] [data-aro-composer-layout='codex'] {
   border-color: var(--aro-line-soft);
-  background: color-mix(in srgb, var(--aro-bg) 72%, transparent);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
+  background: var(--aro-overlay);
 }
 
 :root[data-aro-ui='true'] [data-aro-composer-layout='codex'] > [data-slot='input'] {
@@ -835,8 +834,8 @@
 
 :root[data-aro-ui='true'] [data-aro-composer-layout='codex'] > [data-slot='footer'],
 :root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [class*='[grid-area:footer]'] {
-  border-top-color: var(--aro-line-soft);
-  background: color-mix(in srgb, var(--aro-sunken) 54%, transparent);
+  border-top-color: transparent;
+  background: transparent;
 }
 
 :root[data-aro-ui='true'] [data-aro-composer-layout='codex'] [data-slot='composer-input'] {
