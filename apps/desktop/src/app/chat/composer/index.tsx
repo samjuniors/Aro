@@ -27,6 +27,7 @@ import { chatMessageText } from '@/lib/chat-messages'
 import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
 import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { desktopGit } from '@/lib/desktop-git'
+import { isDesktopFsRemoteMode } from '@/lib/desktop-fs'
 import { triggerHaptic } from '@/lib/haptics'
 import { IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
 import { FolderOpen } from '@/lib/icons'
@@ -1952,6 +1953,32 @@ function ProjectPickerControl({
               })
             )}
           </div>
+          <button
+            onClick={() => {
+              setOpen(false)
+              if (isDesktopFsRemoteMode()) {
+                notifyError(new Error('Cloning is available in a local Aro connection. Switch to Local before cloning onto this computer.'), 'Could not clone repository')
+                return
+              }
+
+              const repositoryUrl = window.prompt('Enter a Git repository URL (HTTPS or SSH)')
+              if (!repositoryUrl?.trim()) return
+
+              void (async () => {
+                try {
+                  const cloned = await window.hermesDesktop.cloneRepository?.(repositoryUrl.trim())
+                  if (!cloned) return
+                  await openFolderAsProject(cloned.path)
+                } catch (error) {
+                  notifyError(error, 'Could not clone repository')
+                }
+              })()
+            }}
+            className="repo-chooser-add"
+            type="button"
+          >
+            <Codicon name="repo-clone" size="0.875rem" /> Clone repository…
+          </button>
           <button
             onClick={() => {
               setOpen(false)
