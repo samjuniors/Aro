@@ -48,6 +48,7 @@ import {
   moveSessionToProject,
   projectIdForCwd,
   projectRootCwd,
+  openFolderAsProject,
   refreshProjectTree,
   requestStartWorkSession
 } from '@/store/projects'
@@ -1802,6 +1803,16 @@ function ProjectPickerControl({
             ))
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-xs"
+          onSelect={() => {
+            setOpen(false)
+            void openFolderAsProject().catch(error => notifyError(error, 'Could not open project'))
+          }}
+        >
+          <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" />
+          <span className="min-w-0 flex-1">Open local project…</span>
+        </DropdownMenuItem>
         <div className="px-2 py-1 text-[10px] leading-relaxed text-aro-ink-4">
           {sessionId ? 'Switching moves this chat to the selected project workspace.' : 'The next chat will start in the selected project workspace.'}
         </div>
