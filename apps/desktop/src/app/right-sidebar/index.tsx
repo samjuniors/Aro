@@ -351,18 +351,6 @@ function FilesystemTab({
             <Codicon name={showIgnored ? 'eye' : 'eye-closed'} size="0.8125rem" />
           </Button>
         </Tip>
-        <Tip label={r.refreshTree}>
-          <Button
-            aria-label={r.refreshTree}
-            className={HEADER_ACTION_LABEL_REVEAL}
-            disabled={loading}
-            onClick={onRefresh}
-            size="icon-xs"
-            variant="ghost"
-          >
-            <Codicon name="refresh" size="0.8125rem" spinning={loading} />
-          </Button>
-        </Tip>
         <Tip label={r.collapseAll}>
           <Button
             aria-label={r.collapseAll}
