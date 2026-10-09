@@ -25,6 +25,7 @@ import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
 import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { triggerHaptic } from '@/lib/haptics'
 import { isMacPlatform } from '@/lib/platform'
+import { FolderOpen } from '@/lib/icons'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { interceptsTypedVoiceStop } from '@/lib/voice-stop-word'
@@ -35,7 +36,7 @@ import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
 import { parkQueuedPrompts, removeQueuedPrompt, unparkQueuedPrompts } from '@/store/composer-queue'
 import { $hudMode } from '@/store/hud'
 import { $showsAdvancedChrome } from '@/store/interface-mode'
-import { requestStartWorkSession } from '@/store/projects'
+import { openFolderAsProject, requestStartWorkSession } from '@/store/projects'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1143,11 +1144,23 @@ export function ChatBar({
   )
 
   const leadingCluster = (
-    <div className="flex min-w-0 items-center gap-0.5 rounded-[8px] border border-line-soft bg-sunken/60 p-[2px]">
+    <div className="flex min-w-0 items-center gap-0.5" data-aro-composer-leading="">
       {contextMenu}
       <Button
+        aria-label="Open folder as project"
+        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink"
+        data-aro-project-control=""
+        onClick={() => void openFolderAsProject()}
+        size="icon"
+        title="Choose a project folder"
+        type="button"
+        variant="ghost"
+      >
+        <FolderOpen className="size-[15px]" />
+      </Button>
+      <Button
         aria-label="Slash commands"
-        className="h-7 w-7 rounded-[6px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground"
+        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
         disabled={inputDisabled}
         onClick={() => insertText('/')}
         size="icon"
@@ -1158,7 +1171,7 @@ export function ChatBar({
       </Button>
       <Button
         aria-label="Path and context references"
-        className="h-7 w-7 rounded-[6px] p-0 text-muted-foreground hover:bg-hover hover:text-foreground"
+        className="h-[30px] w-[30px] rounded-[7px] p-0 text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink"
         disabled={inputDisabled}
         onClick={() => insertText('@')}
         size="icon"
