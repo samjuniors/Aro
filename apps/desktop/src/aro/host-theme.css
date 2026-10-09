@@ -1677,8 +1677,18 @@
 }
 
 /* Zone header tabs: hide redundant VS Code tab strip on sessions and main chat in Aro UI */
-:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] > [data-zone-tabstrip],
-:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-zone-tabstrip] {
+:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="workspace"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="workspace"]) [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) [data-zone-tabstrip] {
   display: none !important;
 }
 
@@ -2338,6 +2348,15 @@
 }
 :root[data-aro-ui='true'] .workspace-tabpane.is-active {
   display: flex;
+}
+
+:root[data-aro-ui='true'] aside:has(.is-fullscreen),
+:root[data-aro-ui='true'] aside.is-fullscreen {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  z-index: 50 !important;
 }
 
 /* =========================================================================

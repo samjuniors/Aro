@@ -1,7 +1,27 @@
 import { useStore } from '@nanostores/react'
-import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo } from 'react'
+import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { IconBrain, IconBranch, IconChevronRight, IconFolder, IconGit, IconList, IconRefresh, IconTerminal } from '@/aro/Icons'
+import {
+  IconBrain,
+  IconBranch,
+  IconChevronRight,
+  IconFolder,
+  IconGit,
+  IconList,
+  IconMaximize,
+  IconMinimize,
+  IconPlus,
+  IconRefresh,
+  IconTerminal
+} from '@/aro/Icons'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Button } from '@/components/ui/button'
@@ -57,6 +77,20 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
   const targetCwd = useStore($focusedWorkspaceCwd)
   const hasWorkspace = Boolean(targetCwd)
   const section = useStore($rightSidebarSection)
+
+  const [fullscreen, setFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (!fullscreen) return
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        setFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', esc, true)
+    return () => window.removeEventListener('keydown', esc, true)
+  }, [fullscreen])
 
   const activeSessionId = useStore($activeSessionId)
   const selectedStoredId = useStore($selectedStoredSessionId)
@@ -144,7 +178,8 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         'before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) pt-(--titlebar-height) text-(--ui-text-tertiary)',
         panesFlipped
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
-          : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
+          : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]',
+        fullscreen && 'is-fullscreen'
       )}
     >
       {/* Workspace Tab Strip matching prototype */}
@@ -186,8 +221,45 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
               </div>
             )
           })}
+          <div className="shrink-0 inline-flex items-center">
+            <DropdownMenu>
+              <Tip label="Add a tool tab" side="bottom">
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="workspace-tab-new" aria-label="Add a tool tab">
+                    <IconPlus size={13} />
+                  </button>
+                </DropdownMenuTrigger>
+              </Tip>
+              <DropdownMenuContent align="start" className="w-56 p-1 bg-aro-sunken border-aro-line-soft">
+                <DropdownMenuLabel className="text-[10.5px] uppercase font-semibold text-aro-ink-4 px-2 py-1">
+                  Workspace Tools
+                </DropdownMenuLabel>
+                {SECTIONS.map(tool => (
+                  <DropdownMenuItem
+                    key={tool.id}
+                    onClick={() => setRightSidebarSection(tool.id)}
+                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[12px] text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink"
+                  >
+                    <tool.icon size={13} className="text-aro-ink-3" />
+                    <span>{tool.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
+          <Tip label={fullscreen ? 'Exit full screen · Esc' : 'Full screen workspace tool'} side="bottom">
+            <button
+              type="button"
+              className={cn('workspace-panel-full', fullscreen && 'is-on')}
+              onClick={() => setFullscreen(v => !v)}
+              aria-label={fullscreen ? 'Exit full screen' : 'Full screen workspace tool'}
+              aria-pressed={fullscreen}
+            >
+              {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
+            </button>
+          </Tip>
           <Tip label="Refresh workspace" side="bottom">
             <button
               type="button"

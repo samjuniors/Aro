@@ -77,7 +77,8 @@ import {
   setCurrentCwd,
   setMessages,
   setNewChatWorkspaceTarget,
-  setSelectedStoredSessionId
+  setSelectedStoredSessionId,
+  setSessions
 } from '@/store/session'
 import { setWorkspaceScope } from '@/components/pane-shell/workspace-scope'
 import { notify } from '@/store/notifications'
@@ -404,6 +405,11 @@ export function AroSidebar({
   const handleNewSession = useCallback(
     (projectId?: string) => {
       setWorkspaceScope('sessions')
+      const newSessionId = `draft_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`
+      const now = Date.now() / 1000
+      const effectiveProfile =
+        currentProfileName && currentProfileName !== 'all' ? currentProfileName : 'default'
+
       if (projectId) {
         const treeNode = projectTree.find(n => n.id === projectId)
         const proj = effectiveProjects.find(p => p.id === projectId)
@@ -428,8 +434,30 @@ export function AroSidebar({
             onNewSessionInWorkspace(null)
           }
         }
-        setActiveSessionId(null)
-        setSelectedStoredSessionId(null)
+
+        const draftSession: SessionInfo = {
+          id: newSessionId,
+          title: 'New session',
+          started_at: now,
+          last_active: now,
+          ended_at: null,
+          is_active: false,
+          message_count: 0,
+          input_tokens: 0,
+          output_tokens: 0,
+          tool_call_count: 0,
+          preview: null,
+          model: null,
+          source: 'local',
+          cwd: cwd || null,
+          profile: effectiveProfile,
+          is_default_profile: effectiveProfile === 'default'
+        }
+
+        void assignSessionToProject(newSessionId, projectId)
+        setSessions(prev => [draftSession, ...prev.filter(s => s.id !== newSessionId)])
+        setActiveSessionId(newSessionId)
+        setSelectedStoredSessionId(newSessionId)
         setMessages([])
         navigate(NEW_CHAT_ROUTE)
       } else {
@@ -438,13 +466,35 @@ export function AroSidebar({
         if (onNewSessionInWorkspace) {
           onNewSessionInWorkspace(null)
         }
-        setActiveSessionId(null)
-        setSelectedStoredSessionId(null)
+
+        const draftSession: SessionInfo = {
+          id: newSessionId,
+          title: 'New session',
+          started_at: now,
+          last_active: now,
+          ended_at: null,
+          is_active: false,
+          message_count: 0,
+          input_tokens: 0,
+          output_tokens: 0,
+          tool_call_count: 0,
+          preview: null,
+          model: null,
+          source: 'local',
+          cwd: null,
+          profile: effectiveProfile,
+          is_default_profile: effectiveProfile === 'default'
+        }
+
+        unassignSessionFromProject(newSessionId)
+        setSessions(prev => [draftSession, ...prev.filter(s => s.id !== newSessionId)])
+        setActiveSessionId(newSessionId)
+        setSelectedStoredSessionId(newSessionId)
         setMessages([])
         navigate(NEW_CHAT_ROUTE)
       }
     },
-    [onNewSessionInWorkspace, navigate, projectTree, effectiveProjects]
+    [onNewSessionInWorkspace, navigate, projectTree, effectiveProjects, currentProfileName]
   )
 
   // Handle Move Session to Project
@@ -465,6 +515,13 @@ export function AroSidebar({
   const handleSelectSession = useCallback((sessionId: string) => {
     setAroDraftProject(null)
     setCursorId(sessionId)
+    if (sessionId.startsWith('draft_')) {
+      setSelectedStoredSessionId(sessionId)
+      setActiveSessionId(sessionId)
+      setMessages([])
+      navigate(NEW_CHAT_ROUTE)
+      return
+    }
     openSession(sessionId, navigate)
   }, [navigate])
 
@@ -486,6 +543,14 @@ export function AroSidebar({
       e.preventDefault()
       if (!renamingSession || !renameTitle.trim()) return
 
+      if (renamingSession.id.startsWith('draft_')) {
+        setSessions(prev =>
+          prev.map(s => (s.id === renamingSession.id ? { ...s, title: renameTitle.trim() } : s))
+        )
+        setRenamingSession(null)
+        return
+      }
+
       try {
         await renameSession(renamingSession.id, renameTitle.trim())
       } catch {
@@ -502,6 +567,17 @@ export function AroSidebar({
       if (!deletingSession) return
       const id = deletingSession.id
 
+      if (id.startsWith('draft_')) {
+        setSessions(prev => prev.filter(s => s.id !== id))
+        unassignSessionFromProject(id)
+        if (selectedSessionId === id) {
+          setActiveSessionId(null)
+          setSelectedStoredSessionId(null)
+        }
+        setDeletingSession(null)
+        return
+      }
+
       if (onDeleteSession) {
         onDeleteSession(id)
       } else {
@@ -513,7 +589,7 @@ export function AroSidebar({
       }
       setDeletingSession(null)
     },
-    [deletingSession, onDeleteSession]
+    [deletingSession, onDeleteSession, selectedSessionId]
   )
 
   // Handle Archive Session

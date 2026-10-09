@@ -17,7 +17,7 @@ import {
   moveSessionToProject,
   projectRootCwd
 } from '@/store/projects'
-import { $selectedStoredSessionId, $sessions } from '@/store/session'
+import { $selectedStoredSessionId, $sessions, setSessions } from '@/store/session'
 import { liveSessionProjectId } from '@/app/chat/sidebar/projects/workspace-groups'
 
 const STORAGE_KEY = 'aro.session.projectMap'
@@ -175,11 +175,26 @@ if (typeof window !== 'undefined') {
     knownSessionIds = new Set(sessions.map((s: SessionInfo) => s.id))
   })
 
-  // Also watch $selectedStoredSessionId for immediate binding on send
+  // Also watch $selectedStoredSessionId for immediate binding on send and draft cleanup
   $selectedStoredSessionId.subscribe((selectedId: string | null) => {
+    if (!selectedId || selectedId.startsWith('draft_')) return
+
     const draftPid = $aroDraftProjectId.get()
-    if (selectedId && draftPid) {
+    const allSessions = $sessions.get()
+    const draft = allSessions.find((s: SessionInfo) => s.id.startsWith('draft_'))
+
+    if (draft) {
+      const explicitProject = $aroSessionProjectMap.get()[draft.id] || draftPid
+      if (explicitProject) {
+        void assignSessionToProject(selectedId, explicitProject)
+      }
+      unassignSessionFromProject(draft.id)
+      setSessions((prev: SessionInfo[]) => prev.filter((s: SessionInfo) => s.id !== draft.id))
+    } else if (draftPid) {
       void assignSessionToProject(selectedId, draftPid)
+    }
+
+    if (draftPid) {
       $aroDraftProjectId.set(null)
     }
   })
