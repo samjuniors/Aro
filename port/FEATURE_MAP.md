@@ -4,7 +4,7 @@ One row per feature. Status values: `wired` (prototype UI, backed by Hermes), `p
 
 **Status determination (resume mode)**: statuses were determined by running the ported UI against the real Python backend on 2026-10-10 (DECISIONS D-0013/D-0014): `hermes serve` on 127.0.0.1:38541 + Electron renderer under Xvfb driven via CDP. "live ✓" in Notes = observed working against the real backend in that run. "not exercised" = surface present but the interaction could not be driven headless (no provider credentials, no mic, native dialogs). Hermes host screens adopted wholesale under the Aro skin are `hermes-only` with their reachability recorded.
 
-Counts (102 features): wired 60 · partial 5 · local 11 · hermes-only 22 · dropped 4. (UNKNOWNs listed at the bottom.)
+Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dropped 4. (Row-by-row recount verified 2026-10-10; the earlier "102 / local 11" header was an overcount — corrected, no row invented or removed. UNKNOWNs listed at the bottom.)
 
 ## Chat core
 
@@ -142,7 +142,7 @@ Counts (102 features): wired 60 · partial 5 · local 11 · hermes-only 22 · dr
 | design-profiles | `data-design` axis (5 profiles) | — | local | local | — | none | Aro structural tokens (`--d-*`); presentation only |
 | reply-backend-switch | demo/agent/live switch | gateway (single path) | dropped | — | — | — | collapsed per D-0008; bridge engine switch remains on the Aro Bridge page |
 | scripted-demo-engine | runScripted demo corpus | — (bridge demo engine kept for `/aro-agent`) | dropped | — | — | — | SofiaUI corpus not ported as chat data |
-| nextjs-server-routes | `/api/chat`, `/api/workbench/stt|tts`, `/api` | gateway + audio REST | dropped | — | — | — | D-0008: STT already → `/api/audio/transcribe`; TTS → `/api/audio/speak`; hello route deleted |
+| nextjs-server-routes | `/api/chat`, `/api/workbench/stt`, `/api/workbench/tts`, `/api` | gateway + audio REST | dropped | — | — | — | D-0008: STT already → `/api/audio/transcribe`; TTS → `/api/audio/speak`; hello route deleted |
 | dead-template-deps | ~40 package.json deps | — | dropped | — | — | — | D-0007 |
 | prototype-state-bus | `conductor:*`/`aro:*` CustomEvents | — | local | local | — | none (renderer-internal) | kept stable; renderer-internal names (WIRE_BASELINE excludes by design) |
 | onboarding-doctor | Onboarding doctor sweep | `/api/ops/doctor` (different feature) | local | local | — | `ops.doctor` summary | medium-confidence pair NOT merged; Hermes doctor kept as diagnostics |

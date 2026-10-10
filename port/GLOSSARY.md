@@ -96,7 +96,7 @@ Kind legend: screen / entity / field / action / setting / event / storage / comp
 | `session.title` | `session.title` (may be `""` until auto-titler runs) | Session | **live**: our session has empty title, preview holds the text — session picker filters on title (explains no search hit) |
 | `session.tokens` | `session.usage` (event) | Session | usage shown in Context tab, not stored on session row |
 | `mode.id` (agent/readonly/plan/full) | `approvals.mode` (smart/manual/off/yolo) | Setting | see FEATURE_MAP `approval-mode`; `readonly`/`plan` have NO Hermes approval-mode value (D-0015) |
-| `effort` 0–4 | `reasoning` effort ids (`minimal|low|medium|high|xhigh|max|ultra`) | Setting | 5-stop slider maps xhigh→high, max→ultra presentation; `ultra` clamps to `max` on OpenAI-compatible wires (`reasoning-effort.ts`) |
+| `effort` 0–4 | `reasoning` effort ids (`minimal\|low\|medium\|high\|xhigh\|max\|ultra`) | Setting | 5-stop slider maps xhigh→high, max→ultra presentation; `ultra` clamps to `max` on OpenAI-compatible wires (`reasoning-effort.ts`) |
 | `provider.id` (ollama/lm-studio probes) | provider registry + custom endpoints | Provider | probe logic client-side; listing = Hermes |
 | `step.kind` (8 prototype kinds) | event types (`message.*`, `tool.*`, `status.update`, …) | Step | translation lives in the ported event handlers, not in components |
 
