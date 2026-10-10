@@ -112,8 +112,8 @@ Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dr
 | notifications | — | desktop alerts/sounds | hermes-only | hermes | main-side prefs | — | kept |
 | updates | — | app updates | hermes-only | hermes | updater IPC | — | kept |
 | diagnostics | — | doctor / debug-share / log tail | hermes-only | hermes | `/api/ops/*` | — | kept ("Send diagnostics" live ✓ on error card) |
-| i18n | — | 9 locales | hermes-only | hermes | `src/i18n` | — | kept (Aro chrome is English-first; host strings translated) |
-| themes | AppearanceSettings | theme system + accent + VSCode import | wired | hermes | `hermes-desktop-theme-v2` etc. | — | settings tree live ✓; Aro token layer rides on top (GLOSSARY storage) |
+| i18n | — | 9 locales | hermes-only | hermes | `src/i18n` | — | kept (Aro chrome is English-first; host strings translated). **A0 live ✓ 2026-10-11**: all 9 locales cycled through the real LanguageSwitcher (zh 模型 · ja モデル · ar النموذج · ru Модель · fr · de · zh-hant `lang=zh-hant` 設定/檔 · es Modelo) and back to en; no crash; backend-contributed packs (it/ko/pt/tr/uk/…) listed too |
+| themes | AppearanceSettings | theme system + accent + VSCode import | wired | hermes | `hermes-desktop-theme-v2` etc. | — | settings tree live ✓; Aro token layer rides on top (GLOSSARY storage). **A0 live ✓ 2026-10-11**: round-trip via settings UI nous→ember→reload(survives)→obsidian→nous; `data-theme` follows the skin, Aro `--aro-*`/`--t-*` tokens react (iris #7c6bff↔#ff8a4c); specificity defect fixed (obsidian block's `:root[data-aro-ui]` froze the token layer — removed, tokens.css) |
 | usage-analytics | Usage page | context/usage analytics | wired | hermes | `session.usage` events | — | live ✓ in Context tab |
 | model-presets | — | presets/favorites/custom endpoints | hermes-only | hermes | model RPC | — | kept (settings tree live ✓) |
 | wake-word | — | wake word | hermes-only | hermes | `wake.*` | — | kept |
@@ -139,12 +139,12 @@ Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dr
 | rules | Rules (global instructions) | — (SOULs are a different concept) | local | local | — | `rules.list/add/remove` → future profile/rules endpoint | medium-confidence pair with SOULs NOT merged (D-0017) |
 | agents-adapters | AgentsView (agent catalog) | — (subagents are runtime, not adapters) | local | local | — | `agents.list/register` | medium-confidence pair NOT merged |
 | external-editors-list | BridgesView (INSTALLED_IDES) | IDE open IPC (open only) | local | local | open via hermes IPC | `editors.list/detect` | IDE list is local; opening delegates to Hermes IPC |
-| design-profiles | `data-design` axis (5 profiles) | — | local | local | — | none | Aro structural tokens (`--d-*`); presentation only |
+| design-profiles | `data-design` axis (5 profiles) | — | local | local | — | none | Aro structural tokens (`--d-*`); presentation only. **A0 implemented + live ✓ 2026-10-11**: 5 profile blocks + density + motion ported to `tokens.css` (prototype values verbatim), applied at boot by `aro/design-axes.ts` (`conductor.design/density/motion`, D-0011); all 5 profiles verified live (radius 12/8/14/3/8px + display fonts/sizes), compact 28↔34px rows, reduced-motion 0.12s→1e-06s, restart-survival ✓; profile→theme coupling deferred to A11 (recorded in design-axes.ts) |
 | reply-backend-switch | demo/agent/live switch | gateway (single path) | dropped | — | — | — | collapsed per D-0008; bridge engine switch remains on the Aro Bridge page |
 | scripted-demo-engine | runScripted demo corpus | — (bridge demo engine kept for `/aro-agent`) | dropped | — | — | — | SofiaUI corpus not ported as chat data |
 | nextjs-server-routes | `/api/chat`, `/api/workbench/stt`, `/api/workbench/tts`, `/api` | gateway + audio REST | dropped | — | — | — | D-0008: STT already → `/api/audio/transcribe`; TTS → `/api/audio/speak`; hello route deleted |
 | dead-template-deps | ~40 package.json deps | — | dropped | — | — | — | D-0007 |
-| prototype-state-bus | `conductor:*`/`aro:*` CustomEvents | — | local | local | — | none (renderer-internal) | kept stable; renderer-internal names (WIRE_BASELINE excludes by design) |
+| prototype-state-bus | `conductor:*`/`aro:*` CustomEvents | — | local | local | — | none (renderer-internal) | kept stable; renderer-internal names (WIRE_BASELINE excludes by design). **A0 checked ✓ 2026-10-11**: exactly 2 dispatch sites unchanged (`aro:product-mode-changed` mode.ts, `conductor:voice:orb` AroTitlebar.tsx — the latter matches the prototype's event name); live dispatch propagates, no listeners today (fire-and-forget, as recorded) |
 | onboarding-doctor | Onboarding doctor sweep | `/api/ops/doctor` (different feature) | local | local | — | `ops.doctor` summary | medium-confidence pair NOT merged; Hermes doctor kept as diagnostics |
 
 ## Unknowns (recorded, not guessed)

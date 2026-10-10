@@ -179,8 +179,11 @@
 }
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */
+/* NOTE: no `:root[data-aro-ui='true']` selector here — that compound would
+   out-specify every sibling theme block's `html[data-theme='…']` (0,2,0 vs
+   0,1,1) and freeze the root on obsidian. `:root` alone already covers the
+   always-on default; sibling themes override it by cascade order. */
 :root,
-:root[data-aro-ui='true'],
 html[data-theme='obsidian'],
 [data-theme='obsidian'] {
   color-scheme: dark;
@@ -276,8 +279,6 @@ html[data-theme='obsidian'],
   --color-sky: var(--aro-sky);
   --color-sky-tint: color-mix(in srgb, var(--aro-sky) 12%, var(--aro-bg));
 
-  --d-chrome-height: 40px;
-  --d-composer-radius: 16px;
   --shadow-e1: 0 1px 2px var(--aro-shadow-a);
   --shadow-e2: 0 2px 8px -2px var(--aro-shadow-b);
   --shadow-e3: 0 12px 32px -8px var(--aro-shadow-c);
@@ -427,6 +428,104 @@ html[data-theme='paper'],
   --aro-shadow-b: rgba(60, 45, 20, 0.09);
   --aro-shadow-c: rgba(60, 45, 20, 0.15);
   --aro-shadow-d: rgba(60, 45, 20, 0.22);
+}
+
+/* ============================================================================
+   3b · DESIGN AXES — profiles (`data-design`), density (`data-density`),
+   motion (`data-motion`). Presentation-only (FEATURE_MAP `design-profiles`).
+   Ported from `prototype/src/app/globals.css` "DESIGN SYSTEM PROFILES" +
+   `AppearanceSettings.tsx`; values verbatim — the two dead `--d-*` constants
+   previously carried in the obsidian block are superseded by the aro profile
+   (they had zero consumers; `--d-chrome-height` here is the prototype's 46px).
+   Applied by `src/aro/design-axes.ts` on the primary window's opt-in root.
+   ============================================================================ */
+
+/* ---- aro · the default profile (also the bare-html fallback) -------------- */
+html,
+html[data-design='aro'] {
+  --d-font-display: var(--f-grotesk, "Space Grotesk"), "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 12px; --d-radius-panel: 10px; --d-radius-control: 7px;
+  --d-sidebar-size: 272px; --d-context-size: 368px; --d-chrome-height: 46px;
+  --d-border-opacity: 1; --d-panel-shadow: var(--shadow-e2); --d-panel-padding: 12px;
+  --d-type-scale: 1; --d-rule-weight: 1px;
+  --d-row-height: 29px; --d-control-height: 30px; --d-page-gutter: 24px; --d-composer-radius: 16px; --d-content-max: 820px;
+}
+html[data-design='codex'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 8px; --d-radius-panel: 8px; --d-radius-control: 6px;
+  --d-sidebar-size: 292px; --d-context-size: 400px; --d-chrome-height: 44px;
+  --d-border-opacity: .86; --d-panel-shadow: 0 1px 3px rgba(0,0,0,.28); --d-panel-padding: 10px;
+  --d-type-scale: .98; --d-rule-weight: 1px;
+  --d-row-height: 27px; --d-control-height: 28px; --d-page-gutter: 20px; --d-composer-radius: 12px; --d-content-max: 800px;
+}
+html[data-design='claude'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 14px; --d-radius-panel: 12px; --d-radius-control: 8px;
+  --d-sidebar-size: 284px; --d-context-size: 382px; --d-chrome-height: 48px;
+  --d-border-opacity: .9; --d-panel-shadow: 0 8px 24px rgba(0,0,0,.18); --d-panel-padding: 14px;
+  --d-type-scale: 1.01; --d-rule-weight: 1px;
+  --d-row-height: 31px; --d-control-height: 32px; --d-page-gutter: 24px; --d-composer-radius: 16px; --d-content-max: 840px;
+}
+html[data-design='editorial'] {
+  --d-font-display: var(--f-newsreader, "Newsreader"), Georgia, serif;
+  --d-font-sans: var(--f-dmsans, "DM Sans"), "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 3px; --d-radius-panel: 4px; --d-radius-control: 3px;
+  --d-sidebar-size: 304px; --d-context-size: 420px; --d-chrome-height: 52px;
+  --d-border-opacity: 1; --d-panel-shadow: 0 1px 0 color-mix(in srgb, var(--color-ink) 14%, transparent); --d-panel-padding: 16px;
+  --d-type-scale: 1.04; --d-rule-weight: 2px;
+  --d-row-height: 33px; --d-control-height: 34px; --d-page-gutter: 28px; --d-composer-radius: 4px; --d-content-max: 900px;
+}
+html[data-design='cursor'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 8px; --d-radius-panel: 6px; --d-radius-control: 5px;
+  --d-sidebar-size: 248px; --d-context-size: 352px; --d-chrome-height: 42px;
+  --d-border-opacity: .92; --d-panel-shadow: 0 1px 2px rgba(0,0,0,.24); --d-panel-padding: 8px;
+  --d-type-scale: .94; --d-rule-weight: 1px;
+  --d-row-height: 25px; --d-control-height: 26px; --d-page-gutter: 18px; --d-composer-radius: 10px; --d-content-max: 780px;
+}
+
+/* ---- typography scale — every profile gets real px steps ----------------- */
+html[data-design='aro'] { --d-size-display: 23px; --d-size-title: 13.5px; --d-size-body: 13.5px; --d-size-meta: 12px; --d-size-mono: 11.5px; --d-leading: 1.65; }
+html[data-design='codex'] { --d-size-display: 20px; --d-size-title: 13px; --d-size-body: 13px; --d-size-meta: 11.5px; --d-size-mono: 11px; --d-leading: 1.6; }
+html[data-design='claude'] { --d-size-display: 24px; --d-size-title: 13.5px; --d-size-body: 13.5px; --d-size-meta: 12px; --d-size-mono: 11.5px; --d-leading: 1.68; }
+html[data-design='editorial'] { --d-size-display: 38px; --d-size-title: 16px; --d-size-body: 13.5px; --d-size-meta: 11.5px; --d-size-mono: 11.5px; --d-leading: 1.7; }
+html[data-design='cursor'] { --d-size-display: 18px; --d-size-title: 12.5px; --d-size-body: 12.5px; --d-size-meta: 11px; --d-size-mono: 10.5px; --d-leading: 1.58; }
+
+/* Typography hooks (prototype grammar — page titles read through .font-display). */
+html[data-design] .ds-display { font-size: var(--d-size-display); }
+html[data-design] .ds-body { font-size: var(--d-size-body); line-height: var(--d-leading); }
+html[data-design] .ds-meta { font-size: var(--d-size-meta); }
+html[data-design] .ds-mono { font-size: var(--d-size-mono); }
+html[data-design] .font-display { font-family: var(--d-font-display); }
+
+/* ---- density axis — compact tightens the port's Aro chrome rows ----------- */
+html[data-density='compact'] .sidebar-navigation-row,
+html[data-density='compact'] .bot-roster-row {
+  min-height: 28px;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+  padding-top: 1.25rem;
+  padding-bottom: 1rem;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  margin-block: 0.25rem 0.5rem;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] .composer-human-message {
+  padding: 0.5rem 0.7rem;
+}
+
+/* ---- motion axis — reduced kills decorative animation globally ----------- */
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* ============================================================================

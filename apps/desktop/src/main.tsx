@@ -26,6 +26,7 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router'
 
 import App from './app'
+import { applyDesignAxes } from './aro/design-axes'
 import { RootErrorBoundary } from './components/error-boundary'
 import { HapticsProvider } from './components/haptics-provider'
 import { RootTooltipProvider } from './components/ui/tooltip'
@@ -59,6 +60,10 @@ const winParam = new URLSearchParams(window.location.search).get('win')
 if (!winParam) {
   document.documentElement.dataset.aroUi = 'true'
   document.documentElement.dataset.theme = 'obsidian'
+  // Design axes (data-design / data-density / data-motion) — the prototype's
+  // presentation-only profile system, persisted under conductor.* (D-0011).
+  // Applied before React mounts so the first paint already has the axes.
+  applyDesignAxes()
 }
 
 if (winParam === 'hud') {
