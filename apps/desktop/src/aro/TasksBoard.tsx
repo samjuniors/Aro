@@ -67,16 +67,41 @@ function TaskCard({ t, blocked, onOpen, active }: { t: Task; blocked?: boolean; 
 
 export function AroTasksPage() {
   const { items, toast } = useToasts()
-  const { tasks: sourceTasks, live, hasSession } = useAroTasks()
+  const { tasks: sourceTasks, live, hasSession, local, isUserTask, createUserTask, moveUserTask, removeUserTask } = useAroTasks()
   const [layout, setLayout] = useState<'board' | 'list'>('board')
-  const [sel, setSel] = useState<string | null>(live ? null : 'k1')
+  const [sel, setSel] = useState<string | null>(live || local ? null : 'k1')
   const [q, setQ] = useState('')
   const [overrides, setOverrides] = useState<Record<string, TaskStatus>>({})
+  const [composing, setComposing] = useState(false)
+  const [draft, setDraft] = useState('')
   const tasks = useMemo(() => sourceTasks.map(t => (overrides[t.id] ? { ...t, status: overrides[t.id]! } : t)), [sourceTasks, overrides])
   const task = tasks.find((t) => t.id === sel)
   const filtered = tasks.filter((t) => (t.title + t.key + t.tags.join()).toLowerCase().includes(q.toLowerCase()))
   const isBlocked = (t: Task) => Boolean(t.deps?.some((d) => tasks.find((x) => x.id === d)?.status !== 'done'))
-  const move = (id: string, status: TaskStatus) => setOverrides((o) => ({ ...o, [id]: status }))
+
+  // User tasks persist through the local adapter (survive restarts);
+  // agent-todo moves stay ephemeral — the agent owns its list (D-0009).
+  const move = (id: string, status: TaskStatus) => {
+    if (isUserTask(id)) {
+      moveUserTask(id, status)
+
+      return
+    }
+
+    setOverrides((o) => ({ ...o, [id]: status }))
+  }
+
+  const submitNewTask = () => {
+    const title = draft.trim()
+
+    if (!title) {return}
+
+    createUserTask(title)
+    setDraft('')
+    setComposing(false)
+    toast('Saved to your local task list — it stays on this device', 'mint')
+  }
+
   const running = tasks.filter((t) => t.status === 'running').length
   const doneCount = tasks.filter((t) => t.status === 'done').length
 
@@ -84,20 +109,28 @@ export function AroTasksPage() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
       <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
         <div className="min-w-0">
-          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">work graph · {live ? 'agent todo_list' : 'pattern'}</div>
+          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">work graph · {live ? 'agent todo_list' : local ? 'your tasks' : 'pattern'}</div>
           <h1 className="text-[15px] font-semibold text-aro-ink">Tasks</h1>
-          <p className="mt-0.5 text-[11.5px] text-aro-ink-3">{live ? 'This board is the session’s live todo_list — statuses stream in as the agent works.' : 'Every task knows who does it (agent or you), what done means, what it costs, and what blocks it.'}</p>
+          <p className="mt-0.5 text-[11.5px] text-aro-ink-3">{live ? 'This board is the session’s live todo_list — statuses stream in as the agent works.' : local ? 'Your own tasks, saved on this device — separate from the agent’s plans.' : 'Every task knows who does it (agent or you), what done means, what it costs, and what blocks it.'}</p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <SourceBadge live={live} />
+          <SourceBadge live={live} local={local} />
           <div className="relative">
             <IconSearch className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-aro-ink-4" size={12} />
             <Input aria-label="Filter tasks" className="w-[190px] pl-7" onChange={(e) => setQ(e.target.value)} placeholder="Filter tasks…" value={q} />
           </div>
           <Segmented items={[{ value: 'board', label: 'Board', icon: IconGrid }, { value: 'list', label: 'List', icon: IconList }]} onChange={setLayout} value={layout} />
-          {!live && <Button icon={IconRefresh} onClick={() => toast('Synced 14 issues from Linear · 6 from GitHub', 'mint')} variant="secondary">Sync</Button>}
+          {!live && !local && <Button icon={IconRefresh} onClick={() => toast('Synced 14 issues from Linear · 6 from GitHub', 'mint')} variant="secondary">Sync</Button>}
           <Button icon={IconSpark} onClick={() => toast(live ? 'Ask the agent to decompose a goal — new todos stream onto this board' : 'Agent decomposed 1 epic into 4 tasks', live ? 'iris' : 'mint')} variant="secondary">Decompose</Button>
-          <Button icon={IconPlus} onClick={() => toast(live ? 'R5 wires prompt.submit so a new task reaches the agent — for now it lands on your local list' : 'R5 wires this to the agent kanban store — delegate_task + board events', 'iris')} variant="primary">New task</Button>
+          {composing ? (
+            <form className="flex items-center gap-1.5" onSubmit={(e) => { e.preventDefault(); submitNewTask() }}>
+              <Input aria-label="New task title" autoFocus className="w-[220px]" onChange={(e) => setDraft(e.target.value)} placeholder="What needs to be done?" value={draft} />
+              <Button disabled={!draft.trim()} icon={IconCheck} size="sm" type="submit" variant="primary">Add</Button>
+              <IconButton icon={IconX} label="Cancel new task" onClick={() => { setComposing(false); setDraft('') }} size={24} />
+            </form>
+          ) : (
+            <Button icon={IconPlus} onClick={() => setComposing(true)} variant="primary">New task</Button>
+          )}
         </div>
       </header>
 
@@ -231,16 +264,19 @@ export function AroTasksPage() {
                 icon={IconBolt}
                 onClick={() => {
                   move(task.id, 'running')
-                  toast(live ? 'R5 wires delegate_task dispatch — status moved locally for now' : `Dispatched ${task.key} to ${task.assignee ? agentById(task.assignee).name : 'best agent'}`, 'iris')
+                  toast(isUserTask(task.id) ? 'Status saved to your local task list' : `Dispatched ${task.key} to ${task.assignee ? agentById(task.assignee).name : 'best agent'}`, isUserTask(task.id) ? 'mint' : 'iris')
                 }}
                 variant="primary"
               >
                 {task.human ? 'Start' : 'Run with agent'}
               </Button>
               <div className="flex gap-1.5">
-                <Button className="flex-1" onClick={() => toast('Added to your todo list', 'mint')} size="xs" variant="outline">Add to my todos</Button>
+                <Button className="flex-1" onClick={() => { createUserTask(task.title); toast('Copied to your local task list', 'mint') }} size="xs" variant="outline">Add to my todos</Button>
                 <Button className="flex-1" onClick={() => toast('Agent split the task into 3 subtasks', 'iris')} size="xs" variant="outline">Split</Button>
               </div>
+              {isUserTask(task.id) && (
+                <Button className="w-full" onClick={() => { removeUserTask(task.id); setSel(null); toast('Removed from your local task list', 'mint') }} size="xs" variant="outline">Delete task</Button>
+              )}
             </div>
           </aside>
         )}

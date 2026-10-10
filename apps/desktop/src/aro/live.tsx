@@ -25,6 +25,7 @@ import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
+import { $userTasks, adapters, type WorkspaceTask, type WorkspaceTaskStatus } from '@/adapters'
 import { openSessionFromPicker } from '@/app/open-session'
 import type { ChatMessage, ChatMessagePart } from '@/lib/chat-messages/types'
 import { desktopGit } from '@/lib/desktop-git'
@@ -39,7 +40,7 @@ import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 import { $workspaceChangeTick } from '@/store/workspace-events'
 import type { SessionInfo } from '@/types/hermes'
 
-import { type DiffFile, type DiffLine, REVIEW_CHECKPOINTS, type Step, type Task, TASKS, type ToolName, TRANSCRIPT } from './workbenchData'
+import { type DiffFile, type DiffLine, REVIEW_CHECKPOINTS, type Step, type Task, TASKS, type TaskStatus, type ToolName, TRANSCRIPT } from './workbenchData'
 
 /* ============================ pure adapters ============================ */
 
@@ -345,13 +346,29 @@ function approvalRisk(command: string): 'low' | 'medium' | 'high' {
 
 /* ============================ source badge ============================ */
 
-export function SourceBadge({ live, demoLabel }: { live: boolean; demoLabel?: string }) {
-  return live ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-mint uppercase">
-      <i className="size-[5px] animate-aro-breathe rounded-full bg-aro-mint" />
-      live
-    </span>
-  ) : (
+export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLabel?: string; local?: boolean }) {
+  if (live) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-mint uppercase">
+        <i className="size-[5px] animate-aro-breathe rounded-full bg-aro-mint" />
+        live
+      </span>
+    )
+  }
+
+  if (local) {
+    return (
+      <span
+        className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-iris/30 bg-aro-iris-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-iris-soft uppercase"
+        title="Your own tasks, persisted on this device (conductor.workspace.v3.tasks). They are not agent todos and never leave the app."
+      >
+        <i className="size-[5px] rounded-full bg-aro-iris" />
+        your list · local
+      </span>
+    )
+  }
+
+  return (
     <span
       className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-amber/30 bg-aro-amber-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-amber uppercase"
       title="No live data yet — the seed shapes from the prototype are shown. Start a session (or open one) and this page goes live on its own."
@@ -556,10 +573,67 @@ export function useAroReview(): AroReviewData {
 
 /* ============================ tasks ============================ */
 
-export function useAroTasks() {
+/** Board column ↔ prototype workspace status (translation lives here, in
+ * the wiring layer — never in components; GLOSSARY "Field-level renames"). */
+const TASK_STATUS_TO_COLUMN: Record<WorkspaceTaskStatus, TaskStatus> = {
+  todo: 'backlog',
+  doing: 'running',
+  done: 'done'
+}
+
+const COLUMN_TO_TASK_STATUS: Record<TaskStatus, WorkspaceTaskStatus> = {
+  backlog: 'todo',
+  ready: 'todo',
+  running: 'doing',
+  review: 'doing',
+  done: 'done'
+}
+
+/** A user task (local adapter) → the board's work-graph card. */
+export function userTaskToCard(t: WorkspaceTask, index: number): Task {
+  return {
+    id: t.id,
+    key: `MINE-${String(index + 1).padStart(2, '0')}`,
+    title: t.title,
+    status: TASK_STATUS_TO_COLUMN[t.status] ?? 'backlog',
+    priority: 'p2',
+    source: 'manual',
+    human: true,
+    estimate: '—',
+    criteria: [],
+    tags: ['mine']
+  }
+}
+
+/** Persisted user tasks → the column id the board should move it to. */
+export function userTaskStatusForColumn(column: TaskStatus): WorkspaceTaskStatus {
+  return COLUMN_TO_TASK_STATUS[column] ?? 'todo'
+}
+
+export interface AroTasksData {
+  tasks: Task[]
+  live: boolean
+  hasSession: boolean
+  /** The user's persisted local tasks (adapter store — survives restarts). */
+  userTasks: WorkspaceTask[]
+  /** True when the strip shows the user's own (non-demo) tasks. */
+  local: boolean
+  /** True when `id` belongs to a persisted user task. */
+  isUserTask: (id: string) => boolean
+  /** Create a persisted user task; returns the stored record. */
+  createUserTask: (title: string) => WorkspaceTask
+  /** Persist a status move for a user task (agent todos are NOT persisted —
+   * the agent owns its list; D-0009). */
+  moveUserTask: (id: string, column: TaskStatus) => void
+  /** Remove a user task (seed/agent rows are not removable). */
+  removeUserTask: (id: string) => boolean
+}
+
+export function useAroTasks(): AroTasksData {
   const sessionId = useStore($activeSessionId)
   const todosMap = useStore($todosBySession)
   const retainedMap = useStore($retainedTodosBySession)
+  const userTasks = useStore($userTasks)
 
   const todos = useMemo(() => {
     if (!sessionId) {return []}
@@ -569,9 +643,34 @@ export function useAroTasks() {
 
   const live = todos.length > 0
 
-  const tasks = useMemo<Task[]>(() => (live ? todosToTasks(todos) : TASKS), [live, todos])
+  const userCards = useMemo(() => userTasks.map(userTaskToCard), [userTasks])
 
-  return { tasks, live, hasSession: sessionId != null }
+  const tasks = useMemo<Task[]>(
+    () => (live ? [...todosToTasks(todos), ...userCards] : userCards.length > 0 ? userCards : TASKS),
+    [live, todos, userCards]
+  )
+
+  const isUserTask = useCallback((id: string) => userTasks.some(t => t.id === id), [userTasks])
+
+  const createUserTask = useCallback((title: string) => adapters.tasks.create({ title }), [])
+
+  const moveUserTask = useCallback((id: string, column: TaskStatus) => {
+    adapters.tasks.update(id, { status: userTaskStatusForColumn(column) })
+  }, [])
+
+  const removeUserTask = useCallback((id: string) => adapters.tasks.remove(id), [])
+
+  return {
+    tasks,
+    live,
+    hasSession: sessionId != null,
+    userTasks,
+    local: !live && userTasks.length > 0,
+    isUserTask,
+    createUserTask,
+    moveUserTask,
+    removeUserTask
+  }
 }
 
 /* ============================ session picker ============================ */
