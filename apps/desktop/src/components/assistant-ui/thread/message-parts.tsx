@@ -10,6 +10,7 @@ import { useStore } from '@nanostores/react'
 import { type ComponentProps, type FC, type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { CatalogInstallTool } from '@/components/assistant-ui/catalog-install-tool'
+import { IconBrain, IconChevronDown } from '@/aro/Icons'
 import { ClarifyTool } from '@/components/assistant-ui/clarify'
 import { ConnectorExecution, ConnectorTool } from '@/components/assistant-ui/connector-tool'
 import { MarkdownText, MarkdownTextContent } from '@/components/assistant-ui/markdown-text'
@@ -287,33 +288,38 @@ const ThinkingDisclosure: FC<{
 
   return (
     <div
-      className="text-[length:var(--conversation-tool-font-size)] text-(--ui-text-tertiary)"
+      className="my-2 overflow-hidden rounded-[9px] border border-dashed border-aro-line bg-aro-well/60"
       data-conversation-scaffold=""
       data-slot="aui_thinking-disclosure"
       ref={enterRef}
     >
-      <ScaffoldRow
-        onToggle={() => setUserOpen(!open)}
-        open={open}
-        trailing={
-          <span className="flex shrink-0 items-center gap-1.5">
-            <TimelineTimestamp className={SCAFFOLD_META_CLASS} completedAt={completedAt} timestamp={timestamp} />
-            {pending && <ActivityTimerText className={SCAFFOLD_META_CLASS} seconds={elapsed} />}
-          </span>
-        }
+      <button
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-[7px] text-left transition-colors hover:bg-aro-hover/50"
+        onClick={() => setUserOpen(!open)}
+        type="button"
       >
-        <span className={cn(SCAFFOLD_LABEL_CLASS, pending && 'shimmer')}>{thoughtLabel}</span>
-      </ScaffoldRow>
+        <IconBrain className="shrink-0 text-aro-plum" size={12} />
+        <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">
+          reasoning
+        </span>
+        <span className={cn('min-w-0 flex-1 truncate font-aro-sans text-[11.5px] text-aro-ink-3 italic', pending && 'animate-pulse')}>
+          {thoughtLabel}
+        </span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[10px] text-aro-ink-4">
+          <TimelineTimestamp className={SCAFFOLD_META_CLASS} completedAt={completedAt} timestamp={timestamp} />
+          {pending && <ActivityTimerText className={SCAFFOLD_META_CLASS} seconds={elapsed} />}
+        </span>
+        <IconChevronDown
+          className={cn('shrink-0 text-aro-ink-4 transition-transform duration-200', open && 'rotate-180')}
+          size={12}
+        />
+      </button>
       {open && (
         <div
           className={cn(
-            // Body sits flush with the "Thinking" header — no left indent —
-            // and inherits the disclosure-level opacity fade defined in
-            // styles.css (~0.67 at rest, 1 on hover/focus). overflow-auto so
-            // the max-h-40 preview is a real scroller, not a clip.
-            // Even a body that fits must hand vertical input to the thread.
-            'mt-0.5 w-full min-w-0 max-w-full overflow-auto overscroll-x-contain overscroll-y-auto wrap-anywhere pb-1',
-            isPreview && 'max-h-40'
+            'border-t border-dashed border-aro-line px-3 py-2.5 font-sans text-[12.5px] leading-[1.65] text-aro-ink-3 italic overflow-auto overscroll-x-contain overscroll-y-auto wrap-anywhere',
+            isPreview && 'max-h-48'
           )}
           data-slot="aui_thinking-body"
           ref={scrollRef}

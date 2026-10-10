@@ -1,6 +1,6 @@
-"use client";
-
 import React, { useEffect, useRef, useState } from "react";
+import * as Popover from "@radix-ui/react-popover";
+import * as Dialog from "@radix-ui/react-dialog";
 import { cn } from "../utils/cn";
 import { IconChevronDown, IconX } from "./Icons";
 
@@ -24,7 +24,7 @@ const sizeMap: Record<Size, string> = {
 export function Button({ variant = "secondary", size = "sm", icon: Icon, iconRight: IconRight, className, children, ...rest }:
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; icon?: React.ComponentType<{ size?: number; className?: string }>; iconRight?: React.ComponentType<{ size?: number; className?: string }> }) {
   return (
-    <button {...rest} className={cn("inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-all duration-150 select-none focus-visible:ring-focus disabled:pointer-events-none disabled:opacity-40", variantMap[variant], sizeMap[size], className)}>
+    <button {...rest} className={cn("inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-all duration-150 [transition-timing-function:var(--ease-out-expo)] active:scale-[.98] select-none focus-visible:ring-focus disabled:pointer-events-none disabled:opacity-40", variantMap[variant], sizeMap[size], className)}>
       {Icon && <Icon size={size === "xs" ? 12 : size === "lg" ? 16 : 13} />}
       {children}
       {IconRight && <IconRight size={size === "xs" ? 11 : 13} />}
@@ -81,32 +81,38 @@ export function Input({ className, ...rest }: React.InputHTMLAttributes<HTMLInpu
 }
 
 /* Generic popover menu */
-export function Menu({ trigger, children, align = "left", width = 220, className, open: controlled, onOpenChange }: { trigger: (open: boolean) => React.ReactNode; children: (close: () => void) => React.ReactNode; align?: "left" | "right"; width?: number; className?: string; open?: boolean; onOpenChange?: (v: boolean) => void }) {
+export function Menu({ trigger, children, align = "left", width = 220, className, open: controlled, onOpenChange, side = "bottom" }: { trigger: (open: boolean) => React.ReactNode; children: (close: () => void) => React.ReactNode; align?: "left" | "right"; width?: number; className?: string; open?: boolean; onOpenChange?: (v: boolean) => void; side?: "top" | "bottom" }) {
   const [inner, setInner] = useState(false);
   const open = controlled ?? inner;
   const setOpen = (v: boolean) => { setInner(v); onOpenChange?.(v); };
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    const k = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("mousedown", h); window.addEventListener("keydown", k);
-    return () => { window.removeEventListener("mousedown", h); window.removeEventListener("keydown", k); };
-  }, [open]);
+  const anchor = useRef<HTMLDivElement>(null);
   return (
-    <div ref={ref} className={cn("relative", className)}>
-      <div onClick={() => setOpen(!open)}>{trigger(open)}</div>
-      {open && (
-        <div style={{ width }} className={cn("absolute z-[60] mt-1.5 origin-top animate-slide-down overflow-hidden rounded-[10px] border border-line-strong bg-overlay p-1 shadow-e4", align === "right" ? "right-0" : "left-0")}>
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Anchor asChild><div ref={anchor} className={cn("relative", className)}><div onClick={() => setOpen(!open)}>{trigger(open)}</div></div></Popover.Anchor>
+      <Popover.Portal>
+        <Popover.Content role="menu" aria-label="Options" side={side} align={align === "right" ? "end" : "start"} sideOffset={7} collisionPadding={12}
+          style={{ width, maxWidth: "calc(100vw - 24px)", maxHeight: "var(--radix-popover-content-available-height)", transformOrigin: "var(--radix-popover-content-transform-origin)" }}
+          className="scroll-thin z-[160] animate-pop overflow-y-auto rounded-[11px] border border-line bg-overlay p-1 shadow-e4 outline-none"
+          onEscapeKeyDown={(e) => e.stopPropagation()}
+          onCloseAutoFocus={(e) => { e.preventDefault(); anchor.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true }); }}
+          onKeyDown={(e) => {
+            if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key) || (e.target as HTMLElement).matches("input,textarea")) return;
+            const options = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not([disabled])')).filter((button) => button.offsetParent !== null);
+            if (!options.length) return;
+            e.preventDefault();
+            const index = options.indexOf(document.activeElement as HTMLButtonElement);
+            const next = e.key === "Home" ? 0 : e.key === "End" ? options.length - 1 : (index + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+            options[next].focus();
+          }}>
           {children(() => setOpen(false))}
-        </div>
-      )}
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
-export function MenuItem({ icon, label, hint, active, onClick, danger }: { icon?: React.ReactNode; label: React.ReactNode; hint?: React.ReactNode; active?: boolean; onClick?: () => void; danger?: boolean }) {
+export function MenuItem({ icon, label, hint, active, onClick, danger, disabled }: { icon?: React.ReactNode; label: React.ReactNode; hint?: React.ReactNode; active?: boolean; onClick?: () => void; danger?: boolean; disabled?: boolean }) {
   return (
-    <button onClick={onClick} className={cn("flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors", active ? "bg-iris-tint text-iris-soft" : danger ? "text-rose hover:bg-rose-tint" : "text-ink-2 hover:bg-hover hover:text-ink")}>
+    <button role="menuitem" disabled={disabled} onClick={onClick} className={cn("flex w-full items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors", disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer", active ? "bg-iris-tint text-iris-soft" : danger ? "text-rose hover:bg-rose-tint" : "text-ink-2 hover:bg-hover hover:text-ink")}>
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {hint && <span className="shrink-0 font-mono text-[10px] text-ink-4">{hint}</span>}
@@ -142,12 +148,27 @@ export function Toggle({ checked, onChange, size = "md" }: { checked: boolean; o
 }
 
 export function Segmented<T extends string>({ value, onChange, items, className, size = "sm" }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; icon?: React.ComponentType<{ size?: number }>; tone?: Tone }[]; className?: string; size?: "sm" | "md" }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [ind, setInd] = useState<{ left: number; width: number } | null>(null);
+  useEffect(() => {
+    const measure = () => {
+      const el = ref.current?.querySelector<HTMLElement>(`[data-seg="${value}"]`);
+      if (el) setInd({ left: el.offsetLeft, width: el.offsetWidth });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [value, items.length]);
   return (
-    <div className={cn("inline-flex items-center gap-0.5 rounded-[8px] border border-line bg-sunken p-0.5", className)}>
+    <div ref={ref} className={cn("relative inline-flex items-center gap-0.5 rounded-[8px] border border-line bg-sunken p-0.5", className)}>
+      {ind && (
+        <span aria-hidden className="absolute inset-y-[2px] rounded-[6px] bg-raise shadow-e1 inset-line will-change-transform"
+          style={{ left: ind.left, width: ind.width, transition: "left 0.22s var(--ease-out-expo), width 0.22s var(--ease-out-expo)" }} />
+      )}
       {items.map((it) => {
         const on = it.value === value;
         return (
-          <button key={it.value} onClick={() => onChange(it.value)} className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-all duration-150", size === "md" ? "px-3 py-[6px] text-[12.5px]" : "px-2.5 py-[4px] text-[12px]", on ? cn("bg-raise text-ink shadow-e1", it.tone && toneText[it.tone]) : "text-ink-3 hover:text-ink-2")}>
+          <button key={it.value} data-seg={it.value} onClick={() => onChange(it.value)} className={cn("relative z-[1] inline-flex items-center gap-1.5 rounded-[6px] font-medium transition-colors duration-150", size === "md" ? "px-3 py-[6px] text-[12.5px]" : "px-2.5 py-[4px] text-[12px]", on ? cn("text-ink", it.tone && toneText[it.tone]) : "text-ink-3 hover:text-ink-2")}>
             {it.icon && <it.icon size={12} />}
             {it.label}
           </button>
@@ -158,17 +179,31 @@ export function Segmented<T extends string>({ value, onChange, items, className,
 }
 
 export function Tabs<T extends string>({ value, onChange, items, className }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number }[]; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [ind, setInd] = useState<{ left: number; width: number } | null>(null);
+  useEffect(() => {
+    const measure = () => {
+      const el = ref.current?.querySelector<HTMLElement>(`[data-tab="${value}"]`);
+      if (el) setInd({ left: el.offsetLeft, width: el.offsetWidth });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [value, items.length]);
   return (
-    <div className={cn("flex items-center gap-0.5", className)}>
+    <div ref={ref} className={cn("relative flex items-center gap-0.5", className)}>
+      {ind && (
+        <span aria-hidden className="absolute -bottom-[5px] h-[2px] rounded-full bg-iris shadow-[0_0_8px_rgba(124,107,255,.8)] will-change-transform"
+          style={{ left: ind.left + 6, width: Math.max(ind.width - 12, 12), transition: "left 0.24s var(--ease-out-expo), width 0.24s var(--ease-out-expo)" }} />
+      )}
       {items.map((it) => {
         const on = it.value === value;
         return (
-          <button key={it.value} onClick={() => onChange(it.value)} className={cn("relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors", on ? "text-ink" : "text-ink-3 hover:text-ink-2")}>
+          <button key={it.value} data-tab={it.value} onClick={() => onChange(it.value)} className={cn("relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors duration-150", on ? "text-ink" : "text-ink-3 hover:text-ink-2")}>
             <span className="flex items-center gap-1.5">
               {it.label}
-              {it.count !== undefined && <span className={cn("rounded-full px-1.5 font-mono text-[9.5px]", on ? "bg-iris-tint text-iris-soft" : "bg-hover text-ink-4")}>{it.count}</span>}
+              {it.count !== undefined && <span className={cn("rounded-full px-1.5 font-mono text-[9.5px] transition-colors", on ? "bg-iris-tint text-iris-soft" : "bg-hover text-ink-4")}>{it.count}</span>}
             </span>
-            {on && <span className="absolute inset-x-1.5 -bottom-[5px] h-[2px] rounded-full bg-iris" />}
           </button>
         );
       })}
@@ -181,7 +216,7 @@ export function Bar({ value, tone = "iris", className, indeterminate, height = 4
   return (
     <div style={{ height }} className={cn("w-full overflow-hidden rounded-full bg-track", className)}>
       {indeterminate ? <div className="relative h-full w-1/3"><div className="h-full w-full animate-sweep rounded-full" style={{ background: toneHex(tone) }} /></div>
-        : <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${value ?? 0}%`, background: toneHex(tone) }} />}
+        : <div className="h-full rounded-full transition-[width] duration-[420ms] [transition-timing-function:var(--ease-out-expo)]" style={{ width: `${value ?? 0}%`, background: toneHex(tone) }} />}
     </div>
   );
 }
@@ -191,7 +226,7 @@ export function Ring({ value, size = 56, stroke = 5, tone = "var(--color-iris)",
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-track)" strokeWidth={stroke} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={tone} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * Math.min(value, 100)) / 100} style={{ transition: "stroke-dashoffset .7s var(--ease-out-quint)" }} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={tone} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * Math.min(value, 100)) / 100} style={{ transition: "stroke-dashoffset .6s var(--ease-out-expo)" }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>
     </div>
@@ -221,11 +256,20 @@ export function Stat({ label, value, sub, tone = "neutral", chart }: { label: st
 }
 
 /* ================================ MISC ================================ */
-export function Tip({ label, children, side = "top" }: { label: string; children: React.ReactNode; side?: "top" | "bottom" }) {
+export function Tip({ label, children, side = "top" }: { label: string; children: React.ReactNode; side?: "top" | "bottom" | "left" | "right" }) {
+  const sidePlacement =
+    side === "top"
+      ? "left-1/2 bottom-[calc(100%+7px)] -translate-x-1/2"
+      : side === "bottom"
+      ? "left-1/2 top-[calc(100%+7px)] -translate-x-1/2"
+      : side === "left"
+      ? "right-[calc(100%+8px)] top-1/2 -translate-y-1/2"
+      : "left-[calc(100%+8px)] top-1/2 -translate-y-1/2";
+
   return (
     <span className="group/tip relative inline-flex">
       {children}
-      <span className={cn("pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-line-strong bg-overlay px-2 py-1 text-[11px] whitespace-nowrap text-ink-2 opacity-0 shadow-e3 transition-all duration-150 group-hover/tip:scale-100 group-hover/tip:opacity-100", side === "top" ? "bottom-[calc(100%+7px)]" : "top-[calc(100%+7px)]")}>{label}</span>
+      <span className={cn("pointer-events-none absolute z-[70] scale-95 rounded-[6px] border border-line-strong bg-overlay px-2 py-1 text-[11px] whitespace-nowrap text-ink-2 opacity-0 shadow-e3 transition-[opacity,transform] duration-150 [transition-timing-function:var(--ease-out-expo)] group-hover/tip:scale-100 group-hover/tip:opacity-100", sidePlacement)}>{label}</span>
     </span>
   );
 }
@@ -238,21 +282,20 @@ export function EmptyState({ icon: Icon, title, body, action }: { icon: React.Co
     </div>
   );
 }
-export function Modal({ open, onClose, title, sub, width = 620, children }: { open: boolean; onClose: () => void; title: string; sub?: string; width?: number; children: React.ReactNode }) {
-  useEffect(() => { if (!open) return; const h = (e: KeyboardEvent) => e.key === "Escape" && onClose(); window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h); }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]">
-      <div className="absolute inset-0 animate-fade bg-black/55 backdrop-blur-[3px]" onClick={onClose} />
-      <div role="dialog" aria-modal="true" aria-label={title} style={{ width, maxWidth: "94vw" }} className="relative max-h-[78vh] animate-pop overflow-hidden rounded-[14px] border border-line-strong bg-base shadow-e4">
-        <div className="flex items-start justify-between gap-4 border-b border-line-soft bg-raise/60 px-4 py-3">
-          <div><h3 className="font-display text-[15px] font-semibold tracking-[-.015em] text-ink">{title}</h3>{sub && <p className="mt-0.5 text-[12px] leading-[1.5] text-ink-3">{sub}</p>}</div>
-          <IconButton icon={IconX} label="Close" onClick={onClose} size={28} />
-        </div>
-        <div className="scroll-thin max-h-[66vh] overflow-y-auto">{children}</div>
+export function Modal({ open, onClose, title, sub, width = 620, children, plain = false }: { open: boolean; onClose: () => void; title: string; sub?: string; width?: number; children: React.ReactNode; plain?: boolean }) {
+  const descriptionId = React.useId();
+  return <Dialog.Root open={open} onOpenChange={(value) => { if (!value) onClose(); }}><Dialog.Portal>
+    <Dialog.Overlay className="fixed inset-0 z-[120] animate-fade bg-black/30 backdrop-blur-[2px]" />
+    <Dialog.Content style={{ width, maxWidth: "calc(100vw - 32px)" }} aria-describedby={sub ? descriptionId : undefined}
+      className={cn("app-modal fixed top-1/2 left-1/2 z-[130] max-h-[85dvh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[18px] border border-line bg-overlay shadow-e4 outline-none", plain && "reference-project-modal")}
+      onEscapeKeyDown={(e) => e.stopPropagation()}>
+      <div className={cn("flex items-start justify-between gap-4 px-5 pt-5 pb-3", !plain && "border-b border-line-soft")}>
+        <div><Dialog.Title className="font-sans text-[18px] leading-6 font-semibold tracking-[-.025em] text-ink">{title}</Dialog.Title>{sub && <Dialog.Description id={descriptionId} className="mt-1 text-[12px] leading-[1.5] text-ink-3">{sub}</Dialog.Description>}</div>
+        <Dialog.Close asChild><button className="flex size-[26px] shrink-0 items-center justify-center rounded-[6px] text-ink-3 hover:bg-hover hover:text-ink" aria-label="Close dialog"><IconX size={14} /></button></Dialog.Close>
       </div>
-    </div>
-  );
+      <div className="scroll-thin max-h-[calc(85dvh-80px)] overflow-y-auto">{children}</div>
+    </Dialog.Content>
+  </Dialog.Portal></Dialog.Root>;
 }
 export function Toasts({ items }: { items: { id: number; msg: string; tone: string }[] }) {
   return (

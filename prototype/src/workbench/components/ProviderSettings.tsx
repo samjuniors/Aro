@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { cn } from "../utils/cn";
 import { probeProvider, type ModelProvider, type ProviderStatus } from "../data/providers";
@@ -46,7 +44,7 @@ function ProviderCard({ provider }: { provider: ModelProvider }) {
         <Menu align="right" width={190} trigger={() => <button className="flex size-[26px] cursor-pointer items-center justify-center rounded-[6px] text-ink-4 hover:bg-hover hover:text-ink"><IconChevronDown size={12} /></button>}>
           {(close) => <>
             <MenuItem icon={<IconExternal size={12} />} label="Provider documentation" onClick={() => { if (provider.docs) window.open(provider.docs, "_blank", "noopener,noreferrer"); close(); }} />
-            <MenuItem icon={<IconTerminal size={12} />} label="Copy connection command" onClick={() => { navigator.clipboard?.writeText(`aro provider set ${provider.id} --base-url ${provider.baseUrl ?? provider.defaultUrl ?? ""}`); toast("Connection command copied", "mint"); close(); }} />
+            <MenuItem icon={<IconTerminal size={12} />} label="Copy connection command" onClick={() => { navigator.clipboard?.writeText(`conductor provider set ${provider.id} --base-url ${provider.baseUrl ?? provider.defaultUrl ?? ""}`); toast("Connection command copied", "mint"); close(); }} />
           </>}
         </Menu>
       </div>

@@ -475,7 +475,7 @@ async function listBranches(repoPath, gitBin) {
   }
 }
 
-async function switchBranch(repoPath, branch, gitBin) {
+async function switchBranch(repoPath, branch, gitBin, create = false) {
   const resolved = resolveRequestedPathForIpc(repoPath, { purpose: 'Branch switch' })
 
   // Sidebar lanes exist for plain folders too (non-repo explicit projects),
@@ -502,7 +502,11 @@ async function switchBranch(repoPath, branch, gitBin) {
     throw new Error('Branch name is required.')
   }
 
-  await runGit(gitBin, ['switch', target], resolved)
+  if (create) {
+    await runGit(gitBin, ['switch', '-c', target], resolved)
+  } else {
+    await runGit(gitBin, ['switch', target], resolved)
+  }
 
   return { branch: target }
 }

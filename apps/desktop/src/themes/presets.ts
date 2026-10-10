@@ -441,7 +441,63 @@ export const slateTheme: DesktopTheme = {
   }
 }
 
+/** Aro Obsidian — the canonical Aro desktop identity. Deep neutral dark, violet iris accent. */
+export const obsidianTheme: DesktopTheme = {
+  name: 'obsidian',
+  label: 'Obsidian',
+  description: 'Deep neutral dark, violet iris accent — Aro canonical',
+  colors: {
+    background: '#0c0e14',
+    foreground: '#eaecf3',
+    card: '#12151d',
+    cardForeground: '#eaecf3',
+    popover: '#1b202b',
+    popoverForeground: '#eaecf3',
+    primary: '#7c6bff',
+    primaryForeground: '#ffffff',
+    secondary: '#12151d',
+    secondaryForeground: '#a3acbe',
+    muted: '#0f1218',
+    mutedForeground: '#727c94',
+    accent: '#1a1e29',
+    accentForeground: '#eaecf3',
+    destructive: '#ff6b7a',
+    destructiveForeground: '#ffffff',
+    border: '#1f232f',
+    input: '#1f232f',
+    ring: '#7c6bff',
+    sidebarBackground: '#090b10'
+  },
+  darkColors: {
+    background: '#0c0e14',
+    foreground: '#eaecf3',
+    card: '#12151d',
+    cardForeground: '#eaecf3',
+    popover: '#1b202b',
+    popoverForeground: '#eaecf3',
+    primary: '#7c6bff',
+    primaryForeground: '#ffffff',
+    secondary: '#12151d',
+    secondaryForeground: '#a3acbe',
+    muted: '#0f1218',
+    mutedForeground: '#727c94',
+    accent: '#1a1e29',
+    accentForeground: '#eaecf3',
+    destructive: '#ff6b7a',
+    destructiveForeground: '#ffffff',
+    border: '#1f232f',
+    input: '#1f232f',
+    ring: '#7c6bff',
+    sidebarBackground: '#090b10'
+  },
+  typography: {
+    fontSans: '"Inter", "Space Grotesk", ' + SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  }
+}
+
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
+  obsidian: obsidianTheme,
   nous: nousTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,

@@ -1339,7 +1339,7 @@ export function ContribWiring({ children }: { children: ReactNode }) {
         {/* HUD and the popped-out Browser have no titlebar to hang these off —
             the clusters are `fixed`, so without this they'd float over the
             surface as orphaned buttons. */}
-        {!isHudWindow() && !isBrowserWindow() && (
+        {!isHudWindow() && !isBrowserWindow() && !document.documentElement.dataset.aroUi && (
           <TitlebarControls
             leftTools={leftTitlebarTools}
             onOpenSettings={() => navigate(SETTINGS_ROUTE)}

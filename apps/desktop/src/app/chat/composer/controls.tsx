@@ -11,6 +11,7 @@ import { recordAction } from '@/store/desktop-metrics'
 import { $hudMode, closeHud, resetHudLayout } from '@/store/hud'
 import { $wakeWord, toggleWakeWord } from '@/store/wake-word'
 
+import { AroModelControl } from './aro-model-control'
 import { ACTIVE_ICON_BTN, GHOST_ICON_BTN, PRIMARY_ICON_BTN } from './control-classes'
 import type { ConversationStatus } from './hooks/use-voice-conversation'
 import { ModelPill } from './model-pill'
@@ -41,12 +42,16 @@ export function ComposerControls({
   busyAction,
   canSubmit,
   compactModelPill = false,
+  contextControl,
   conversation,
   disabled,
+  envControl,
   foldVoice = false,
   hasComposerPayload,
   hideModelPill = false,
+  leadingCluster,
   minimal = false,
+  modeControl,
   state,
   voiceStatus,
   onDictate,
@@ -58,12 +63,16 @@ export function ComposerControls({
   busyAction: 'steer' | 'queue' | 'stop'
   canSubmit: boolean
   compactModelPill?: boolean
+  contextControl?: React.ReactNode
   conversation: ConversationProps
   disabled: boolean
+  envControl?: React.ReactNode
   foldVoice?: boolean
   hasComposerPayload: boolean
   hideModelPill?: boolean
+  leadingCluster?: React.ReactNode
   minimal?: boolean
+  modeControl?: React.ReactNode
   state: ChatBarState
   voiceStatus: VoiceStatus
   onDictate: () => void
@@ -78,7 +87,12 @@ export function ComposerControls({
     return <ConversationPill {...conversation} disabled={disabled} />
   }
 
-  const showVoicePrimary = !busy && !hasComposerPayload
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+
+  // In Aro mode, match prototype exactly: the send button is always on the far right
+  // (disabled when empty, active when text is entered, stop button while generating).
+  // The mic button sits right next to it, rather than swapping places with send.
+  const showVoicePrimary = !isAro && !busy && !hasComposerPayload
   // Steer is just send: a payload keeps the Send affordance mid-turn. Stop
   // only when the composer is empty and a turn is running.
   const showStop = busy && !hasComposerPayload
@@ -113,70 +127,81 @@ export function ComposerControls({
     />
   )
 
-  return (
-    <div className="flex min-w-0 shrink items-center gap-(--composer-control-gap)">
-      {minimal ? null : (
+  const modelPillCluster = minimal ? null : (
+    <>
+      {hideModelPill ? null : isAro && state.model.aroMenu ? (
+        // Aro: one control — monogram + model + effort chip — opening the
+        // Aro model menu (effort slider + thinking + live catalog).
+        <AroModelControl disabled={disabled} model={state.model} />
+      ) : (
         <>
-          {hideModelPill ? null : (
-            <>
-              <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
-              {compactModelPill ? null : <ReasoningPill disabled={disabled} model={state.model} />}
-            </>
-          )}
-          {voiceControls}
+          <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
+          {compactModelPill ? null : <ReasoningPill disabled={disabled} model={state.model} />}
         </>
       )}
-      {showQueueButton ? (
-        <Tip label={<TipKeybindLabel actionId="composer.queue" text={c.queueMessage} />} placement="control">
-          <Button
-            aria-label={c.queueMessage}
-            className={GHOST_ICON_BTN}
-            disabled={disabled}
-            onClick={onQueue}
-            size="icon"
-            type="button"
-            variant="ghost"
+    </>
+  )
+
+  return (
+    <div className="flex w-full min-w-0 items-center justify-between gap-1.5" data-aro-composer-controls="">
+      {/* Left: [+] [/] [@] | Mode | (Model if not Aro) */}
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        {leadingCluster}
+        {modeControl}
+        {!isAro && modelPillCluster}
+      </div>
+
+      {/* Right: (Model if Aro) | Env | Context | Voice | Queue | Send / Stop */}
+      <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        {isAro && modelPillCluster}
+        {!isAro && envControl}
+        {!isAro && contextControl}
+        {minimal ? null : voiceControls}
+        {showQueueButton ? (
+          <Tip label={<TipKeybindLabel actionId="composer.queue" text={c.queueMessage} />} placement="control">
+            <Button
+              aria-label={c.queueMessage}
+              className={GHOST_ICON_BTN}
+              disabled={disabled}
+              onClick={onQueue}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <Layers3 className={iconSize.sm} />
+            </Button>
+          </Tip>
+        ) : null}
+        {showVoicePrimary ? (
+          <StartVoiceButton disabled={disabled} label={c.startVoice} onStart={conversation.onStart} />
+        ) : (
+          <Tip
+            label={
+              showStop ? (
+                <TipKeybindLabel actionId="composer.send" text={c.stop} />
+              ) : (
+                <TipKeybindLabel actionId="composer.send" text={c.send} />
+              )
+            }
+            placement="control"
           >
-            <Layers3 className={iconSize.sm} />
-          </Button>
-        </Tip>
-      ) : null}
-      {showVoicePrimary ? (
-        <StartVoiceButton disabled={disabled} label={c.startVoice} onStart={conversation.onStart} />
-      ) : (
-        <Tip
-          label={
-            showStop ? (
-              <TipKeybindLabel actionId="composer.send" text={c.stop} />
-            ) : (
-              <TipKeybindLabel actionId="composer.send" text={c.send} />
-            )
-          }
-          placement="control"
-        >
-          <Button
-            aria-label={showStop ? c.stop : c.send}
-            className={PRIMARY_ICON_BTN}
-            disabled={disabled || !canSubmit}
-            onClick={() => recordAction(showStop ? 'composer.cancel' : 'composer.send', 'click')}
-            type="submit"
-          >
-            {showStop ? (
-              <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
-            ) : (
-              <Codicon name="arrow-up" size="0.875rem" />
-            )}
-          </Button>
-        </Tip>
-      )}
-      {/* The way out of HUD mode, riding the controls row rather than floating
-          above the bar. The old chip lived in a 26px transparent strip reserved
-          over the composer (--hud-chip-strip), which under glass is bare
-          untinted material with a hidden button in it — a band of chrome above
-          the surface, paid for in every state, for a control that is invisible
-          until hovered. Here it costs no reserved space and sits with the other
-          things you can press. */}
-      {hudMode ? <HudWindowButtons /> : null}
+            <Button
+              aria-label={showStop ? c.stop : c.send}
+              className={PRIMARY_ICON_BTN}
+              disabled={disabled || (!showStop && (!canSubmit || (isAro && !hasComposerPayload)))}
+              onClick={() => recordAction(showStop ? 'composer.cancel' : 'composer.send', 'click')}
+              type="submit"
+            >
+              {showStop ? (
+                <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
+              ) : (
+                <Codicon name="arrow-up" size="0.875rem" />
+              )}
+            </Button>
+          </Tip>
+        )}
+        {hudMode ? <HudWindowButtons /> : null}
+      </div>
     </div>
   )
 }

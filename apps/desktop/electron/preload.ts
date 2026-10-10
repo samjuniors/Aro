@@ -353,6 +353,7 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
   readFileText: filePath => ipcRenderer.invoke('hermes:readFileText', filePath),
   readPluginSource: (filePath: string) => ipcRenderer.invoke('hermes:readPluginSource', filePath),
   selectPaths: options => ipcRenderer.invoke('hermes:selectPaths', options),
+  cloneRepository: repositoryUrl => ipcRenderer.invoke('hermes:git:cloneRepository', repositoryUrl),
   selectSavePath: options => ipcRenderer.invoke('hermes:selectSavePath', options),
   writeClipboard: text => ipcRenderer.invoke('hermes:writeClipboard', text),
   readClipboard: () => ipcRenderer.invoke('hermes:readClipboard'),
@@ -466,7 +467,7 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
     worktreeAdd: (repoPath, options) => ipcRenderer.invoke('hermes:git:worktreeAdd', repoPath, options),
     worktreeRemove: (repoPath, worktreePath, options) =>
       ipcRenderer.invoke('hermes:git:worktreeRemove', repoPath, worktreePath, options),
-    branchSwitch: (repoPath, branch) => ipcRenderer.invoke('hermes:git:branchSwitch', repoPath, branch),
+    branchSwitch: (repoPath, branch, create) => ipcRenderer.invoke('hermes:git:branchSwitch', repoPath, branch, create),
     branchList: repoPath => ipcRenderer.invoke('hermes:git:branchList', repoPath),
     baseBranchList: repoPath => ipcRenderer.invoke('hermes:git:baseBranchList', repoPath),
     repoStatus: repoPath => ipcRenderer.invoke('hermes:git:repoStatus', repoPath),

@@ -4256,6 +4256,7 @@ export interface Translations {
 
   assistant: {
     thread: {
+      you: string
       loadingSession: string
       showEarlier: string
       loadingResponse: string

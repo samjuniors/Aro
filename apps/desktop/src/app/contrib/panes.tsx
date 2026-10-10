@@ -123,7 +123,7 @@ const ZONE_CONTENT = 'h-full [&>aside]:h-full [&>aside]:w-full [&>aside]:pt-0'
 
 export function FilesPane() {
   return (
-    <div className={ZONE_CONTENT}>
+    <div className={ZONE_CONTENT} data-aro-context-pane="files">
       <RightSidebarPane onActivateFile={previewFile} onActivateFolder={previewFile} />
     </div>
   )
@@ -139,7 +139,7 @@ export function ReviewPaneContent() {
   // Keyed by cwd like DesktopController so switching projects rebuilds the
   // diff state instead of showing the previous repo's files.
   return (
-    <div className={cn(ZONE_CONTENT, 'flex min-h-0 flex-col [&>aside]:min-h-0 [&>aside]:flex-1')}>
+    <div className={cn(ZONE_CONTENT, 'flex min-h-0 flex-col [&>aside]:min-h-0 [&>aside]:flex-1')} data-aro-context-pane="review">
       <ReviewPane key={cwd || 'no-cwd'} />
     </div>
   )

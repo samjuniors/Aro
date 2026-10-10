@@ -1,0 +1,383 @@
+/**
+ * ARO SIDEBAR — Desktop Left Navigation & Sessions Panel (Prototype Parity)
+ *
+ * Implements the full visual rhythm and tokens from the Aro Workbench
+ * prototype (src/workbench/components/Sidebar.tsx & src/app/globals.css).
+ */
+
+.codex-sidebar {
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  user-select: none;
+  position: relative;
+  z-index: 10;
+}
+
+/* Brand header */
+.sidebar-brand {
+  display: flex;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 9px;
+  padding-inline: 12px 10px;
+  border-bottom: 1px solid transparent;
+}
+
+.rail-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Sidebar Mode Switcher (Sessions = Code | Bots = Agents) */
+.sidebar-mode-switcher {
+  display: flex;
+  margin: 6px 10px 4px;
+  padding: 2.5px;
+  background: var(--color-base, var(--aro-bg, var(--dt-background)));
+  border: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  border-radius: 8px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar-mode-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.sidebar-mode-tab:hover {
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+}
+
+.sidebar-mode-tab.selected {
+  background: var(--color-raise, var(--aro-raise, var(--dt-card)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.sidebar-mode-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--color-iris-tint, var(--aro-iris-tint, rgba(124, 107, 255, 0.12)));
+  color: var(--color-iris-soft, var(--aro-iris-soft, #a89cff));
+}
+
+/* Bot Roster styling for Bots mode */
+.bot-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 140ms;
+}
+
+.bot-roster-row:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+}
+
+.bot-roster-row.selected {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  box-shadow: inset 2px 0 0 var(--color-cyan, var(--aro-cyan, #35d6c4));
+}
+
+/* Primary actions: New session + search */
+.sidebar-primary-actions {
+  padding: 6px 10px 6px;
+  flex-shrink: 0;
+}
+
+.new-session-action {
+  display: flex;
+  height: 36px;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding-inline: 9px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  background: var(--color-raise, var(--aro-raise, var(--dt-background)));
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms, border-color 140ms, color 140ms;
+}
+
+.new-session-action:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  border-color: var(--color-line-strong, var(--aro-line-strong, var(--dt-primary)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.sidebar-search-wrap {
+  position: relative;
+  margin-top: 6px;
+}
+
+.sidebar-search {
+  box-sizing: border-box;
+  height: 32px;
+  width: 100%;
+  padding-left: 30px;
+  padding-right: 10px;
+  border-radius: 7px;
+  border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
+  background: var(--color-base, var(--aro-bg, var(--dt-background)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  font-size: 12px;
+  outline: none;
+  transition: border-color 140ms;
+}
+
+.sidebar-search:focus {
+  border-color: var(--color-iris, var(--aro-iris, #7c6bff));
+}
+
+/* Main Navigation items */
+.sidebar-main-nav {
+  padding: 2px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar-navigation-row {
+  display: flex;
+  min-height: 34px;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding-inline: 9px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background-color 140ms, color 140ms;
+}
+
+.sidebar-navigation-row:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+}
+
+.sidebar-navigation-row.active {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  font-weight: 500;
+}
+
+/* Projects header */
+.sidebar-projects-heading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 16px;
+  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Project Group */
+.sidebar-project-group {
+  margin-bottom: 5px;
+  border-radius: 7px;
+  padding: 0 4px;
+  transition: background-color 140ms;
+}
+
+.sidebar-project-group.drop-target {
+  background: var(--color-iris-tint, var(--aro-iris-tint, rgba(124, 107, 255, 0.15)));
+  outline: 1px solid var(--color-iris, var(--aro-iris, #7c6bff));
+}
+
+.sidebar-project-group.is-pinned {
+  background: color-mix(in srgb, var(--color-iris, var(--aro-iris, #7c6bff)) 5%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-iris, var(--aro-iris, #7c6bff));
+}
+
+/* Session List Row */
+.session-list-row {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 7px;
+  padding: 0 4px 0 9px;
+  color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
+  cursor: pointer;
+  transition: background-color 140ms, color 140ms;
+  position: relative;
+}
+
+.session-list-row:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
+}
+
+.session-list-row.selected {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+  box-shadow: inset 2px 0 0 var(--color-iris, var(--aro-iris, #7c6bff));
+}
+
+.session-list-row.keyboard-selected {
+  outline: 1px solid var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
+}
+
+.session-row-more {
+  display: flex;
+  height: 21px;
+  width: 21px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 140ms, background-color 140ms, color 140ms;
+}
+
+.session-list-row:hover .session-row-more,
+.session-list-row:focus-within .session-row-more,
+.sidebar-project-group:hover .session-row-more,
+.sidebar-project-group:focus-within .session-row-more {
+  opacity: 1;
+}
+
+.session-row-more:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.session-row-action {
+  display: flex;
+  height: 21px;
+  width: 21px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 140ms, background-color 140ms, color 140ms;
+}
+
+.session-list-row:hover .session-row-action,
+.session-list-row:focus-within .session-row-action {
+  opacity: 1;
+}
+
+.session-row-action:hover {
+  background: var(--color-hover, var(--aro-hover, var(--dt-accent)));
+  color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
+}
+
+.session-row-action.hover\:text-rose:hover {
+  color: var(--color-rose, var(--aro-rose, #f43f5e));
+  background: var(--color-rose-tint, var(--aro-rose-tint, rgba(244, 63, 94, 0.12)));
+}
+
+.sidebar-section-label {
+  padding: 7px 9px 5px;
+  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Footer */
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 8px 10px 14px;
+  border-top: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+}
+
+/* Frozen & Audit Section */
+.sidebar-audit-section {
+  margin: 10px 4px 6px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  background: color-mix(in srgb, var(--color-sunken, var(--aro-sunken, #12151c)) 80%, transparent);
+  overflow: hidden;
+}
+
+.sidebar-audit-header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-ink-4, var(--aro-ink-4, #6b7280));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 140ms;
+}
+
+.sidebar-audit-header:hover {
+  color: var(--color-ink-2, var(--aro-ink-2, #e5e7eb));
+}
+
+.sidebar-audit-content {
+  padding: 6px 8px 8px;
+  border-top: 1px dashed var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-audit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--color-ink-3, var(--aro-ink-3, #9ca3af));
+  background: var(--color-base, var(--aro-bg, #0b0d11));
+  border: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+}

@@ -1241,7 +1241,14 @@ function acquireSingleInstanceLock(): boolean {
 const isPrimaryInstance: boolean = acquireSingleInstanceLock()
 
 if (!isPrimaryInstance) {
-  console.error('[hermes] another Hermes Desktop instance holds the single-instance lock; exiting')
+  // A live owner is normal (the app is already open and this launch just routes
+  // into it), so it is not an error worth failing a dev run over. Say what to
+  // do about it, because the indistinguishable case -- an owner wedged with no
+  // window -- looks identical here and leaves every later launch dead too.
+  console.error(
+    '[hermes] another Hermes Desktop instance holds the single-instance lock; exiting\n' +
+      '[hermes] if that instance has no window, end it (Task Manager, or `taskkill /IM electron.exe /F`) and launch again.'
+  )
   app.exit(0)
 }
 
@@ -17967,6 +17974,82 @@ ipcMain.handle('hermes:selectPaths', async (_event, options: any = {}) => {
   return result.filePaths
 })
 
+// Clone a repository into a user-selected local parent directory. Keep git and
+// filesystem access in Electron's main process; the renderer receives only the
+// resulting path. Credentials are inherited from the user's configured Git
+// credential helper / SSH agent — never accept tokens in the URL or UI.
+ipcMain.handle('hermes:git:cloneRepository', async (_event, rawUrl: unknown) => {
+  const repositoryUrl = typeof rawUrl === 'string' ? rawUrl.trim() : ''
+
+  if (!repositoryUrl || repositoryUrl.length > 2048) {
+    throw new Error('Enter a valid repository URL.')
+  }
+
+  let repositoryName = ''
+  const scpMatch = repositoryUrl.match(/^[^@\s]+@[^:\s]+:(.+)$/)
+
+  if (scpMatch) {
+    repositoryName = path.posix.basename(scpMatch[1].replace(/\\/g, '/'))
+  } else {
+    let parsed: URL
+
+    try {
+      parsed = new URL(repositoryUrl)
+    } catch {
+      throw new Error('Use an HTTPS or SSH Git repository URL.')
+    }
+
+    if (!['https:', 'ssh:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+      throw new Error('Use an HTTPS or SSH repository URL without embedded credentials.')
+    }
+
+    repositoryName = path.posix.basename(parsed.pathname.replace(/\\/g, '/'))
+  }
+
+  repositoryName = repositoryName.replace(/\.git$/i, '')
+
+  if (!repositoryName || !/^[a-zA-Z0-9._-]+$/.test(repositoryName) || repositoryName === '.' || repositoryName === '..') {
+    throw new Error('Could not determine a safe folder name from that repository URL.')
+  }
+
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    title: 'Choose where to clone the repository',
+    properties: ['openDirectory', 'createDirectory']
+  })
+
+  if (picked.canceled || !picked.filePaths[0]) {
+    return null
+  }
+
+  const parentPath = path.resolve(picked.filePaths[0])
+  const destination = path.resolve(parentPath, repositoryName)
+
+  if (path.dirname(destination) !== parentPath) {
+    throw new Error('The repository folder name is invalid.')
+  }
+
+  if (fs.existsSync(destination)) {
+    throw new Error(`A folder named "${repositoryName}" already exists in the selected location.`)
+  }
+
+  const result = await execGit(resolveGitBinary(), ['clone', '--', repositoryUrl, destination], {
+    timeoutMs: 10 * 60 * 1000
+  })
+
+  if (result.code !== 0) {
+    try {
+      await fs.promises.rm(destination, { force: true, recursive: true })
+    } catch {
+      // Preserve the clone error below; cleanup is best-effort.
+    }
+
+    const detail = (result.stderr || result.stdout).trim().slice(-3000)
+    throw new Error(detail || 'Git clone failed. Check the repository URL and your Git credentials.')
+  }
+
+  return { path: destination, repositoryName }
+})
+
 ipcMain.handle('hermes:writeClipboard', (_event, text) => {
   clipboard.writeText(String(text || ''))
 
@@ -19692,6 +19775,15 @@ app.on('before-quit', event => {
 
   if (quitTeardown.begin(teardownTasks)) {
     event.preventDefault()
+
+    // Admitting a deferred quit is the last point before this process can be
+    // left resident with no window. `will-quit` arms the same watchdog, but a
+    // teardown that never settles never reaches it -- and a windowless Electron
+    // process still holds the single-instance lock, so every later launch dies
+    // with "another Hermes Desktop instance holds the lock" and can never
+    // recover (#116376 family). Arm here so the deadline covers the whole
+    // admitted quit, not just its final phase; `quit` still cancels it.
+    quitFinalization.armAdmitted()
   }
 
   // Clean quit mid-boot should not trip next-launch --no-sandbox (#38216).

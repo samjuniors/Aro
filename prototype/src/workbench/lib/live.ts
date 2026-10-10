@@ -6,14 +6,15 @@ import type { Step } from "../data/catalog";
  * Live AI plumbing — the one thing carried over from the first Aro prototype.
  * Scripted tool steps still demo the harness, but the closing reply is a real
  * model answer streamed word-by-word. The backend is switchable: "demo" POSTs
- * this sandbox's /api/chat (z-ai model), "live" targets any OpenAI-compatible
- * endpoint such as the Aro agent's api_server on :8642.
+ * this sandbox's /api/chat (z-ai model), "agent" runs the aro-bridge daemon
+ * (real tool loop — web_search / page_reader), "live" targets any
+ * OpenAI-compatible endpoint such as the Aro agent's api_server on :8642.
  */
 
 export type HistoryTurn = { role: "user" | "assistant"; content: string };
 
 /* ---------------- backend config ---------------- */
-export type BackendMode = "demo" | "live";
+export type BackendMode = "demo" | "agent" | "live";
 export type BackendConfig = { mode: BackendMode; baseUrl: string; model: string; key: string };
 export const DEFAULT_BACKEND: BackendConfig = { mode: "demo", baseUrl: "http://localhost:8642/v1", model: "aro-4-70b", key: "" };
 
@@ -21,7 +22,8 @@ export const DEFAULT_BACKEND: BackendConfig = { mode: "demo", baseUrl: "http://l
 export function getBackend(): BackendConfig {
   try {
     const saved = JSON.parse(localStorage.getItem("aro.backend") ?? "{}") as Partial<BackendConfig>;
-    return { ...DEFAULT_BACKEND, ...saved, mode: saved.mode === "live" ? "live" : "demo" };
+    const mode = saved.mode === "live" || saved.mode === "agent" ? saved.mode : "demo";
+    return { ...DEFAULT_BACKEND, ...saved, mode };
   } catch {
     return { ...DEFAULT_BACKEND };
   }
@@ -31,8 +33,12 @@ export function setBackend(config: BackendConfig): void {
   try { localStorage.setItem("aro.backend", JSON.stringify(config)); } catch { /* storage unavailable — config stays for this session only */ }
 }
 
-/** Probe a backend without ever throwing. Live: GET /models with Bearer; demo: POST /api/chat ping. */
+/** Probe a backend without ever throwing. Live: GET /models with Bearer; agent: bridge /health; demo: POST /api/chat ping. */
 export async function testBackend(config: BackendConfig): Promise<{ ok: boolean; detail: string; ms: number }> {
+  if (config.mode === "agent") {
+    const { bridgeHealth } = await import("./bridge");
+    return bridgeHealth();
+  }
   const t0 = performance.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);

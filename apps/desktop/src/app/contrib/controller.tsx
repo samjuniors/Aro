@@ -13,6 +13,7 @@ import { OnboardingChatDirective } from '@/components/onboarding-chat/directive'
 import { $layoutEditMode, toggleLayoutEditMode } from '@/components/pane-shell/edit-mode'
 import { allPaneIds } from '@/components/pane-shell/tree/model'
 import { LayoutTreeRoot } from '@/components/pane-shell/tree/renderer'
+import { AroTitlebar } from '@/aro/AroTitlebar'
 import {
   $layoutTree,
   bindPaneVisibility,
@@ -607,14 +608,14 @@ const $hasWorkspace = computed($currentCwd, cwd => Boolean(cwd.trim()))
 // is about.
 bindPaneVisibility(
   'files',
-  computed([$hasWorkspace, $fileBrowserOpen], (workspace, open) => workspace && open),
+  $fileBrowserOpen,
   () => setFileBrowserOpen(false),
   () => setFileBrowserOpen(true)
 )
 // ⌘G — the review sidebar appears/disappears (and comes to the front).
 bindPaneVisibility(
   'review',
-  computed([$reviewOpen, $hasWorkspace], (open, workspace) => open && workspace),
+  $reviewOpen,
   closeReview,
   () => openReview($reviewScopeCwd.get(), $reviewScopeTarget.get())
 )
@@ -842,9 +843,10 @@ export function ContribController() {
           // painted by <body> is the only thing between the page and the
           // vibrancy material.
           data-contrib-shell=""
-          style={{ '--titlebar-height': '0px' } as CSSProperties}
+          style={{ '--titlebar-height': '40px' } as CSSProperties}
         >
-          <LayoutTreeRoot titlebar />
+          <AroTitlebar />
+          <LayoutTreeRoot titlebar={false} />
 
           {/* "Close running tab?" — the busy/input-blocked tile close gate. */}
           <SessionTileCloseConfirm />

@@ -151,19 +151,32 @@ export function goToProject(id: string, options?: { newSession?: boolean }): voi
 // instead of the configured default (#71873, #80213, #77496).
 export function resolveNewSessionCwd(): string {
   const scope = $projectScope.get()
+  const tree = $projectTree.get()
 
-  // Inside Home, "no folder" is the point: a new chat must stay detached rather
-  // than silently attaching to the configured default dir and leaving Home.
+  // Home is intentionally detached. Never attach it to the configured default.
   if (scope === NO_PROJECT_ID) {
     return ''
   }
 
+  // A project currently being viewed takes precedence over the active-project
+  // preference, because the user's current scope is the most explicit choice.
   if (scope !== ALL_PROJECTS) {
-    const cwd = projectRootCwd($projectTree.get().find(node => node.id === scope))
+    const cwd = projectRootCwd(tree.find(node => node.id === scope))
+    if (cwd) return cwd
+    const explicit = $projects.get().find(p => p.id === scope)
+    const fallback = (explicit?.primary_path || explicit?.folders?.[0]?.path || '').trim()
+    if (fallback) return fallback
+  }
 
-    if (cwd) {
-      return cwd
-    }
+  // In the overview, inherit the explicitly selected active project before
+  // falling back to the configured default directory.
+  const activeId = $activeProjectId.get()
+  if (activeId) {
+    const cwd = projectRootCwd(tree.find(node => node.id === activeId))
+    if (cwd) return cwd
+    const explicit = $projects.get().find(p => p.id === activeId)
+    const fallback = (explicit?.primary_path || explicit?.folders?.[0]?.path || '').trim()
+    if (fallback) return fallback
   }
 
   return workspaceCwdForNewSession()
@@ -198,6 +211,19 @@ export function projectIdForCwd(cwd: string): null | string {
     // (e.g. a sibling `repo-retry`) lives OUTSIDE the repo root, so root-prefix
     // matching alone would miss it — but it's still part of the project.
     const paths = [project.path, ...project.repos.flatMap(repo => [repo.path, ...repo.groups.map(group => group.path)])]
+
+    for (const path of paths) {
+      const p = (path || '').trim()
+
+      if (p && isUnderPath(p, cwd) && p.length > bestLen) {
+        bestLen = p.length
+        best = project.id
+      }
+    }
+  }
+
+  for (const project of $projects.get()) {
+    const paths = [project.primary_path, ...(project.folders || []).map(f => f.path)]
 
     for (const path of paths) {
       const p = (path || '').trim()
@@ -1429,14 +1455,14 @@ export async function listBaseBranches(repoPath: string): Promise<HermesGitBaseB
   return git.baseBranchList(repoPath)
 }
 
-export async function switchBranchInRepo(repoPath: string, branch: string): Promise<void> {
+export async function switchBranchInRepo(repoPath: string, branch: string, create?: boolean): Promise<void> {
   const git = desktopGit()
 
   if (!git || !repoPath || !branch.trim()) {
     return
   }
 
-  await git.branchSwitch(repoPath, branch)
+  await git.branchSwitch(repoPath, branch, create)
   bumpWorktrees()
 }
 
@@ -1605,4 +1631,11 @@ export async function openFolderAsProject(dir?: string): Promise<void> {
   }
 
   requestStartWorkSession(target, undefined, { openTab: true })
+
+  // Discovery scans only configured roots. Probe the folder the user actually
+  // opened so Git context is available immediately, even outside those roots.
+  void desktopGit()
+    ?.repoStatus(target)
+    .then(() => refreshProjectTree())
+    .catch(() => undefined)
 }

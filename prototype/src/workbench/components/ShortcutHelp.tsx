@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "../utils/cn";
 import { SHORTCUTS, SHORTCUT_GROUPS } from "../lib/shortcuts";
@@ -8,12 +6,10 @@ import { IconButton, Kbd } from "./ui";
 
 export function ShortcutHelp({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
-  /* clear the filter each time the overlay opens */
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (prevOpen !== open) {
-    setPrevOpen(open);
-    if (open) setQ("");
-  }
+  /* clear the search whenever the sheet reopens — render-time adjustment
+     (avoids react-hooks/set-state-in-effect) */
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) { setWasOpen(open); if (open) setQ(""); }
   useEffect(() => {
     if (!open) return;
     const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();

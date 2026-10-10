@@ -3,9 +3,11 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useStore } from '@nanostores/react'
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
+import { LogoMark } from '@/aro/Icons'
 import { PlatformAvatar } from '@/app/messaging/platform-icon'
+import { ProfileSwitcher } from './profile-dropdown-switcher'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
@@ -15,6 +17,7 @@ import { SearchField } from '@/components/ui/search-field'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
@@ -410,6 +413,7 @@ export function ChatSidebar({
   const { t } = useI18n()
   const s = t.sidebar
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   // Contributed nav rows (plugins pairing a page with a sidebar entry) render
   // below the built-ins with the same chrome; active = at their route.
   const navContributions = useContributions(SIDEBAR_NAV_AREA)
@@ -1595,7 +1599,14 @@ export function ChatSidebar({
       data-tour="sessions-sidebar"
     >
       <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
-        <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
+        <div className="flex h-[38px] shrink-0 items-center justify-between border-b border-aro-line-soft px-1 pb-1 pt-1.5">
+          <div className="flex items-center gap-2">
+            <LogoMark size={20} />
+            <span className="font-display text-[15px] font-semibold tracking-tight text-aro-ink">Aro</span>
+          </div>
+          <ProfileSwitcher compact />
+        </div>
+        <SidebarGroup className="shrink-0 p-0 pb-2 pt-2">
           <SidebarGroupContent>
             <SidebarMenu className="gap-px">
               {navItems.map(item => {
@@ -2088,6 +2099,21 @@ export function ChatSidebar({
           </div>
         )}
       </SidebarContent>
+      <SidebarFooter className="border-t border-line-soft p-2 gap-1.5 bg-(--ui-bg-sidebar)">
+        <ProfileSwitcher variant="card" />
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          className="group flex h-[32px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground"
+        >
+          <Codicon name="settings-gear" className="size-3.5 text-(--ui-text-tertiary) shrink-0" />
+          <span className="flex-1 text-left font-medium">Settings</span>
+          <kbd className="font-mono text-[9px] text-(--ui-text-quaternary)">⌘,</kbd>
+        </button>
+        <p className="px-2 pt-0.5 text-[9.5px] text-(--ui-text-quaternary) select-none">
+          Code workspace · saved on this device
+        </p>
+      </SidebarFooter>
       <ProjectDialog />
       {/* One mount for the whole app. The header of WorktreeDialog tells why. */}
       <WorktreeDialog />

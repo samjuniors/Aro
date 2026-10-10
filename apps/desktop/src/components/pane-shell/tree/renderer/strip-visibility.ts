@@ -110,6 +110,17 @@ export function tabStripVisibleForZone(zone: {
   /** Panes currently rendered as chips. */
   shown: readonly string[]
 }): boolean {
+  // In Aro UI, side navigation between Sessions (Code) and Bots is managed by
+  // the top-level Aro Titlebar switcher and Aro Sidebar; suppress the old Hermes tab strip.
+  if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+    const isSidebarNavigationGroup =
+      zone.shown.length > 0 &&
+      zone.shown.every(id => id === 'sessions' || id === 'hermes-bots:pane')
+    if (isSidebarNavigationGroup) {
+      return false
+    }
+  }
+
   return resolveTabStripVisible({
     headerVeto: paneChrome(zone.paneFor(zone.active)).headerVeto,
     mode: effectiveTabStripMode(zone.mode),

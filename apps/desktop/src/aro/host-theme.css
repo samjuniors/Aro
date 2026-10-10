@@ -1,0 +1,2857 @@
+/* ============================================================================
+   ARO HOST VISUAL SYSTEM
+   ----------------------------------------------------------------------------
+   The prototype is the visual source of truth; Hermes remains the functional
+   source of truth. This layer maps the existing desktop design-token contract
+   onto the Aro Workbench token contract.
+
+   It intentionally changes tokens, not application state, RPC contracts,
+   session identity, model resolution, or tool execution. Components can
+   therefore be migrated incrementally without creating a second application.
+
+   The default desktop theme is Aro Obsidian. The existing theme provider still
+   owns theme persistence; this file only supplies the Aro visual values while
+   the renderer is opted into the Aro surface.
+   ============================================================================ */
+
+:root[data-aro-ui='true'] {
+  color-scheme: dark;
+
+  /* Typography: prototype uses Inter for reading and Space Grotesk for identity. */
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', 'Noto Sans Mono', 'Noto Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --dt-font-sans:
+    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    system-ui, sans-serif;
+  --dt-font-mono:
+    'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono',
+    'Liberation Mono', 'Noto Sans Mono', 'Noto Mono', 'SF Mono', ui-monospace,
+    Menlo, Consolas, monospace;
+
+  --dt-background: var(--aro-void);
+  --dt-foreground: var(--aro-ink);
+  --dt-card: var(--aro-bg);
+  --dt-card-foreground: var(--aro-ink);
+  --dt-muted: var(--aro-well);
+  --dt-muted-foreground: var(--aro-ink-3);
+  --dt-popover: var(--aro-overlay);
+  --dt-popover-foreground: var(--aro-ink);
+  --dt-primary: var(--aro-iris);
+  --dt-primary-foreground: var(--aro-on-iris);
+  --dt-primary-solid: var(--aro-iris);
+  --dt-primary-solid-foreground: var(--aro-on-iris);
+  --dt-secondary: var(--aro-raise);
+  --dt-secondary-foreground: var(--aro-ink-2);
+  --dt-accent: var(--aro-hover);
+  --dt-accent-foreground: var(--aro-ink);
+  --dt-border: var(--aro-line);
+  --dt-input: var(--aro-line);
+  --dt-ring: var(--aro-iris);
+  --dt-midground: var(--aro-iris);
+  --dt-sidebar-bg: var(--aro-sunken);
+  --dt-sidebar-border: var(--aro-line-soft);
+  --dt-destructive: var(--aro-rose);
+  --dt-destructive-foreground: #fff;
+
+  /* Existing desktop semantic layer → Aro surfaces. */
+  --ui-base: var(--aro-ink);
+  --ui-accent: var(--aro-iris);
+  --ui-accent-secondary: var(--aro-iris-soft);
+  --ui-warm: var(--aro-amber);
+  --ui-red: var(--aro-rose);
+  --ui-orange: var(--aro-amber);
+  --ui-yellow: var(--aro-amber);
+  --ui-green: var(--aro-mint);
+  --ui-cyan: var(--aro-cyan);
+  --ui-blue: var(--aro-sky);
+  --ui-purple: var(--aro-iris);
+
+  --ui-bg-chrome: var(--aro-void);
+  --ui-bg-sidebar: var(--aro-sunken);
+  --ui-bg-editor: var(--aro-bg);
+  --ui-bg-elevated: var(--aro-overlay);
+  --ui-bg-card: var(--aro-raise);
+  --ui-bg-input: var(--aro-sunken);
+
+  --ui-bg-primary: var(--aro-iris-tint);
+  --ui-bg-secondary: color-mix(in srgb, var(--aro-iris) 10%, var(--aro-bg));
+  --ui-bg-tertiary: color-mix(in srgb, var(--aro-ink) 5%, var(--aro-bg));
+  --ui-bg-quaternary: color-mix(in srgb, var(--aro-ink) 4%, var(--aro-bg));
+  --ui-bg-quinary: color-mix(in srgb, var(--aro-ink) 3%, var(--aro-bg));
+
+  --ui-row-hover-background: var(--aro-hover);
+  --ui-row-active-background: var(--aro-iris-tint);
+  --ui-row-open-background: color-mix(in srgb, var(--aro-iris) 7%, transparent);
+  --ui-control-hover-background: var(--aro-hover);
+  --ui-control-active-background: var(--aro-iris-tint);
+
+  --ui-text-primary: var(--aro-ink);
+  --ui-text-secondary: var(--aro-ink-2);
+  --ui-text-tertiary: var(--aro-ink-3);
+  --ui-text-quaternary: var(--aro-ink-4);
+
+  --ui-stroke-primary: var(--aro-line);
+  --ui-stroke-secondary: var(--aro-line-soft);
+  --ui-stroke-tertiary: color-mix(in srgb, var(--aro-line) 70%, transparent);
+  --ui-stroke-quaternary: color-mix(in srgb, var(--aro-line) 45%, transparent);
+
+  --ui-surface-background: var(--aro-bg);
+  --ui-sidebar-surface-background: var(--aro-sunken);
+  --ui-chat-surface-background: var(--aro-void);
+  --ui-editor-surface-background: var(--aro-void);
+  --ui-terminal-surface-background: var(--aro-void);
+  --ui-widget-surface-background: var(--aro-raise);
+
+  --ui-chat-bubble-background: var(--aro-raise);
+  --ui-chat-bubble-opaque-background: var(--aro-raise);
+  --ui-inline-code-background: var(--aro-code);
+  --ui-inline-code-foreground: var(--aro-ink);
+  --ui-selection-background: color-mix(in srgb, var(--aro-iris) 32%, transparent);
+
+  --conversation-scaffold-text: var(--aro-ink-2);
+  --conversation-scaffold-meta: var(--aro-ink-3);
+
+  /* Prototype radius ladder. */
+  --radius-scalar: 0.625rem;
+
+  /* Aro's compact vertical rhythm. */
+  --dt-base-size: 1rem;
+  --dt-line-height: 1.5;
+  --dt-letter-spacing: 0;
+}
+
+:root[data-aro-ui='true'] body {
+  background: var(--aro-void);
+  color: var(--aro-ink);
+  font-family: var(--dt-font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'tnum';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-aro-ui='true'] ::selection {
+  background: color-mix(in srgb, var(--aro-iris) 32%, transparent);
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro Workbench component treatment.                                        */
+/* These selectors deliberately target Hermes' existing render slots.        */
+/* No prototype data/actions are introduced here.                            */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] {
+  --aro-sidebar-pad: 0.625rem;
+  font-family: var(--dt-font-sans);
+  background: var(--aro-sunken);
+  border-color: var(--aro-line-soft);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-tour^='sidebar-nav-'] {
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-tour='sidebar-nav-new-session'] {
+  font-weight: 650;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input {
+  border-radius: 0.55rem;
+  border-color: var(--aro-line-soft);
+  background: var(--aro-bg);
+  color: var(--aro-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input::placeholder {
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sessions-mode] {
+  scrollbar-color: var(--aro-line) transparent;
+  scrollbar-width: thin;
+  overflow-x: hidden;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sessions-mode] > * {
+  border-color: var(--aro-line-soft);
+}
+
+/* ── Phase 2: Sidebar Session Rows & Ergonomics ────────────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row] {
+  border-radius: 0.45rem;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row]:hover {
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row][data-selected='true'],
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-sidebar-row][aria-selected='true'] {
+  background: var(--aro-iris-tint);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-pinned='true'] .codicon-pin {
+  color: var(--aro-amber);
+}
+
+/* ── Phase 2: Project Presentation ─────────────────────────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-project-folder] {
+  border-radius: 0.5rem;
+  border: 1px solid var(--aro-line-soft);
+  background: var(--aro-raise);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-project-folder]:hover {
+  background: var(--aro-hover);
+  border-color: var(--aro-line);
+}
+
+/* ── Phase 2: Profile Switcher Presentation in Sidebar ─────────────── */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-profile-rail] {
+  border-top: 1px solid var(--aro-line-soft);
+  padding-top: 0.5rem;
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-root'] {
+  --composer-surface-pad-x: 10px;
+  --composer-surface-pad-y: 8px;
+  --composer-row-gap: 6px;
+  --composer-control-gap: 6px;
+  --composer-shell-pad-block-end: 12px;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-fade'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-slot='composer-input'],
+:root[data-aro-ui='true'] [data-slot='composer-rich-input'] {
+  color: var(--aro-ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-rich-input']:is(:empty, [data-empty])::before {
+  color: var(--aro-ink-4);
+  font-size: 13.5px;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-drag-region'] {
+  border-radius: 20px;
+}
+
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] {
+  --conversation-turn-gap: 1rem;
+  --conversation-text-font-size: 0.875rem;
+  --message-text-indent: 0;
+  background: var(--aro-void);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] {
+  max-width: min(52rem, 100%);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='user'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='user'] .composer-human-message {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 12%);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] pre {
+  border-color: var(--aro-line);
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] code {
+  background: color-mix(in srgb, var(--aro-code) 88%, var(--aro-raise));
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] + [data-role='user'] {
+  margin-top: 0.375rem;
+}
+
+
+/* Real Hermes session header. SessionActionsMenu/TitleMenuTrigger keep all
+   session operations; this only supplies the Aro Workbench chrome. */
+:root[data-aro-ui='true'] [data-aro-session-header] {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  padding-inline: 0.75rem;
+  border-color: var(--aro-line-soft);
+  background: color-mix(in srgb, var(--aro-void) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] > div {
+  gap: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] button {
+  border-radius: 0.5rem;
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] > div > button > span {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+:root[data-aro-ui='true'] [data-aro-session-header] [data-profile-tag] {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro three-panel workbench context.                                        */
+/* These markers wrap REAL Hermes file/review surfaces; no demo context data. */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-aro-context-pane] {
+  min-width: 0;
+  background: var(--aro-sunken);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] > aside {
+  border-color: var(--aro-line-soft);
+  background: var(--aro-sunken);
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-pane-self-label],
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-suppress-pane-reveal-side] {
+  font-family: var(--font-mono);
+  letter-spacing: .08em;
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] button:hover {
+  background: color-mix(in srgb, var(--aro-iris) 7%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] [role='treeitem'][aria-selected='true'],
+:root[data-aro-ui='true'] [data-aro-context-pane] [data-selected='true'] {
+  background: var(--aro-iris-tint);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] ::-webkit-scrollbar-thumb {
+  background: var(--aro-line);
+  border-radius: 999px;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro conversation surface + composer.                                      */
+/* The prototype's Workbench is the visual reference; these selectors restyle */
+/* the REAL Hermes transcript/composer instead of mounting a second chat.     */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-chat-surface=''] {
+  --composer-width: min(790px, calc(100% - 3rem));
+  --conversation-turn-gap: 1.25rem;
+  background:
+    radial-gradient(80% 55% at 50% 0%, color-mix(in srgb, var(--aro-iris) 5%, transparent), transparent 72%),
+    var(--aro-void);
+}
+
+:root[data-aro-ui='true'] [data-chat-surface=''] [data-slot='composer-bounds'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-viewport'] {
+  scrollbar-color: var(--aro-line) transparent;
+  scrollbar-width: thin;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] {
+  max-width: 790px;
+  padding-inline: 1.5rem;
+  padding-top: 3.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > [data-role='user'] {
+  margin-bottom: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_user-message-root'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] .composer-human-message {
+  border-color: var(--aro-line-soft);
+  background: var(--aro-raise);
+  border-radius: 0.625rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 13%), inset 0 1px 0 rgb(255 255 255 / 2%);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-role='assistant'] {
+  padding-inline: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] {
+  max-width: 52rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] > p,
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] li {
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] pre {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.625rem;
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_assistant-message-content'] blockquote {
+  border-left-color: var(--aro-iris);
+  color: var(--aro-ink-3);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > button {
+  border-color: var(--aro-line);
+  background: var(--aro-raise);
+  color: var(--aro-ink-3);
+}
+
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] > button:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 42%, var(--aro-line));
+  background: var(--aro-iris-tint);
+  color: var(--aro-ink);
+}
+
+/* Composer: preserve Hermes' real rich editor, attachment pipeline, queue, */
+/* slash/@ completions, voice, model picker, stop/steer and send actions. */
+:root[data-aro-ui='true'] [data-slot='composer-dock'] {
+  width: min(790px, calc(100% - 3rem));
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-root'] {
+  width: 100%;
+  padding-top: 0.375rem;
+  padding-bottom: 0.5rem;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--aro-void) 92%, transparent));
+}
+
+@property --shimmer-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes shimmerSpin { to { --shimmer-angle: 360deg; } }
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--aro-cyan) 26%, transparent), 0 0 16px -6px color-mix(in srgb, var(--aro-cyan) 40%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--aro-cyan) 45%, transparent), 0 0 26px -4px color-mix(in srgb, var(--aro-cyan) 60%, transparent); }
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  position: relative;
+  min-height: 96px;
+  border: 1px solid var(--aro-line);
+  border-radius: 20px;
+  background: var(--aro-overlay);
+  box-shadow: 0 3px 12px -5px rgba(0, 0, 0, 0.55);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.3px;
+  background: conic-gradient(from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-iris-soft) 90%, transparent) 46deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 80deg,
+    transparent 122deg, transparent 198deg,
+    color-mix(in srgb, var(--aro-iris-soft) 65%, transparent) 238deg,
+    transparent 302deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 240ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-fade'] {
+  padding: 12px 14px 6px;
+  gap: 4px;
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
+  border-color: color-mix(in srgb, var(--aro-iris) 50%, var(--aro-line));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--aro-iris) 45%, transparent), 0 0 24px -2px color-mix(in srgb, var(--aro-iris) 38%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within::before {
+  opacity: 0.85;
+  animation: shimmerSpin 3.2s linear infinite;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'][data-aro-listening]::before,
+:root[data-aro-ui='true'] [data-slot='composer-surface'].is-listening::before {
+  opacity: 1;
+  animation: shimmerSpin 2.4s linear infinite;
+  background: conic-gradient(from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-rose) 90%, transparent) 52deg,
+    transparent 116deg, transparent 208deg,
+    color-mix(in srgb, var(--aro-rose) 70%, transparent) 258deg,
+    transparent 322deg);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'][data-aro-listening],
+:root[data-aro-ui='true'] [data-slot='composer-surface'].is-listening {
+  border-color: color-mix(in srgb, var(--aro-rose) 55%, var(--aro-line));
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'][data-aro-streaming]::before,
+:root[data-aro-ui='true'] [data-slot='composer-surface'].is-streaming::before {
+  opacity: 1;
+  animation: shimmerSpin 1.5s linear infinite;
+  background: conic-gradient(from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 48deg,
+    color-mix(in srgb, var(--aro-iris-soft) 85%, transparent) 82deg,
+    transparent 124deg, transparent 200deg,
+    color-mix(in srgb, var(--aro-cyan) 70%, transparent) 240deg,
+    transparent 304deg);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'][data-aro-streaming],
+:root[data-aro-ui='true'] [data-slot='composer-surface'].is-streaming {
+  border-color: color-mix(in srgb, var(--aro-cyan) 45%, var(--aro-line));
+  animation: glowPulse 2.2s ease-in-out infinite;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'][data-aro-streaming]:focus-within,
+:root[data-aro-ui='true'] [data-slot='composer-surface'].is-streaming:focus-within {
+  border-color: color-mix(in srgb, var(--aro-cyan) 55%, var(--aro-line));
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true'] {
+  min-height: 58px;
+  color: var(--aro-ink);
+  font-size: 13.5px;
+  line-height: 1.55;
+  font-family: var(--dt-font-sans);
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true']:empty::before {
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-slot='composer-input'],
+:root[data-aro-ui='true'] [data-slot='composer-surface'] textarea {
+  font-family: var(--dt-font-sans);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .reference-composer-toolbar,
+:root[data-aro-ui='true'] [data-slot='composer-surface'] [data-slot='footer'] {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 2px 0 2px;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .composer-icon-button {
+  display: inline-flex;
+  height: 30px;
+  width: 30px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--aro-ink-2);
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .composer-icon-button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .permission-control {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: var(--aro-ink-3);
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .permission-control:hover {
+  color: var(--aro-ink-2);
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .permission-control.full-permission {
+  color: var(--aro-amber);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .model-control {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+  padding: 0 5px;
+  font-size: 11.5px;
+  color: var(--aro-ink-2);
+  white-space: nowrap;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] .model-control:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit'] {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--aro-ink);
+  color: var(--aro-void);
+  transition: opacity 140ms ease, transform 100ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit']:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit']:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button[type='submit']:disabled {
+  background: var(--aro-ink-4);
+  color: var(--aro-void);
+  opacity: 0.68;
+  cursor: default;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-dock'] [data-slot='composer-floating-strip'] {
+  font-family: var(--dt-font-mono);
+}
+
+/* ── Phase 1: Trigger Popovers (/ slash & @ mentions) ──────────────── */
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] {
+  border: 1px solid var(--aro-line-strong);
+  border-radius: 0.75rem;
+  background: var(--aro-raise);
+  box-shadow:
+    0 16px 40px rgb(0 0 0 / 38%),
+    0 1px 0 rgb(255 255 255 / 3%) inset;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button {
+  border-radius: 0.5rem;
+  color: var(--aro-ink-2);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button[data-highlighted],
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button[data-highlighted] [data-ref],
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'] button:hover [data-ref] {
+  color: var(--aro-iris);
+}
+
+/* ── Phase 1: Drag & Drop Overlay ─────────────────────────────────── */
+:root[data-aro-ui='true'] [data-slot='chat-drop-overlay'] > div:first-child {
+  border: 2px dashed var(--aro-iris) !important;
+  background: color-mix(in srgb, var(--aro-sunken) 85%, transparent) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.875rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='chat-drop-overlay'] span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--aro-line-strong);
+  background: var(--aro-raise);
+  padding: 0.5rem 1rem;
+  font-family: var(--dt-font-sans);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: var(--aro-iris-soft);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
+}
+
+/* ── Phase 1: Voice Activity Bubble (Wispr Flow style) ─────────────── */
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] {
+  border-color: color-mix(in srgb, var(--aro-iris) 55%, var(--aro-line));
+  background: var(--aro-raise);
+  border-radius: 0.75rem;
+  color: var(--aro-ink);
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 24%),
+    0 0 0 1px color-mix(in srgb, var(--aro-iris) 18%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] .bg-primary\/15,
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] .bg-primary\/10 {
+  background: color-mix(in srgb, var(--aro-iris) 22%, transparent);
+  color: var(--aro-iris);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-voice-activity'] span[style*='height'] {
+  background: var(--aro-iris);
+}
+
+@media (max-width: 900px) {
+  :root[data-aro-ui='true'] [data-chat-surface=''] {
+    --composer-width: calc(100% - 1.5rem);
+  }
+
+  :root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_thread-content'] {
+    padding-inline: 0.75rem;
+  }
+
+  :root[data-aro-ui='true'] [data-slot='composer-dock'] {
+    width: calc(100% - 1.5rem);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Aro chat + composer replacement surface.                                  */
+/* The DOM is still Hermes; these rules replace its visual grammar in-place. */
+/* -------------------------------------------------------------------------- */
+
+:root[data-aro-ui='true'] [data-aro-chat-screen] {
+  --aro-chat-gutter: clamp(1rem, 3vw, 3rem);
+  background:
+    radial-gradient(900px 500px at 50% 15%, rgb(124 92 255 / 4%), transparent 65%),
+    var(--aro-void);
+}
+
+:root[data-aro-ui='true'] [data-aro-chat-screen] [data-slot='composer-bounds'] {
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--aro-line) transparent;
+  background: transparent;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+  width: min(100%, 52rem);
+  max-width: 52rem;
+  padding-inline: var(--aro-chat-gutter);
+  padding-top: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-slot='aui_assistant-message-root'],
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  width: 100%;
+  max-width: 100%;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] {
+  padding-inline: 0;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] [data-slot='aui_assistant-message-content'] {
+  max-width: 46rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  padding-inline: 0;
+  margin-block: 0.5rem 0.75rem;
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] .composer-human-message {
+  border: 1px solid var(--aro-line-soft);
+  background: var(--aro-raise);
+  border-radius: 10px;
+  border-top-left-radius: 3px;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+}
+
+:root[data-aro-ui='true'] [data-aro-transcript] [data-role='assistant'] + [data-role='user'] {
+  margin-top: 0.875rem;
+}
+
+/* ── Aro Composer Footer Rail ──────────────────────────────────────────
+   Prototype-faithful visual grammar. Every control remains backed by
+   the live Hermes composer state and handlers — presentation only.
+   Source of truth: prototype/src/app/globals.css (.reference-composer-toolbar)
+   ────────────────────────────────────────────────────────────────────── */
+[data-aro-composer-controls] {
+  min-height: 40px;
+  gap: 5px;
+  padding: 2px 7px 8px;
+}
+
+[data-aro-composer-controls] > div {
+  gap: 5px;
+}
+
+[data-aro-composer-controls] button {
+  border-radius: 7px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease;
+}
+
+[data-aro-composer-controls] button:hover:not(:disabled) {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+[data-aro-composer-controls] button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* ── Leading cluster: the [+ / @] icon group ────────────────────────── */
+[data-aro-composer-controls] > div:first-child > div:first-child {
+  border: none;
+  background: transparent;
+  padding: 0;
+  gap: 2px;
+}
+
+[data-aro-composer-controls] > div:first-child > div:first-child > button {
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--aro-ink-2);
+}
+
+[data-aro-composer-controls] > div:first-child > div:first-child > button:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+/* Project action: choose a live workspace for this chat or its next session. */
+[data-aro-composer-controls] [data-aro-project-control] {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--aro-ink-2);
+}
+
+[data-aro-composer-controls] [data-aro-project-control]:hover:not(:disabled) {
+  background: var(--aro-hover);
+  color: var(--aro-iris-soft);
+}
+
+[data-aro-composer-controls] [data-aro-project-selected] {
+  color: var(--aro-iris-soft);
+}
+
+[data-aro-composer-controls] [data-aro-project-selected]:hover:not(:disabled) {
+  background: var(--aro-iris-tint);
+  color: var(--aro-iris-soft);
+}
+
+/* ── Approval / Permission pill ─────────────────────────────────────── */
+[data-aro-composer-controls] [data-aro-approval-mode] {
+  height: 28px;
+  gap: 5px;
+  padding-inline: 5px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--aro-ink-3);
+  box-shadow: none;
+}
+
+[data-aro-composer-controls] [data-aro-approval-mode]:hover {
+  color: var(--aro-ink-2);
+  background: var(--aro-hover);
+}
+
+/* ── Model pill ─────────────────────────────────────────────────────── */
+[data-aro-composer-controls] [data-aro-model-pill] {
+  height: 30px;
+  gap: 4px;
+  border-radius: 6px;
+  padding-inline: 5px;
+  border: none;
+  background: transparent;
+  font-size: 11.5px;
+  color: var(--aro-ink-2);
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+[data-aro-composer-controls] [data-aro-model-pill]:hover {
+  background: var(--aro-hover);
+  border-color: transparent;
+  color: var(--aro-ink);
+}
+
+[data-aro-composer-controls] [data-aro-model-pill] [data-slot='glyph'] {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--aro-ink-3);
+}
+
+[data-aro-composer-controls] [data-aro-model-pill] span {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Reasoning pill ─────────────────────────────────────────────────── */
+[data-aro-composer-controls] [data-aro-reasoning-pill] {
+  height: 28px;
+  gap: 5px;
+  border-radius: 6px;
+  padding-inline: 5px;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--aro-ink-3);
+  box-shadow: none;
+}
+
+[data-aro-composer-controls] [data-aro-reasoning-pill]:hover {
+  background: var(--aro-hover);
+  border-color: transparent;
+  color: var(--aro-ink-2);
+}
+
+/* ── Environment / Worktree pill ────────────────────────────────────── */
+[data-aro-composer-controls] [data-aro-env-pill] {
+  height: 28px;
+  gap: 5px;
+  border-radius: 6px;
+  padding-inline: 6px;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--aro-ink-3);
+  box-shadow: none;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+[data-aro-composer-controls] [data-aro-env-pill]:hover {
+  background: var(--aro-hover);
+  border-color: transparent;
+  color: var(--aro-ink-2);
+}
+
+/* ── Right group: voice, env, context ───────────────────────────────── */
+[data-aro-composer-controls] > div:last-child {
+  gap: 4px;
+}
+
+/* Voice / Queue / Icon buttons: 30×30 prototype sizing */
+[data-aro-composer-controls] > div:last-child button:not([type='submit']):not([data-aro-model-pill]):not([data-aro-reasoning-pill]):not([data-aro-env-pill]) {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border-radius: 7px;
+  color: var(--aro-ink-2);
+}
+
+[data-aro-composer-controls] > div:last-child button:not([type='submit']):not([data-aro-model-pill]):not([data-aro-reasoning-pill]):not([data-aro-env-pill]):hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+/* ── Send / Stop button: solid circle ───────────────────────────────── */
+[data-aro-composer-controls] > div > button[type='submit'],
+[data-aro-composer-controls] button[type='submit'] {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: var(--aro-ink) !important;
+  color: var(--aro-bg) !important;
+  box-shadow: none;
+  transition: opacity 140ms ease, transform 100ms ease;
+}
+
+[data-aro-composer-controls] > div > button[type='submit']:hover:not(:disabled),
+[data-aro-composer-controls] button[type='submit']:hover:not(:disabled) {
+  opacity: 0.83;
+  filter: none;
+  background: var(--aro-ink) !important;
+  color: var(--aro-bg) !important;
+  box-shadow: none;
+}
+
+[data-aro-composer-controls] > div > button[type='submit']:active:not(:disabled),
+[data-aro-composer-controls] button[type='submit']:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+[data-aro-composer-controls] > div > button[type='submit']:disabled,
+[data-aro-composer-controls] button[type='submit']:disabled {
+  cursor: default;
+  background: var(--aro-ink-4) !important;
+  color: var(--aro-bg) !important;
+  opacity: 0.68;
+  box-shadow: none;
+}
+
+/* ── Open popover accent ────────────────────────────────────────────── */
+[data-aro-composer-controls] [data-state='open'] {
+  background: color-mix(in srgb, var(--aro-iris) 10%, transparent);
+  border-color: color-mix(in srgb, var(--aro-iris) 28%, var(--aro-line));
+}
+
+[data-aro-composer-controls] svg {
+  color: currentColor;
+}
+
+/* ── Aro reference-composer glow ──────────────────────────────────────
+   Ported from prototype globals.css `.reference-composer`. The codex grid
+   IS the composer surface (editor above, footer rail below); the outer
+   Hermes composer-surface goes chromeless so exactly ONE frame shows.
+   State layering matches the prototype:
+     :focus-within           → iris ring + iris bloom + iris→cyan beam (3.2s)
+     [data-aro-listening]    → rose ring + rose beam (2.4s)
+     [data-aro-streaming]    → cyan ring + cyan pulse + hot beam (1.5s)   */
+@keyframes aro-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--aro-cyan) 26%, transparent),
+      0 0 16px -6px color-mix(in srgb, var(--aro-cyan) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--aro-cyan) 45%, transparent),
+      0 0 26px -4px color-mix(in srgb, var(--aro-cyan) 60%, transparent);
+  }
+}
+
+/* Aro composer frame matching prototype .reference-composer */
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  position: relative;
+  border: 1px solid var(--aro-line);
+  border-radius: 16px;
+  background: var(--aro-overlay);
+  box-shadow: 0 3px 12px -5px rgba(0, 0, 0, 0.45);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* The travelling shimmer beam: a border-only conic gradient (mask trick). */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.3px;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-iris-soft) 90%, transparent) 46deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 80deg,
+    transparent 122deg,
+    transparent 198deg,
+    color-mix(in srgb, var(--aro-iris-soft) 65%, transparent) 238deg,
+    transparent 302deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+  transition: opacity 240ms ease;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within {
+  border-color: color-mix(in srgb, var(--aro-iris) 50%, var(--aro-line));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--aro-iris) 40%, transparent),
+    0 8px 30px -10px color-mix(in srgb, var(--aro-iris) 55%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within::before {
+  opacity: 0.85;
+  animation: shimmerSpin 3.2s linear infinite;
+}
+
+/* Dictation live: rose beam, faster. */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening] {
+  border-color: color-mix(in srgb, var(--aro-rose) 55%, var(--aro-line));
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening]::before {
+  opacity: 1;
+  animation: shimmerSpin 2.4s linear infinite;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-rose) 90%, transparent) 52deg,
+    transparent 116deg,
+    transparent 208deg,
+    color-mix(in srgb, var(--aro-rose) 70%, transparent) 258deg,
+    transparent 322deg
+  );
+}
+
+/* Turn streaming: cyan pulse + hot beam, fastest. */
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming] {
+  border-color: color-mix(in srgb, var(--aro-cyan) 45%, var(--aro-line));
+  animation: aro-glow-pulse 2.2s ease-in-out infinite;
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]::before {
+  opacity: 1;
+  animation: shimmerSpin 1.5s linear infinite;
+  background: conic-gradient(
+    from var(--shimmer-angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--aro-cyan) 95%, transparent) 48deg,
+    color-mix(in srgb, var(--aro-iris-soft) 85%, transparent) 82deg,
+    transparent 124deg,
+    transparent 200deg,
+    color-mix(in srgb, var(--aro-cyan) 70%, transparent) 240deg,
+    transparent 304deg
+  );
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]:focus-within {
+  border-color: color-mix(in srgb, var(--aro-cyan) 55%, var(--aro-line));
+}
+
+/* Reduced motion: the states stay legible (border + glow) without the spin. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex']::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex']:focus-within::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-listening]::before,
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming]::before {
+    animation: none;
+    opacity: 0.9;
+  }
+
+  :root[data-aro-ui='true'] [data-aro-composer-layout='codex'][data-aro-streaming] {
+    animation: none;
+  }
+}
+
+/* ── Fresh-session suggestion chips (prototype .fresh-suggestions) ── */
+:root[data-aro-ui='true'] [data-slot='fresh-suggestions'],
+:root[data-aro-ui='true'] .fresh-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'],
+:root[data-aro-ui='true'] .fresh-suggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 13px;
+  border: 1px solid var(--aro-line);
+  border-radius: 99px;
+  background: var(--aro-overlay);
+  color: var(--aro-ink-3);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 150ms,
+    color 150ms,
+    transform 150ms,
+    box-shadow 150ms,
+    background-color 150ms;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover,
+:root[data-aro-ui='true'] .fresh-suggestion:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 45%, transparent);
+  color: var(--aro-ink);
+  background: var(--aro-base);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:active,
+:root[data-aro-ui='true'] .fresh-suggestion:active {
+  transform: translateY(0) scale(0.98);
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'] svg,
+:root[data-aro-ui='true'] .fresh-suggestion svg {
+  color: var(--aro-ink-4);
+  transition: color 150ms;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover svg,
+:root[data-aro-ui='true'] .fresh-suggestion:hover svg {
+  color: var(--aro-iris-soft);
+}
+
+/* ── Aro model control + menu (prototype .model-control / .model-menu) ── */
+/* Effort chip in the trigger: colored glow dot + level label. */
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort {
+  color: var(--effort-color, var(--aro-ink-3));
+}
+
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--effort-color, var(--aro-ink-3));
+  box-shadow: 0 0 7px color-mix(in srgb, var(--effort-color, var(--aro-ink-3)) 55%, transparent);
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+/* The level → color ramp for the chip (JSX sets data-level). */
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='low'] {
+  --effort-color: var(--aro-cyan);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='medium'] {
+  --effort-color: var(--aro-iris-soft);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='high'] {
+  --effort-color: var(--aro-amber);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='xhigh'] {
+  --effort-color: color-mix(in srgb, var(--aro-amber) 45%, var(--aro-rose));
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='max'] {
+  --effort-color: var(--aro-rose);
+}
+:root[data-aro-ui='true'] [data-aro-model-control] .model-effort[data-level='ultra'] {
+  --effort-color: color-mix(in srgb, var(--aro-rose) 55%, var(--aro-iris));
+}
+
+/* =========================================================================
+   MODEL MENU & EFFORT SLIDER (Prototype 1:1)
+   ========================================================================= */
+:root[data-aro-ui='true'] .model-menu-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  margin: 1px 0 3px;
+  border-radius: 9px;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 130ms;
+}
+:root[data-aro-ui='true'] .model-menu-head:hover {
+  background: var(--aro-hover);
+}
+:root[data-aro-ui='true'] .model-menu-list {
+  animation: aroModelListIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  padding-top: 2px;
+}
+@keyframes aroModelListIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+:root[data-aro-ui='true'] .model-menu-compact {
+  animation: aroModelCompactIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes aroModelCompactIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+:root[data-aro-ui='true'] .effort-slider {
+  padding: 3px 6px 7px;
+}
+:root[data-aro-ui='true'] .effort-slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 7px;
+}
+:root[data-aro-ui='true'] .effort-level-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--aro-ink);
+  letter-spacing: -0.01em;
+}
+:root[data-aro-ui='true'] .effort-level-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--effort-color);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--effort-color) 65%, transparent);
+  transition: background-color 220ms, box-shadow 220ms;
+}
+:root[data-aro-ui='true'] .effort-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 13px;
+}
+:root[data-aro-ui='true'] .effort-bars i {
+  width: 3.5px;
+  border-radius: 1.5px;
+  background: var(--aro-track);
+  transition: background-color 220ms, box-shadow 220ms;
+}
+:root[data-aro-ui='true'] .effort-bars i.is-on {
+  background: var(--effort-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--effort-color) 50%, transparent);
+}
+:root[data-aro-ui='true'] .effort-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+:root[data-aro-ui='true'] .effort-range:focus-visible {
+  outline: none;
+}
+:root[data-aro-ui='true'] .effort-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--effort-color) 78%, transparent) var(--effort-fill, 50%),
+    var(--aro-track) var(--effort-fill, 50%)
+  );
+}
+:root[data-aro-ui='true'] .effort-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--aro-overlay);
+  border: 2px solid var(--effort-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--effort-color) 16%, transparent), 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 130ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+:root[data-aro-ui='true'] .effort-range:hover::-webkit-slider-thumb {
+  transform: scale(1.18);
+}
+:root[data-aro-ui='true'] .effort-range:active::-webkit-slider-thumb {
+  transform: scale(1.04);
+}
+:root[data-aro-ui='true'] .effort-range::-moz-range-track {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--aro-track);
+}
+:root[data-aro-ui='true'] .effort-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--effort-color);
+}
+:root[data-aro-ui='true'] .effort-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--aro-overlay);
+  border: 2px solid var(--effort-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--effort-color) 16%, transparent);
+}
+:root[data-aro-ui='true'] .effort-slider-scale {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 2px 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aro-ink-4);
+}
+:root[data-aro-ui='true'] .effort-slider-desc {
+  padding: 7px 2px 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--aro-ink-3);
+}
+:root[data-aro-ui='true'] .model-thinking-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 4px 2px 3px;
+  border-radius: 8px;
+  padding: 5px 8px;
+  transition: background-color 130ms;
+}
+:root[data-aro-ui='true'] .model-thinking-row:hover {
+  background: var(--aro-hover);
+}
+
+/* ---------- repo chooser (prototype 1:1) ---------- */
+:root[data-aro-ui='true'] .repo-chooser { padding: 4px; }
+:root[data-aro-ui='true'] .repo-chooser-search { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--aro-line-soft); padding: 7px 9px; color: var(--aro-ink-4); }
+:root[data-aro-ui='true'] .repo-chooser-search input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 12px; color: var(--aro-ink); }
+:root[data-aro-ui='true'] .repo-chooser-search input::placeholder { color: var(--aro-ink-4); }
+:root[data-aro-ui='true'] .repo-chooser-list { max-height: 240px; overflow-y: auto; padding: 4px; }
+:root[data-aro-ui='true'] .repo-chooser-row { display: flex; width: 100%; align-items: center; gap: 9px; border-radius: 7px; padding: 8px 9px; text-align: left; transition: background 120ms; cursor: pointer; }
+:root[data-aro-ui='true'] .repo-chooser-row:hover { background: var(--aro-hover); }
+:root[data-aro-ui='true'] .repo-chooser-row.selected { background: var(--aro-hover); }
+:root[data-aro-ui='true'] .repo-chooser-main { min-width: 0; flex: 1; }
+:root[data-aro-ui='true'] .repo-chooser-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--aro-ink-2); }
+:root[data-aro-ui='true'] .repo-chooser-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono, monospace); font-size: 10px; color: var(--aro-ink-4); margin-top: 1px; }
+:root[data-aro-ui='true'] .repo-chooser-demo { font-family: var(--font-mono, monospace); font-size: 8px; font-weight: 700; color: var(--aro-iris-soft); background: var(--aro-iris-tint); padding: 1px 4px; border-radius: 3px; }
+:root[data-aro-ui='true'] .repo-chooser-check { color: var(--aro-ink); flex-shrink: 0; }
+:root[data-aro-ui='true'] .repo-chooser-empty { padding: 14px 8px; text-align: center; font-size: 11px; color: var(--aro-ink-4); }
+:root[data-aro-ui='true'] .repo-chooser-add { display: flex; width: 100%; align-items: center; gap: 8px; border-top: 1px solid var(--aro-line-soft); padding: 9px 11px 7px; font-size: 12px; color: var(--aro-ink-2); cursor: pointer; transition: background 120ms; }
+:root[data-aro-ui='true'] .repo-chooser-add:hover { background: var(--aro-hover); }
+:root[data-aro-ui='true'] .repo-chooser-clear { border-top: 0; padding-top: 5px; color: var(--aro-ink-4); }
+:root[data-aro-ui='true'] .repo-chooser-archived-label { padding: 8px 10px 4px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--aro-ink-4); }
+
+/* ── Aro code cards (prototype .prose-code) ─────────────────────────── */
+:root[data-aro-ui='true'] [data-slot='code-card'] {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.5625rem;
+  background: var(--aro-code);
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] [data-slot='code-card-body'] pre {
+  color: var(--aro-ink-2);
+}
+
+/* ── Aro tool cards (prototype .tool-card) ────────────────────────────
+   The real DisclosureRow keeps its behavior; these give it the prototype's
+   card grammar: bordered well, icon tile, mono uppercase label, live status. */
+:root[data-aro-ui='true'] [data-slot='tool-block'] {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 0.5625rem;
+  background: var(--aro-well);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='disclosure-row'] {
+  padding-block: 0.5rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [role='button'] {
+  font-family: var(--font-aro-mono);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='tool-glyph'] {
+  border-radius: 0.3125rem;
+  border: 1px solid var(--aro-line-soft);
+  background: var(--aro-raise);
+}
+
+/* Running tools breathe cyan; the real status text carries the meaning. */
+@keyframes aro-tool-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+:root[data-aro-ui='true'] [data-tool-row][data-tool-running='true'] [data-slot='tool-glyph'] {
+  animation: aro-tool-breathe 2.2s ease-in-out infinite;
+}
+
+/* ── Aro approval cards (prototype amber grammar) ───────────────────── */
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='aui_approval-card'],
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-approval-card] {
+  border-color: color-mix(in srgb, var(--aro-amber) 40%, var(--aro-line-soft));
+  border-radius: 0.5625rem;
+  background: var(--aro-well);
+}
+
+/* ── Aro transcript attributed rows (prototype grammar) ─────────────────
+   User + assistant rows share the 28px avatar / name / meta header anatomy.
+   All content stays the real Hermes transcript — only the row chrome changes. */
+:root[data-aro-ui='true'] .aro-assistant-avatar {
+  background: linear-gradient(135deg, var(--aro-iris) 26%, transparent 130%),
+    linear-gradient(135deg, color-mix(in srgb, var(--aro-iris) 16%, var(--aro-bg)), var(--aro-raise));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--aro-iris-soft) 33%, transparent),
+    0 1px 2px var(--aro-shadow-a);
+  color: var(--aro-iris-soft);
+}
+
+/* Tool/approval cards + thinking indent under the avatar column (pl-40 in the
+   prototype: 28px avatar + 12px gap). */
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-slot='tool-block'],
+:root[data-aro-ui='true'] [data-aro-surface='thread'] [data-conversation-scaffold] {
+  margin-left: 2.5rem;
+}
+
+/* ── Composer surface border refinements ── superseded by the reference-
+   composer glow section above: the outer Hermes surface is chromeless and
+   the codex grid owns the one visible frame. The footer top-border rides
+   on the codex grid itself. */
+
+/* ── Responsive: hide reasoning pill on narrow viewports ────────────── */
+@media (max-width: 720px) {
+  [data-aro-composer-controls] [data-aro-reasoning-pill] {
+    display: none;
+  }
+  [data-aro-composer-controls] [data-aro-model-pill] span {
+    max-width: 84px;
+    font-size: 10.5px;
+  }
+  [data-aro-composer-controls] [data-aro-approval-mode] {
+    font-size: 10.5px;
+  }
+  [data-aro-composer-controls] > div {
+    gap: 1px;
+  }
+  [data-aro-composer-controls] > div:last-child {
+    gap: 1px;
+  }
+}
+
+/* Phase 3 — Center View: Fresh stage suggestion chips */
+:root[data-aro-ui='true'] [data-slot='fresh-suggestions'] {
+  max-width: 48rem;
+  margin-top: 1.5rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'] {
+  background: var(--aro-panel-raised);
+  border-color: var(--aro-border);
+  color: var(--aro-text-secondary);
+  border-radius: 9999px;
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover {
+  background: color-mix(in srgb, var(--aro-panel-raised) 70%, var(--aro-iris));
+  border-color: color-mix(in srgb, var(--aro-iris) 40%, var(--aro-border));
+  color: var(--aro-text);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  transform: translateY(-1px);
+}
+
+:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:active {
+  transform: translateY(0);
+}
+
+/* Phase 3 — FindBar transcript search */
+:root[data-aro-ui='true'] [role='search'] {
+  background: var(--aro-panel-raised);
+  border-color: var(--aro-border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  border-radius: 0.75rem;
+}
+
+:root[data-aro-ui='true'] [role='search'] input {
+  color: var(--aro-text);
+}
+
+/* Phase 3 — Run in terminal code card button */
+:root[data-aro-ui='true'] [data-slot='code-card'] button[title='Run in terminal'] {
+  transition: all 120ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] button[title='Run in terminal']:hover {
+  color: var(--aro-iris);
+  background: color-mix(in srgb, var(--aro-iris) 12%, transparent);
+}
+
+/* Phase 4 — Workspace Panel & Multi-Tab Terminal Dock */
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] {
+  background: var(--aro-raise);
+  border-left-color: var(--aro-line);
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab'] {
+  transition: all 140ms ease;
+  border-radius: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab'][aria-selected='true'] {
+  background: color-mix(in srgb, var(--aro-iris) 16%, transparent);
+  color: var(--aro-iris);
+}
+
+:root[data-aro-ui='true'] [data-suppress-pane-reveal] button[role='tab']:hover:not([aria-selected='true']) {
+  background: color-mix(in srgb, var(--aro-ink) 8%, transparent);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [role='tablist'] {
+  --pane-tab-active-accent: var(--aro-iris);
+  --pane-tab-active-bg: var(--aro-raise);
+  --pane-tab-strip-bg: var(--aro-bg);
+}
+
+:root[data-aro-ui='true'] .group\/tab {
+  transition: all 120ms ease;
+}
+
+/* Zone header tabs: hide redundant VS Code tab strip on sessions and main chat in Aro UI */
+:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-sessions'] [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group='grp-main'] > [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="workspace"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="workspace"]) [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) [data-zone-tabstrip] {
+  display: none !important;
+}
+
+/* Zone header tabs: right workspace dock (Context, Changes, Terminal) styled as prototype WorkspacePanel */
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] > [data-zone-tabstrip] {
+  background: var(--aro-sunken);
+  border-bottom: 1px solid var(--aro-line-soft);
+  height: 38px;
+  padding-inline: 8px;
+  gap: 4px;
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'] {
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--aro-ink-3);
+  padding: 4px 10px;
+  background: transparent;
+  box-shadow: none;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  transition: all 140ms ease;
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'][aria-selected='true'],
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab'][data-active='true'] {
+  color: var(--aro-ink);
+  background: var(--aro-raise);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+}
+:root[data-aro-ui='true'] [data-tree-group='grp-context'] [role='tab']:hover {
+  color: var(--aro-ink-2);
+  background: var(--aro-hover);
+}
+
+/* Prototype Sidebar visual grammar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] {
+  background: var(--aro-sunken);
+  border-right: 1px solid var(--aro-line-soft);
+  overflow-x: hidden !important;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] * {
+  max-width: 100%;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-content'],
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] nav,
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] ul {
+  overflow-x: hidden !important;
+  padding-inline: 10px;
+}
+
+/* Larger, clear pin icon beside action buttons */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] .codicon-pin,
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='pin-indicator'] {
+  font-size: 13px !important;
+  opacity: 0.9 !important;
+  color: var(--aro-iris-soft) !important;
+}
+
+/* New session button in sidebar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] button[data-tour='sidebar-nav-new-session'],
+:root[data-aro-ui='true'] .new-session-action {
+  display: flex !important;
+  height: 36px !important;
+  width: 100% !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-radius: 8px !important;
+  padding-inline: 10px !important;
+  background: var(--aro-raise) !important;
+  border: 1px solid var(--aro-line) !important;
+  color: var(--aro-ink) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 18%) !important;
+  transition: all 140ms ease !important;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] button[data-tour='sidebar-nav-new-session']:hover,
+:root[data-aro-ui='true'] .new-session-action:hover {
+  background: var(--aro-hover) !important;
+  border-color: color-mix(in srgb, var(--aro-iris) 45%, var(--aro-line)) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 24%) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+/* Sidebar navigation rows */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button'] {
+  height: 32px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  color: var(--aro-ink-3);
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button']:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-menu-button'][data-active='true'] {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  font-weight: 550;
+}
+
+/* Session rows in sidebar */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row'],
+:root[data-aro-ui='true'] .session-list-row {
+  min-height: 32px;
+  border-radius: 7px;
+  padding: 0 6px 0 9px;
+  color: var(--aro-ink-3);
+  font-size: 12.5px;
+  transition: all 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row']:hover,
+:root[data-aro-ui='true'] .session-list-row:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] [data-slot='sidebar-session-row'][data-active='true'],
+:root[data-aro-ui='true'] .session-list-row.selected {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  box-shadow: inset 2px 0 0 var(--aro-iris);
+}
+
+/* Sidebar search input */
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input {
+  height: 32px;
+  background: var(--aro-bg);
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--aro-ink);
+  transition: border-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='sessions-sidebar'] input:focus {
+  border-color: var(--aro-iris);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro-iris) 15%, transparent);
+}
+
+/* Workspace panel arrow toggle on top right of workbench */
+.workspace-arrow-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  color: var(--aro-ink-3);
+  cursor: pointer;
+  box-shadow: var(--shadow-e1);
+  transition: all 140ms ease;
+}
+.workspace-arrow-toggle:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  border-color: var(--aro-line-strong);
+  transform: scale(1.05);
+}
+
+/* Phase 5 — Titlebar cleanup & Theme polish */
+:root[data-aro-ui='true'] button[data-tool-id='layout'] {
+  display: none !important;
+}
+
+:root[data-aro-ui='true'] [data-titlebar-cluster] button {
+  transition: all 120ms ease;
+  border-radius: 0.375rem;
+}
+
+:root[data-aro-ui='true'] [data-titlebar-cluster] button:hover {
+  background: color-mix(in srgb, var(--aro-ink) 8%, transparent);
+}
+
+/* Micro-animations and breathable UI transitions */
+:root[data-aro-ui='true'] button,
+:root[data-aro-ui='true'] [role='button'] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Titlebar product switcher & search pill */
+:root[data-aro-ui='true'] .product-switcher {
+  background: var(--aro-sunken);
+  border: 1px solid var(--aro-line);
+  border-radius: 8px;
+  padding: 2px;
+}
+:root[data-aro-ui='true'] .product-switcher button {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  transition: all 140ms ease;
+}
+:root[data-aro-ui='true'] .product-switcher button[aria-pressed='true'] {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+:root[data-aro-ui='true'] .titlebar-search {
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  color: var(--aro-ink-3);
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+:root[data-aro-ui='true'] .titlebar-search:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 45%, transparent);
+  background: var(--aro-bg);
+  color: var(--aro-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--aro-iris) 10%, transparent), 0 4px 14px -6px color-mix(in srgb, var(--aro-iris) 40%, transparent);
+}
+
+/* Voice Agent floating assistant */
+:root[data-aro-ui='true'] .voice-agent {
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.45));
+}
+:root[data-aro-ui='true'] .voice-agent canvas {
+  pointer-events: auto;
+}
+
+/* Suppress old Hermes sidebar tab strip in Aro mode */
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) > [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="sessions"]) > [data-panel-header],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) > [data-zone-tabstrip],
+:root[data-aro-ui='true'] [data-tree-group]:has([data-pane-id="hermes-bots:pane"]) > [data-panel-header] {
+  display: none !important;
+}
+
+/* =========================================================================
+   PROTOTYPE CARD SURFACES (Tool cards, Reasoning, Code blocks, Approvals, Diffs)
+   ========================================================================= */
+
+/* Tool execution card */
+:root[data-aro-ui='true'] [data-slot='tool-block'],
+:root[data-aro-ui='true'] .tool-card {
+  border: 1px solid var(--aro-line-soft) !important;
+  border-radius: 9px !important;
+  background: var(--aro-well) !important;
+  overflow: hidden !important;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block']:hover,
+:root[data-aro-ui='true'] .tool-card:hover {
+  border-color: color-mix(in srgb, var(--aro-line) 85%, transparent) !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] > div:first-child {
+  min-height: 34px;
+  padding: 6px 10px !important;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] > div:first-child:hover {
+  background: color-mix(in srgb, var(--aro-hover) 60%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'][data-tool-open] > div:first-child,
+:root[data-aro-ui='true'] [data-slot='tool-block']:has(> div:nth-child(2)) > div:first-child {
+  border-bottom: 1px solid var(--aro-line-soft) !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [class*='group/disclosure-row'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] .disclosure-row {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] button[aria-expanded] {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='scaffold-glyph'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] [class*='SCAFFOLD_GLYPH'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] [class*='size-3.5'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] .tool-icon-wrap {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 5px !important;
+  border: 1px solid var(--aro-line-soft) !important;
+  background: var(--aro-raise) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='scaffold-label'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] [class*='SCAFFOLD_LABEL'] {
+  font-family: var(--font-mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--aro-ink-4) !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] [data-slot='tool-body'],
+:root[data-aro-ui='true'] [data-slot='tool-block'] > div:nth-child(2) {
+  border-top: 1px solid var(--aro-line-soft) !important;
+  background: var(--aro-code) !important;
+  padding: 0 !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-block'] pre,
+:root[data-aro-ui='true'] [data-slot='tool-block'] .terminal-output,
+:root[data-aro-ui='true'] [data-slot='tool-block'] .terminal-transcript,
+:root[data-aro-ui='true'] .tool-card pre {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  line-height: 1.7 !important;
+  color: var(--aro-ink-3) !important;
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+/* File diff panel card */
+:root[data-aro-ui='true'] [data-slot='file-diff-panel'] {
+  border: 1px solid var(--aro-line-soft) !important;
+  border-radius: 8px !important;
+  background: var(--aro-sunken) !important;
+  overflow: hidden !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11.5px !important;
+}
+
+/* Fenced code block card (.prose-code / [data-slot="code-card"]) */
+:root[data-aro-ui='true'] [data-slot='code-card'],
+:root[data-aro-ui='true'] .prose-code {
+  border: 1px solid var(--aro-line-soft) !important;
+  border-radius: 9px !important;
+  background: var(--aro-code) !important;
+  overflow: hidden !important;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] > div:first-child,
+:root[data-aro-ui='true'] .prose-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--aro-line-soft);
+  padding: 4px 6px 4px 11px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--aro-ink-4);
+  background: color-mix(in srgb, var(--aro-code) 85%, var(--aro-well));
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] pre,
+:root[data-aro-ui='true'] .prose-code pre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--aro-ink-2);
+  background: transparent !important;
+}
+
+/* Reasoning / Thinking card */
+:root[data-aro-ui='true'] [data-slot='aui_thinking-disclosure'] {
+  border: 1px dashed var(--aro-line) !important;
+  border-radius: 9px !important;
+  background: color-mix(in srgb, var(--aro-well) 60%, transparent) !important;
+  overflow: hidden;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_thinking-disclosure'] button {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 140ms ease;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_thinking-disclosure'] button:hover {
+  background: color-mix(in srgb, var(--aro-hover) 50%, transparent);
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_thinking-body'] {
+  border-top: 1px dashed var(--aro-line);
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--aro-ink-3);
+  font-style: italic;
+  background: transparent;
+}
+
+/* Approval required card */
+:root[data-aro-ui='true'] [data-slot='tool-approval-card'] {
+  border: 1px solid color-mix(in srgb, var(--aro-amber) 35%, var(--aro-line-soft)) !important;
+  border-radius: 10px !important;
+  background: var(--aro-well) !important;
+  overflow: hidden !important;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-approval-card'] > div:first-child {
+  border-bottom: 1px solid var(--aro-line-soft);
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-slot='tool-approval-card'] pre {
+  margin: 10px;
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 6px;
+  background: var(--aro-code);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--aro-ink-2);
+}
+
+/* User Message bubble */
+:root[data-aro-ui='true'] .composer-human-message {
+  border: 1px solid var(--aro-line-soft) !important;
+  border-radius: 10px 10px 10px 3px !important;
+  background: var(--aro-raise) !important;
+  padding: 10px 14px !important;
+  box-shadow: var(--shadow-e1);
+}
+
+/* Inline code tags in prose */
+:root[data-aro-ui='true'] .markdown-text code:not(pre code),
+:root[data-aro-ui='true'] .aui-prose code:not(pre code) {
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 4px;
+  background: var(--aro-well);
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--aro-cyan);
+}
+
+/* Unordered list bullets in prose */
+:root[data-aro-ui='true'] .markdown-text ul > li,
+:root[data-aro-ui='true'] .aui-prose ul > li {
+  position: relative;
+  padding-left: 14px;
+}
+
+:root[data-aro-ui='true'] .markdown-text ul > li::before,
+:root[data-aro-ui='true'] .aui-prose ul > li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--aro-iris-soft) 70%, transparent);
+}
+
+/* Alert / warning callouts */
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] [role='alert'] {
+  border: 1px solid color-mix(in srgb, var(--aro-rose) 35%, var(--aro-line-soft)) !important;
+  border-radius: 8px !important;
+  background: color-mix(in srgb, var(--aro-rose) 10%, var(--aro-raise)) !important;
+  color: var(--aro-ink-2) !important;
+}
+
+/* =========================================================================
+   WORKSPACE PANEL & TAB STRIP — Prototype Design
+   ========================================================================= */
+/* The workspace tool panel is a constrained flex column. Every nested pane
+   must be allowed to shrink before its own content scrolls; otherwise long
+   paths, tabs, or terminal output can push sibling controls underneath it. */
+:root[data-aro-ui='true'] .aro-workspace-sidebar {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  padding-top: 0 !important;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar > .workspace-tabstrip {
+  flex: 0 0 38px;
+  min-width: 0;
+  max-width: 100%;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar > .workspace-body {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-body > * {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabstrip > .workspace-tabs-scroll {
+  width: 0;
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabstrip {
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 38px;
+  min-height: 38px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--aro-line-soft);
+  background: var(--aro-sunken);
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabs-scroll {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 0%;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  max-width: 156px;
+  min-width: 0;
+  flex: 0 0 auto;
+  border-radius: 7px;
+  padding: 0 3px 0 2px;
+  color: var(--aro-ink-3);
+  position: relative;
+  border: 1px solid transparent;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  cursor: pointer;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab:hover {
+  color: var(--aro-ink-2);
+  background: color-mix(in srgb, var(--aro-hover) 85%, transparent);
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab.is-active {
+  flex: 0 0 auto;
+  background: var(--aro-raise);
+  color: var(--aro-ink);
+  border-color: var(--aro-line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 4px 0 8px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-main svg {
+  color: var(--aro-ink-4);
+  flex-shrink: 0;
+  transition: color 130ms;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab:hover .workspace-tab-main svg {
+  color: var(--aro-ink-2);
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab.is-active .workspace-tab-main svg {
+  color: var(--aro-iris-soft);
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 92px;
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0 2px;
+  border-radius: 5px;
+  color: var(--aro-ink-4);
+  opacity: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: opacity 130ms, background-color 120ms, color 120ms;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab:hover .workspace-tab-close {
+  opacity: 0.8;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab.is-active .workspace-tab-close {
+  opacity: 0.85;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-close:hover {
+  background: color-mix(in srgb, var(--aro-rose) 18%, transparent);
+  color: var(--aro-rose);
+  opacity: 1;
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-new,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-toolbar,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-panel-close,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-panel-full {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--aro-ink-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color 130ms, color 130ms;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-new:hover,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-toolbar:hover,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-panel-close:hover,
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-panel-full:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-panel-full.is-on {
+  color: var(--aro-iris-soft);
+  background: color-mix(in srgb, var(--aro-iris) 18%, transparent);
+}
+
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-body {
+  display: flex;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-body > * {
+  min-width: 0;
+  min-height: 0;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabpane {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tabpane.is-active {
+  display: flex;
+}
+
+/* Only the workspace tool panel may use this fullscreen geometry.
+   Keeping this scoped prevents unrelated side panels/overlays from inheriting
+   the same absolute positioning and unexpectedly stacking over the workbench. */
+:root[data-aro-ui='true'] .aro-workspace-sidebar.is-fullscreen {
+  position: absolute !important;
+  inset: 0 !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  z-index: 50 !important;
+}
+
+/* =========================================================================
+   CODEX / CURSOR STYLE CHANGES & DIFFERENCE PANEL
+   ========================================================================= */
+:root[data-aro-ui='true'] .codex-changes-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--aro-base);
+  color: var(--aro-ink);
+  font-family: var(--dt-font-sans);
+  overflow: hidden;
+}
+
+:root[data-aro-ui='true'] .codex-changes-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 10px;
+  background: var(--aro-raise);
+  border-bottom: 1px solid var(--aro-line-soft);
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+:root[data-aro-ui='true'] .codex-changes-subheader-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+:root[data-aro-ui='true'] .codex-changes-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 99px;
+  background: var(--aro-well);
+  border: 1px solid var(--aro-line);
+  color: var(--aro-ink-2);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+:root[data-aro-ui='true'] .codex-changes-pill-btn:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  border-color: var(--aro-line-strong);
+}
+
+:root[data-aro-ui='true'] .codex-branch-target {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+:root[data-aro-ui='true'] .codex-changes-subheader-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .codex-changes-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  color: var(--aro-ink-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all 120ms;
+}
+:root[data-aro-ui='true'] .codex-changes-action-icon:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] .codex-changes-split-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 580px) {
+  :root[data-aro-ui='true'] .codex-changes-split-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
+
+:root[data-aro-ui='true'] .codex-changes-diff-viewport {
+  overflow-y: auto;
+  background: var(--aro-base);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--aro-line-soft);
+}
+
+:root[data-aro-ui='true'] .codex-changes-empty-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+:root[data-aro-ui='true'] .codex-empty-file-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 76px;
+  border-radius: 12px;
+  border: 1.5px solid var(--aro-line-strong);
+  background: var(--aro-well);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-e2);
+}
+
+:root[data-aro-ui='true'] .codex-empty-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--aro-ink);
+  margin-bottom: 4px;
+}
+
+:root[data-aro-ui='true'] .codex-empty-subtitle {
+  font-size: 11.5px;
+  color: var(--aro-ink-3);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+:root[data-aro-ui='true'] .codex-changes-files-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--aro-raise);
+  overflow: hidden;
+}
+
+:root[data-aro-ui='true'] .codex-changes-filter-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 8px 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--aro-well);
+  border: 1px solid var(--aro-line);
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] .codex-changes-filter-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-size: 11.5px;
+  color: var(--aro-ink);
+}
+:root[data-aro-ui='true'] .codex-changes-filter-input::placeholder {
+  color: var(--aro-ink-4);
+}
+
+:root[data-aro-ui='true'] .codex-changes-file-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+:root[data-aro-ui='true'] .codex-no-matching-files {
+  padding: 16px 10px;
+  font-size: 11.5px;
+  color: var(--aro-ink-4);
+  text-align: center;
+}
+
+:root[data-aro-ui='true'] .codex-file-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border-radius: 5px;
+  text-align: left;
+  font-size: 11.5px;
+  color: var(--aro-ink-2);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all 120ms;
+}
+:root[data-aro-ui='true'] .codex-file-row-btn:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+:root[data-aro-ui='true'] .codex-file-row-btn.is-selected {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+  box-shadow: inset 2px 0 0 var(--aro-iris);
+}
+
+:root[data-aro-ui='true'] .codex-file-status-letter {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .codex-file-row-name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+:root[data-aro-ui='true'] .codex-file-row-diff {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .codex-files-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-top: 1px solid var(--aro-line-soft);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+/* ── Repo dock (bar below composer matching Aro prototype) ── */
+:root[data-aro-ui='true'] .repo-dock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 6px 8px 6px 10px;
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--aro-ink) 2.5%, var(--aro-bg));
+  font-size: 11.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  border-radius: 6px;
+  padding: 3px 6px 3px 4px;
+  font-weight: 550;
+  color: var(--aro-ink-2);
+  transition: background 140ms, color 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo-icon {
+  color: var(--aro-ink-3);
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-aro-ui='true'] .repo-dock-demo {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--aro-iris-soft);
+  background: var(--aro-iris-tint);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+:root[data-aro-ui='true'] .repo-dock-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--aro-line);
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-branch {
+  display: flex;
+  min-width: 0;
+  max-width: 220px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--aro-ink-3);
+  transition: background 140ms, color 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-branch:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: background 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff:hover {
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff-empty {
+  cursor: pointer;
+}
+
+:root[data-aro-ui='true'] .repo-dock-adds {
+  color: var(--aro-mint);
+  font-weight: 600;
+}
+
+:root[data-aro-ui='true'] .repo-dock-dels {
+  color: var(--aro-rose);
+  font-weight: 600;
+}
+
+:root[data-aro-ui='true'] .repo-dock-clean {
+  color: var(--aro-ink-4);
+  font-size: 10.5px;
+}
+
+:root[data-aro-ui='true'] .repo-dock-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 7px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--aro-ink-2);
+  transition: all 140ms;
+  cursor: pointer;
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge:hover:not(.repo-dock-merge-disabled) {
+  border-color: var(--aro-mint);
+  color: var(--aro-mint);
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge-disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+:root[data-aro-ui='true'] .repo-dock-gear {
+  display: flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: var(--aro-ink-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 140ms, color 140ms;
+}
+
+:root[data-aro-ui='true'] .repo-dock-gear:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+

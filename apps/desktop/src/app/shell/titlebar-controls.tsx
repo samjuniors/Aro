@@ -16,6 +16,8 @@ import { triggerHaptic } from '@/lib/haptics'
 import { formatModifierToken } from '@/lib/keybinds/combo'
 import { cn } from '@/lib/utils'
 import { recordAction } from '@/store/desktop-metrics'
+import { openCommandPalette } from '@/store/command-palette'
+import { Codicon } from '@/components/ui/codicon'
 import { toggleHud } from '@/store/hud'
 import { $interfaceMode, shownInMode, type Tiered } from '@/store/interface-mode'
 import {
@@ -393,6 +395,7 @@ function TitlebarToolButton({ navigate, tool }: { navigate: ReturnType<typeof us
         aria-label={tool.label}
         aria-pressed={tool.active ?? undefined}
         className={className}
+        data-tool-id={tool.id}
         data-tour={tool.tour}
         disabled={tool.disabled}
         onClick={event => {

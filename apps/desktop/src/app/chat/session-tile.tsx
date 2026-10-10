@@ -23,6 +23,7 @@ import { useGatewayRequest } from '@/app/gateway/hooks/use-gateway-request'
 import { useModelControls } from '@/app/session/hooks/use-model-controls'
 import { blobToDataUrl } from '@/app/session/hooks/use-prompt-actions/utils'
 import { probeStoredSession, resolveStoredSession } from '@/app/session/hooks/use-session-actions/utils'
+import { AroModelMenuPanel } from '@/app/shell/aro-model-menu-panel'
 import { ModelMenuPanel } from '@/app/shell/model-menu-panel'
 import { ReasoningMenuPanel } from '@/app/shell/reasoning-menu-panel'
 import { formatRefValue } from '@/components/assistant-ui/directive-text'
@@ -394,10 +395,38 @@ function TileChat({
     ]
   )
 
+  // The Aro model control's menu for this tile: effort slider + thinking
+  // (collapsed) over the tile's own live catalog (expanded). Same host props
+  // as the panels above, so the tile edits ITS runtime through one controller.
+  const aroModelMenuContent = useMemo(
+    () =>
+      gatewayOpen ? (
+        <AroModelMenuPanel
+          onSelectModel={selectModel}
+          ownerConnectionId={ownerRoute?.connectionId || undefined}
+          profile={ownerRoute?.targetProfile || ownerRoute?.profile || activeGatewayProfile}
+          requestGateway={requestTileGateway}
+        >
+          {modelMenuContent}
+        </AroModelMenuPanel>
+      ) : null,
+    [
+      activeGatewayProfile,
+      gatewayOpen,
+      modelMenuContent,
+      ownerRoute?.connectionId,
+      ownerRoute?.profile,
+      ownerRoute?.targetProfile,
+      requestTileGateway,
+      selectModel
+    ]
+  )
+
   return (
     <SessionViewProvider value={view}>
       <ComposerScopeProvider value={scope}>
         <ChatView
+          aroModelMenuContent={aroModelMenuContent}
           gateway={gateway}
           modelMenuContent={modelMenuContent}
           modelOptionsOwnerConnectionId={ownerRoute?.connectionId || undefined}

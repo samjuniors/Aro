@@ -237,6 +237,8 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
 
   root.style.setProperty('color-scheme', rendered)
   root.dataset.hermesTheme = skinName
+  root.dataset.theme = skinName
+  root.dataset.aroUi = 'true'
   root.dataset.hermesMode = rendered
   root.classList.toggle('dark', isDark)
 

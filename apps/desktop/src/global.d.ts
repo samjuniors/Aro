@@ -317,6 +317,8 @@ declare global {
        *  back to readFileText and must reject a `truncated` result. */
       readPluginSource?: (filePath: string) => Promise<HermesReadFileTextResult>
       selectPaths: (options?: HermesSelectPathsOptions) => Promise<string[]>
+      /** Clone a remote Git repository into a user-selected local parent directory. */
+      cloneRepository?: (repositoryUrl: string) => Promise<null | { path: string; repositoryName: string }>
       /** Native save dialog; returns the chosen path or null on cancel. */
       selectSavePath?: (options?: {
         defaultPath?: string
@@ -490,7 +492,7 @@ declare global {
           worktreePath: string,
           options?: { force?: boolean }
         ) => Promise<{ removed: string }>
-        branchSwitch: (repoPath: string, branch: string) => Promise<{ branch: string }>
+        branchSwitch: (repoPath: string, branch: string, create?: boolean) => Promise<{ branch: string }>
         // The local branches, plus the remote-tracking refs that have no local
         // branch, for the "convert a branch into a worktree" picker.
         branchList: (repoPath: string) => Promise<HermesGitBranch[]>

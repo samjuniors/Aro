@@ -21,6 +21,7 @@ import {
   deleteProject,
   enterProject,
   fetchProjectSessions,
+  openFolderAsProject,
   openProjectCreate,
   pickProjectFolder,
   projectIdForCwd,
@@ -222,6 +223,8 @@ describe('resolveNewSessionCwd', () => {
 
   afterEach(() => {
     applyConfiguredDefaultProjectDir(null)
+    $activeProjectId.set(null)
+    $projectTree.set([])
     $projectScope.set(ALL_PROJECTS)
     $currentCwd.set('')
     $selectedStoredSessionId.set(null)
@@ -238,6 +241,45 @@ describe('resolveNewSessionCwd', () => {
 
   it('still falls back to the configured default outside Home', () => {
     expect(resolveNewSessionCwd()).toBe('/home/user/configured')
+  })
+
+  it('uses the active project root in the overview before the configured default', () => {
+    $projectScope.set(ALL_PROJECTS)
+    $activeProjectId.set('p_selected')
+    $projectTree.set([
+      {
+        id: 'p_selected',
+        label: 'Selected project',
+        path: '/work/selected',
+        repos: [],
+        sessionCount: 0
+      } satisfies SidebarProjectTree
+    ])
+
+    expect(resolveNewSessionCwd()).toBe('/work/selected')
+  })
+
+  it('prefers the currently selected project over the active overview project and default directory', () => {
+    $projectScope.set('p_viewed')
+    $activeProjectId.set('p_overview')
+    $projectTree.set([
+      {
+        id: 'p_overview',
+        label: 'Active in overview',
+        path: '/work/overview',
+        repos: [],
+        sessionCount: 0
+      } satisfies SidebarProjectTree,
+      {
+        id: 'p_viewed',
+        label: 'Currently viewed',
+        path: '/work/viewed',
+        repos: [],
+        sessionCount: 0
+      } satisfies SidebarProjectTree
+    ])
+
+    expect(resolveNewSessionCwd()).toBe('/work/viewed')
   })
 
   it('does not inherit the focused session workspace — new chat uses the configured default', () => {
@@ -1211,3 +1253,62 @@ describe('tombstone pruning', () => {
     expect($removedSessionIds.get().has('sess-1')).toBe(false)
   })
 })
+
+describe('openFolderAsProject', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setSidebarAgentsGrouped(false)
+    $projectScope.set(ALL_PROJECTS)
+    $projects.set([])
+    $projectTree.set([])
+  })
+
+  it('reuses an existing project covering the folder instead of creating another entry', async () => {
+    const existingNode = {
+      id: 'p_existing',
+      label: 'Existing Repo',
+      path: '/srv/my-repo',
+      repos: [],
+      sessionCount: 0
+    } satisfies SidebarProjectTree
+
+    const repoStatus = vi.fn().mockResolvedValue({ branch: 'main' })
+    desktopGit.mockReturnValue({ repoStatus } as never)
+
+    const request = vi.fn().mockImplementation((method: string) => {
+      if (method === 'projects.tree') {
+        return Promise.resolve({ projects: [existingNode], active_id: 'p_existing', scoped_session_ids: [] })
+      }
+      return Promise.resolve({})
+    })
+    activeGateway.mockReturnValue({ connectionState: 'open', request } as never)
+    vi.mocked(hermes.hermesApi).mockResolvedValue({ projects: [existingNode], active_id: 'p_existing', scoped_session_ids: [] })
+
+    await openFolderAsProject('/srv/my-repo')
+
+    expect($projectScope.get()).toBe('p_existing')
+    expect($sidebarAgentsGrouped.get()).toBe(true)
+    // Does not call projects.create RPC
+    expect(request).not.toHaveBeenCalledWith('projects.create', expect.anything())
+    // Probes git status
+    expect(repoStatus).toHaveBeenCalledWith('/srv/my-repo')
+  })
+
+  it('triggers a Git status check and refreshes the tree when opening a new project folder', async () => {
+    const repoStatus = vi.fn().mockResolvedValue({ branch: 'main' })
+    desktopGit.mockReturnValue({ repoStatus } as never)
+
+    const created = { id: 'p_created', name: 'new-repo', primary_path: '/srv/new-repo', folders: [] }
+    const tree = { id: created.id, label: created.name, path: created.primary_path, repos: [], sessionCount: 0 }
+    const request = vi.fn().mockResolvedValue({ project: created })
+    activeGateway.mockReturnValue({ connectionState: 'open', request } as never)
+    vi.mocked(hermes.hermesApi).mockResolvedValue({ projects: [tree], active_id: created.id })
+
+    await openFolderAsProject('/srv/new-repo')
+
+    expect(request).toHaveBeenCalledWith('projects.create', expect.objectContaining({ name: 'new-repo' }))
+    expect($projectScope.get()).toBe('p_created')
+    expect(repoStatus).toHaveBeenCalledWith('/srv/new-repo')
+  })
+})
+

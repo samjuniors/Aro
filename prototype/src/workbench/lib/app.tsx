@@ -1,16 +1,54 @@
-"use client";
-
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { PROVIDER_SEEDS, type ModelProvider } from "../data/providers";
+import { readStored, writeStored } from "./storage";
 
 /* ---------------- themes ---------------- */
-export type ThemeId = "obsidian" | "daylight" | "nord" | "ember" | "paper";
+export type ThemeId = "obsidian" | "daylight" | "nord" | "ember" | "paper" | "ink";
+export type DesignId = "aro" | "codex" | "claude" | "editorial" | "cursor";
 export const THEMES: { id: ThemeId; label: string; desc: string; swatch: string[] }[] = [
   { id: "obsidian", label: "Obsidian", desc: "Deep neutral dark · violet accent", swatch: ["#0c0e14", "#12151d", "#7c6bff", "#35d6c4"] },
   { id: "daylight", label: "Daylight", desc: "Clean light · high legibility", swatch: ["#ffffff", "#f4f5f8", "#5b4ce6", "#0f9f90"] },
   { id: "nord", label: "Nord", desc: "Arctic blue-grey · frost accent", swatch: ["#2a303b", "#313845", "#88c0d0", "#a3be8c"] },
   { id: "ember", label: "Ember", desc: "Warm charcoal · copper accent", swatch: ["#171210", "#1f1815", "#ff8a4c", "#4fd1b5"] },
   { id: "paper", label: "Paper", desc: "Warm light · ink on paper", swatch: ["#faf7f0", "#f4f0e6", "#8a5cf6", "#0f8f86"] },
+  { id: "ink", label: "Ink", desc: "Editorial dark · serif on near-black", swatch: ["#14110d", "#1c1813", "#e2e8e0", "#e8663a"] },
+];
+
+/**
+ * Structural systems, not just color themes. Each profile changes hierarchy,
+ * type, panel proportions, corner language, and surface treatment.
+ */
+export const DESIGN_SYSTEMS: {
+  id: DesignId;
+  label: string;
+  source: string;
+  desc: string;
+  defaultTheme: ThemeId;
+  font: string;
+  shell: { sidebar: number; context: number; chrome: number };
+  traits: string[];
+  swatch: string[];
+}[] = [
+  {
+    id: "aro", label: "Aro", source: "Current", desc: "Dense dark control surface with violet signal and generous context.", defaultTheme: "obsidian", font: "Space Grotesk",
+    shell: { sidebar: 272, context: 368, chrome: 46 }, traits: ["Balanced density", "Signal color", "Soft elevation"], swatch: ["#0c0e14", "#12151d", "#8f82ff", "#35d6c4"],
+  },
+  {
+    id: "codex", label: "Codex", source: "Codex desktop", desc: "Project-first, monochrome, compact and review-forward.", defaultTheme: "obsidian", font: "Inter",
+    shell: { sidebar: 292, context: 400, chrome: 44 }, traits: ["Project sidebar", "Tight rows", "Quiet chrome"], swatch: ["#0a0a0b", "#111214", "#d6d6d2", "#8f8f88"],
+  },
+  {
+    id: "claude", label: "Claude Code", source: "Claude Code desktop", desc: "Session-centric, warm graphite, high-clarity status and tool rows.", defaultTheme: "ember", font: "Inter",
+    shell: { sidebar: 284, context: 382, chrome: 48 }, traits: ["Warm graphite", "Conversation focus", "Status clarity"], swatch: ["#181614", "#25211e", "#e29a68", "#a9c7ad"],
+  },
+  {
+    id: "editorial", label: "Editorial", source: "Attached references", desc: "Magazine rhythm: serif display, squared panels, hard rules, oversized numbers. Light (Paper) and dark (Ink).", defaultTheme: "paper", font: "Newsreader",
+    shell: { sidebar: 304, context: 420, chrome: 52 }, traits: ["Oversized headlines", "Hard rules", "Squared panels", "Light + dark"], swatch: ["#f8f3ea", "#14110d", "#17130e", "#df5e2e"],
+  },
+  {
+    id: "cursor", label: "Cursor", source: "Cursor 2.x", desc: "VS Code lineage: the most information per pixel. Compact, keyboard-first, subtle blue signal.", defaultTheme: "obsidian", font: "Inter",
+    shell: { sidebar: 248, context: 352, chrome: 42 }, traits: ["Compact", "Keyboard-first", "Dense rows", "Subtle blue"], swatch: ["#0d1117", "#161b22", "#58a6ff", "#3fb950"],
+  },
 ];
 
 /* ---------------- product mode ---------------- */
@@ -22,6 +60,8 @@ export type Todo = { id: string; text: string; state: "todo" | "doing" | "done";
 type Ctx = {
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
+  design: DesignId;
+  setDesign: (d: DesignId) => void;
   product: ProductMode;
   setProduct: (p: ProductMode) => void;
   todos: Todo[];
@@ -46,51 +86,58 @@ export type TermLine = { t: string; k?: "cmd" | "ok" | "err" | "warn" | "dim" | 
 const AppCtx = createContext<Ctx>(null!);
 export const useApp = () => useContext(AppCtx);
 
-const SEED_TODOS: Todo[] = [
-  { id: "t1", text: "Add SessionChannel with resumable cursor", state: "done", by: "agent" },
-  { id: "t2", text: "Capability handshake in attachEditor()", state: "done", by: "agent" },
-  { id: "t3", text: "Route editor edits through DiffReviewer", state: "doing", by: "agent" },
-  { id: "t4", text: "Two-editor integration test", state: "todo", by: "agent" },
-  { id: "t5", text: "Review PR #482 before standup", state: "todo", by: "you" },
-];
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(
-    () => (localStorage.getItem("aro.theme") as ThemeId) || "obsidian",
+    () => (localStorage.getItem("conductor.theme") as ThemeId) || "obsidian",
+  );
+  const [design, setDesignState] = useState<DesignId>(
+    () => (localStorage.getItem("conductor.design") as DesignId) || "aro",
   );
   const [product, setProduct] = useState<ProductMode>("code");
-  const [todos, setTodos] = useState<Todo[]>(SEED_TODOS);
+  const [todos, setTodos] = useState<Todo[]>(() => readStored("conductor.workspace.v3.todos", []));
   const [todoOpen, setTodoOpen] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; msg: string; tone: string }[]>([]);
 
-  const [termOpen, setTermOpen] = useState(true);
-  const [dockOpen, setDockOpen] = useState(true);
+  const [termOpen, setTermOpen] = useState(false);
+  const [dockOpen, setDockOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState("general");
   const [providers, setProviders] = useState<ModelProvider[]>(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("aro.providers") || "null") as ModelProvider[] | null;
+      const saved = JSON.parse(localStorage.getItem("conductor.providers") || "null") as ModelProvider[] | null;
       if (!saved) return PROVIDER_SEEDS;
-      return PROVIDER_SEEDS.map((p) => ({ ...p, ...(saved.find((x) => x.id === p.id) ?? {}) }));
+      const known = PROVIDER_SEEDS.map((p) => {
+        const previous = saved.find((x) => x.id === p.id);
+        return { ...p, baseUrl: previous?.baseUrl ?? p.baseUrl, models: p.kind === "local" ? previous?.models ?? [] : p.models, status: p.kind === "local" ? "offline" as const : "needs-key" as const };
+      });
+      const custom = saved.filter((p) => !PROVIDER_SEEDS.some((seed) => seed.id === p.id) && p.name && p.kind === "local").map((p) => ({ ...p, status: "offline" as const }));
+      return [...known, ...custom];
     } catch { return PROVIDER_SEEDS; }
   });
-  const [termFeed, setTermFeed] = useState<TermLine[]>([
-    { t: "aro agent shell · commands run by the agent stream here", k: "dim" },
-    { t: "$ pnpm --filter @aro/bridge test", k: "cmd" },
-    { t: " ✓ session-channel.test.ts (14 tests) 284ms", k: "ok" },
-    { t: " ✓ attach-editor.test.ts (9 tests) 121ms", k: "ok" },
-    { t: " • reconnect.test.ts (12 tests) running…", k: "info" },
-  ]);
+  const [termFeed, setTermFeed] = useState<TermLine[]>([]);
   const termPush = useCallback((lines: TermLine[]) => setTermFeed((f) => [...f, ...lines].slice(-400)), []);
   const setTheme = useCallback((t: ThemeId) => {
     setThemeState(t);
-    localStorage.setItem("aro.theme", t);
+    localStorage.setItem("conductor.theme", t);
+  }, []);
+  const setDesign = useCallback((d: DesignId) => {
+    setDesignState(d);
+    localStorage.setItem("conductor.design", d);
+    const profile = DESIGN_SYSTEMS.find((x) => x.id === d);
+    if (profile) {
+      setThemeState(profile.defaultTheme);
+      localStorage.setItem("conductor.theme", profile.defaultTheme);
+    }
   }, []);
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-design", design);
+    document.documentElement.setAttribute("data-density", localStorage.getItem("conductor.density") || "comfortable");
+    document.documentElement.setAttribute("data-motion", localStorage.getItem("conductor.motion") || "system");
+  }, [theme, design]);
   useEffect(() => {
-    localStorage.setItem("aro.providers", JSON.stringify(providers.map(({ id, baseUrl, status, models }) => ({ id, baseUrl, status, models }))));
+    writeStored("conductor.providers", providers);
   }, [providers]);
+  useEffect(() => writeStored("conductor.workspace.v3.todos", todos), [todos]);
 
   const toast = useCallback((msg: string, tone = "iris") => {
     const id = Date.now() + Math.random();
@@ -99,7 +146,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AppCtx.Provider value={{ theme, setTheme, product, setProduct, todos, setTodos, todoOpen, setTodoOpen, toast, toasts, termOpen, setTermOpen, termFeed, termPush, dockOpen, setDockOpen, settingsSection, setSettingsSection, providers, setProviders }}>
+    <AppCtx.Provider value={{ theme, setTheme, design, setDesign, product, setProduct, todos, setTodos, todoOpen, setTodoOpen, toast, toasts, termOpen, setTermOpen, termFeed, termPush, dockOpen, setDockOpen, settingsSection, setSettingsSection, providers, setProviders }}>
       {children}
     </AppCtx.Provider>
   );

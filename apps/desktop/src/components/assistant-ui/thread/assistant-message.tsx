@@ -39,6 +39,7 @@ import { PreviewAttachment } from '@/components/chat/preview-attachment'
 import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
 import { useI18n } from '@/i18n'
+import { ASSISTANT_PERSONA_NAME } from '@/lib/app-persona'
 import {
   errorRecoveryPlan,
   type ErrorSurface,
@@ -228,7 +229,13 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
   // the markdown part and the tiny status leaves — not the footer, the
   // preview block, or this root.
   const hasVisibleText = useAuiState(s => contentHasVisibleText(s.message.content))
-  const sessionId = useStore(useSessionView().$runtimeId)
+  const view = useSessionView()
+  const sessionId = useStore(view.$runtimeId)
+  // Aro attributed-row persona: the session's LIVE model/provider — the same
+  // atoms the pills read. Referentially stable across token flushes (only
+  // re-renders when the session's model actually changes).
+  const sessionModel = useStore(view.$model)
+  const sessionProvider = useStore(view.$provider)
   const approval = useStore(useMemo(() => sessionApprovalRequest(sessionId), [sessionId]))
 
   const activityOnly = useAuiState(
@@ -302,63 +309,82 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
       ref={enterRef}
     >
       {collapsedNotice ?? (
-        <>
+        <div className="aro-message-row flex w-full min-w-0 gap-3">
+          {/* Aro attributed-row avatar: persona gradient + provider monogram —
+              live session state, same source the model pill reads. */}
           <div
-            className="wrap-anywhere min-w-0 max-w-full overflow-hidden text-pretty text-[length:var(--conversation-text-font-size)] leading-(--dt-line-height) text-foreground"
-            data-slot="aui_assistant-message-content"
+            aria-hidden
+            className="aro-assistant-avatar flex size-7 shrink-0 items-center justify-center rounded-[8px] font-aro-mono text-[10px] font-bold text-aro-on-iris shadow-aro-e1"
           >
-            {/* Todos render in the composer status stack now, not inline. */}
-            {MESSAGE_PARTS}
-            <StoppedNotice />
-            <AssistantStatusSlot />
-            <AssistantPreviewEmbeds />
-            <MessagePrimitive.Error>
-              <ErrorPrimitive.Root
-                className="mt-1.5 flex flex-col gap-1.5 rounded-lg border border-[color-mix(in_srgb,var(--dt-destructive)_35%,transparent)] bg-[color-mix(in_srgb,var(--dt-destructive)_7%,transparent)] px-3 py-2 text-[0.78rem] leading-5 text-[color-mix(in_srgb,var(--dt-destructive)_78%,var(--ui-text-secondary))]"
-                role="alert"
-              >
-                <div className="flex items-start gap-1.5">
-                  <div className="min-w-0 flex-1">
-                    <ErrorCardHeadline />
-                  </div>
-                  {onDismissError && (
-                    <TooltipIconButton
-                      className="-my-0.5 shrink-0 text-current opacity-70 hover:opacity-100"
-                      onClick={() => onDismissError(messageId)}
-                      side="top"
-                      tooltip={t.assistant.thread.dismissError}
-                    >
-                      <XIcon className="size-3.5" />
-                    </TooltipIconButton>
-                  )}
-                </div>
-                <ErrorRecoveryActions />
-              </ErrorPrimitive.Root>
-            </MessagePrimitive.Error>
+            {sessionProvider?.trim().charAt(0).toUpperCase() || 'A'}
           </div>
-          <MessageTimelineTimestamp className="px-(--message-text-indent) pt-0.5" suppressIfDuplicatePart />
-          {/* Sealed interims skip the footer so a tool-heavy turn doesn't grow a
-              copy bar per paragraph (72dd01c553) — EXCEPT when the interim is the
-              group's last text-bearing row (the turn ended on a tool-only bubble):
-              without the bar that turn has no copy/branch affordance at all
-              (#118864). */}
-          {hasVisibleText &&
-            responseTail &&
-            (!isInterim || (responseIds.length > 0 && responseIds.at(-1) === messageId)) && (
-              <AssistantFooter
-                durationS={turnDurationS}
-                fullResponseAvailable={fullResponseAvailable}
-                getFullResponseText={getFullResponseText}
-                getMessageText={getMessageText}
-                messageId={messageId}
-                onBranchInNewChat={onBranchInNewChat}
-              />
-            )}
-          {/* Last thing in the turn — under the action bar, the way Cursor ends a
-          turn on its summary rather than burying it above the controls. */}
-          <SettledChangedFiles />
-          <StreamingMarker />
-        </>
+          <div className="flex min-w-0 flex-1 flex-col pt-0.5">
+            {/* Header: persona name + live model badge (prototype grammar). */}
+            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+              <span className="text-[12.5px] font-semibold text-aro-ink">{ASSISTANT_PERSONA_NAME}</span>
+              {sessionModel ? (
+                <span className="inline-flex items-center rounded-full bg-aro-iris-tint px-2 py-px font-aro-mono text-[9.5px] font-medium text-aro-iris-soft">
+                  {sessionModel}
+                </span>
+              ) : null}
+            </div>
+            <div
+              className="wrap-anywhere min-w-0 max-w-full overflow-hidden text-pretty text-[length:var(--conversation-text-font-size)] leading-(--dt-line-height) text-foreground"
+              data-slot="aui_assistant-message-content"
+            >
+              {/* Todos render in the composer status stack now, not inline. */}
+              {MESSAGE_PARTS}
+              <StoppedNotice />
+              <AssistantStatusSlot />
+              <AssistantPreviewEmbeds />
+              <MessagePrimitive.Error>
+                <ErrorPrimitive.Root
+                  className="mt-1.5 flex flex-col gap-1.5 rounded-lg border border-[color-mix(in_srgb,var(--dt-destructive)_35%,transparent)] bg-[color-mix(in_srgb,var(--dt-destructive)_7%,transparent)] px-3 py-2 text-[0.78rem] leading-5 text-[color-mix(in_srgb,var(--dt-destructive)_78%,var(--ui-text-secondary))]"
+                  role="alert"
+                >
+                  <div className="flex items-start gap-1.5">
+                    <div className="min-w-0 flex-1">
+                      <ErrorCardHeadline />
+                    </div>
+                    {onDismissError && (
+                      <TooltipIconButton
+                        className="-my-0.5 shrink-0 text-current opacity-70 hover:opacity-100"
+                        onClick={() => onDismissError(messageId)}
+                        side="top"
+                        tooltip={t.assistant.thread.dismissError}
+                      >
+                        <XIcon className="size-3.5" />
+                      </TooltipIconButton>
+                    )}
+                  </div>
+                  <ErrorRecoveryActions />
+                </ErrorPrimitive.Root>
+              </MessagePrimitive.Error>
+            </div>
+            <MessageTimelineTimestamp className="px-(--message-text-indent) pt-0.5" suppressIfDuplicatePart />
+            {/* Sealed interims skip the footer so a tool-heavy turn doesn't grow a
+                copy bar per paragraph (72dd01c553) — EXCEPT when the interim is the
+                group's last text-bearing row (the turn ended on a tool-only bubble):
+                without the bar that turn has no copy/branch affordance at all
+                (#118864). */}
+            {hasVisibleText &&
+              responseTail &&
+              (!isInterim || (responseIds.length > 0 && responseIds.at(-1) === messageId)) && (
+                <AssistantFooter
+                  durationS={turnDurationS}
+                  fullResponseAvailable={fullResponseAvailable}
+                  getFullResponseText={getFullResponseText}
+                  getMessageText={getMessageText}
+                  messageId={messageId}
+                  onBranchInNewChat={onBranchInNewChat}
+                />
+              )}
+            {/* Last thing in the turn — under the action bar, the way Cursor ends a
+            turn on its summary rather than burying it above the controls. */}
+            <SettledChangedFiles />
+            <StreamingMarker />
+          </div>
+        </div>
       )}
     </MessagePrimitive.Root>
   )

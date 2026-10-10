@@ -28,6 +28,9 @@ export interface ChatBarState {
     modelMenuContent?: ReactNode
     /** The reasoning pill's dropdown (same host + controller as the model menu). */
     reasoningMenuContent?: ReactNode
+    /** The Aro model control's dropdown (effort slider + catalog) — built with
+     *  the same gateway host props upstream; absent while the gateway is closed. */
+    aroMenu?: ReactNode
     /** False when the catalog says the active model has no reasoning control;
      *  undefined while unknown (loading) so the pill stays put. */
     supportsReasoning?: boolean

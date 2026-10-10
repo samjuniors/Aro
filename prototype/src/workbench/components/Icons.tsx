@@ -1,5 +1,3 @@
-"use client";
-
 import type { SVGProps } from "react";
 
 type P = SVGProps<SVGSVGElement> & { size?: number };
@@ -10,7 +8,7 @@ const base = (p: P) => ({
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.7,
+  strokeWidth: 1.8,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   ...p,
@@ -77,9 +75,24 @@ export const IconChevron = (p: P) => (
     <path d="m9 6 6 6-6 6" />
   </svg>
 );
+export const IconChevronLeft = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+export const IconChevronRight = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m9 6 6 6-6 6" />
+  </svg>
+);
 export const IconChevronDown = (p: P) => (
   <svg {...base(p)}>
     <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+export const IconChevronUp = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m18 15-6-6-6 6" />
   </svg>
 );
 export const IconCheck = (p: P) => (
@@ -248,6 +261,11 @@ export const IconLayout = (p: P) => (
     <path d="M3 15.5h18M9.5 4v11.5M15.5 15.5V11" />
   </svg>
 );
+export const IconWrapText = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 6h16M4 12h10a3 3 0 1 1 0 6H10m0 0 2.5-2.5M10 18l2.5 2.5M4 18h2" />
+  </svg>
+);
 export const IconUser = (p: P) => (
   <svg {...base(p)}>
     <circle cx="12" cy="8.5" r="3.5" />
@@ -343,6 +361,25 @@ export const IconPin = (p: P) => (
     <path d="M9 3.5h6l-.8 5.2 3.3 3.1H14l-2 8.7-2-8.7H6.5l3.3-3.1L9 3.5Z" />
   </svg>
 );
+export const IconFilePlus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <line x1="12" y1="18" x2="12" y2="12" />
+    <line x1="9" y1="15" x2="15" y2="15" />
+  </svg>
+);
+export const IconMaximize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </svg>
+);
+export const IconSplitVertical = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="12" y1="3" x2="12" y2="21" />
+  </svg>
+);
 export const IconSettings = (p: P) => (
   <svg {...base(p)}>
     <circle cx="12" cy="12" r="3" />
@@ -391,26 +428,86 @@ export const IconMore = (p: P) => (
     <circle cx="18.5" cy="12" r="1.2" fill="currentColor" />
   </svg>
 );
+export const IconTablet = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="4.5" y="3" width="15" height="18" rx="2.2" />
+    <path d="M10.7 17.7h2.6" />
+  </svg>
+);
+export const IconSmartphone = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="7" y="2.5" width="10" height="19" rx="2.4" />
+    <path d="M10.7 18.5h2.6" />
+  </svg>
+);
+/* open-into-panel: a right wall with an arrow flying into it — the single
+   corner affordance that summons the workspace panel */
+export const IconPanelOpen = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 4v16" />
+    <path d="M3.5 12h12" />
+    <path d="m11 6.5 5.5 5.5-5.5 5.5" />
+  </svg>
+);
+/* compact "columns" mark used for the workspace tab strip itself */
+export const IconColumns = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4.5" width="18" height="15" rx="2.2" />
+    <path d="M15 4.5v15" />
+  </svg>
+);
+/* keyboard — the shortcuts affordance in the titlebar */
+export const IconKeyboard = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="2.5" y="6" width="19" height="12" rx="2.5" />
+    <path d="M6.2 9.4h.01M9.7 9.4h.01M13.2 9.4h.01M16.7 9.4h.01M6.2 12.8h.01M9.7 12.8h.01M13.2 12.8h.01M16.7 12.8h.01M7.9 15.4h8.2" />
+  </svg>
+);
+/* restore (exit fullscreen) — corners folding inward */
+export const IconMinimize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+  </svg>
+);
+/* plug-ish "connect more tools" glyph for the workspace picker */
+export const IconPuzzle = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M10.5 3.5a2 2 0 0 1 4 0V5h2.4a1.6 1.6 0 0 1 1.6 1.6V9h1.3a2 2 0 0 1 0 4H18.5v3.6a1.6 1.6 0 0 1-1.6 1.6H14.5v1.6a2 2 0 0 1-4 0V18.2H7.9a1.6 1.6 0 0 1-1.6-1.6V13H5.2a2 2 0 0 1 0-4h1.1V6.6A1.6 1.6 0 0 1 7.9 5h2.6Z" />
+  </svg>
+);
 
 /* ------------------------- brand marks for agents ------------------------ */
 type MarkProps = { size?: number; className?: string };
 
 export function LogoMark({ size = 22, className = "" }: MarkProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" className={className} role="img" aria-label="Aro mark">
+    <svg width={size} height={size} viewBox="0 0 32 32" className={className}>
       <defs>
-        <linearGradient id="aro-mark-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6EE7B7" />
-          <stop offset="55%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#0D9488" />
+        <linearGradient id="lg-a" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#a89cff" />
+          <stop offset="55%" stopColor="#7c6bff" />
+          <stop offset="100%" stopColor="#35d6c4" />
         </linearGradient>
       </defs>
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#101214" />
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="none" stroke="#27272a" strokeWidth="1" />
-      {/* geometric A — sharp apex, two legs, high crossbar */}
-      <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M11.6 19.6 H20.4" stroke="url(#aro-mark-g)" strokeWidth="2.2" strokeLinecap="round" opacity="0.85" />
+      <rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#lg-a)" opacity="0.16" />
+      <rect
+        x="1.5"
+        y="1.5"
+        width="29"
+        height="29"
+        rx="9"
+        stroke="url(#lg-a)"
+        strokeWidth="1.3"
+        fill="none"
+        opacity="0.65"
+      />
+      <g stroke="url(#lg-a)" strokeWidth="2.1" strokeLinecap="round" fill="none">
+        <path d="M9 9v14" />
+        <path d="M16 6v20" />
+        <path d="M23 11v10" />
+      </g>
+      <circle cx="23" cy="8.5" r="2.1" fill="#35d6c4" />
+      <circle cx="9" cy="23.5" r="2.1" fill="#a89cff" />
     </svg>
   );
 }
@@ -488,3 +585,50 @@ export function IdeMark({ kind, size = 16, className = "" }: MarkProps & { kind:
     </span>
   );
 }
+
+export const IconPanelClose = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 4v16" />
+    <path d="M15.5 12H3.5" />
+    <path d="m8 6.5-5.5 5.5 5.5 5.5" />
+  </svg>
+);
+
+export const IconExternalIde = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  </svg>
+);
+
+export const IconCursor = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="m3.5 2 17 8.5-7.5 2.5-2.5 7.5L3.5 2Z" fill="currentColor" />
+  </svg>
+);
+
+export const IconVSCode = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M17.5 2.5 7.5 10.5 3 7 1.5 8.5 5 12l-3.5 3.5L3 17l4.5-3.5 10 8 4.5-2V4.5l-4.5-2Z" fill="#2489CA" opacity="0.9" />
+    <path d="M17.5 2.5v19l4.5-2V4.5l-4.5-2Z" fill="#1F7BB6" />
+    <path d="m17.5 6.5-7.5 5.5 7.5 5.5V6.5Z" fill="#0066B8" opacity="0.4" />
+  </svg>
+);
+
+export const IconWindsurf = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M7 14c2-4 8-4 10 0M9 10.5c1.5-2 4.5-2 6 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+export const IconZed = ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M5 6.5h14L7 17.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export const IconSliders = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+  </svg>
+);

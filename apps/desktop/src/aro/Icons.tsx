@@ -1,9 +1,9 @@
 /**
- * ARO DESIGN SYSTEM — ICON SET (desktop port)
+ * ARO DESIGN SYSTEM â€” ICON SET (desktop port)
  *
  * Self-contained inline SVGs ported from the Aro Workbench prototype
  * (src/workbench/components/Icons.tsx). No codicon dependency, no external
- * icon library — every glyph is inline `currentColor` line art that
+ * icon library â€” every glyph is inline `currentColor` line art that
  * inherits text colour, so the aro token classes tint them per theme.
  */
 
@@ -84,6 +84,11 @@ export const IconPlus = (p: P) => (
 export const IconChevron = (p: P) => (
   <svg {...base(p)}>
     <path d="m9 6 6 6-6 6" />
+  </svg>
+)
+export const IconChevronLeft = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m15 18-6-6 6-6" />
   </svg>
 )
 export const IconChevronDown = (p: P) => (
@@ -404,7 +409,7 @@ export const IconMore = (p: P) => (
 /* ------------------------- brand marks for agents ------------------------ */
 type MarkProps = { size?: number; className?: string }
 
-/** The Aro wordmark glyph — emerald geometric A on near-black. */
+/** The Aro wordmark glyph â€” emerald geometric A on near-black. */
 export function LogoMark({ size = 22, className }: MarkProps) {
   return (
     <svg aria-label="Aro mark" className={className} height={size} role="img" viewBox="0 0 32 32" width={size}>
@@ -417,7 +422,7 @@ export function LogoMark({ size = 22, className }: MarkProps) {
       </defs>
       <rect fill="#101214" height="30" rx="8" width="30" x="1" y="1" />
       <rect fill="none" height="30" rx="8" stroke="#27272a" strokeWidth="1" width="30" x="1" y="1" />
-      {/* geometric A — sharp apex, two legs, high crossbar */}
+      {/* geometric A â€” sharp apex, two legs, high crossbar */}
       <path d="M16 7.2 L24 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
       <path d="M16 7.2 L8 25" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.6" />
       <path d="M11.6 19.6 H20.4" opacity="0.85" stroke="url(#aro-mark-g)" strokeLinecap="round" strokeWidth="2.2" />
@@ -477,3 +482,78 @@ export function IdeMark({ kind, size = 16, className }: MarkProps & { kind: stri
     </span>
   )
 }
+
+
+export const IconKeyboard = (p: P) => (
+  <svg {...base(p)}>
+    <rect height="12" rx="2.5" width="18" x="3" y="6" />
+    <path d="M7 10h.01M10 10h.01M13 10h.01M16 10h.01M7 13h10" />
+  </svg>
+)
+
+export const IconSliders = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+  </svg>
+)
+
+export const IconFilePlus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <line x1="12" y1="18" x2="12" y2="12" />
+    <line x1="9" y1="15" x2="15" y2="15" />
+  </svg>
+)
+
+export const IconSplitVertical = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="12" y1="3" x2="12" y2="21" />
+  </svg>
+)
+
+export const IconWrapText = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 6h16M4 12h10a3 3 0 1 1 0 6H10m0 0 2.5-2.5M10 18l2.5 2.5M4 18h2" />
+  </svg>
+)
+
+export const IconMaximize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </svg>
+)
+
+export const IconMinimize = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+  </svg>
+)
+
+export const IconPanelClose = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <path d="M15 4v16" />
+    <path d="m8 9 3 3-3 3" />
+  </svg>
+)
+
+export const IconChevronRight = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+)
+
+export const IconColumns = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4.5" width="18" height="15" rx="2.2" />
+    <path d="M15 4.5v15" />
+  </svg>
+)
+
+export const IconPuzzle = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M10.5 3.5a2 2 0 0 1 4 0V5h2.4a1.6 1.6 0 0 1 1.6 1.6V9h1.3a2 2 0 0 1 0 4H18.5v3.6a1.6 1.6 0 0 1-1.6 1.6H14.5v1.6a2 2 0 0 1-4 0V18.2H7.9a1.6 1.6 0 0 1-1.6-1.6V13H5.2a2 2 0 0 1 0-4h1.1V6.6A1.6 1.6 0 0 1 7.9 5h2.6Z" />
+  </svg>
+)

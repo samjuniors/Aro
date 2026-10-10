@@ -1,6 +1,18 @@
 import { useStore } from '@nanostores/react'
-import { type ComponentProps, useCallback, useEffect } from 'react'
+import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo, useState } from 'react'
 
+import {
+  IconBrain,
+  IconBranch,
+  IconChevronRight,
+  IconFolder,
+  IconGit,
+  IconList,
+  IconMaximize,
+  IconMinimize,
+  IconRefresh,
+  IconTerminal
+} from '@/aro/Icons'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Button } from '@/components/ui/button'
@@ -10,22 +22,44 @@ import { useDelayedTrue } from '@/hooks/use-delayed-true'
 import { useI18n } from '@/i18n'
 import { normalizeOrLocalPreviewTarget } from '@/lib/local-preview'
 import { cn } from '@/lib/utils'
-import { refreshRepoStatus, registerRepoStatusCwd } from '@/store/coding-status'
-import { $panesFlipped } from '@/store/layout'
+import { refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
+import { $panesFlipped, toggleRightSide } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
 import { openPreview } from '@/store/preview'
 import { openFolderAsProject } from '@/store/projects'
+import { $reviewFiles } from '@/store/review'
+import { $activeSessionId, $selectedStoredSessionId } from '@/store/session'
 import { $focusedWorkspaceCwd } from '@/store/session-states'
+import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 
 import { SidebarPanelLabel } from '../shell/sidebar-label'
 
+import { ChangesSection } from './changes-section'
+import { ContextSection } from './context-section'
 import { ProjectTree } from './files/tree'
 import { useProjectTree } from './files/use-project-tree'
+import { GitSection } from './git-section'
+import { PlanSection } from './plan-section'
+import { $rightSidebarSection, type ContextSectionId, setRightSidebarSection } from './store'
+import { TerminalSection } from './terminal-section'
 
 interface RightSidebarPaneProps {
   onActivateFile: (path: string) => void
   onActivateFolder: (path: string) => void
 }
+
+const SECTIONS: {
+  id: ContextSectionId
+  label: string
+  icon: ComponentType<{ size?: number; className?: string }>
+}[] = [
+  { id: 'files', label: 'Files', icon: IconFolder },
+  { id: 'changes', label: 'Changes', icon: IconGit },
+  { id: 'terminal', label: 'Terminal', icon: IconTerminal },
+  { id: 'plan', label: 'Plan', icon: IconList },
+  { id: 'context', label: 'Context', icon: IconBrain },
+  { id: 'git', label: 'Git', icon: IconBranch },
+]
 
 export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSidebarPaneProps) {
   const { t } = useI18n()
@@ -33,6 +67,34 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
   const panesFlipped = useStore($panesFlipped)
   const targetCwd = useStore($focusedWorkspaceCwd)
   const hasWorkspace = Boolean(targetCwd)
+  const section = useStore($rightSidebarSection)
+
+  const [fullscreen, setFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (!fullscreen) return
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        setFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', esc, true)
+    return () => window.removeEventListener('keydown', esc, true)
+  }, [fullscreen])
+
+  const activeSessionId = useStore($activeSessionId)
+  const selectedStoredId = useStore($selectedStoredSessionId)
+  const sessionId = activeSessionId || selectedStoredId
+  const todosMap = useStore($todosBySession)
+  const retainedMap = useStore($retainedTodosBySession)
+
+  const activeTodos = useMemo(() => {
+    const list = (sessionId ? todosMap[sessionId] ?? retainedMap[sessionId] : null) ?? []
+    return list.filter(item => item.status === 'pending' || item.status === 'in_progress').length
+  }, [sessionId, todosMap, retainedMap])
+
+  const reviewFiles = useStore($reviewFiles)
 
   const {
     collapseAll,
@@ -49,24 +111,24 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     showIgnored
   } = useProjectTree(hasWorkspace ? targetCwd : '')
 
-  useEffect(() => {
-    const activeCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
+  const activeRepoCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
+  const repoStatus = useStore(repoStatusForCwd(activeRepoCwd))
+  const dirtyCount = repoStatus ? (repoStatus.staged ?? 0) + (repoStatus.unstaged ?? 0) : 0
 
-    if (!activeCwd) {
+  useEffect(() => {
+    if (!activeRepoCwd) {
       return
     }
 
-    return registerRepoStatusCwd(activeCwd)
-  }, [effectiveCwd, hasWorkspace, targetCwd])
+    return registerRepoStatusCwd(activeRepoCwd)
+  }, [activeRepoCwd])
 
   const handleRefresh = useCallback(() => {
     void refreshRoot()
-    const activeCwd = effectiveCwd || (hasWorkspace ? targetCwd : '')
-
-    if (activeCwd) {
-      void refreshRepoStatus(activeCwd)
+    if (activeRepoCwd) {
+      void refreshRepoStatus(activeRepoCwd)
     }
-  }, [effectiveCwd, hasWorkspace, refreshRoot, targetCwd])
+  }, [activeRepoCwd, refreshRoot])
 
   const cwdName =
     effectiveCwd
@@ -94,32 +156,119 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     <aside
       aria-label={r.aria}
       className={cn(
-        'before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) pt-(--titlebar-height) text-(--ui-text-tertiary)',
+        'aro-workspace-sidebar before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) pt-(--titlebar-height) text-(--ui-text-tertiary)',
         panesFlipped
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
-          : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
+          : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]',
+        fullscreen && 'is-fullscreen'
       )}
     >
-      <FilesystemTab
-        canCollapse={canCollapse}
-        collapseNonce={collapseNonce}
-        cwd={effectiveCwd}
-        cwdName={cwdName}
-        data={data}
-        error={rootError}
-        hasWorkspace={hasWorkspace}
-        loading={rootLoading}
-        onActivateFile={onActivateFile}
-        onActivateFolder={onActivateFolder}
-        onCollapseAll={collapseAll}
-        onLoadChildren={loadChildren}
-        onNodeOpenChange={setNodeOpen}
-        onPreviewFile={previewFile}
-        onRefresh={handleRefresh}
-        onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
-        openState={openState}
-        showIgnored={showIgnored}
-      />
+      {/* Workspace Tab Strip matching prototype */}
+      <div className="workspace-tabstrip" role="tablist" aria-label="Workspace tools">
+        <div className="workspace-tabs-scroll">
+          {SECTIONS.map(item => {
+            const active = section === item.id
+            const count =
+              item.id === 'plan'
+                ? (activeTodos > 0 ? activeTodos : undefined)
+                : item.id === 'changes'
+                  ? (reviewFiles.length > 0 ? reviewFiles.length : undefined)
+                  : item.id === 'git'
+                    ? (dirtyCount > 0 ? dirtyCount : undefined)
+                    : undefined
+
+            return (
+              <div
+                key={item.id}
+                role="tab"
+                aria-selected={active}
+                className={cn('workspace-tab', active && 'is-active')}
+              >
+                <button
+                  type="button"
+                  aria-label={item.label}
+                  className="workspace-tab-main"
+                  onClick={() => setRightSidebarSection(item.id)}
+                  title={item.label}
+                >
+                  <item.icon size={11} />
+                  <span className="workspace-tab-title">{item.label}</span>
+                  {count !== undefined && count > 0 && (
+                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[9px] text-aro-ink-3">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )
+          })}
+
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Tip label={fullscreen ? 'Exit full screen · Esc' : 'Full screen workspace tool'} side="bottom">
+            <button
+              type="button"
+              className={cn('workspace-panel-full', fullscreen && 'is-on')}
+              onClick={() => setFullscreen(v => !v)}
+              aria-label={fullscreen ? 'Exit full screen' : 'Full screen workspace tool'}
+              aria-pressed={fullscreen}
+            >
+              {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
+            </button>
+          </Tip>
+          <Tip label="Refresh workspace" side="bottom">
+            <button
+              type="button"
+              className="workspace-tab-toolbar"
+              onClick={handleRefresh}
+              aria-label="Refresh workspace"
+            >
+              <IconRefresh size={12} />
+            </button>
+          </Tip>
+          <Tip label="Close workspace panel · ⌘J" side="bottom">
+            <button
+              type="button"
+              className="workspace-tab-toolbar"
+              onClick={toggleRightSide}
+              aria-label="Close workspace panel"
+            >
+              <IconChevronRight size={13} />
+            </button>
+          </Tip>
+        </div>
+      </div>
+
+      {/* Workspace Body */}
+      <div className="workspace-body flex min-h-0 flex-1 flex-col overflow-hidden">
+        {section === 'files' && (
+          <FilesystemTab
+            canCollapse={canCollapse}
+            collapseNonce={collapseNonce}
+            cwd={effectiveCwd}
+            cwdName={cwdName}
+            data={data}
+            error={rootError}
+            hasWorkspace={hasWorkspace}
+            loading={rootLoading}
+            onActivateFile={onActivateFile}
+            onActivateFolder={onActivateFolder}
+            onCollapseAll={collapseAll}
+            onLoadChildren={loadChildren}
+            onNodeOpenChange={setNodeOpen}
+            onPreviewFile={previewFile}
+            onRefresh={handleRefresh}
+            onToggleShowIgnored={() => setShowIgnored(!showIgnored)}
+            openState={openState}
+            showIgnored={showIgnored}
+          />
+        )}
+        {section === 'changes' && <ChangesSection />}
+        {section === 'terminal' && <TerminalSection />}
+        {section === 'plan' && <PlanSection />}
+        {section === 'context' && <ContextSection />}
+        {section === 'git' && <GitSection />}
+      </div>
     </aside>
   )
 }
@@ -200,18 +349,6 @@ function FilesystemTab({
             variant="ghost"
           >
             <Codicon name={showIgnored ? 'eye' : 'eye-closed'} size="0.8125rem" />
-          </Button>
-        </Tip>
-        <Tip label={r.refreshTree}>
-          <Button
-            aria-label={r.refreshTree}
-            className={HEADER_ACTION_LABEL_REVEAL}
-            disabled={loading}
-            onClick={onRefresh}
-            size="icon-xs"
-            variant="ghost"
-          >
-            <Codicon name="refresh" size="0.8125rem" spinning={loading} />
           </Button>
         </Tip>
         <Tip label={r.collapseAll}>

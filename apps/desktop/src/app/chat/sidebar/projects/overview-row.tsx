@@ -43,18 +43,12 @@ import { WorkspaceAddButton, WorkspaceShowMoreRow } from './workspace-header'
 // projects.db) get the `repo` glyph so a glance tells explicit projects
 // (`folder-library`) apart from incidental disk/session findings.
 export function projectIcon({ color, icon, isAuto, isNoProject }: SidebarProjectTree) {
-  if (color && !icon) {
-    return (
-      <SidebarRowLeadGlyph>
-        <span aria-hidden="true" className="size-1 rounded-full" style={{ backgroundColor: color }} />
-      </SidebarRowLeadGlyph>
-    )
-  }
+  const iconName = icon || (isNoProject ? 'home' : isAuto ? 'repo' : 'folder')
 
   return (
     <SidebarRowLeadGlyph style={color ? { color } : undefined}>
       <Codicon
-        name={icon || (isNoProject ? 'home' : isAuto ? 'repo' : 'folder-library')}
+        name={iconName}
         size={SIDEBAR_LEAD_ICON_SIZE}
       />
     </SidebarRowLeadGlyph>
@@ -195,8 +189,18 @@ export function ProjectOverviewRow({
           ? `${s.projects.enter(project.label)} (${s.projects.autoDiscovered})`
           : s.projects.enter(project.label)
       }
-      labelClassName={cn('hover:text-foreground hover:underline', isActive && 'text-foreground')}
+      draggable={!project.isNoProject}
+      labelClassName={cn('hover:text-foreground hover:underline cursor-grab active:cursor-grabbing', isActive && 'text-foreground')}
       onClick={() => onEnter?.(project.id)}
+      onDragStart={e => {
+        if (!project.isNoProject) {
+          e.dataTransfer.setData('application/aro-project', project.id)
+          if (newSessionPath) {
+            e.dataTransfer.setData('text/plain', newSessionPath)
+          }
+          e.dataTransfer.effectAllowed = 'copyMove'
+        }
+      }}
     >
       {project.label}
     </SidebarRowLink>

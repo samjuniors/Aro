@@ -3615,7 +3615,7 @@ export const en: Translations = {
       menuAppearance: 'Appearance',
       noColor: 'No color',
       menuAddFolder: 'Add folder',
-      menuSetActive: 'Set active',
+      menuSetActive: 'Set as default for new sessions',
       menuDelete: 'Delete',
       moveToProject: 'Move to project',
       movedTo: name => `Moved to ${name}`,
@@ -5020,6 +5020,7 @@ export const en: Translations = {
 
   assistant: {
     thread: {
+      you: 'You',
       loadingSession: 'Loading session',
       showEarlier: 'Show earlier messages',
       loadingResponse: 'Hermes is loading a response',

@@ -78,6 +78,7 @@ export function ReasoningPill({ disabled, model }: { disabled: boolean; model: C
             aria-label={title}
             className={PILL}
             data-testid="reasoning-pill"
+            data-aro-reasoning-pill=""
             disabled={disabled}
             type="button"
             variant="ghost"
