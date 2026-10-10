@@ -1,11 +1,11 @@
 import { useStore } from '@nanostores/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { IconCheck, IconChevronDown, IconGit, IconLaptop, IconPlus } from '@/aro/Icons'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tip } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { repoStatusForCwd, repoWorktreesForCwd } from '@/store/coding-status'
+import { registerRepoStatusCwd, repoStatusForCwd, repoWorktreesForCwd } from '@/store/coding-status'
 
 export function EnvPill({
   cwd,
@@ -24,11 +24,19 @@ export function EnvPill({
   const $worktrees = repoWorktreesForCwd(cwd)
   const worktrees = useStore($worktrees)
 
-  const currentBranch = repoStatus?.branch || 'main'
-  const isWorktree = worktrees.length > 1 && worktrees.some(w => w.branch === currentBranch && w.path === cwd)
-  const hasGit = Boolean(repoStatus)
+  useEffect(() => {
+    if (!cwd) return
+    const unregister = registerRepoStatusCwd(cwd)
+    return () => {
+      unregister?.()
+    }
+  }, [cwd])
 
-  const label = isWorktree ? `Worktree: ${currentBranch}` : currentBranch ? `Local (${currentBranch})` : 'Local'
+  const hasGit = Boolean(repoStatus?.branch)
+  const currentBranch = repoStatus?.branch || ''
+  const isWorktree = Boolean(currentBranch && worktrees.length > 1 && worktrees.some(w => w.branch === currentBranch && w.path === cwd))
+
+  const label = isWorktree ? `Worktree: ${currentBranch}` : hasGit ? `Local (${currentBranch})` : 'Local'
   const Icon = isWorktree ? IconGit : IconLaptop
 
   return (
@@ -48,6 +56,11 @@ export function EnvPill({
           >
             <Icon className="shrink-0" size={12} />
             <span className="max-w-[110px] truncate">{label}</span>
+            {repoStatus?.changed && repoStatus.changed > 0 ? (
+              <span className="shrink-0 rounded px-1 text-[9.5px] font-mono font-medium text-amber-500 bg-amber-500/10">
+                +{repoStatus.changed}
+              </span>
+            ) : null}
             <IconChevronDown className="shrink-0 text-aro-ink-4 opacity-60" size={10} />
           </button>
         </DropdownMenuTrigger>

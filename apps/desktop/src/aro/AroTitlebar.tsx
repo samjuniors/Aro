@@ -30,14 +30,14 @@ import { titlebarControlsPosition, titlebarToolsRightCss } from '@/app/shell/tit
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tip } from '@/components/ui/tooltip'
 import { sessionTitle } from '@/lib/chat-runtime'
-import { $repoStatus } from '@/store/coding-status'
+import { $repoStatus, repoStatusForCwd } from '@/store/coding-status'
 import { openCommandPalette } from '@/store/command-palette'
 import { $fileBrowserOpen, $leftSideOpen, toggleLeftSide, toggleRightSide } from '@/store/layout'
 import { $activeGatewayProfile, $profiles, profileLabel, selectProfile } from '@/store/profile'
 import { $connection, $currentCwd, $selectedStoredSessionId, $sessions } from '@/store/session'
 import { $botChatScopes } from '@/store/session-states'
 import { $statusbarVisible } from '@/store/statusbar-prefs'
-import { $projectOwnerBySessionId, $projects } from '@/store/projects'
+import { $projectOwnerBySessionId, $projects, openFolderAsProject } from '@/store/projects'
 import { $aroSessionProjectMap, resolveAroSessionProjectId } from './project-session-map'
 import { $workspaceOwnerLabels } from '@/components/pane-shell/workspace-scope'
 import { $openBotChat, $selectedBot } from '@/plugins/hermes-bots/bot-state'
@@ -46,6 +46,7 @@ import {
   IconBranch,
   IconCheck,
   IconChevronDown,
+  IconFolder,
   IconKeyboard,
   IconMic,
   IconPanelLeft,
@@ -179,8 +180,6 @@ export function AroTitlebar() {
 
   const [profilePopoverOpen, setProfilePopoverOpen] = useState(false)
 
-  const branchName = repoStatus?.branch || activeSession?.git_branch || ''
-
   const projects = useStore($projects)
   const projectOwners = useStore($projectOwnerBySessionId)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
@@ -190,6 +189,9 @@ export function AroTitlebar() {
     const pId = resolveAroSessionProjectId(activeSession, projects, projectOwners, aroSessionProjectMap)
     return pId ? projects.find(p => p.id === pId) : null
   }, [activeSession, projects, projectOwners, aroSessionProjectMap])
+
+  const projectRepoStatus = useStore(repoStatusForCwd(activeProject?.primary_path))
+  const branchName = repoStatus?.branch || projectRepoStatus?.branch || activeSession?.git_branch || ''
 
   // Project directory name from cwd if available
   const projectName = activeProject?.name || (currentCwd
@@ -309,8 +311,8 @@ export function AroTitlebar() {
             </span>
           )}
 
-          {/* Git Branch Badge (only in Code mode) */}
-          {product === 'code' && branchName && (
+          {/* Git Branch Badge */}
+          {branchName && (
             <span
               className="hidden items-center gap-1 font-mono text-[10.5px] text-aro-ink-3 md:flex"
               title={`Git branch: ${branchName}`}
@@ -319,6 +321,19 @@ export function AroTitlebar() {
               <span className="max-w-[100px] truncate">{branchName}</span>
             </span>
           )}
+
+          {/* Open Project Folder button */}
+          <Tip label="Open folder as project · ⌘O" side="bottom">
+            <button
+              aria-label="Open project folder"
+              className="hidden items-center gap-1.5 rounded-[7px] border border-aro-line bg-aro-raise px-2 py-[2.5px] text-aro-ink-2 hover:border-aro-line-strong hover:bg-aro-hover transition-colors cursor-pointer text-[11px] sm:flex"
+              onClick={() => void openFolderAsProject()}
+              type="button"
+            >
+              <IconFolder className="shrink-0 text-aro-ink-4" size={12} />
+              <span className="hidden md:inline font-medium text-aro-ink-3">Open folder</span>
+            </button>
+          </Tip>
         </div>
       </div>
 

@@ -2206,6 +2206,7 @@
   max-width: 100%;
   max-height: 100%;
   overflow: hidden;
+  padding-top: 0 !important;
 }
 :root[data-aro-ui='true'] .aro-workspace-sidebar > .workspace-tabstrip {
   flex: 0 0 38px;
@@ -2676,6 +2677,181 @@
   border-top: 1px solid var(--aro-line-soft);
   font-family: var(--font-mono);
   font-size: 10.5px;
+}
+
+/* ── Repo dock (bar below composer matching Aro prototype) ── */
+:root[data-aro-ui='true'] .repo-dock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 6px 8px 6px 10px;
+  border: 1px solid var(--aro-line-soft);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--aro-ink) 2.5%, var(--aro-bg));
+  font-size: 11.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  border-radius: 6px;
+  padding: 3px 6px 3px 4px;
+  font-weight: 550;
+  color: var(--aro-ink-2);
+  transition: background 140ms, color 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo-icon {
+  color: var(--aro-ink-3);
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-repo-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-aro-ui='true'] .repo-dock-demo {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--aro-iris-soft);
+  background: var(--aro-iris-tint);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+:root[data-aro-ui='true'] .repo-dock-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--aro-line);
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-branch {
+  display: flex;
+  min-width: 0;
+  max-width: 220px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--aro-ink-3);
+  transition: background 140ms, color 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-branch:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: background 140ms;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff:hover {
+  background: var(--aro-hover);
+}
+
+:root[data-aro-ui='true'] .repo-dock-diff-empty {
+  cursor: pointer;
+}
+
+:root[data-aro-ui='true'] .repo-dock-adds {
+  color: var(--aro-mint);
+  font-weight: 600;
+}
+
+:root[data-aro-ui='true'] .repo-dock-dels {
+  color: var(--aro-rose);
+  font-weight: 600;
+}
+
+:root[data-aro-ui='true'] .repo-dock-clean {
+  color: var(--aro-ink-4);
+  font-size: 10.5px;
+}
+
+:root[data-aro-ui='true'] .repo-dock-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 7px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--aro-ink-2);
+  transition: all 140ms;
+  cursor: pointer;
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge:hover:not(.repo-dock-merge-disabled) {
+  border-color: var(--aro-mint);
+  color: var(--aro-mint);
+}
+
+:root[data-aro-ui='true'] .repo-dock-merge-disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+:root[data-aro-ui='true'] .repo-dock-gear {
+  display: flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: var(--aro-ink-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 140ms, color 140ms;
+}
+
+:root[data-aro-ui='true'] .repo-dock-gear:hover {
+  background: var(--aro-hover);
+  color: var(--aro-ink-2);
 }
 
 

@@ -56,7 +56,7 @@ const remoteGit: GitBridge = {
   worktreeRemove: (repoPath, worktreePath, options) =>
     gitPost('worktree/remove', { force: options?.force ?? false, path: repoPath, worktreePath }),
 
-  branchSwitch: (repoPath, branch) => gitPost('branch/switch', { branch, path: repoPath }),
+  branchSwitch: (repoPath, branch, create) => gitPost('branch/switch', { branch, create, path: repoPath }),
 
   branchList: async repoPath =>
     (await gitGet<{ branches: HermesGitBranch[] }>('branches', { path: repoPath })).branches,

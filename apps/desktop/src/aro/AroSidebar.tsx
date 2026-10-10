@@ -307,52 +307,48 @@ export function AroSidebar({
         seen.add(p.id)
         const pPath = p.primary_path || p.folders?.[0]?.path
         const pName = p.name || (pPath ? pPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || p.id
+        const treeNode = projectTree.find(n => n.id === p.id)
+        const mergedFolders: Array<{ path: string }> = [...(p.folders || [])]
+        if (treeNode?.repos) {
+          for (const r of treeNode.repos) {
+            if (r.path && !mergedFolders.some(f => f.path === r.path)) {
+              mergedFolders.push({ path: r.path })
+            }
+          }
+        }
         list.push({
           id: p.id,
           name: pName,
           color: p.color,
           path: pPath,
-          folders: p.folders,
+          folders: mergedFolders,
           archived: p.archived
         })
       }
     }
 
-    // 2. Authoritative project tree from $projectTree (the exact tree seen in composer!)
+    // 2. Authoritative project tree from $projectTree (covers auto-projects and explicit ones)
     for (const node of projectTree) {
       if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
         seen.add(node.id)
         const rootPath = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
         const label = node.label || (rootPath ? rootPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
+        const nodeFolders: Array<{ path: string }> = rootPath ? [{ path: rootPath }] : []
+        if (node.repos) {
+          for (const r of node.repos) {
+            if (r.path && !nodeFolders.some(f => f.path === r.path)) {
+              nodeFolders.push({ path: r.path })
+            }
+          }
+        }
         list.push({
           id: node.id,
           name: label,
           color: node.color,
           path: rootPath,
-          folders: rootPath ? [{ path: rootPath }] : [],
+          folders: nodeFolders,
           archived: node.archived
         })
-      }
-    }
-
-    // 3. Child repos from project tree nodes (ensures auto-discovered repos appear as folders)
-    for (const node of projectTree) {
-      if (node.repos && node.repos.length > 0) {
-        for (const repo of node.repos) {
-          if (repo.id && repo.id !== '__no_project__' && !seen.has(repo.id)) {
-            seen.add(repo.id)
-            const repoPath = repo.path || ''
-            const repoLabel = repo.label || (repoPath ? repoPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || repo.id
-            list.push({
-              id: repo.id,
-              name: repoLabel,
-              color: node.color,
-              path: repoPath,
-              folders: repoPath ? [{ path: repoPath }] : [],
-              archived: false
-            })
-          }
-        }
       }
     }
 
@@ -660,10 +656,10 @@ export function AroSidebar({
         {/* Context Menu Button */}
         <Menu
           align="right"
-          trigger={() => (
+          trigger={open => (
             <button
               aria-label={`Actions for ${title}`}
-              className="session-row-more"
+              className={cn('session-row-more', open && 'opacity-100 bg-aro-hover text-aro-ink')}
               type="button"
             >
               <IconMore size={13} />
@@ -896,10 +892,10 @@ export function AroSidebar({
 
             <Menu
               align="right"
-              trigger={() => (
+              trigger={open => (
                 <button
                   aria-label="Session list options"
-                  className="text-aro-ink-4 hover:text-aro-ink cursor-pointer"
+                  className={cn('text-aro-ink-4 hover:text-aro-ink cursor-pointer', open && 'text-aro-ink')}
                   type="button"
                 >
                   <IconMore size={14} />
@@ -1034,10 +1030,10 @@ export function AroSidebar({
 
                         <Menu
                           align="right"
-                          trigger={() => (
+                          trigger={open => (
                             <button
                               aria-label={`Project actions for ${project.name}`}
-                              className="session-row-more"
+                              className={cn('session-row-more', open && 'opacity-100 bg-aro-hover text-aro-ink')}
                               type="button"
                             >
                               <IconMore size={12} />

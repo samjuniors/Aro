@@ -738,3 +738,35 @@ def test_cwdless_session_with_repo_root_stays_in_its_explicit_project():
     assert owned["id"] in explicit["sessionIds"]
     assert owned["id"] in [s["id"] for s in _sessions_of(explicit)]
     assert _home_session_ids(tree) == [detached["id"]]
+
+
+def test_git_repo_inside_project_appears_in_project_not_standalone():
+    """A git repository discovered inside a project appears as a repository within that
+    project, not as a second standalone project."""
+    project = _project("p_myproj", "My Project", ["/data/projects/myproj"])
+    discovered = [{"root": "/data/projects/myproj/subrepo", "label": "subrepo"}]
+    resolve = _resolver({"/data/projects/myproj/subrepo": ("/data/projects/myproj/subrepo", "/data/projects/myproj/subrepo")})
+
+    tree = pt.build_tree([project], [], discovered, resolve, hydrate=True)
+
+    assert _real_project_ids(tree) == ["p_myproj"]
+    proj_node = tree["projects"][0]
+    repo_ids = [r["id"] for r in proj_node["repos"]]
+    assert "/data/projects/myproj/subrepo" in repo_ids
+
+
+def test_refreshing_git_status_does_not_introduce_duplicate_entries():
+    """Refreshing git status or receiving duplicate discovered entries does not duplicate repos."""
+    project = _project("p_myproj", "My Project", ["/data/projects/myproj"])
+    discovered = [
+        {"root": "/data/projects/myproj/subrepo", "label": "subrepo"},
+        {"root": "/data/projects/myproj/subrepo", "label": "subrepo"},
+    ]
+    resolve = _resolver({"/data/projects/myproj/subrepo": ("/data/projects/myproj/subrepo", "/data/projects/myproj/subrepo")})
+
+    tree = pt.build_tree([project], [], discovered, resolve, hydrate=True)
+
+    proj_node = tree["projects"][0]
+    subrepo_entries = [r for r in proj_node["repos"] if r["id"] == "/data/projects/myproj/subrepo"]
+    assert len(subrepo_entries) == 1
+

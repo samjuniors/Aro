@@ -311,6 +311,32 @@ def _seed_folder_repos(
     return seeded
 
 
+def _seed_discovered_repos(
+        repos: list[dict], project: dict, discovered_repos: list[dict],
+        folder_index: _FolderIndex, resolve: Optional[Resolve], junk: Callable) -> list[dict]:
+    """Ensure git repos discovered inside an explicit project show as repositories within that
+    project (rather than becoming second standalone projects or disappearing)."""
+    seen = {_path_key(v) for repo in repos for v in (repo.get("id"), repo.get("path")) if v}
+    seeded = list(repos)
+    for repo in discovered_repos or []:
+        raw_root = _field(repo, "root")
+        if not raw_root:
+            continue
+        info = resolve(raw_root) if resolve else None
+        root = (info or {}).get("repo_root") or raw_root
+        root_key = _path_key(root)
+        if not root_key or root_key in seen or junk(root):
+            continue
+        owner, _ = folder_index.match(root)
+        if owner and owner.get("id") == project.get("id"):
+            label = repo.get("label") or base_name(root) or root
+            seeded.append(_repo_node(root, label))
+            seen.add(root_key)
+    if len(seeded) != len(repos):
+        _disambiguate_labels(seeded)
+    return seeded
+
+
 class _FolderIndex:
     """Normalized folder path -> (owning project, depth); matched by walking cwd ancestors."""
 
@@ -449,6 +475,7 @@ def build_tree(
         _scope(psessions)
         repos = _build_repos(psessions, resolve, hydrate)
         repos = _seed_folder_repos(repos, project.get("folders") or [], resolve)
+        repos = _seed_discovered_repos(repos, project, discovered_repos or [], folder_index, resolve, _junk)
         result.append(_project_node(
             project["id"], project.get("name") or project["id"], project.get("primary_path"), repos,
             len(psessions), _last_active(psessions), _previews(psessions), psessions,

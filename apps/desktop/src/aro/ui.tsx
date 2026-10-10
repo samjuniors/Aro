@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -243,37 +244,102 @@ export function Menu({
   )
 
   const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) {return}
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{ top: number; left: number; opensAbove: boolean }>({
+    top: 0,
+    left: 0,
+    opensAbove: false,
+  })
 
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {setOpen(false)}
+  const updatePosition = useCallback(() => {
+    if (!ref.current) return
+    const rect = ref.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const menuEstimatedHeight = 220
+    const opensAbove = spaceBelow < menuEstimatedHeight && spaceAbove > spaceBelow
+
+    const top = opensAbove ? Math.max(8, rect.top - 6) : Math.min(window.innerHeight - 40, rect.bottom + 6)
+    let left = align === 'right' ? rect.right - width : rect.left
+
+    if (left + width > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - width - 8)
+    }
+    if (left < 8) {
+      left = 8
     }
 
-    const k = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    window.addEventListener('mousedown', h)
-    window.addEventListener('keydown', k)
+    setCoords({ top, left, opensAbove })
+  }, [align, width])
+
+  useEffect(() => {
+    if (!open) return
+
+    updatePosition()
+
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (
+        ref.current &&
+        !ref.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    const handleScrollOrResize = () => {
+      updatePosition()
+    }
+
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('resize', handleScrollOrResize)
+    window.addEventListener('scroll', handleScrollOrResize, true)
 
     return () => {
-      window.removeEventListener('mousedown', h)
-      window.removeEventListener('keydown', k)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('resize', handleScrollOrResize)
+      window.removeEventListener('scroll', handleScrollOrResize, true)
     }
-  }, [open, setOpen])
+  }, [open, setOpen, updatePosition])
 
   return (
-    <div className={cn('relative', className)} ref={ref}>
+    <div className={cn('relative inline-flex', className)} ref={ref}>
       <div onClick={() => setOpen(!open)}>{trigger(open)}</div>
-      {open && (
-        <div
-          className={cn(
-            'absolute z-[60] mt-1.5 origin-top animate-aro-slide-down overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
-            align === 'right' ? 'right-0' : 'left-0',
-          )}
-          style={{ width }}
-        >
-          {children(() => setOpen(false))}
-        </div>
-      )}
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className={cn(
+              'fixed z-[99999] overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
+              coords.opensAbove
+                ? 'origin-bottom animate-aro-slide-up -translate-y-full'
+                : 'origin-top animate-aro-slide-down',
+            )}
+            style={{
+              top: coords.top,
+              left: coords.left,
+              width,
+              maxHeight: coords.opensAbove
+                ? Math.min(380, Math.max(120, coords.top - 16))
+                : Math.min(380, Math.max(120, window.innerHeight - coords.top - 16)),
+              overflowY: 'auto',
+            }}
+          >
+            {children(() => setOpen(false))}
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
@@ -643,8 +709,9 @@ export function Modal({
   }, [open, onClose])
 
   if (!open) {return null}
+  if (typeof document === 'undefined') {return null}
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]">
       <div className="absolute inset-0 animate-aro-fade bg-black/55 backdrop-blur-[3px]" onClick={onClose} />
       <div
@@ -663,7 +730,8 @@ export function Modal({
         </div>
         <div className="aro-scroll-thin max-h-[66vh] overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

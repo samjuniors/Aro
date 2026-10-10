@@ -49,8 +49,8 @@ export function registerGitIpc({ resolveGitBinary, resolveGhBinary }: GitIpcDeps
     removeWorktree(repoPath, worktreePath, options || {}, resolveGitBinary())
   )
 
-  ipcMain.handle('hermes:git:branchSwitch', async (_event, repoPath, branch) =>
-    switchBranch(repoPath, branch, resolveGitBinary())
+  ipcMain.handle('hermes:git:branchSwitch', async (_event, repoPath, branch, create) =>
+    switchBranch(repoPath, branch, resolveGitBinary(), create)
   )
 
   ipcMain.handle('hermes:git:branchList', async (_event, repoPath) => listBranches(repoPath, resolveGitBinary()))

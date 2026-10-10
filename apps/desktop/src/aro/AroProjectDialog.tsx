@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import { notify, notifyError } from '@/store/notifications'
+import { desktopGit } from '@/lib/desktop-git'
 import {
   $newProjectDropPlacement,
   $projectDialog,
@@ -20,6 +21,8 @@ import {
   createProject,
   enterProject,
   pickProjectFolder,
+  projectIdForCwd,
+  refreshProjectTree,
   renameProject
 } from '@/store/projects'
 
@@ -129,6 +132,24 @@ export function AroProjectDialog() {
 
       setSubmitting(true)
       try {
+        const folder = folders[0]
+        await refreshProjectTree()
+        const existingId = folder ? projectIdForCwd(folder) : null
+
+        if (existingId) {
+          enterProject(existingId)
+          if (folder) {
+            void desktopGit()
+              ?.repoStatus(folder)
+              .then(() => refreshProjectTree())
+              .catch(() => undefined)
+          }
+          notify({ kind: 'info', message: 'Opened existing project' })
+          clearNewProjectDropPlacement()
+          closeProjectDialog()
+          return
+        }
+
         const dropPlacement = $newProjectDropPlacement.get() ?? undefined
         const created = await createProject({
           name: trimmed,
@@ -142,6 +163,12 @@ export function AroProjectDialog() {
         if (created) {
           enterProject(created.id)
           notify({ kind: 'info', message: `Project '${trimmed}' created` })
+          if (folder) {
+            void desktopGit()
+              ?.repoStatus(folder)
+              .then(() => refreshProjectTree())
+              .catch(() => undefined)
+          }
         }
         clearNewProjectDropPlacement()
         closeProjectDialog()

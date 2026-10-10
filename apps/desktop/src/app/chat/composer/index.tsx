@@ -29,13 +29,14 @@ import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { desktopGit } from '@/lib/desktop-git'
 import { isDesktopFsRemoteMode } from '@/lib/desktop-fs'
 import { triggerHaptic } from '@/lib/haptics'
-import { IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
+import { IconBranch, IconCheck, IconChevronDown, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
 import { FolderOpen } from '@/lib/icons'
 import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { interceptsTypedVoiceStop } from '@/lib/voice-stop-word'
-import { openWorktreeDialog } from '@/store/coding-status'
+import { openWorktreeDialog, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
+import { $aroSessionProjectMap } from '@/aro/project-session-map'
 import { sessionCompacting } from '@/store/compaction'
 import { browseBackward, browseForward, deriveUserHistory, isBrowsingHistory } from '@/store/composer-input-history'
 import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
@@ -59,6 +60,7 @@ import {
   requestStartWorkSession
 } from '@/store/projects'
 import { assignSessionToProject, setAroDraftProject } from '@/aro/project-session-map'
+import { AroRepoBar } from '@/aro/AroRepoBar'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
 import { $gatewayState } from '@/store/session'
@@ -1167,6 +1169,19 @@ export function ChatBar({
 
   const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
 
+  const projects = useStore($projectTree)
+  const explicitProjects = useStore($projects)
+  const projectScope = useStore($projectScope)
+  const aroSessionProjectMap = useStore($aroSessionProjectMap)
+
+  const chatBarSessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
+  const chatBarCurrentProjectId = sessionId ? (chatBarSessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
+  const chatBarCurrentProject = projects.find(project => project.id === chatBarCurrentProjectId) || explicitProjects.find(p => p.id === chatBarCurrentProjectId)
+  const chatBarCurrentRoot = (chatBarCurrentProject && 'label' in chatBarCurrentProject ? projectRootCwd(chatBarCurrentProject) : null)
+    || (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null)
+    || (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null)
+    || (cwd || null)
+
   const leadingCluster = (
     <div className="flex min-w-0 items-center gap-1" data-aro-composer-leading="">
       {contextMenu}
@@ -1642,6 +1657,14 @@ export function ChatBar({
               </div>
             </div>
           </ComposerPrimitive.Root>
+          {isAro && Boolean(chatBarCurrentRoot || chatBarCurrentProject) && (
+            <AroRepoBar
+              cwd={chatBarCurrentRoot}
+              onOpenDiff={() => toggleReview(chatBarCurrentRoot, scope.target)}
+              onOpenSettings={() => void openWorktreeDialog({ repoPath: chatBarCurrentRoot ?? undefined })}
+              sessionId={sessionId}
+            />
+          )}
           {/* Underside: chrome-free strip BELOW the composer. Outside the root
               for the same reason as the micro actions — it must not fall inside
               the pop-out drag region. Same px as the strip above, so the two
@@ -1722,20 +1745,35 @@ function ProjectPickerControl({
   const explicitProjects = useStore($projects)
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
+  const aroSessionProjectMap = useStore($aroSessionProjectMap)
   const [open, setOpen] = useState(false)
   const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
   const [search, setSearch] = useState('')
-  const currentProjectId = sessionId ? (cwd ? projectIdForCwd(cwd) : null) : projectScope
+  const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
+  const currentProjectId = sessionId ? (sessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
   const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
-  const currentLabel = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : undefined
   const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
     || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
+    || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
     || (cwd || null)
+  const folderName = currentRoot ? currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : undefined
+  const currentLabel = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : folderName
+
+  const $repoStatus = repoStatusForCwd(currentRoot)
+  const liveRepoStatus = useStore($repoStatus)
+
+  useEffect(() => {
+    if (!currentRoot) return
+    const unregister = registerRepoStatusCwd(currentRoot)
+    return () => {
+      unregister?.()
+    }
+  }, [currentRoot])
 
   useEffect(() => {
     let cancelled = false
 
-    if (!open || !currentRoot) {
+    if (!currentRoot) {
       setGitStatus(null)
 
       return
@@ -1762,7 +1800,9 @@ function ProjectPickerControl({
     return () => {
       cancelled = true
     }
-  }, [currentRoot, open])
+  }, [currentRoot])
+
+  const effectiveStatus = liveRepoStatus || gitStatus
 
   const availableProjects = useMemo(() => {
     const list: Array<{ id: string; label: string; path: string; color?: string; isDemo?: boolean }> = []
@@ -1880,7 +1920,11 @@ function ProjectPickerControl({
     >
       <DropdownMenuTrigger asChild>
         <Button
-          aria-label={currentLabel ? `Switch project — ${currentLabel}` : 'Attach a project'}
+          aria-label={
+            currentLabel
+              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
+              : 'Attach a project'
+          }
           className={cn(
             'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
             currentLabel && 'text-aro-iris-soft'
@@ -1889,7 +1933,11 @@ function ProjectPickerControl({
           data-aro-project-selected={currentLabel ? '' : undefined}
           disabled={disabled}
           size="icon"
-          title={currentLabel ? `Project: ${currentLabel}` : 'Attach a project'}
+          title={
+            currentLabel
+              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` · Git: ${effectiveStatus.branch}` : ''}`
+              : 'Attach a project'
+          }
           type="button"
           variant="ghost"
         >
@@ -1898,11 +1946,15 @@ function ProjectPickerControl({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[340px] p-0" side="top" sideOffset={8}>
         <div className="repo-chooser">
-          {currentRoot && gitStatus ? (
+          {currentRoot && effectiveStatus ? (
             <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-md bg-aro-base/70 px-2.5 py-1.5 text-[11px] text-aro-ink-3 border border-aro-border-subtle">
-              <Codicon name="git-branch" size="0.75rem" />
-              <span className="min-w-0 flex-1 truncate font-mono">{gitStatus.branch || 'Detached HEAD'}</span>
-              {gitStatus.changed > 0 ? <span className="shrink-0 text-amber-500 font-medium">{gitStatus.changed} changed</span> : <span className="shrink-0 text-emerald-500 font-medium">Clean</span>}
+              <IconBranch size={12} className="text-aro-iris-soft shrink-0" />
+              <span className="min-w-0 flex-1 truncate font-mono">{effectiveStatus.branch || 'Detached HEAD'}</span>
+              {effectiveStatus.changed > 0 ? (
+                <span className="shrink-0 text-amber-500 font-medium font-mono">+{effectiveStatus.changed} changed</span>
+              ) : (
+                <span className="shrink-0 text-emerald-500 font-medium font-mono">Clean</span>
+              )}
             </div>
           ) : null}
           <div className="repo-chooser-search">

@@ -492,7 +492,7 @@ declare global {
           worktreePath: string,
           options?: { force?: boolean }
         ) => Promise<{ removed: string }>
-        branchSwitch: (repoPath: string, branch: string) => Promise<{ branch: string }>
+        branchSwitch: (repoPath: string, branch: string, create?: boolean) => Promise<{ branch: string }>
         // The local branches, plus the remote-tracking refs that have no local
         // branch, for the "convert a branch into a worktree" picker.
         branchList: (repoPath: string) => Promise<HermesGitBranch[]>
