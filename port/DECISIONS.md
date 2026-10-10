@@ -60,3 +60,55 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
 **D-0012 — Feature runtime status is UNKNOWN until the port runs against a live Python backend.**
 - Reason: skill resume mode: "a feature's status comes from running it against the real backend". Sandbox has no Hermes Python venv; Task 7 verified render + unit tests only. INVENTORY §9 marks live behaviors UNKNOWN rather than claiming them.
 - Reversibility: n/a (fact recording).
+
+## Phase 1 (Contract)
+
+**D-0013 — Live-backend verification harness established in-sandbox; Phase 1 statuses determined by running the real app, not by reading code.**
+- Reason: skill resume mode requires feature status from running against the real backend; Phase 0 had marked this UNKNOWN (no Python toolchain). Solved by: `uv python install 3.14` + `uv venv .venv` at repo root (exactly the interpreter path Electron's source-python ladder looks for) + `uv pip install -e .`; launched `hermes serve --host 127.0.0.1 --port 0` (backend 127.0.0.1:38541, ledger pid 18023); `npm install` at repo root; vite renderer on 127.0.0.1:5174; Electron under `Xvfb :97` with CDP 9222. Electron attach-first found the running serve and connected the renderer WS with the session token.
+- Alternatives: continue with UNKNOWN statuses (rejected: user directive + skill rule); tests-js mock lane (rejected: mock is not the real backend).
+- Reversibility: high (harness only; no repo code changed; .venv/node_modules untracked).
+
+**D-0014 — Feature status evidence = observed behavior in the live run (2026-10-10); no successful model turn exists (provider credentials absent).**
+- Reason: `model.options` reports `model:"z-ai/glm-5.2"` but `providers:[]` and no API key exists in the sandbox. The send path was still fully exercised: composer → trusted-Enter → session `20261010_075711_e591cc` created (`message_count:1, source:"desktop"`) → turn dispatched → backend error streamed back → Aro error card with Retry/Open logs/Send diagnostics. Chat completion remains UNKNOWN (needs provider key or Nous free tier `/login`); the wire path is proven.
+- Alternatives: ask user for an API key (not a hard stop — verification achieved without it; credentials are only required for the *positive* turn, which Phase 5 can do on the dev machine).
+- Reversibility: high.
+
+**D-0015 — Approval modes: Aro pill exposes `smart`/`manual`/`off` only; `yolo` reachable solely via palette "Toggle yolo". Prototype `readonly`/`plan` modes have no Hermes approval-mode counterpart and are not merged.**
+- Reason: `approval-mode-pill.tsx` APPROVAL_MODES (3) vs Hermes `approvals.mode` domain (smart/manual/off/yolo). Live round-trip verified: pill → `config.set {key:"approvals.mode"}` → backend `/api/config` flips smart↔manual → pill updates. Parity gap (yolo missing from pill) logged for Phase 4; prototype-only modes dropped from the pill per precedence rule 3.
+- Alternatives: add yolo to the pill now (deferred: Phase 4 UI work, contract phase records only); map readonly/plan to toolsets (rejected: speculative backend change).
+- Reversibility: easy (UI-side addition).
+
+**D-0016 — Sidebar Skills/Connectors nav rows are highlight-only stubs (`activeNav` state, no rendered view). The capabilities page is the real, verified surface for both.**
+- Reason: live run — clicking the rows only toggles `aria-current`; `AroSidebar.tsx:870` has no view branch for them. `#/capabilities` renders Skills 53 / Tools 25 / Connectors / Plugins from the backend (live ✓). Wiring the rows (routes or re-pointing at capabilities) is a Phase 4 decision, recorded as an open choice.
+- Alternatives: none needed now (record, don't build in a contract phase).
+- Reversibility: high.
+
+**D-0017 — Low/medium-confidence pairs are NOT merged; each side is listed as its own feature (user directive: merge only high-confidence matches).**
+- Pairs kept separate: user Tasks (proto) vs agent todos (D-0009); Rules (proto) vs SOULs/profiles (Hermes); AgentsView adapters (proto) vs subagents (Hermes); CodeSearchView (proto) vs grep tool (Hermes); BrowserView iframe (proto) vs right-rail browser/`preview.*` (Hermes); onboarding doctor sweep (proto) vs `/api/ops/doctor` (Hermes); sandbox pref (proto) vs Connections (Hermes).
+- Reason: signals are 3–4 only (purpose/naming), no shared wire or data shape; merging would either delete user-data semantics or change backend behavior (skill hard-stop territory if forced).
+- Reversibility: high (a later phase may merge with evidence).
+
+**D-0018 — Wire param shape verified live: `config.set` takes `{key, value}` (my `{path, value}` probe was rejected; the ported UI uses the correct shape — proven by the approval-mode round-trip).**
+- Reason: record-don't-assume; corrects nothing in the baseline (WIRE_BASELINE §C already derives from code), but now has runtime proof.
+- Reversibility: n/a (fact).
+
+**D-0019 — Voice/dictation/TTS statuses: controls + engine wiring present; live audio round-trips UNKNOWN (headless Xvfb, no mic/speakers).**
+- Reason: "Voice dictation" composer button, voice orb ("Aro voice · Idle · click to open") render; `/api/audio/transcribe` + `/api/audio/speak` wiring adopted from Task 7; actual capture/playback cannot be exercised in this sandbox. Recorded as UNKNOWN, not guessed.
+- Reversibility: n/a (fact).
+
+**D-0020 — GLOSSARY scope: only terms that cross the adapter boundary or map features; presentation-only names (component/CSS class names) are excluded.**
+- Reason: skill naming layers — component names never reach the backend; enumerating them would bloat the contract without adding wire safety.
+- Alternatives: full component-name map (rejected: no contract value).
+- Reversibility: high.
+
+**D-0021 — Aro pages status: `/aro-agent` bridge = wired (full daemon round-trip: thinking → web_search tool → results → reply, demo engine); `/aro-review` and `/aro-tasks` = partial (pages render with honestly-labeled "demo data"; review wire exists, tasks has a live `todo_list` hook).**
+- Reason: live run 2026-10-10. The bridge demo engine is by design (`--engine demo`); the openai engine is the real path.
+- Reversibility: n/a (status recording).
+
+**D-0022 — Wire discipline re-verified under load: the whole live session ran through the ported UI with zero wire additions or renames; attach-first connected to the externally-spawned serve instance.**
+- Reason: supports Phase 5's parity gate in advance; `src/api/*` + `src/sdk/*` remain untouched.
+- Reversibility: n/a (fact).
+
+**D-0023 — Effort mapping recorded: Aro 5-stop slider (Minimal/Low/Medium/High/Ultra) over Hermes `REASONING_EFFORTS` (minimal…ultra), with `xhigh→High` and `max→Ultra` presentation folding and `ultra→max` wire clamp on OpenAI-compatible routes.**
+- Reason: `aro-model-menu-panel.tsx` EFFORTS + `reasoning-effort.ts`; live ✓ slider value 4 → pill `data-level="ultra"` with description swap. Prototype's "effort 0–4" is the same 5-stop control.
+- Reversibility: high (presentation-only).
