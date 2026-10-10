@@ -85,7 +85,7 @@ Kind legend: screen / entity / field / action / setting / event / storage / comp
 
 | Prototype namespace | Hermes namespace | Kind | Evidence |
 |---|---|---|---|
-| `conductor.*` (theme/design/density/motion, `conductor.workspace.v3.*`, `conductor.pref.*`, `conductor.voice.*`, `conductor.agentplan.v1`) | `hermes.desktop.*` / `hermes:desktop:*` / `hermes-desktop-*` (~190 keys, WIRE_BASELINE §F) | storage | zero collisions verified Phase 0; both kept as-is |
+| `conductor.*` (theme/design/density/motion, `conductor.workspace.v3.{tasks,rules,agents,browser.tabs}` — Phase 3 adapter keys, `adapters/storage.ts:46–53`, `conductor.pref.*`, `conductor.voice.*`, `conductor.agentplan.v1`) | `hermes.desktop.*` / `hermes:desktop:*` / `hermes-desktop-*` (~190 merge-base keys, WIRE_BASELINE §F + 4 fork-added keys, §G.5) | storage | zero collisions verified Phase 0; both kept as-is |
 | `aro.backend`, `aro.onboarding.done`, `aro.prototype.config.v2` | — | storage | fork-added prototype keys |
 | — (single coupling) | `hermes:desktop:zoomLevel` | storage | main↔renderer mirror (D-0005) — frozen |
 

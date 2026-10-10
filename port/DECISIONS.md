@@ -125,3 +125,52 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
 - Reason: skill resume-mode rule — "Skip Phase 2 if the prototype already launches inside Electron (launch it to verify)." Evidence: (1) runtime choice already made and logged (D-0003: Option B — prototype UI inside the Hermes React/Vite renderer); (2) the ported UI launches and runs inside the Hermes Electron shell with preload + IPC bridge in place — verified live 2026-10-10 (D-0013 harness: `hermes serve` :38541 + vite renderer :5174 + Electron under Xvfb :97 / CDP 9222; D-0014 full chat wire path; D-0022 zero wire additions); (3) re-checked at review time — the harness is still up: Electron window "Aro" serving `#/20261010_075711_e591cc`, backend HTTP 200. INVENTORY §5 server-only usage list: none blocking. No Phase 2 requirement is unmet; nothing to redo.
 - Alternatives: rebuild the runtime shell to re-verify (rejected: skill forbids re-doing what already works in resume mode; user directive "do not recreate the runtime shell or build a second renderer").
 - Reversibility: high (Phase 3 can start from the existing harness).
+
+## Phase 3 (Adapter Layer) — landed from the Phase 3 report proposals (2026-10-11)
+
+**D-0026 — Adapter-layer scope: `src/adapters/` formalizes the 7 contract `local` areas (tasks, rules, agents, editors, code-search, browser-preview, doctor) plus the storage choke point and registry; the 60 wired areas run through the adopted host layer BY REFERENCE, not through adapters.**
+- Reason: the wired rows already run through the adopted host layer (`src/api` + `src/sdk` + stores, byte-identical to merge-base — D-0022); wrapping them would rewrite working code, which resume mode forbids. The two fork surfaces that had hand-rolled or non-persisted local state (TasksBoard user tasks, external-IDE preferred key) were wired through the boundary in Phase 3 (commit `db4f5b78a7`). `adapters/index.ts` documents the wired areas by reference so the registry stays the single seam inventory.
+- Alternatives: wrap every feature area (rejected: rewrite of working wire code); adapters for the 60 wired areas only (rejected: no translation need exists — no glossary renames cross that boundary today).
+- Reversibility: high (registry swaps one area at a time; any wired area can gain an adapter later if it needs translation, as `editors` did).
+
+**D-0027 — User-task persistence semantics (Phase 3): user tasks persist at `conductor.workspace.v3.tasks` through the `lib/storage` choke point and survive restart; agent todos (`todo.updated`) remain in-session and are NEVER persisted by the port.**
+- Reason: preserves the D-0009 separation — TasksBoard user tasks are local-adapter state (restart-safe, BACKEND-TODO(tasks) markers at the seams), while the agent's plan is backend-owned turn state. Board merge order: live todos > your list > demo corpus; status translation (board columns ↔ prototype statuses) lives in the wiring layer.
+- Alternatives: persist agent todos too (rejected: would change agent-data semantics / backend behavior — skill hard-stop territory).
+- Reversibility: high.
+
+**D-0028 — Editors adapter adopts the existing fork key `hermes.desktop.external-ide.preferred` unchanged (same catalog, same key, same behavior); the key is recorded in WIRE_BASELINE §G.5.**
+- Reason: the pre-Phase-3 control already used this `hermes.desktop.*` key (fork commit `93ff2d2910`); moving it to `conductor.*` would orphan stored user values, and the key is renderer-side presentation state that matches Hermes's desktop-namespace convention. Phase 3 kept behavior identical (live round-trip verified 2026-10-10: VS Code click → key set → label reacts → reload survives).
+- Alternatives: rename to a `conductor.*` key (rejected: orphans existing values); leave unrecorded (rejected: the wire inventory must reflect the code — §G.5 now records it).
+- Reversibility: low for the key name (frozen once users hold values), high for the adapter wrapper.
+
+## Phase 4 (pre-A0 review) — AREA_PLAN approved in principle; contract decisions landed before any area implementation (2026-10-11)
+
+**D-0029 — AREA_PLAN.md approved in principle (user review). Its change-control rules are binding for all areas: (a) A1↔A5 — `src/app/chat/sidebar/projects/**` + `src/store/projects.ts` are A5-owned; `AroSidebar` consumes them via frozen props; any change to the props interface is lead-gated. (b) A3/A9 composer split is per-file — `voice-activity.tsx` is A9-owned, the rest of `composer/**` is A3-owned; prop-level changes coordinate through the lead. (c) A10's registration entries land in A8-owned `src/aro/register.tsx` only via small lead-approved commits implementing both sides. (d) Frozen host files (AREA_PLAN §2 rule 2: `electron/preload.ts`, `src/api/**`, `src/sdk/**`, Python backend dirs, `prototype/**`, `apps/web`, `website/`, `ui-tui/`) are never edited by areas; host restyling goes through A0's `host-theme.css` selectors requested via the lead.**
+- Reason: user review directive — resolve ownership boundaries before A0; fleet-plan.md conflict rules; AREA_PLAN §5 shared-file registry.
+- Alternatives: none (this records the AREA_PLAN rules as confirmed; deviations need a new decision).
+- Reversibility: high (documented; amendable by a later decision).
+
+**D-0030 — Wire inventory confirmed against actual code and Git history (pre-A0). Findings: §G.1–G.4 verified line-exact against the CURRENT tree; `src/api/**` + `src/sdk/**` unchanged vs merge-base (empty diff); every other `hermes.desktop.*` literal in fork-touched files is a merge-base §F.2 key; `aro.*`/`conductor.*` fork keys excluded by design (D-0011). One additional §G recording gap found and closed: `hermes.desktop.voice.orb.{visible,open,position}` (fork commit `93ff2d2910`, `voice-agent-orb.tsx`) — recorded in §G.5 alongside `hermes.desktop.external-ide.preferred` (D-0028).**
+- Reason: user review directive ("confirm the wire inventory against actual code and Git history"); skill rule 6 — record, don't assume. Sweep method: all `hermes.*` storage-like literals in the 130 fork-touched files, each checked for merge-base presence via `git grep` at `1cb25c3e335a`.
+- Alternatives: none (fact recording).
+- Reversibility: high (documentation only).
+
+**D-0031 — nav-stubs closure default (D-0016 / AREA_PLAN §7.1): re-point both sidebar Skills and Connectors rows at `#/capabilities` (the live-verified surface), recorded as the agreed default. A1 finalizes at implementation; dedicated view routes remain the alternative if A6's restyle pass produces evidence for them.**
+- Reason: capabilities is live-verified (Skills 53 / Tools 25, D-0014 run); building dedicated routes would duplicate a working surface. User review directed recording the agreed default before area implementation.
+- Alternatives: dedicated view routes (deferred until evidence).
+- Reversibility: high (UI-side only).
+
+**D-0032 — `rules` placement default (AREA_PLAN §7.2): own contributed route (proposed `src/aro/RulesView.tsx` via the A8 register seam), with an A11 follow-up link from settings. A10 finalizes at implementation with its own entry if it deviates.**
+- Reason: the port's settings tree is the Hermes overlay — a contributed settings section would require host-file surgery; an own route matches the existing contributed-route pattern (`/aro-*` pages).
+- Alternatives: contributed settings section (rejected as default: host-file edits).
+- Reversibility: high.
+
+**D-0033 — approval-yolo pill mechanism default (D-0015 parity gap / AREA_PLAN §7.3): implement in the fork-owned `approval-mode-pill.tsx` (A3) only; the host `approval-mode-menu.tsx` is edited only if the fork file cannot express the fourth mode, and then as a lead-gated host edit. A3 verifies by a live `config.set {key:"approvals.mode"}` round-trip to `yolo` and back.**
+- Reason: A3 owns the pill; host edits are the exception path (fleet-plan hygiene; AREA_PLAN §2 rule 2).
+- Alternatives: edit the host menu in the same pass (deferred: lead-gated only if the fork-only path fails).
+- Reversibility: high.
+
+**D-0034 — Blocked-verification policy (AREA_PLAN §7.4 / §2 rule 8): any check that cannot run in this harness (provider-key turn completions, mic/speaker audio, native dialogs, credential-gated screens) is recorded as BLOCKED with its precondition and is never claimed; a dev-machine Phase 5 pass may re-verify them.**
+- Reason: skill rule 6 (never guess) + honest parity gate; keeps FEATURE_MAP statuses movable only by live evidence (D-0012/D-0014).
+- Alternatives: defer all blocked checks to Phase 5 (rejected: each area must record what it could and could not see, or the verifier cannot distinguish untested from untestable).
+- Reversibility: high.

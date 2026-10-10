@@ -369,7 +369,20 @@ Main (aro-ipc.ts, registered main.ts:18750): spawns checkout venv python as `pyt
 ### G.4 `aro.jsonl/1` daemon protocol (aro_bridge/protocol.md + daemon.py)
 **stdin→daemon:** `{"type":"user_message","text":…}` · `{"type":"tool_result","callId":…,"ok":…,"output":…}` · `{"type":"interrupt"}`. **stdout→host (AroEvent union):** `session_start{sessionId, model, tools[]}` · `thinking{label, ms}` · `tool_call{callId, tool: web_search|page_reader, args}` · `tool_result{callId, ok, ms, summary, lines[]}` · `assistant_delta{text}` · `reply_done{ms}` · `error{message}` · `done{ms, toolCalls}`. Rules: `session_start` first (once); `done` last per turn; tool_call↔tool_result paired on `callId`; host executes tools (daemon blocks on stdin); budget `--max-tool-calls` (default 3, give-up 7 rounds); engines demo/openai (default `http://localhost:8642/v1`, model `aro-4-70b`).
 
-**Renderer consumers:** `src/aro/bridge.ts` (`useAroBridge`), `AroBridgeView.tsx`; Aro components also use existing wire: `hermesDesktop.git.repoStatus` (AroProjectDialog.tsx:143/168, AroRepoBar.tsx:76), `cloneRepository` (composer). **No other new RPC/REST/storage.** Note: `hermes:selectDirectory` / project-ownership / active-project / git-status-live-update RPCs mentioned in early task notes do NOT exist in this fork — prototype-only concepts (NOT-PRESENT).
+**Renderer consumers:** `src/aro/bridge.ts` (`useAroBridge`), `AroBridgeView.tsx`; Aro components also use existing wire: `hermesDesktop.git.repoStatus` (AroProjectDialog.tsx:143/168, AroRepoBar.tsx:76), `cloneRepository` (composer). **No other new RPC/REST beyond §G.1–G.4; fork-added renderer storage is recorded in §G.5.** Note: `hermes:selectDirectory` / project-ownership / active-project / git-status-live-update RPCs mentioned in early task notes do NOT exist in this fork — prototype-only concepts (NOT-PRESENT).
+
+### G.5 Fork-added renderer localStorage keys (`hermes.desktop.*` namespace)
+
+Recorded by the pre-A0 wire-inventory confirmation (code + git history, DECISIONS D-0028/D-0030). Both families were introduced by fork commit `93ff2d2910` (2026-10-08), before the contract existed; they are renderer-side presentation state deliberately kept in the Hermes `hermes.desktop.*` namespace so a future Hermes-native counterpart would collide visibly rather than duplicate. No new keys have been added since.
+
+| Key | File : symbol (CURRENT tree) | Shape / semantics |
+|---|---|---|
+| `hermes.desktop.external-ide.preferred` | `src/adapters/editors.ts:62` `PREFERRED_IDE_KEY` (Phase 3 boundary; originally `shell/external-ide-control.tsx`) | editor-id string from the fork catalog (`cursor` \| `vscode` \| `windsurf` \| `zed`) — preferred external IDE consumed by the composer/statusbar control; round-trip live-verified 2026-10-10 (Phase 3 report) |
+| `hermes.desktop.voice.orb.visible` | `src/app/chat/voice-agent-orb.tsx:17` `ORB_VISIBLE_KEY` (via `persistBoolean`, `lib/storage` choke point) | boolean string, default `true` — floating voice-orb visibility. Distinct from the SETTINGS_MERGE `voice-orb` row (`conductor.voice.orb`), which is the prototype-namespace toggle |
+| `hermes.desktop.voice.orb.open` | `voice-agent-orb.tsx:21` `ORB_OPEN_KEY` | boolean string, default `false` — orb panel open state |
+| `hermes.desktop.voice.orb.position` | `voice-agent-orb.tsx:25–34,94–100` | JSON `{x, y}` (default `{0, 0}`) — orb drag position, persisted on drag |
+
+`aro.*` / `conductor.*` fork keys are excluded from this baseline by design (renderer-internal presentation namespace, D-0011 — GLOSSARY "Storage").
 
 ## Totals (parity gate counts)
 
@@ -381,6 +394,6 @@ Main (aro-ipc.ts, registered main.ts:18750): spawns checkout venv python as `pyt
 | D. REST | 108 renderer route templates + 3 main-side routes + 2 sibling WS endpoints |
 | E. Transport | JSON-RPC 2.0 text frames over `/api/ws`; token/ticket auth; spawn-ledger + `GET /` discovery; ping heartbeat; seq replay |
 | F. Persistence | ~27 main userData JSON files; ~190 renderer localStorage keys; 2 sessionStorage families |
-| G. Fork-added | 1 new invoke channel (`hermes:git:cloneRepository`), 1 channel signature change (`branchSwitch` +`create`), `aroBridge` namespace (5 invokes + 2 per-session pushes), `aro.jsonl/1` daemon protocol (3 stdin types, 8 stdout events) |
+| G. Fork-added | 1 new invoke channel (`hermes:git:cloneRepository`), 1 channel signature change (`branchSwitch` +`create`), `aroBridge` namespace (5 invokes + 2 per-session pushes), `aro.jsonl/1` daemon protocol (3 stdin types, 8 stdout events), 4 fork-added renderer localStorage keys (`hermes.desktop.*` namespace, §G.5) |
 
 **UNKNOWN / caveats:** (1) `hermes:sync-status`/`getSyncStatus` dead at merge-base (handler + type exist; preload wire absent). (2) `hermes:hud:native-drag` sendSync registered but not called by preload at merge-base. (3) Renderer-invoked RPC subset derived from string-literal correlation — the 251-method contract JSON is the authoritative superset. (4) `preview-open-external` is a guest→host send channel, not part of `hermesDesktop`.
