@@ -1597,42 +1597,29 @@
   }
 }
 
-/* Phase 3 — Center View: Fresh stage suggestion chips */
+/* Phase 3 — Center View: Fresh stage suggestion chips.
+   The chip surface/hover/active rules that used to live here referenced
+   token names that do not exist in tokens.css (--aro-panel-raised,
+   --aro-border, --aro-text, --aro-text-secondary). Invalid-at-computed-value
+   time unset the properties and silently defeated the prototype-accurate
+   `.fresh-suggestion` block above (overlay background, iris hover). The
+   broken duplicates were removed; that earlier block is the single source.
+   Container margin follows the prototype (12px, not 24px). */
 :root[data-aro-ui='true'] [data-slot='fresh-suggestions'] {
   max-width: 48rem;
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
 }
 
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'] {
-  background: var(--aro-panel-raised);
-  border-color: var(--aro-border);
-  color: var(--aro-text-secondary);
-  border-radius: 9999px;
-  transition: all 140ms ease;
-}
-
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover {
-  background: color-mix(in srgb, var(--aro-panel-raised) 70%, var(--aro-iris));
-  border-color: color-mix(in srgb, var(--aro-iris) 40%, var(--aro-border));
-  color: var(--aro-text);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
-  transform: translateY(-1px);
-}
-
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:active {
-  transform: translateY(0);
-}
-
-/* Phase 3 — FindBar transcript search */
+/* Phase 3 — FindBar transcript search (vars repaired to the real tokens) */
 :root[data-aro-ui='true'] [role='search'] {
-  background: var(--aro-panel-raised);
-  border-color: var(--aro-border);
+  background: var(--aro-raise);
+  border-color: var(--aro-line);
   box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
   border-radius: 0.75rem;
 }
 
 :root[data-aro-ui='true'] [role='search'] input {
-  color: var(--aro-text);
+  color: var(--aro-ink);
 }
 
 /* Phase 3 — Run in terminal code card button */
