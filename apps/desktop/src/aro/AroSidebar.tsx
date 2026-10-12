@@ -27,11 +27,18 @@ import './sidebar.css'
 import { useStore } from '@nanostores/react'
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import { deleteSession, renameSession } from '@/api/sessions'
+import { WorktreeDialog } from '@/app/chat/sidebar/projects/worktree-dialog'
 import { openSession } from '@/app/open-session'
-import { NEW_CHAT_ROUTE, SETTINGS_ROUTE } from '@/app/routes'
+import {
+  CAPABILITIES_ROUTE,
+  navigateToWorkspacePage,
+  NEW_CHAT_ROUTE,
+  SETTINGS_ROUTE
+} from '@/app/routes'
+import { setWorkspaceScope } from '@/components/pane-shell/workspace-scope'
 import { sessionTitle } from '@/lib/chat-runtime'
 import { cn } from '@/lib/utils'
 import { $connectionsRegistry } from '@/store/connection-registry-state'
@@ -44,6 +51,7 @@ import {
   toggleLeftSide,
   unpinSession
 } from '@/store/layout'
+import { notify } from '@/store/notifications'
 import {
   $activeGatewayProfile,
   $profiles,
@@ -52,11 +60,10 @@ import {
 } from '@/store/profile'
 import {
   $projectOwnerBySessionId,
-  $projectTree,
   $projects,
+  $projectTree,
   deleteProject,
   enterProject,
-  moveSessionToProject,
   openProjectCreate,
   projectRootCwd,
   refreshProjects,
@@ -65,9 +72,6 @@ import {
   scanAndRecordRepos,
   updateProject
 } from '@/store/projects'
-import { liveSessionProjectId } from '@/app/chat/sidebar/projects/workspace-groups'
-import { WorktreeDialog } from '@/app/chat/sidebar/projects/worktree-dialog'
-import { AroProjectDialog } from './AroProjectDialog'
 import {
   $activeSessionId,
   $gatewayState,
@@ -80,23 +84,12 @@ import {
   setSelectedStoredSessionId,
   setSessions
 } from '@/store/session'
-import { setWorkspaceScope } from '@/components/pane-shell/workspace-scope'
-import { notify } from '@/store/notifications'
-import {
-  $aroSessionProjectMap,
-  assignSessionToProject,
-  removeProjectFromMap,
-  resolveAroSessionProjectId,
-  setAroDraftProject,
-  unassignSessionFromProject
-} from './project-session-map'
 import { $sessionDotStateById, showsRunningArc } from '@/store/session-dot-state'
 import { $botChatScopes } from '@/store/session-states'
 import { $archivedSessions, loadArchivedSessions } from '@/store/sidebar-archive'
 import type { SessionInfo } from '@/types/hermes'
 
-import { $aroProductMode, setAroProductMode } from './mode'
-
+import { AroProjectDialog } from './AroProjectDialog'
 import {
   IconArchive,
   IconCheck,
@@ -109,15 +102,22 @@ import {
   IconPin,
   IconPlug,
   IconPlus,
-  IconPulse,
   IconSearch,
   IconSettings,
   IconSpark,
   IconTrash,
-  IconUndo,
   IconX,
   LogoMark
 } from './Icons'
+import { $aroProductMode } from './mode'
+import {
+  $aroSessionProjectMap,
+  assignSessionToProject,
+  removeProjectFromMap,
+  resolveAroSessionProjectId,
+  setAroDraftProject,
+  unassignSessionFromProject
+} from './project-session-map'
 import { Button, IconButton, Input, Kbd, Menu, MenuItem, MenuLabel, MenuSep, Modal, Tip } from './ui'
 
 export type ViewId = 'projects' | 'skills' | 'connectors' | 'settings'
@@ -142,18 +142,22 @@ export const PROJECT_COLORS = [
 function getAvatarColor(name: string): string {
   const colors = ['#7c6bff', '#10b981', '#35d6c4', '#f97316', '#ec4899', '#3b82f6', '#8b5cf6']
   let hash = 0
+
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
   }
+
   return colors[Math.abs(hash) % colors.length]
 }
 
 function getInitials(name: string): string {
   const clean = name.replace(/[^a-zA-Z0-9]/g, ' ').trim()
   const parts = clean.split(/\s+/).filter(Boolean)
+
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase()
   }
+
   return (clean.slice(0, 2) || 'AR').toUpperCase()
 }
 
@@ -194,9 +198,25 @@ export function AroSidebar({
   // Workspace Mode (Sessions = Code | Bots = Agents)
   const productMode = useStore($aroProductMode)
 
+  // Route-derived active state for the nav rows that navigate (D-0031
+  // closure): the "current" row is whichever destination the router is
+  // actually on, so the highlight can never disagree with the location the
+  // way the old pure-toggle state did. `activeNav` stays for the Projects
+  // row — its destination is the in-sidebar projects tree, not a route.
+  const location = useLocation()
+
+  const capabilitiesTab = (() => {
+    if (location.pathname !== CAPABILITIES_ROUTE) {return null}
+
+    return new URLSearchParams(location.search).get('tab') ?? 'skills'
+  })()
+
+  const onSettings = location.pathname === SETTINGS_ROUTE
+
   const [activeNav, setActiveNav] = useState<ViewId | null>(null)
   const [search, setSearch] = useState('')
   const [archiveMode, setArchiveMode] = useState(false)
+
   const [folds, setFolds] = useState<Record<string, boolean>>(() => {
     try {
       return JSON.parse(localStorage.getItem('aro.sidebar.folds') || '{}')
@@ -266,17 +286,21 @@ export function AroSidebar({
 
   // Filtered session list
   const currentList = archiveMode ? archivedSessions : sessions
+
   const visibleSessions = useMemo(() => {
     const q = search.trim().toLowerCase()
+
     return currentList.filter(s => {
       const title = (s.title || sessionTitle(s) || '').toLowerCase()
+
       return !q || title.includes(q)
     })
   }, [currentList, search])
 
   // Pinned vs Unassigned vs Project-grouped
   const pinnedSessions = useMemo(() => {
-    if (archiveMode) return []
+    if (archiveMode) {return []}
+
     return visibleSessions.filter(s => pinnedIds.includes(s.id))
   }, [visibleSessions, pinnedIds, archiveMode])
 
@@ -299,6 +323,7 @@ export function AroSidebar({
       folders?: Array<{ path: string }>
       archived?: boolean
     }> = []
+
     const seen = new Set<string>()
 
     // 1. Explicit projects from $projects
@@ -309,6 +334,7 @@ export function AroSidebar({
         const pName = p.name || (pPath ? pPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || p.id
         const treeNode = projectTree.find(n => n.id === p.id)
         const mergedFolders: Array<{ path: string }> = [...(p.folders || [])]
+
         if (treeNode?.repos) {
           for (const r of treeNode.repos) {
             if (r.path && !mergedFolders.some(f => f.path === r.path)) {
@@ -316,6 +342,7 @@ export function AroSidebar({
             }
           }
         }
+
         list.push({
           id: p.id,
           name: pName,
@@ -334,6 +361,7 @@ export function AroSidebar({
         const rootPath = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
         const label = node.label || (rootPath ? rootPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
         const nodeFolders: Array<{ path: string }> = rootPath ? [{ path: rootPath }] : []
+
         if (node.repos) {
           for (const r of node.repos) {
             if (r.path && !nodeFolders.some(f => f.path === r.path)) {
@@ -341,6 +369,7 @@ export function AroSidebar({
             }
           }
         }
+
         list.push({
           id: node.id,
           name: label,
@@ -360,24 +389,29 @@ export function AroSidebar({
   // Grouped sessions by project using Aro + Hermes authoritative ownership
   const projectSessionsMap = useMemo(() => {
     const map: Record<string, SessionInfo[]> = {}
+
     for (const p of effectiveProjects) {
       map[p.id] = []
     }
+
     for (const s of visibleSessions) {
       if (!pinnedIds.includes(s.id)) {
         const pId = resolveAroSessionProjectId(s, effectiveProjects, projectOwners, aroSessionProjectMap)
+
         if (pId && map[pId]) {
           map[pId].push(s)
         }
       }
     }
+
     return map
   }, [visibleSessions, effectiveProjects, pinnedIds, projectOwners, aroSessionProjectMap])
 
   const unassignedSessions = useMemo(() => {
     return visibleSessions.filter(s => {
-      if (pinnedIds.includes(s.id) && !archiveMode) return false
+      if (pinnedIds.includes(s.id) && !archiveMode) {return false}
       const pId = resolveAroSessionProjectId(s, effectiveProjects, projectOwners, aroSessionProjectMap)
+
       return !pId
     })
   }, [visibleSessions, pinnedIds, archiveMode, effectiveProjects, projectOwners, aroSessionProjectMap])
@@ -385,14 +419,18 @@ export function AroSidebar({
   // Bot conversations (Bots / Agents mode)
   const botSessions = useMemo(() => {
     const q = search.trim().toLowerCase()
+
     return currentList.filter(s => {
       const isBotSession =
         Boolean(s.profile && s.profile !== 'default') ||
         Boolean(botChatScopes[s.id]) ||
         (currentProfileName !== 'default' && s.profile === currentProfileName)
+
       const matches = isBotSession || profiles.length <= 1
-      if (!matches) return false
+
+      if (!matches) {return false}
       const title = (s.title || sessionTitle(s) || '').toLowerCase()
+
       return !q || title.includes(q)
     })
   }, [currentList, search, botChatScopes, currentProfileName, profiles.length])
@@ -403,12 +441,14 @@ export function AroSidebar({
       setWorkspaceScope('sessions')
       const newSessionId = `draft_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`
       const now = Date.now() / 1000
+
       const effectiveProfile =
         currentProfileName && currentProfileName !== 'all' ? currentProfileName : 'default'
 
       if (projectId) {
         const treeNode = projectTree.find(n => n.id === projectId)
         const proj = effectiveProjects.find(p => p.id === projectId)
+
         const cwd =
           projectRootCwd(treeNode) ||
           proj?.path ||
@@ -421,11 +461,13 @@ export function AroSidebar({
         if (cwd) {
           setNewChatWorkspaceTarget(cwd)
           setCurrentCwd(cwd)
+
           if (onNewSessionInWorkspace) {
             onNewSessionInWorkspace(cwd)
           }
         } else {
           setNewChatWorkspaceTarget(null)
+
           if (onNewSessionInWorkspace) {
             onNewSessionInWorkspace(null)
           }
@@ -459,6 +501,7 @@ export function AroSidebar({
       } else {
         setAroDraftProject(null)
         setNewChatWorkspaceTarget(null)
+
         if (onNewSessionInWorkspace) {
           onNewSessionInWorkspace(null)
         }
@@ -511,13 +554,16 @@ export function AroSidebar({
   const handleSelectSession = useCallback((sessionId: string) => {
     setAroDraftProject(null)
     setCursorId(sessionId)
+
     if (sessionId.startsWith('draft_')) {
       setSelectedStoredSessionId(sessionId)
       setActiveSessionId(sessionId)
       setMessages([])
       navigate(NEW_CHAT_ROUTE)
+
       return
     }
+
     openSession(sessionId, navigate)
   }, [navigate])
 
@@ -537,13 +583,15 @@ export function AroSidebar({
   const handleSaveRename = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault()
-      if (!renamingSession || !renameTitle.trim()) return
+
+      if (!renamingSession || !renameTitle.trim()) {return}
 
       if (renamingSession.id.startsWith('draft_')) {
         setSessions(prev =>
           prev.map(s => (s.id === renamingSession.id ? { ...s, title: renameTitle.trim() } : s))
         )
         setRenamingSession(null)
+
         return
       }
 
@@ -552,6 +600,7 @@ export function AroSidebar({
       } catch {
         // handled
       }
+
       setRenamingSession(null)
     },
     [renamingSession, renameTitle]
@@ -560,17 +609,20 @@ export function AroSidebar({
   // Handle Delete Confirm
   const handleConfirmDelete = useCallback(
     async () => {
-      if (!deletingSession) return
+      if (!deletingSession) {return}
       const id = deletingSession.id
 
       if (id.startsWith('draft_')) {
         setSessions(prev => prev.filter(s => s.id !== id))
         unassignSessionFromProject(id)
+
         if (selectedSessionId === id) {
           setActiveSessionId(null)
           setSelectedStoredSessionId(null)
         }
+
         setDeletingSession(null)
+
         return
       }
 
@@ -583,6 +635,7 @@ export function AroSidebar({
           // ignore
         }
       }
+
       setDeletingSession(null)
     },
     [deletingSession, onDeleteSession, selectedSessionId]
@@ -705,7 +758,9 @@ export function AroSidebar({
                       projectOwners,
                       aroSessionProjectMap
                     )
+
                     const isCurrent = currentPid === p.id
+
                     return (
                       <MenuItem
                         active={isCurrent}
@@ -721,6 +776,7 @@ export function AroSidebar({
                           if (!isCurrent) {
                             await handleMoveSessionToProject(session.id, p.id)
                           }
+
                           close()
                         }}
                       />
@@ -859,20 +915,44 @@ export function AroSidebar({
             </div>
           </div>
 
-          {/* Main Navigation Strip (NAV_ITEMS: Projects, Skills, Connectors) */}
+          {/* Main Navigation Strip (NAV_ITEMS: Projects, Skills, Connectors).
+              Skills/Connectors close D-0031: both rows route to the live
+              capabilities page on their own tab (the verified surface —
+              FEATURE_MAP nav-stubs-*), with `navigateToWorkspacePage`
+              covering the re-click case (already on the target → imperative
+              workspace-pane reveal). Their active state is route-derived, so
+              aria-current="page" is truthful. Projects keeps the highlight
+              toggle: its destination is the projects tree directly below,
+              not a routed view (not a contracted stub; see D-0035). */}
           <nav aria-label="Workspace navigation" className="sidebar-main-nav">
-            {NAV_ITEMS.map(it => (
-              <button
-                aria-current={activeNav === it.id ? 'page' : undefined}
-                className={cn('sidebar-navigation-row', activeNav === it.id && 'active')}
-                key={it.id}
-                onClick={() => setActiveNav(prev => (prev === it.id ? null : it.id))}
-                type="button"
-              >
-                <it.icon size={15} />
-                <span className="rail-label">{it.label}</span>
-              </button>
-            ))}
+            {NAV_ITEMS.map(it => {
+              const isStubRowClosed = it.id === 'skills' || it.id === 'connectors'
+
+              const isActive = isStubRowClosed
+                ? capabilitiesTab === it.id
+                : activeNav === it.id
+
+              return (
+                <button
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn('sidebar-navigation-row', isActive && 'active')}
+                  key={it.id}
+                  onClick={() => {
+                    if (it.id === 'skills') {
+                      navigateToWorkspacePage(navigate, `${CAPABILITIES_ROUTE}?tab=skills`)
+                    } else if (it.id === 'connectors') {
+                      navigateToWorkspacePage(navigate, `${CAPABILITIES_ROUTE}?tab=connectors`)
+                    } else {
+                      setActiveNav(prev => (prev === it.id ? null : it.id))
+                    }
+                  }}
+                  type="button"
+                >
+                  <it.icon size={15} />
+                  <span className="rail-label">{it.label}</span>
+                </button>
+              )
+            })}
           </nav>
 
           {/* Projects / Archive Section Header (No Demo Toggle) */}
@@ -964,6 +1044,7 @@ export function AroSidebar({
                       onDragOver={e => {
                         e.preventDefault()
                         e.dataTransfer.dropEffect = 'move'
+
                         if (dropProjectId !== project.id) {
                           setDropProjectId(project.id)
                         }
@@ -974,6 +1055,7 @@ export function AroSidebar({
                         const sessionId = e.dataTransfer.getData('text/plain') || dragId
                         setDropProjectId(null)
                         setDragId(null)
+
                         if (sessionId && targetProjectId) {
                           await handleMoveSessionToProject(sessionId, targetProjectId)
                         }
@@ -1073,12 +1155,14 @@ export function AroSidebar({
                                     onClick={async () => {
                                       const updated = { ...projectColors, [project.id]: c.value }
                                       setProjectColors(updated)
+
                                       try {
                                         localStorage.setItem('aro.project.colors', JSON.stringify(updated))
                                         await updateProject(project.id, { color: c.value })
                                       } catch {
                                         // ignore
                                       }
+
                                       close()
                                     }}
                                     style={{ backgroundColor: c.value }}
@@ -1391,9 +1475,11 @@ export function AroSidebar({
           </Menu>
         </div>
 
-        {/* Settings row */}
+        {/* Settings row — same route-derived active contract as the closed
+            nav rows: highlighted exactly while the router is on /settings. */}
         <button
-          className="sidebar-navigation-row"
+          aria-current={onSettings ? 'page' : undefined}
+          className={cn('sidebar-navigation-row', onSettings && 'active')}
           onClick={() => navigate(SETTINGS_ROUTE)}
           type="button"
         >
@@ -1421,7 +1507,12 @@ export function AroSidebar({
             value={renameTitle}
           />
           <div className="flex justify-end gap-2">
-            <Button onClick={() => setRenamingSession(null)} variant="ghost">
+            {/* type="button" is load-bearing: inside this form an untyped
+                button is type="submit", and Enter's implicit submission
+                clicks the first submit button — Cancel — so pressing Enter
+                to save would throw the rename away (found live in the A1
+                harness verification). */}
+            <Button onClick={() => setRenamingSession(null)} type="button" variant="ghost">
               Cancel
             </Button>
             <Button disabled={!renameTitle.trim()} type="submit" variant="primary">
@@ -1443,7 +1534,7 @@ export function AroSidebar({
             {deletingSession ? sessionTitle(deletingSession) : ''}
           </p>
           <div className="mt-5 flex justify-end gap-2">
-            <Button onClick={() => setDeletingSession(null)} variant="ghost">
+            <Button onClick={() => setDeletingSession(null)} type="button" variant="ghost">
               Cancel
             </Button>
             <Button onClick={handleConfirmDelete} variant="danger">
@@ -1463,6 +1554,7 @@ export function AroSidebar({
           className="space-y-4 p-4"
           onSubmit={async e => {
             e.preventDefault()
+
             if (renamingProject && newProjectName.trim()) {
               try {
                 await renameProject(renamingProject.id, newProjectName.trim())
@@ -1470,6 +1562,7 @@ export function AroSidebar({
                 console.error('Failed to rename project:', err)
               }
             }
+
             setRenamingProject(null)
           }}
         >
@@ -1480,7 +1573,7 @@ export function AroSidebar({
             value={newProjectName}
           />
           <div className="flex justify-end gap-2">
-            <Button onClick={() => setRenamingProject(null)} variant="ghost">
+            <Button onClick={() => setRenamingProject(null)} type="button" variant="ghost">
               Cancel
             </Button>
             <Button disabled={!newProjectName.trim()} type="submit" variant="primary">
@@ -1502,7 +1595,7 @@ export function AroSidebar({
             {deletingProject?.name}
           </p>
           <div className="mt-5 flex justify-end gap-2">
-            <Button onClick={() => setDeletingProject(null)} variant="ghost">
+            <Button onClick={() => setDeletingProject(null)} type="button" variant="ghost">
               Cancel
             </Button>
             <Button
@@ -1515,6 +1608,7 @@ export function AroSidebar({
                   } catch (err) {
                     console.error('Failed to delete project:', err)
                   }
+
                   setDeletingProject(null)
                 }
               }}

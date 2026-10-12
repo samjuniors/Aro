@@ -4,7 +4,7 @@ One row per feature. Status values: `wired` (prototype UI, backed by Hermes), `p
 
 **Status determination (resume mode)**: statuses were determined by running the ported UI against the real Python backend on 2026-10-10 (DECISIONS D-0013/D-0014): `hermes serve` on 127.0.0.1:38541 + Electron renderer under Xvfb driven via CDP. "live ✓" in Notes = observed working against the real backend in that run. "not exercised" = surface present but the interaction could not be driven headless (no provider credentials, no mic, native dialogs). Hermes host screens adopted wholesale under the Aro skin are `hermes-only` with their reachability recorded.
 
-Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dropped 4. (Row-by-row recount verified 2026-10-10; the earlier "102 / local 11" header was an overcount — corrected, no row invented or removed. UNKNOWNs listed at the bottom.)
+Counts (101 features): wired 62 · partial 3 · local 10 · hermes-only 22 · dropped 4. (Row-by-row recount verified 2026-10-10; the earlier "102 / local 11" header was an overcount — corrected, no row invented or removed. UNKNOWNs listed at the bottom.)
 
 ## Chat core
 
@@ -22,11 +22,11 @@ Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dr
 | btw-background | — | background prompts | hermes-only | hermes | `btw.complete` events | — | host feature, kept |
 | compaction | — | context compaction | hermes-only | hermes | `session.compress` | — | host feature, kept |
 | checkpoint-restore | Checkpoint marker | rewind / checkpoint restore | wired | hermes | `session.history` | — | live ✓ "Restore checkpoint" control on review page; restore not exercised |
-| session-crud | session rename/pin/archive/delete | sessions store actions | wired | hermes | `session.save/title/close`, RPC | — | menu present; not every action exercised |
-| session-search | titlebar session picker | `$sessions` filter | wired | hermes | `session.list`/`session.active_list` | — | live ✓ picker renders with count; filters on title (empty title = no hit — matches backend state) |
+| session-crud | session rename/pin/archive/delete | sessions store actions | wired | hermes | `session.save/title/close`, RPC | — | live ✓ rename round-trip incl. Enter-submit fix (D-0035a); rename/delete/pin actions present 2026-10-12 |
+| session-search | titlebar session picker | `$sessions` filter | wired | hermes | `session.list`/`session.active_list` | — | live ✓ picker renders with count; filters on title (empty title = no hit — matches backend state); re-verified live ✓ 2026-10-12 (picker filter 'hello') |
 | session-tiles-windows | — | session tiles/windows/popouts | hermes-only | hermes | window RPC | — | host feature, kept |
 | session-import | — | session import screen | hermes-only | hermes | REST | — | kept, reachable |
-| sessions-tree | sidebar sessions+projects tree | fork hierarchical sidebar | wired | hermes | `$sessions` + projects store | — | live ✓ real session row with preview + 15m timestamp; project expands to sub-resource counts |
+| sessions-tree | sidebar sessions+projects tree | fork hierarchical sidebar | wired | hermes | `$sessions` + projects store | — | live ✓ real session row with preview + 15m timestamp; project expands to sub-resource counts; re-verified live ✓ 2026-10-12 (real session row, preview, timestamp) |
 
 ## Composer
 
@@ -51,18 +51,18 @@ Counts (101 features): wired 60 · partial 5 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| sidebar-shell | Sidebar | AroSidebar (swaps ChatSidebar) | wired | hermes | — | — | live ✓ full hierarchy renders |
-| titlebar | Titlebar | AroTitlebar | wired | hermes | — | — | live ✓ Code/Bots/Open folder/Search⌘K |
-| product-mode | Code vs Bots switch | bot-state `$openBotChat` | wired | hermes (fork) | bots plugin stores | — | live ✓ Bots mode lists Hermes bot with real preview |
-| command-palette | CommandPalette ⌘K | cmdk palette | wired | hermes | registry commands | — | live ✓ real commands; navigated to capabilities |
-| shortcut-help | ShortcutHelp | keybinds registry | wired | hermes | keybinds store | — | host surface restyled; not exercised |
+| sidebar-shell | Sidebar | AroSidebar (swaps ChatSidebar) | wired | hermes | — | — | live ✓ full hierarchy renders; collapse/restore verified 2026-10-12 (toggleLeftSide + Show sidebar) |
+| titlebar | Titlebar | AroTitlebar | wired | hermes | — | — | live ✓ Code/Bots/Open folder/Search⌘K all render and act 2026-10-12 |
+| product-mode | Code vs Bots switch | bot-state `$openBotChat` | wired | hermes (fork) | bots plugin stores | — | live ✓ Code↔Bots switch round-trip, pane + titlebar + sidebar react, aro.productMode persisted 2026-10-12 |
+| command-palette | CommandPalette ⌘K | cmdk palette | wired | hermes | registry commands | — | live ✓ Ctrl/⌘+K palette; real commands (Keyboard shortcuts, Capabilities, …); filters; Escape closes 2026-10-12 |
+| shortcut-help | ShortcutHelp | keybinds registry | wired | hermes | keybinds store | — | live ✓ opened via palette 'Keyboard shortcuts' command; keybinds panel rendered 2026-10-12 |
 | settings-entry | Settings⌘, | settings overlay | wired | hermes | `config.get/set`, `/api/config/schema` | — | live ✓ full Hermes settings tree renders under Aro skin |
-| nav-stubs-skills | sidebar Skills row | — (highlight only) | partial | — | — | — | button toggles `activeNav` highlight; NO view renders (D-0016). Real surface = capabilities page |
-| nav-stubs-connectors | sidebar Connectors row | — (highlight only) | partial | — | — | — | same as above |
-| session-list-options | list menu | archive toggle etc. | wired | hermes | `session.*` RPC | — | menu present; not exercised |
-| telemetry-banner | — | telemetry opt-in | wired | hermes | `/api` config | — | live ✓ "Help improve Hermes?" with Send to Nous / Local only / No thanks |
-| onboarding | Onboarding + doctor sweep | Hermes onboarding/provider wizard | wired | hermes | provider setup RPC/REST | — | live ✓ provider wizard rendered at first launch; dismissed via "I'll choose a provider later" |
-| status-bar | StatusBar | gateway + platform status | wired | hermes | `getConnection()` | — | live ✓ "Gateway needs setup" (correct: no provider), branch + cwd display |
+| nav-stubs-skills | sidebar Skills row | capabilities page (skills tab) | wired | — | — | — | row routes to #/capabilities?tab=skills; route-derived active state; live ✓ 2026-10-12 harness (D-0035/D-0031) |
+| nav-stubs-connectors | sidebar Connectors row | capabilities page (connectors tab) | wired | — | — | — | row routes to #/capabilities?tab=connectors; route-derived active state; live ✓ 2026-10-12 harness (D-0035/D-0031) |
+| session-list-options | list menu | archive toggle etc. | wired | hermes | `session.*` RPC | — | live ✓ row menu: Rename/Pin/Duplicate/Archive/Delete 2026-10-12 |
+| telemetry-banner | — | telemetry opt-in | wired | hermes | `/api` config | — | live ✓ banner rendered on fresh home, answered 'Local only' 2026-10-12 |
+| onboarding | Onboarding + doctor sweep | Hermes onboarding/provider wizard | wired | hermes | provider setup RPC/REST | — | live ✓ provider wizard rendered at first launch; dismissed via "I'll choose a provider later"; re-verified live ✓ 2026-10-12 fresh-home wizard dismissed via 'choose provider later' |
+| status-bar | StatusBar | gateway + platform status | wired | hermes | `getConnection()` | — | live ✓ 'Gateway needs setup' + Smart approvals + IDE + version/git 6f0e14f 2026-10-12 |
 
 ## Workspace panel (right)
 
