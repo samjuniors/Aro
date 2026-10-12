@@ -6,10 +6,10 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { createContext, type FC, useCallback, useContext, useMemo, useRef, useState } from 'react'
 
 import { useSessionView } from '@/app/chat/session-view'
+import { IconChevronDown as AroChevronDown, IconCheck, IconShield } from '@/aro/Icons'
+import { Button as AroButton } from '@/aro/ui'
 import { SCAFFOLD_LABEL_CLASS, ScaffoldRow } from '@/components/chat/scaffold-row'
-import { Button } from '@/components/ui/button'
 import { CardStack, type CardStackAction } from '@/components/ui/card-stack'
-import { Codicon } from '@/components/ui/codicon'
 import {
   Dialog,
   DialogContent,
@@ -18,11 +18,10 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { IconShield } from '@/aro/Icons'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { ChevronDown, Loader2 } from '@/lib/icons'
+import { Loader2 } from '@/lib/icons'
 import { releaseApprovalKey } from '@/lib/keybinds/approval-keys'
 import { cn } from '@/lib/utils'
 import { $gateway } from '@/store/gateway'
@@ -353,16 +352,25 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
         </pre>
       )}
       <div className="flex items-center justify-end gap-1.5 px-2 pb-2 pt-1" data-slot="tool-approval-actions">
-        <Button data-approval-deny="" disabled={busy} onClick={() => void respond('deny')} size="sm" variant="text">
+        {/* Aro action grammar (prototype ApprovalCard): Deny = danger,
+            Run = success with check. The 4-choice wire semantics (once / session
+            / always / deny), the confirm-dialog gate on "always", and the
+            data-approval-* hooks for the Enter-drain keybind are unchanged. */}
+        <AroButton
+          data-approval-deny=""
+          disabled={busy}
+          onClick={() => void respond('deny')}
+          size="sm"
+          variant="danger"
+        >
           {submitting === 'deny' ? <Loader2 className="size-3 animate-spin" /> : copy.reject}
-        </Button>
+        </AroButton>
         {hasMoreOptions && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label={copy.moreOptions} disabled={busy} size="sm" variant="secondary">
+              <AroButton aria-label={copy.moreOptions} disabled={busy} iconRight={AroChevronDown} size="sm" variant="outline">
                 {copy.alwaysAllowMenu}
-                <ChevronDown className="size-3" />
-              </Button>
+              </AroButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-44">
               {allowSession && (
@@ -386,10 +394,10 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        <Button data-approval-run="" disabled={busy} onClick={() => void respond('once')} size="sm">
+        <AroButton data-approval-run="" disabled={busy} icon={IconCheck} onClick={() => void respond('once')} size="sm" variant="success">
           {submitting === 'once' ? <Loader2 className="size-3 animate-spin" /> : copy.run}
           <span className="opacity-60">↵</span>
-        </Button>
+        </AroButton>
       </div>
 
       <Dialog onOpenChange={setConfirmAlways} open={confirmAlways}>
@@ -406,19 +414,19 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
           )}
 
           <DialogFooter>
-            <Button onClick={() => setConfirmAlways(false)} size="sm" variant="ghost">
+            <AroButton onClick={() => setConfirmAlways(false)} size="sm" variant="ghost">
               {t.common.cancel}
-            </Button>
-            <Button
+            </AroButton>
+            <AroButton
               onClick={() => {
                 setConfirmAlways(false)
                 void respond('always')
               }}
               size="sm"
-              variant="destructive"
+              variant="danger"
             >
               {copy.alwaysAllow}
-            </Button>
+            </AroButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

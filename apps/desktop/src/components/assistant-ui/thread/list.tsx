@@ -1559,8 +1559,8 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
       )}
       <div
         className="size-full overflow-x-hidden overflow-y-auto overscroll-contain"
-        data-following={isAtBottom ? 'true' : 'false'}
-        data-slot="aui_thread-viewport" data-aro-transcript=""
+        data-aro-transcript=""
+        data-following={isAtBottom ? 'true' : 'false'} data-slot="aui_thread-viewport"
         ref={scrollRef as React.RefCallback<HTMLDivElement>}
       >
         <div
@@ -1573,7 +1573,7 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
         >
           {!renderEmpty && (hiddenCount > 0 || olderAvailable) && (
             <button
-              className="mx-auto mb-(--conversation-turn-gap) rounded-full border border-border/65 bg-(--composer-fill) px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+              className="mx-auto mb-(--conversation-turn-gap) rounded-full border border-aro-line-strong bg-aro-overlay px-3 py-1 font-aro-sans text-[11.5px] font-medium text-aro-ink-2 shadow-aro-e2 backdrop-blur-md transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={showEarlier}
               type="button"
             >

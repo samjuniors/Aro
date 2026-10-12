@@ -7,11 +7,11 @@ import { hasHttpUrlHost } from '@/app/chat/composer/url-refs'
 // Theme constants live in shiki-config (dependency-free) so the lazy shiki
 // chunk can import them without pulling this module into the shiki bundle.
 import { runInTerminal } from '@/app/right-sidebar/store'
+import { IconTerminal } from '@/aro/Icons'
 import { referenceRe, unquoteReferenceValue } from '@/components/assistant-ui/reference-kinds'
 import { CodeCard, CodeCardBody } from '@/components/chat/code-card'
 import { ExpandableBlock } from '@/components/chat/expandable-block'
 import { SHIKI_COLOR_REPLACEMENTS, SHIKI_THEME } from '@/components/chat/shiki-config'
-import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
@@ -197,15 +197,17 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
         <span className="min-w-0 truncate font-aro-mono text-[9px] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
           {language || 'code'}
         </span>
-        <div className="flex shrink-0 items-center gap-1 opacity-60 transition-opacity group-hover/code:opacity-100 focus-within:opacity-100">
+        {/* Prototype prose-code head: actions are ALWAYS visible (the
+            prototype's 22×20 controls), not hover-revealed. */}
+        <div className="flex shrink-0 items-center gap-1">
           <Tip label="Run in terminal">
             <button
               aria-label="Run in terminal"
-              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={() => runInTerminal(copyableCodeText(content))}
               type="button"
             >
-              <Codicon name="terminal" size="0.75rem" />
+              <IconTerminal size={12} />
             </button>
           </Tip>
           <CopyButton

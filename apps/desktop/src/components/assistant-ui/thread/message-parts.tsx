@@ -9,21 +9,22 @@ import {
 import { useStore } from '@nanostores/react'
 import { type ComponentProps, type FC, type ReactNode, useEffect, useRef, useState } from 'react'
 
-import { CatalogInstallTool } from '@/components/assistant-ui/catalog-install-tool'
 import { IconBrain, IconChevronDown } from '@/aro/Icons'
+import { CatalogInstallTool } from '@/components/assistant-ui/catalog-install-tool'
 import { ClarifyTool } from '@/components/assistant-ui/clarify'
 import { ConnectorExecution, ConnectorTool } from '@/components/assistant-ui/connector-tool'
 import { MarkdownText, MarkdownTextContent } from '@/components/assistant-ui/markdown-text'
 import { McpSetupTool } from '@/components/assistant-ui/mcp-setup-tool'
 import { AgentDeliveryNotice, deliveryTargetFromCommand } from '@/components/assistant-ui/thread/agent-delivery'
+import { AroToolCard } from '@/components/assistant-ui/thread/aro-tool-card'
 import { TimelineTimestamp } from '@/components/assistant-ui/thread/timeline-timestamp'
 import { DelegateTool } from '@/components/assistant-ui/tool/delegate'
-import { ToolFallback, ToolGroupSlot } from '@/components/assistant-ui/tool/fallback'
+import { ToolGroupSlot } from '@/components/assistant-ui/tool/fallback'
 import { parseMaybeObject, toolCallFailed } from '@/components/assistant-ui/tool/fallback-model'
 import { formatElapsed, useElapsedSeconds, useMeasuredDuration } from '@/components/chat/activity-timer'
 import { ActivityTimerText } from '@/components/chat/activity-timer-text'
 import { GeneratedImage } from '@/components/chat/generated-image-result'
-import { SCAFFOLD_LABEL_CLASS, SCAFFOLD_META_CLASS, ScaffoldRow } from '@/components/chat/scaffold-row'
+import { SCAFFOLD_META_CLASS } from '@/components/chat/scaffold-row'
 import { useOnboardingChatActive } from '@/components/onboarding-chat/assembly'
 import { useI18n } from '@/i18n'
 import { mcpTargets, toolLabels } from '@/lib/connector-tools'
@@ -52,7 +53,7 @@ const ImageGenerateTool: FC<TimelineToolCallProps> = props => {
   // still need the normal tool row: it extracts the error text and gives the
   // user an honest, expandable failure rather than silently dropping the call.
   if (settledWithoutResult(props) || (result !== undefined && !generatedImageFromResult(result))) {
-    return <ToolFallback {...props} />
+    return <AroToolCard {...props} />
   }
 
   return (
@@ -67,7 +68,7 @@ const DelegateToolPart: FC<TimelineToolCallProps> = props => {
   // A call that failed outright dispatched nothing — there are no children to
   // list, only an error. The generic row extracts and expands it properly.
   if (props.isError || settledWithoutResult(props)) {
-    return <ToolFallback {...props} />
+    return <AroToolCard {...props} />
   }
 
   return (
@@ -83,7 +84,7 @@ const ClarifyToolPart: FC<TimelineToolCallProps> = props => {
   // the session's live clarify request, so a later turn's question would
   // otherwise paint onto this row as a second live card.
   if (settledWithoutResult(props)) {
-    return <ToolFallback {...props} />
+    return <AroToolCard {...props} />
   }
 
   return (
@@ -160,7 +161,7 @@ const ChainToolFallback: FC<TimelineToolCallProps> = props => {
     return null
   }
 
-  return <ToolFallback {...props} />
+  return <AroToolCard {...props} />
 }
 
 // Match the compact terminal/log viewers rather than the full thread's slack.

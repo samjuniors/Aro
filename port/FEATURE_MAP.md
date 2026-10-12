@@ -10,21 +10,21 @@ Counts (101 features): wired 62 · partial 3 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| chat-send-turn | Workbench send | prompt turn (session.create + stream) | wired | hermes | `session.create`, `session.activate`, prompt submit RPC (1800s) | — | live ✓ session `20261010_075711_e591cc` created (`message_count:1, source:"desktop"`); turn failed only on missing provider API key; error streamed back |
-| transcript-steps | Transcript StepView (8 step types) | Thread + `message.*`/`tool.*` events | wired | hermes | event stream over `/api/ws` | — | live ✓ attributed rows, real timestamps; tool-card grammar verified Task 7 + unit tests |
-| message-error-card | error surface in transcript | `error` event / turn failure | wired | hermes | event stream | — | live ✓ "Hermes hit a problem" card with Retry / Open logs / Send diagnostics / Copy error details |
-| streaming-status | streamLabel narration | `status.update` events | wired | hermes | event stream | — | live ✓ "Waking…" spinner + Idle status observed |
-| reasoning-disclosure | Thinking component | `thinking.delta` / `reasoning.*` events | wired | hermes | event stream | — | not exercised (needs a completing turn); engine = Hermes |
-| edit-resend | prototype edit | truncate + resend (`session.branch*`) | wired | hermes | `session.branch`, `session.branch_stored` | — | Hermes engine adopted; not exercised live |
-| retry-turn | retry action | re-send prompt | wired | hermes | prompt RPC | — | live ✓ Retry button present on error card |
-| stop-steer | stop/steer | `session.interrupt` / `session.steer` | wired | hermes | RPC | — | not exercised |
+| chat-send-turn | Workbench send | prompt turn (session.create + stream) | wired | hermes | `session.create`, `session.activate`, prompt submit RPC (1800s) | — | live ✓ session `20261010_075711_e597cc` created (`message_count:1, source:"desktop"`); turn failed only on missing provider API key; error streamed back. **A2 re-verified live ✓ 2026-10-12** (fresh session `20261012_094100_49bbcb` created, busy narration, honest error card; restyle kept the path live) |
+| transcript-steps | Transcript StepView (8 step types) | Thread + `message.*`/`tool.*` events | wired | hermes | event stream over `/api/ws` | — | live ✓ attributed rows, real timestamps; tool-card grammar verified Task 7 + unit tests. **A2 2026-10-12**: prototype ToolCard grammar ported INTO the live transcript (`thread/aro-tool-card.tsx` renders the Aro header over the unchanged host `ToolFallback` body engine, same disclosure store; run-grouping behavior kept). Live tool events still BLOCKED on provider credentials (D-0034); rendering verified by the 1911-test area suites incl. tool-group/hide-code-diffs through the real Thread runtime |
+| message-error-card | error surface in transcript | `error` event / turn failure | wired | hermes | event stream | — | live ✓ "Hermes hit a problem" card with Retry / Open logs / Send diagnostics / Copy error details. **A2 re-verified live ✓ 2026-10-12** (all four actions on a fresh error turn) |
+| streaming-status | streamLabel narration | `status.update` events | wired | hermes | event stream | — | live ✓ "Waking…" spinner + Idle status observed. **A2 2026-10-12**: stream tile icon corrected to the prototype's spark (`IconSpark`); live busy narration re-observed during a real send |
+| reasoning-disclosure | Thinking component | `thinking.delta` / `reasoning.*` events | wired | hermes | event stream | — | not exercised (needs a completing turn); engine = Hermes. **A2 2026-10-12**: near-pixel port confirmed unchanged (dashed border, brain glyph, mono label, live preview clamp); suites green |
+| edit-resend | prototype edit | truncate + resend (`session.branch*`) | wired | hermes | `session.branch`, `session.branch_stored` | — | Hermes engine adopted; not exercised live (BLOCKED on provider credentials, D-0034); A2 kept the path untouched, suites green |
+| retry-turn | retry action | re-send prompt | wired | hermes | prompt RPC | — | live ✓ Retry button present on error card. **A2 re-verified live ✓ 2026-10-12** (fresh error card) |
+| stop-steer | stop/steer | `session.interrupt` / `session.steer` | wired | hermes | RPC | — | not exercised (BLOCKED on provider credentials — needs a completing turn, D-0034); A2 kept the path untouched, suites green |
 | composer-queue | queue panel | composer queue store | wired | hermes | drain on turn end | — | engine = Hermes; not exercised |
-| btw-background | — | background prompts | hermes-only | hermes | `btw.complete` events | — | host feature, kept |
-| compaction | — | context compaction | hermes-only | hermes | `session.compress` | — | host feature, kept |
-| checkpoint-restore | Checkpoint marker | rewind / checkpoint restore | wired | hermes | `session.history` | — | live ✓ "Restore checkpoint" control on review page; restore not exercised |
+| btw-background | — | background prompts | hermes-only | hermes | `btw.complete` events | — | host feature, kept; **A2 2026-10-12**: `btw.complete` → system-line path unchanged, suites green |
+| compaction | — | context compaction | hermes-only | hermes | `session.compress` | — | host feature, kept; **A2 2026-10-12**: surfaces reachable (error-card Compress action + `/compress` routing) verified by suites; live compress needs a completing turn |
+| checkpoint-restore | Checkpoint marker | rewind / checkpoint restore | wired | hermes | `session.history` | — | live ✓ "Restore checkpoint" control on review page; restore not exercised. **A2 2026-10-12**: BranchPicker restyled to the prototype checkpoint divider (rule lines + undo glyph + N/M ordinal + iris hover); control semantics unchanged |
 | session-crud | session rename/pin/archive/delete | sessions store actions | wired | hermes | `session.save/title/close`, RPC | — | live ✓ rename round-trip incl. Enter-submit fix (D-0035a); rename/delete/pin actions present 2026-10-12 |
 | session-search | titlebar session picker | `$sessions` filter | wired | hermes | `session.list`/`session.active_list` | — | live ✓ picker renders with count; filters on title (empty title = no hit — matches backend state); re-verified live ✓ 2026-10-12 (picker filter 'hello') |
-| session-tiles-windows | — | session tiles/windows/popouts | hermes-only | hermes | window RPC | — | host feature, kept |
+| session-tiles-windows | — | session tiles/windows/popouts | hermes-only | hermes | window RPC | — | host feature, kept; visual state under `data-aro-ui` still unexercised headless (session drag is pointer-driven; Unknown 7 subset carried) |
 | session-import | — | session import screen | hermes-only | hermes | REST | — | kept, reachable |
 | sessions-tree | sidebar sessions+projects tree | fork hierarchical sidebar | wired | hermes | `$sessions` + projects store | — | live ✓ real session row with preview + 15m timestamp; project expands to sub-resource counts; re-verified live ✓ 2026-10-12 (real session row, preview, timestamp) |
 
@@ -45,7 +45,7 @@ Counts (101 features): wired 62 · partial 3 · local 10 · hermes-only 22 · dr
 | voice-orb | hands-free orb | voice-live VAD | wired | hermes | voice PCM WS `/api/audio/speak-stream` | — | live ✓ orb present "Aro voice · Idle"; conversation not exercisable |
 | tts-speak | speak.ts | auto-speak + `/api/audio/speak` | wired | hermes | REST | — | engine adopted (Task 7); not exercised |
 | external-ide | ExternalIdeControl | IDE open IPC | wired | hermes | open-IDE IPC on `$currentCwd` | — | adopted Task 7; present |
-| quick-actions | starter cards | — | local | local | — | static suggestions on chat home | presentation-only prompt starters; live ✓ rendered |
+| quick-actions | starter cards | — | local | local | — | static suggestions on chat home | presentation-only prompt starters; live ✓ rendered. **A2 live ✓ 2026-10-12**: chips render with restored surfaces (undefined-token CSS bug fixed — D-0038) + prototype `aro-rise` stagger (120+i·70ms); chip → composer prefill verified live |
 
 ## Sidebar / navigation / shell
 

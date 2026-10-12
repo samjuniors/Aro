@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router'
 import { openSession } from '@/app/open-session'
 import { NEW_CHAT_ROUTE } from '@/app/routes'
 import { IconBranch, IconChevronDown, IconChevronLeft, IconMore, IconPlus, IconSearch } from '@/aro/Icons'
-import { Tip } from '@/components/ui/tooltip'
 import { formatMessageTimestamp } from '@/components/assistant-ui/thread/timestamp'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { NEW_SESSION_TITLE, sessionTitle } from '@/lib/chat-runtime'
 import { cn } from '@/lib/utils'
@@ -67,11 +67,13 @@ export function SessionHeader({
       : false
 
   const filteredSessions = useMemo(() => {
-    if (!search.trim()) return sessions.slice(0, 15)
+    if (!search.trim()) {return sessions.slice(0, 15)}
     const q = search.toLowerCase().trim()
+
     return sessions
       .filter(s => {
         const t = sessionTitle(s).toLowerCase()
+
         return t.includes(q) || s.id.toLowerCase().includes(q)
       })
       .slice(0, 20)
@@ -111,7 +113,7 @@ export function SessionHeader({
                       : 'bg-aro-line-strong'
                 )}
               />
-              <span className="truncate font-aro-sans text-[13.5px] font-semibold tracking-[-0.015em] text-aro-ink">
+              <span className="truncate font-aro-sans text-[13px] font-medium text-aro-ink">
                 {title}
               </span>
               <IconChevronDown
@@ -146,6 +148,7 @@ export function SessionHeader({
                 filteredSessions.map(s => {
                   const sTitle = sessionTitle(s)
                   const isActive = activeStoredSession && sessionMatchesStoredId(s, activeStoredSession.id)
+
                   const time = s.last_active
                     ? formatMessageTimestamp(new Date(s.last_active * 1000), t.assistant.thread)
                     : ''

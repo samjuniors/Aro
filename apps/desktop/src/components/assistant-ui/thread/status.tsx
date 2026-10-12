@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/react'
 import { type FC, type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { useSessionView } from '@/app/chat/session-view'
+import { IconSpark } from '@/aro/Icons'
 import { activitySignature, toolNarratesWait, TURN_QUIET_S } from '@/components/assistant-ui/thread/turn-activity'
 import { toolPresentVerb } from '@/components/assistant-ui/tool/run-summary'
 import { useElapsedSeconds } from '@/components/chat/activity-timer'
@@ -12,7 +13,6 @@ import { Codicon } from '@/components/ui/codicon'
 import { Loader } from '@/components/ui/loader'
 import { getLocalModelsStatus } from '@/hermes'
 import { useI18n } from '@/i18n'
-import { Zap } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { sessionBackgroundResume } from '@/store/background-delegation'
 import { sessionCompacting } from '@/store/compaction'
@@ -64,7 +64,7 @@ const AroStreamPulse: FC = () => (
       aria-hidden="true"
       className="flex size-[26px] shrink-0 items-center justify-center rounded-[8px] border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"
     >
-      <Zap className="size-3 animate-aro-breathe" />
+      <IconSpark className="size-3 animate-aro-breathe" />
     </span>
     <span aria-hidden="true" className="flex shrink-0 items-center gap-[3px] pl-1">
       {[0, 1, 2].map(index => (

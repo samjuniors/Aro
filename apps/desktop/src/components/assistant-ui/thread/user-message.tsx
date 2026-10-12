@@ -1,6 +1,7 @@
 import { ActionBarPrimitive, BranchPickerPrimitive, MessagePrimitive, useAuiState } from '@assistant-ui/react'
 import { type FC, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
+import { IconUndo } from '@/aro/Icons'
 import { DirectiveContent } from '@/components/assistant-ui/directive-text'
 import { isAttachmentRef } from '@/components/assistant-ui/reference-kinds'
 import {
@@ -576,27 +577,31 @@ export const UserMessage: FC<{
             <MessageTimelineTimestamp className="self-end pr-1.5" />
             <BranchPickerPrimitive.Root
               className={cn(
-                'checkpoint-container flex items-center gap-1 pb-0 pt-1 pl-1.5 text-[0.75rem] leading-none text-(--ui-text-tertiary)',
+                'checkpoint-container mt-1.5 flex w-full items-center gap-2 font-aro-mono text-[10px] leading-none text-aro-ink-4',
                 readOnly && 'hidden'
               )}
               hideWhenSingleBranch
             >
-              <span aria-hidden className="checkpoint-icon size-1.5 rounded-full border border-current" />
+              {/* Prototype Checkpoint grammar: centered timeline divider with
+                  rule lines either side, undo glyph, and hover-reveal restore. */}
+              <span aria-hidden="true" className="h-px min-w-4 flex-1 bg-aro-line-soft" />
+              <IconUndo aria-hidden="true" className="shrink-0" size={10} />
               <BranchPickerPrimitive.Previous
-                className="checkpoint-restore-text rounded-sm bg-transparent px-1 opacity-65 hover:opacity-100 disabled:hidden disabled:cursor-default"
+                className="checkpoint-restore-text rounded-sm bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
                 title={copy.restorePrevious}
               >
                 {copy.restoreCheckpoint}
               </BranchPickerPrimitive.Previous>
-              <span className="checkpoint-divider opacity-55">
+              <span className="checkpoint-divider shrink-0 text-aro-ink-4/70">
                 <BranchPickerPrimitive.Number />/<BranchPickerPrimitive.Count />
               </span>
               <BranchPickerPrimitive.Next
-                className="checkpoint-restore-text rounded-sm bg-transparent px-1 opacity-65 hover:opacity-100 disabled:hidden disabled:cursor-default"
+                className="checkpoint-restore-text rounded-sm bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
                 title={copy.restoreNext}
               >
                 {copy.goForward}
               </BranchPickerPrimitive.Next>
+              <span aria-hidden="true" className="h-px min-w-4 flex-1 bg-aro-line-soft" />
             </BranchPickerPrimitive.Root>
           </div>
         </ActionBarPrimitive.Root>
