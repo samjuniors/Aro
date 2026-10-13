@@ -1,5 +1,6 @@
 import { useStore } from '@nanostores/react'
 
+import { IconArrowUp, IconStop } from '@/aro/Icons'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
@@ -193,7 +194,17 @@ export function ComposerControls({
               type="submit"
             >
               {showStop ? (
-                <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
+                // Aro: the prototype's stop glyph (IconStop 12) instead of the
+                // host's CSS square.
+                isAro ? (
+                  <IconStop size={12} />
+                ) : (
+                  <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
+                )
+              ) : // Aro: the prototype's send glyph (IconArrowUp 16) instead of
+              // the host codicon.
+              isAro ? (
+                <IconArrowUp size={16} />
               ) : (
                 <Codicon name="arrow-up" size="0.875rem" />
               )}

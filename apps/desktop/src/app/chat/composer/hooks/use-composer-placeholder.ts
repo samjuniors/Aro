@@ -17,9 +17,15 @@ interface UseComposerPlaceholderOptions {
  * a *different* conversation — the null→id persist of a freshly-started session
  * keeps its starter so the text doesn't flip mid-stream. While the transport is
  * down, it swaps to a reconnecting / starting message instead.
+ *
+ * Under `data-aro-ui` the prototype is the authority (precedence rule 2): its
+ * one universal resting placeholder is "Do anything" (Workbench.tsx placeholder
+ * fallback), and its transport-down copy is brand-neutral — the i18n pools
+ * ("Give Hermes a task", "Starting Hermes…") surface only in the host skin.
  */
 export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: UseComposerPlaceholderOptions): string {
   const { t } = useI18n()
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
   const newSessionPlaceholders = t.composer.newSessionPlaceholders
   const followUpPlaceholders = t.composer.followUpPlaceholders
 
@@ -53,6 +59,7 @@ export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: Us
   useEffect(() => {
     if (sessionId || disabled) {
       setTypewriterText('')
+
       return
     }
 
@@ -62,6 +69,7 @@ export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: Us
       'Plan a refactor, fix a bug, or write tests…',
       'Explain code architecture and design patterns…'
     ]
+
     let phraseIdx = 0
     let charIdx = 0
     let isDeleting = false
@@ -69,46 +77,63 @@ export function useComposerPlaceholder({ disabled, reconnecting, sessionId }: Us
 
     const tick = () => {
       const phrase = phrases[phraseIdx]!
+
       if (!isDeleting) {
         charIdx++
         setTypewriterText(phrase.slice(0, charIdx))
+
         if (charIdx >= phrase.length) {
           isDeleting = true
           timer = setTimeout(tick, 2400)
+
           return
         }
+
         timer = setTimeout(tick, 38)
       } else {
         charIdx -= 2
+
         if (charIdx <= 0) {
           charIdx = 0
           isDeleting = false
           phraseIdx = (phraseIdx + 1) % phrases.length
           timer = setTimeout(tick, 450)
+
           return
         }
+
         setTypewriterText(phrase.slice(0, charIdx))
         timer = setTimeout(tick, 22)
       }
     }
 
     timer = setTimeout(tick, 400)
+
     return () => {
-      if (timer) clearTimeout(timer)
+      if (timer) {clearTimeout(timer)}
     }
   }, [sessionId, disabled])
 
   // When the transport is disabled it's because the gateway isn't open.
-  // Distinguish a cold start ("Starting Hermes...") from a dropped connection
+  // Distinguish a cold start ("Starting…") from a dropped connection
   // we're trying to restore. During reconnect, keep the textbox editable so a
   // flaky network doesn't block drafting; only submit/backend actions stay
   // disabled until the gateway is open again.
   if (disabled) {
+    if (isAro) {
+      return reconnecting ? 'Reconnecting to Aro…' : 'Starting Aro…'
+    }
+
     return reconnecting ? t.composer.placeholderReconnecting : t.composer.placeholderStarting
   }
 
   if (!sessionId && typewriterText) {
     return `${typewriterText}▍`
+  }
+
+  // Aro: the prototype's universal resting placeholder.
+  if (isAro) {
+    return 'Do anything'
   }
 
   return restingPlaceholder

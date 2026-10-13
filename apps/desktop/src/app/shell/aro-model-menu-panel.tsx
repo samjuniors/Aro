@@ -1,10 +1,8 @@
-import { REASONING_EFFORTS } from '@hermes/shared'
 import { type ReactNode, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { IconBrain, IconChevronDown, IconPlus } from '@/aro/Icons'
-import { Switch } from '@/components/ui/switch'
 import { useI18n } from '@/i18n'
 import { catalogProviderMatches, currentModelCapabilities } from '@/lib/model-options'
 import { providerDisplayName } from '@/lib/model-status-label'
@@ -112,13 +110,31 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
                   Show the model's reasoning before it replies
                 </span>
               </span>
-              <Switch
-                checked={thinkingOn}
-                onCheckedChange={checked =>
-                  controller.setOptions({ effort: checked ? effortValue || defaultEffort : 'none' }, row)
+              {/* The prototype's PLAIN toggle button (ui.tsx Toggle), not a Radix
+                  Switch: a Radix Switch inside DropdownMenuContent never receives
+                  its click handler in the real renderer (diagnosed live
+                  2026-10-13 — this row was dead since the Phase-3 port), while
+                  plain buttons dispatch reliably. */}
+              <button
+                aria-checked={thinkingOn}
+                aria-label="Toggle thinking"
+                className={cn(
+                  'relative h-[17px] w-[30px] shrink-0 cursor-pointer rounded-full transition-colors duration-200',
+                  thinkingOn ? 'bg-aro-iris' : 'bg-aro-line-strong'
+                )}
+                disabled={Boolean(effortPending)}
+                onClick={() =>
+                  controller.setOptions({ effort: thinkingOn ? 'none' : effortValue || defaultEffort }, row)
                 }
-                size="xs"
-              />
+                role="switch"
+                type="button"
+              >
+                <span
+                  aria-hidden
+                  className="absolute top-[2px] left-0 block size-[13px] rounded-full bg-white shadow-e1 transition-transform duration-200"
+                  style={{ transform: `translateX(${thinkingOn ? 15 : 2}px)` }}
+                />
+              </button>
             </div>
           ) : null}
 
@@ -192,16 +208,23 @@ function EffortSliderRow({
     switch (effort) {
       case 'minimal':
         return 0
+
       case 'low':
         return 1
+
       case 'medium':
         return 2
+
       case 'high':
+
       case 'xhigh':
         return 3
+
       case 'max':
+
       case 'ultra':
         return 4
+
       default:
         return 2
     }
@@ -211,6 +234,7 @@ function EffortSliderRow({
 
   const levelLabel = (value: string) => {
     const entry = copy[value as keyof typeof copy]
+
     return typeof entry === 'string' ? entry : value
   }
 
@@ -220,12 +244,12 @@ function EffortSliderRow({
     <div className="effort-slider" style={{ ['--effort-color' as string]: effortLevel.color }}>
       <div className="effort-slider-head">
         <span className="effort-level-name">
-          <i className="effort-level-dot" aria-hidden />
+          <i aria-hidden className="effort-level-dot" />
           {effortLevel.label}
         </span>
-        <span className="effort-bars" aria-hidden>
+        <span aria-hidden className="effort-bars">
           {EFFORTS.map((_, i) => (
-            <i key={i} className={cn(i <= activeIdx && 'is-on')} style={{ height: `${4 + i * 2}px` }} />
+            <i className={cn(i <= activeIdx && 'is-on')} key={i} style={{ height: `${4 + i * 2}px` }} />
           ))}
         </span>
       </div>
@@ -238,6 +262,7 @@ function EffortSliderRow({
         min={0}
         onChange={event => {
           const next = EFFORTS[Number(event.target.value)]
+
           if (next) {
             onSetEffort(next.id)
           }
