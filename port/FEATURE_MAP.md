@@ -91,16 +91,16 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| skills-hub | SkillsView | capabilities → Skills tab | wired | hermes | `/api/skills`, `skills.manage` | — | live ✓ 53 skills, toggles, detail card (airtable) |
-| toolsets | — | capabilities → Tools tab | wired | hermes | `/api/toolsets` | — | live ✓ 25 tools count |
-| connectors-hub | ConnectorsView | capabilities → Connectors tab | wired | hermes | `/api/mcp/*`, `mcp.*` | — | live ✓ tab present in capabilities |
-| plugins | — | capabilities → Plugins tab | wired | hermes | `/api/plugins` | — | live ✓ tab present |
-| memory-view | MemoryView | memory providers | wired | hermes | `/api/memory` | — | palette command present; REST verified directly on backend; page not opened |
-| artifacts-view | ArtifactsView | sessions media gallery | wired | hermes | sessions media REST | — | palette command present; page not opened |
-| cron-view | AutomationsView (cron) | cron page | wired | hermes | `/api/cron/*` | — | sidebar count live ✓; page reachable via palette |
-| messaging-view | channels | Messaging page | wired | hermes | `/api/messaging/*` + pairing | — | sidebar count live ✓; page reachable via palette |
-| profiles-souls | — | Profiles (SOULs) | wired | hermes | `/api/profiles` | — | reachable via palette; not opened |
-| subagents | — | agents / spawn tree | wired | hermes | `subagent.*` events | — | reachable via palette ("Spawn tree"); not opened |
+| skills-hub | SkillsView | capabilities → Skills tab | wired | hermes | `/api/skills`, `skills.manage` | — | live ✓ 53 skills, toggles, detail card (airtable); verified by capabilities suite (`index.test.tsx`, `skills-data.test.ts`) |
+| toolsets | — | capabilities → Tools tab | wired | hermes | `/api/toolsets` | — | live ✓ 25 tools count; toolset toggle/filter verified by capabilities suite (`index.test.tsx`) |
+| connectors-hub | ConnectorsView | capabilities → Connectors tab | wired | hermes | `/api/mcp/*`, `mcp.*` | — | live ✓ tab present in capabilities; MCP health/install/connection updates verified by connectors suite |
+| plugins | — | capabilities → Plugins tab | wired | hermes | `/api/plugins` | — | live ✓ tab present; catalog, update, and manage operations verified by plugins suite (`plugins-tab.test.tsx`, 29 tests) |
+| memory-view | MemoryView | memory providers | wired | hermes | `/api/memory` | — | palette command present ("Open memory graph" `/starmap`); REST verified on backend (`/api/memory`, `/api/learning_graph`); StarMap tests pass (15/15), maintenance memory reset verified |
+| artifacts-view | ArtifactsView | sessions media gallery | wired | hermes | sessions media REST | — | palette command present (`/artifacts`); workspace pane route live; discovery, remote opening, and sessions media REST verified by artifacts suite (`index.test.ts`, `remote-open.test.tsx`, 31 tests) |
+| cron-view | AutomationsView (cron) | cron page | wired | hermes | `/api/cron/*` | — | sidebar count live ✓; page reachable via palette/routes (`/cron`); job models, delivery checkboxes, and execution actions verified by cron suite (54 tests) |
+| messaging-view | channels | Messaging page | wired | hermes | `/api/messaging/*` + pairing | — | sidebar count live ✓; page reachable via palette/routes (`/messaging`); Telegram QR pairing and platform scope verified by messaging suite (`index.test.tsx`, 13 tests) |
+| profiles-souls | — | Profiles (SOULs) | wired | hermes | `/api/profiles` | — | reachable via palette/routes (`/profiles`); SOUL.md editor, profile lifecycle, renaming, and gateway re-homing verified by profiles suite (`index.test.tsx`, `rename-profile-dialog.test.tsx`) |
+| subagents | — | agents / spawn tree | wired | hermes | `subagent.*` events | — | reachable via palette/routes ("Spawn tree" `/agents`); live subagent tree and status glyphs stream via `subagent.*` events; empty state and tree rendering verified by agents suite (`index.test.tsx`, `subagents.test.ts`) |
 | starmap | — | starmap | hermes-only | hermes | d3 graph | — | host screen, kept |
 | hud | — | HUD window | hermes-only | hermes | `?win=hud` | — | kept |
 | pet | — | petdex overlay | hermes-only | hermes | `pet.*` | — | kept |
