@@ -29,7 +29,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # will spawn the checkout's own interpreter rather than a PATH python.
 PYTHON = os.environ.get("ARO_TEST_PYTHON") or sys.executable
 DAEMON_ARGS = [PYTHON, "-m", "aro_bridge.daemon", "--engine", "demo"]
-DAEMON_ENV = {**os.environ, "PYTHONPATH": "."}
+DAEMON_ENV = {**os.environ, "PYTHONPATH": ".", "PYTHONUTF8": "1"}
 DAEMON_TIMEOUT_S = 60
 
 EXPECTED_FULL_SEQUENCE = [
@@ -51,6 +51,7 @@ def run_daemon(lines: list[str]) -> tuple[list[dict], str, int]:
         input="".join(f"{line}\n" for line in lines),
         capture_output=True,
         text=True,
+        encoding="utf-8",
         cwd=REPO_ROOT,
         env=DAEMON_ENV,
         timeout=DAEMON_TIMEOUT_S,

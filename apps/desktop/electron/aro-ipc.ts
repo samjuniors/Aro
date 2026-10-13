@@ -4,7 +4,7 @@
 // git-ipc.ts (dependency-light, resolvers injected) and the embedded
 // terminal's session/channel shape (terminal-ipc.ts). The renderer never
 // talks to the daemon directly — it only sees these IPC surfaces.
-import { spawn } from 'node:child_process'
+import { type ChildProcess, spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
@@ -82,7 +82,7 @@ export interface AroBridgeDeps {
 
 interface AroBridgeSession {
   id: string
-  child: import('node:child_process').ChildProcess
+  child: ChildProcess
   sessionId: string | null
   sender: Electron.WebContents
   buffer: string
@@ -155,6 +155,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     }
 
     const id = `arb_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`
+
     const child = spawn(
       spec.command,
       spec.args,
@@ -250,7 +251,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
           session.resolveStart?.(ev.sessionId)
         }
 
-        if (session.sessionId && !event.sender.isDestroyed()) {
+        if (session.sessionId && (!event.sender.isDestroyed || !event.sender.isDestroyed())) {
           event.sender.send(aroEventChannel(session.sessionId), ev)
         }
       }

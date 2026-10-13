@@ -126,11 +126,11 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| aro-bridge | AroBridgeView (agent mode) | aro_bridge daemon | wired | hermes (fork §G) | `aroBridge.start/send/toolResult/interrupt/stop` + `aro.jsonl/1` events | — | live ✓ full round-trip: thinking → `web_search` tool → 3 results → reply (demo engine; `--engine openai` for real) |
-| aro-transcript | ToolTimeline page | message stream | wired | hermes | `$sessionStates` | — | route live ✓ (rendered); deep interaction not exercised |
-| aro-review | ReviewHunks page | git review | partial | hermes | `hermes:git:review:*` | — | live ✓ page renders; content is demo data ("demo data" tag) until a real diff exists; checkpoint wire present |
-| aro-tasks | TasksBoard (user tasks) | — (D-0009) | partial | local | `todo_list` hook (in-session live link) | `tasks.list/create/update` per project | live ✓ renders demo corpus + "No todo_list in this session yet" live hook; user-task persistence = local adapter (BACKEND-TODO(tasks)) |
-| aro-design | DesignSystemView | — | local | local | — | none (design reference) | live ✓ renders (fork `/aro-design`) |
+| aro-bridge | AroBridgeView (agent mode) | aro_bridge daemon | wired | hermes (fork §G) | `aroBridge.start/send/toolResult/interrupt/stop` + `aro.jsonl/1` events | — | live ✓ full round-trip: thinking → `web_search` tool → 3 results → reply (demo engine); `--engine openai` needs key/endpoint (BLOCKED headless, D-0034); aro-ipc and daemon demo suites pass (test_daemon_demo.py, aro-ipc.test.ts) |
+| aro-transcript | ToolTimeline page | message stream | wired | hermes | `$sessionStates` | — | route live ✓ (rendered); timeline steps, tool cards, approvals, and session picker verified by ToolTimeline component tests (pages.test.tsx, live.test.tsx) |
+| aro-review | ReviewHunks page | git review | partial | hermes | `hermes:git:review:*` | — | wired to real git review bridge (`hermes:git:review:*` via `live.tsx` folding); renders real workspace diff when changed files exist in working tree, falling back to seed diff with demo tag only when empty; hunk accept/reject, comment thread, checkpoints, and unified/split layout verified by ReviewHunks tests (pages.test.tsx) |
+| aro-tasks | TasksBoard (user tasks) | — (D-0009) | partial | local | `todo_list` hook (in-session live link) | `tasks.list/create/update` per project | reconciled with evidence: user-task persistence is live ✓ (local adapter `tasks.create/update/remove` to `conductor.workspace.v3.tasks`, survives restarts); agent plans stream live from session `todo_list` via `$todosBySession`; board/list view, filtering, and task moves verified by TasksBoard tests (pages.test.tsx, tasks.test.ts) |
+| aro-design | DesignSystemView | — | local | local | — | none (design reference) | live ✓ renders (fork `/aro-design`); token catalog, swatches, themes (Obsidian/Daylight/Nord/Ember/Paper), primitives, and isolated `data-theme` root verified by DesignSystemAro tests (pages.test.tsx) |
 
 ## Prototype-only features (no Hermes counterpart)
 

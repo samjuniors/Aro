@@ -4,12 +4,11 @@
 // its backends. Electron (ipcMain/app) and the interpreter resolver are
 // mocked; the real repo checkout supplies resolveDefaultAroDaemon's root.
 import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import path from 'node:path'
 
 import { beforeEach, test, vi } from 'vitest'
-
-import { spawn } from 'node:child_process'
 
 const electronMock = vi.hoisted((): {
   handlers: Map<string, (event: unknown, ...args: unknown[]) => unknown>
@@ -88,10 +87,11 @@ const SPEC = { command: '/fake/venv/bin/python', args: ['-m', 'aro_bridge.daemon
 interface FakeSender {
   send: ReturnType<typeof vi.fn>
   once: ReturnType<typeof vi.fn>
+  isDestroyed?: ReturnType<typeof vi.fn>
 }
 
 function makeSender(): FakeSender {
-  return { send: vi.fn(), once: vi.fn() }
+  return { send: vi.fn(), once: vi.fn(), isDestroyed: vi.fn(() => false) }
 }
 
 function handler(channel: string): (event: unknown, ...args: unknown[]) => unknown {
@@ -252,7 +252,7 @@ test('resolveDefaultAroDaemon builds the checkout spec (venv python, repo root)'
     'k'
   ])
 
-  const repoRoot = path.resolve(import.meta.dirname, '..', '..')
+  const repoRoot = path.resolve(import.meta.dirname, '..', '..', '..')
 
   assert.equal(spec.cwd, repoRoot)
   assert.equal(spec.env.PYTHONPATH, repoRoot)
