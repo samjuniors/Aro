@@ -7,10 +7,12 @@ import {
   IconChevronRight,
   IconFolder,
   IconGit,
+  IconGlobe,
   IconList,
   IconMaximize,
   IconMinimize,
   IconRefresh,
+  IconSearch,
   IconTerminal
 } from '@/aro/Icons'
 import { TreeSkeleton } from '@/components/chat/skeletons'
@@ -34,12 +36,14 @@ import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 
 import { SidebarPanelLabel } from '../shell/sidebar-label'
 
+import { BrowserSection } from './browser-section'
 import { ChangesSection } from './changes-section'
 import { ContextSection } from './context-section'
 import { ProjectTree } from './files/tree'
 import { useProjectTree } from './files/use-project-tree'
 import { GitSection } from './git-section'
 import { PlanSection } from './plan-section'
+import { SearchSection } from './search-section'
 import { $rightSidebarSection, type ContextSectionId, setRightSidebarSection } from './store'
 import { TerminalSection } from './terminal-section'
 
@@ -56,6 +60,8 @@ const SECTIONS: {
   { id: 'files', label: 'Files', icon: IconFolder },
   { id: 'changes', label: 'Changes', icon: IconGit },
   { id: 'terminal', label: 'Terminal', icon: IconTerminal },
+  { id: 'search', label: 'Search', icon: IconSearch },
+  { id: 'browser', label: 'Browser', icon: IconGlobe },
   { id: 'plan', label: 'Plan', icon: IconList },
   { id: 'context', label: 'Context', icon: IconBrain },
   { id: 'git', label: 'Git', icon: IconBranch },
@@ -72,14 +78,17 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
   const [fullscreen, setFullscreen] = useState(false)
 
   useEffect(() => {
-    if (!fullscreen) return
+    if (!fullscreen) {return}
+
     const esc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         setFullscreen(false)
       }
     }
+
     window.addEventListener('keydown', esc, true)
+
     return () => window.removeEventListener('keydown', esc, true)
   }, [fullscreen])
 
@@ -91,6 +100,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
   const activeTodos = useMemo(() => {
     const list = (sessionId ? todosMap[sessionId] ?? retainedMap[sessionId] : null) ?? []
+
     return list.filter(item => item.status === 'pending' || item.status === 'in_progress').length
   }, [sessionId, todosMap, retainedMap])
 
@@ -125,6 +135,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
   const handleRefresh = useCallback(() => {
     void refreshRoot()
+
     if (activeRepoCwd) {
       void refreshRepoStatus(activeRepoCwd)
     }
@@ -164,10 +175,11 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       )}
     >
       {/* Workspace Tab Strip matching prototype */}
-      <div className="workspace-tabstrip" role="tablist" aria-label="Workspace tools">
+      <div aria-label="Workspace tools" className="workspace-tabstrip" role="tablist">
         <div className="workspace-tabs-scroll">
           {SECTIONS.map(item => {
             const active = section === item.id
+
             const count =
               item.id === 'plan'
                 ? (activeTodos > 0 ? activeTodos : undefined)
@@ -179,17 +191,17 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
             return (
               <div
-                key={item.id}
-                role="tab"
                 aria-selected={active}
                 className={cn('workspace-tab', active && 'is-active')}
+                key={item.id}
+                role="tab"
               >
                 <button
-                  type="button"
                   aria-label={item.label}
                   className="workspace-tab-main"
                   onClick={() => setRightSidebarSection(item.id)}
                   title={item.label}
+                  type="button"
                 >
                   <item.icon size={11} />
                   <span className="workspace-tab-title">{item.label}</span>
@@ -207,31 +219,31 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         <div className="flex items-center gap-0.5 shrink-0">
           <Tip label={fullscreen ? 'Exit full screen · Esc' : 'Full screen workspace tool'} side="bottom">
             <button
-              type="button"
-              className={cn('workspace-panel-full', fullscreen && 'is-on')}
-              onClick={() => setFullscreen(v => !v)}
               aria-label={fullscreen ? 'Exit full screen' : 'Full screen workspace tool'}
               aria-pressed={fullscreen}
+              className={cn('workspace-panel-full', fullscreen && 'is-on')}
+              onClick={() => setFullscreen(v => !v)}
+              type="button"
             >
               {fullscreen ? <IconMinimize size={12} /> : <IconMaximize size={12} />}
             </button>
           </Tip>
           <Tip label="Refresh workspace" side="bottom">
             <button
-              type="button"
+              aria-label="Refresh workspace"
               className="workspace-tab-toolbar"
               onClick={handleRefresh}
-              aria-label="Refresh workspace"
+              type="button"
             >
               <IconRefresh size={12} />
             </button>
           </Tip>
           <Tip label="Close workspace panel · ⌘J" side="bottom">
             <button
-              type="button"
+              aria-label="Close workspace panel"
               className="workspace-tab-toolbar"
               onClick={toggleRightSide}
-              aria-label="Close workspace panel"
+              type="button"
             >
               <IconChevronRight size={13} />
             </button>
@@ -265,6 +277,8 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         )}
         {section === 'changes' && <ChangesSection />}
         {section === 'terminal' && <TerminalSection />}
+        {section === 'search' && <SearchSection onPreviewFile={previewFile} />}
+        {section === 'browser' && <BrowserSection />}
         {section === 'plan' && <PlanSection />}
         {section === 'context' && <ContextSection />}
         {section === 'git' && <GitSection />}

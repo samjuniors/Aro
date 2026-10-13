@@ -1,6 +1,6 @@
 import { atom } from 'nanostores'
 
-import { persistBoolean, storedBoolean } from '@/lib/storage'
+import { persistBoolean, readKey, storedBoolean, writeKey } from '@/lib/storage'
 import { modeBound } from '@/store/interface-mode'
 
 const TAKEOVER_KEY = 'hermes.desktop.terminalTakeover'
@@ -36,8 +36,42 @@ export const runInTerminal = (command: string) => {
   $terminalInjection.set(trimmed)
 }
 
-export type ContextSectionId = 'files' | 'plan' | 'changes' | 'context' | 'git' | 'terminal'
+export type ContextSectionId =
+  | 'files'
+  | 'changes'
+  | 'terminal'
+  | 'search'
+  | 'browser'
+  | 'plan'
+  | 'context'
+  | 'git'
 
-export const $rightSidebarSection = atom<ContextSectionId>('files')
+export const PANEL_SECTION_STORAGE_KEY = 'conductor.workspace.panel.section'
 
-export const setRightSidebarSection = (section: ContextSectionId) => $rightSidebarSection.set(section)
+const VALID_SECTIONS = new Set<ContextSectionId>([
+  'files',
+  'changes',
+  'terminal',
+  'search',
+  'browser',
+  'plan',
+  'context',
+  'git'
+])
+
+function readInitialSection(): ContextSectionId {
+  const stored = readKey(PANEL_SECTION_STORAGE_KEY)
+
+  if (stored && VALID_SECTIONS.has(stored as ContextSectionId)) {
+    return stored as ContextSectionId
+  }
+
+  return 'files'
+}
+
+export const $rightSidebarSection = atom<ContextSectionId>(readInitialSection())
+
+export const setRightSidebarSection = (section: ContextSectionId) => {
+  writeKey(PANEL_SECTION_STORAGE_KEY, section)
+  $rightSidebarSection.set(section)
+}

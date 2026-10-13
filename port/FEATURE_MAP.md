@@ -68,15 +68,15 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| workspace-panel | WorkspacePanel tabs | tabbed right panel | wired | hermes | — | — | live ✓ 6 tabs render + switch |
+| workspace-panel | WorkspacePanel tabs | tabbed right panel | wired | hermes | — | — | live ✓ 8 tabs render + switch (files/changes/terminal/search/browser/plan/context/git); active tab persists across reload via `conductor.workspace.panel.section` (D-0041) |
 | files-tree | FilesView | fs/tree stores | wired | hermes | `fs` RPC/REST | — | live ✓ real file tree of the repo cwd |
 | changes-panel | ChangesPanel | git status | wired | hermes | `hermes:git:repoStatus` | — | live ✓ "No modified files" (tree is clean — correct) |
 | terminal-pty | PanelTerminal (sim) | node-pty terminal | wired | hermes | `hermes:terminal:*` | — | live ✓ `echo PORT_OK_7391 && pwd` round-trip |
 | plan-tab | PlanTodoCorner | todos store | wired | hermes | `todo.updated` events | — | live ✓ empty state "No active plan — …" |
 | context-tab | usage/memory panels | `session.usage` + MCP state | wired | hermes | `session.usage`, `session.context_breakdown` | — | live ✓ "0% 0/200k", "MCP Connectors 0 live", "Agent Memory…" |
 | git-tab | RepoDock/AroRepoBar | repoStatus/branchSwitch/worktrees | wired | hermes | `hermes:git:*` (+fork clone/create) | — | live ✓ branch, ↑0·↓0, clean tree, worktrees 1 total, "+ Branch / Worktree" |
-| code-search | CodeSearchView | — | local | local | — | grep over workspace via future `search` RPC | prototype-only; medium-confidence pair with Hermes grep tool NOT merged |
-| browser-preview | BrowserView iframe | right-rail browser + `preview.*` | local | local | — | tabs/viewports over future `preview.*` | medium-confidence pair NOT merged; Hermes browser kept separately (hermes-only) |
+| code-search | CodeSearchView | — | local | local | — | grep over workspace via future `search` RPC | **A4 build-out (D-0041)**: surfaced as real right-rail panel tab (`search-section.tsx`) consuming `adapters.codeSearch`; grep scanning over workspace cwd via desktop fs bridge; file grouping + line jump preview; honest local marker `// BACKEND-TODO(code-search)` |
+| browser-preview | BrowserView iframe | right-rail browser + `preview.*` | local | local | — | tabs/viewports over future `preview.*` | **A4 build-out (D-0041)**: surfaced as real right-rail panel tab (`browser-section.tsx`) consuming `adapters.browserPreview`; multi-tab strip + URL navigation + responsive viewports (Desktop/Tablet/Mobile) + external open; persists via `conductor.workspace.v3.browser.*`; honest local marker `// BACKEND-TODO(browser-preview)` |
 
 ## Projects / workspace management
 
