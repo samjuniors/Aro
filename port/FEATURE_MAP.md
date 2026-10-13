@@ -82,10 +82,10 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 
 | id | Prototype name | Hermes name | Status | Adapter | Backend call (hermes) | Backend-todo shape (local) | Notes |
 |---|---|---|---|---|---|---|---|
-| project-dialog | ProjectDialog | AroProjectDialog | wired | hermes (fork) | `createProject` → projects store, `repoStatus`, `session.workspace.move` | — | live ✓ dialog renders (name/color/folder), validation present; create flow needs native folder picker (not drivable headless) |
-| project-clone | clone from URL | `hermes:git:cloneRepository` | wired | hermes (fork) | fork IPC channel | — | wire verified in baseline §G; picker not drivable headless |
-| open-folder | Open folder button | folder picker + cwd set | wired | hermes | native dialog + `session.cwd.set` | — | live ✓ button present; native dialog not drivable headless |
-| project-subresources | project expansion counts | cron/messaging/connections state | wired | hermes | `/api/cron`, `/api/messaging`, connections store | — | live ✓ "Cron Tasks 0 scheduled", "Messaging Gateways 0 open", "Remote Connections 1 registered" |
+| project-dialog | ProjectDialog | AroProjectDialog | wired | hermes (fork) | `createProject` → projects store, `repoStatus`, `session.workspace.move` | — | live ✓ dialog renders (name/color/folder), validation present; creation/rename/folder-dedup/swatches verified in AroProjectDialog.test.tsx; cwd alignment via followEnteredProjectCwd; native folder picker BLOCKED headless (Unknown 3) |
+| project-clone | clone from URL | `hermes:git:cloneRepository` | wired | hermes (fork) | fork IPC channel | — | wire verified in baseline §G.1 (`hermes:git:cloneRepository`); clone dialog not drivable headless (BLOCKED headless, Unknown 3) |
+| open-folder | Open folder button | folder picker + cwd set | wired | hermes | native dialog + `session.cwd.set` | — | live ✓ button present; native picker not drivable headless (BLOCKED headless, Unknown 3); wire confirmed via `selectDesktopPaths` + `session.cwd.set` |
+| project-subresources | project expansion counts | cron/messaging/connections state | wired | hermes | `/api/cron`, `/api/messaging`, connections store | — | live ✓ "Cron Tasks 0 scheduled", "Messaging Gateways 0 open", "Remote Connections 1 registered"; verified by overview-row.test.tsx |
 
 ## Capabilities / system views
 

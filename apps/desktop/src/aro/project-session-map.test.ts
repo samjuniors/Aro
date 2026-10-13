@@ -1,4 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+
+import type { ProjectInfo, SessionInfo } from '@/types/hermes'
+
 import {
   $aroDraftProjectId,
   $aroSessionProjectMap,
@@ -8,7 +11,6 @@ import {
   setAroDraftProject,
   unassignSessionFromProject
 } from './project-session-map'
-import type { ProjectInfo, SessionInfo } from '@/types/hermes'
 
 describe('project-session-map', () => {
   const dummyProjects: ProjectInfo[] = [

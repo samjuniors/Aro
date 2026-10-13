@@ -9,9 +9,9 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useRef, useState } from 'react'
 
+import { desktopGit } from '@/lib/desktop-git'
 import { cn } from '@/lib/utils'
 import { notify, notifyError } from '@/store/notifications'
-import { desktopGit } from '@/lib/desktop-git'
 import {
   $newProjectDropPlacement,
   $projectDialog,
@@ -20,6 +20,7 @@ import {
   closeProjectDialog,
   createProject,
   enterProject,
+  followEnteredProjectCwd,
   pickProjectFolder,
   projectIdForCwd,
   refreshProjectTree,
@@ -58,6 +59,7 @@ export function AroProjectDialog() {
       setError('')
       setSubmitting(false)
       const timer = window.setTimeout(() => nameInputRef.current?.focus(), 80)
+
       return () => window.clearTimeout(timer)
     } else {
       clearNewProjectDropPlacement()
@@ -66,12 +68,15 @@ export function AroProjectDialog() {
 
   const handlePickFolder = async () => {
     setError('')
+
     try {
       const dir = await pickProjectFolder()
-      if (!dir) return
+
+      if (!dir) {return}
 
       if (mode === 'add-folder' && state?.projectId) {
         setSubmitting(true)
+
         try {
           await addProjectFolder(state.projectId, dir)
           closeProjectDialog()
@@ -79,6 +84,7 @@ export function AroProjectDialog() {
         } finally {
           setSubmitting(false)
         }
+
         return
       }
 
@@ -103,8 +109,9 @@ export function AroProjectDialog() {
     const trimmed = name.trim()
 
     if (mode === 'rename') {
-      if (!trimmed || !state?.projectId) return
+      if (!trimmed || !state?.projectId) {return}
       setSubmitting(true)
+
       try {
         await renameProject(state.projectId, trimmed)
         closeProjectDialog()
@@ -114,6 +121,7 @@ export function AroProjectDialog() {
       } finally {
         setSubmitting(false)
       }
+
       return
     }
 
@@ -121,16 +129,19 @@ export function AroProjectDialog() {
       if (!trimmed) {
         setError('Please enter a project name')
         nameInputRef.current?.focus()
+
         return
       }
 
       if (folders.length === 0) {
         setError('Please select a local folder for this project')
         void handlePickFolder()
+
         return
       }
 
       setSubmitting(true)
+
       try {
         const folder = folders[0]
         await refreshProjectTree()
@@ -138,19 +149,24 @@ export function AroProjectDialog() {
 
         if (existingId) {
           enterProject(existingId)
+
           if (folder) {
+            followEnteredProjectCwd(folder)
             void desktopGit()
               ?.repoStatus(folder)
               .then(() => refreshProjectTree())
               .catch(() => undefined)
           }
+
           notify({ kind: 'info', message: 'Opened existing project' })
           clearNewProjectDropPlacement()
           closeProjectDialog()
+
           return
         }
 
         const dropPlacement = $newProjectDropPlacement.get() ?? undefined
+
         const created = await createProject({
           name: trimmed,
           color,
@@ -163,13 +179,16 @@ export function AroProjectDialog() {
         if (created) {
           enterProject(created.id)
           notify({ kind: 'info', message: `Project '${trimmed}' created` })
+
           if (folder) {
+            followEnteredProjectCwd(folder)
             void desktopGit()
               ?.repoStatus(folder)
               .then(() => refreshProjectTree())
               .catch(() => undefined)
           }
         }
+
         clearNewProjectDropPlacement()
         closeProjectDialog()
       } catch (err) {
@@ -269,6 +288,7 @@ export function AroProjectDialog() {
                     {folders.map(folder => {
                       const base =
                         folder.replace(/[/\\]+$/, '').split(/[/\\]/).pop() || folder
+
                       return (
                         <div
                           className="flex items-center gap-2 rounded-[7px] border border-aro-line-soft bg-aro-raise/80 px-2.5 py-1.5"
