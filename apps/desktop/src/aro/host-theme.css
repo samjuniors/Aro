@@ -512,7 +512,8 @@
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-fade'] {
-  padding: 12px 14px 6px;
+  /* Prototype .reference-composer-input padding: 14px 14px 4px (was 12px 14px 6px). */
+  padding: 14px 14px 4px;
   gap: 4px;
   background: transparent;
 }
@@ -569,7 +570,8 @@
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true'] {
-  min-height: 58px;
+  /* Prototype .reference-composer-input: min-height 66px (was 58px). */
+  min-height: 66px;
   color: var(--aro-ink);
   font-size: 13.5px;
   line-height: 1.55;
@@ -1112,7 +1114,10 @@
 :root[data-aro-ui='true'] [data-slot='composer-surface'] {
   position: relative;
   border: 1px solid var(--aro-line);
-  border-radius: 16px;
+  /* Prototype formula verbatim (globals.css .reference-composer): the frame
+     radius tracks the design axis, not a constant — 21/17/21/9/13px across the
+     five profiles (was a hard 16px). */
+  border-radius: calc(var(--d-composer-radius, 16px) + 5px);
   background: var(--aro-overlay);
   box-shadow: 0 3px 12px -5px rgba(0, 0, 0, 0.45);
   transition: border-color 160ms ease, box-shadow 160ms ease;

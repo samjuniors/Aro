@@ -237,7 +237,7 @@ Client: `HermesGateway extends JsonRpcGatewayClient` (src/api/client.ts:31–47;
 
 **prompt.\***: `prompt.submit` :1034 +11 (ack timeout 1800s) · `prompt.background` slash.ts:648 · `prompt.btw` :596
 
-**config.\***: `config.get` approval-mode.ts:69, use-cwd-actions.ts:34/71, use-background-sync.ts:1113 · `config.set` model-presets.ts:91/95, display-toggles.ts:42, voice-live.ts:50, use-model-controls.ts:339, slash.ts:892, onboarding-kickoff.ts:93 — keys are dotted names (approvals.mode, reasoning, fast, voice.voice_chat_mode, …)
+**config.\***: `config.get` approval-mode.ts:69, use-cwd-actions.ts:34/71, use-background-sync.ts:1113 · `config.set` model-presets.ts:91/95, display-toggles.ts:42, voice-live.ts:50, use-model-controls.ts:339, slash.ts:892, onboarding-kickoff.ts:93 — keys are dotted names (approvals.mode, reasoning, fast, voice.voice_chat_mode, …). Key `yolo` (value `"0"|"1"`, params `session_id` for session scope or `scope:"global"`) — lib/yolo-session.ts:16/37 via slash.ts:906+ (`/yolo`) and contrib/controller.tsx:780 (palette); backend handler `methods_config_set.py:475 _set_yolo` (session scope → tools/approval.py `_session_yolo` set + `session.info yolo` emit; global scope → rewrites `approvals.mode` `off|manual` in config.yaml; no session → toggles `HERMES_YOLO_MODE` env). Recorded 2026-10-13 (A3, D-0039): merge-base wire that §C.1 originally failed to list (same gap class as D-0030).
 
 **completions/commands/slash**: `complete.path` use-at-completions.ts:218, use-context-suggestions.ts:37 · `complete.slash` use-slash-completions.ts:219 · `commands.catalog` :96/177, slash.ts:1126 · `command.dispatch` slash.ts:439 · `slash.exec` :403, store/goals.ts:174
 
