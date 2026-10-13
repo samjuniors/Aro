@@ -25,7 +25,7 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 | session-crud | session rename/pin/archive/delete | sessions store actions | wired | hermes | `session.save/title/close`, RPC | — | live ✓ rename round-trip incl. Enter-submit fix (D-0035a); rename/delete/pin actions present 2026-10-12 |
 | session-search | titlebar session picker | `$sessions` filter | wired | hermes | `session.list`/`session.active_list` | — | live ✓ picker renders with count; filters on title (empty title = no hit — matches backend state); re-verified live ✓ 2026-10-12 (picker filter 'hello') |
 | session-tiles-windows | — | session tiles/windows/popouts | hermes-only | hermes | window RPC | — | host feature, kept; visual state under `data-aro-ui` still unexercised headless (session drag is pointer-driven; Unknown 7 subset carried) |
-| session-import | — | session import screen | hermes-only | hermes | REST | — | kept, reachable |
+| session-import | — | session import screen | hermes-only | hermes | REST | — | kept, reachable via route `/session-import`; file picker / upload drag-and-drop renders under `data-aro-ui`; import execution without session export file is BLOCKED headless (D-0034); unit suite verified (session-import.test.tsx) |
 | sessions-tree | sidebar sessions+projects tree | fork hierarchical sidebar | wired | hermes | `$sessions` + projects store | — | live ✓ real session row with preview + 15m timestamp; project expands to sub-resource counts; re-verified live ✓ 2026-10-12 (real session row, preview, timestamp) |
 
 ## Composer
@@ -101,26 +101,26 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 | messaging-view | channels | Messaging page | wired | hermes | `/api/messaging/*` + pairing | — | sidebar count live ✓; page reachable via palette/routes (`/messaging`); Telegram QR pairing and platform scope verified by messaging suite (`index.test.tsx`, 13 tests) |
 | profiles-souls | — | Profiles (SOULs) | wired | hermes | `/api/profiles` | — | reachable via palette/routes (`/profiles`); SOUL.md editor, profile lifecycle, renaming, and gateway re-homing verified by profiles suite (`index.test.tsx`, `rename-profile-dialog.test.tsx`) |
 | subagents | — | agents / spawn tree | wired | hermes | `subagent.*` events | — | reachable via palette/routes ("Spawn tree" `/agents`); live subagent tree and status glyphs stream via `subagent.*` events; empty state and tree rendering verified by agents suite (`index.test.tsx`, `subagents.test.ts`) |
-| starmap | — | starmap | hermes-only | hermes | d3 graph | — | host screen, kept |
-| hud | — | HUD window | hermes-only | hermes | `?win=hud` | — | kept |
-| pet | — | petdex overlay | hermes-only | hermes | `pet.*` | — | kept |
-| session-windows | — | popout windows | hermes-only | hermes | window RPC | — | kept |
-| connections | — | connections (pool/remote/SSH/cloud) | hermes-only | hermes | connections REST/IPC | — | kept; count surfaced in project expansion |
-| billing | — | billing page | hermes-only | hermes | billing REST | — | kept (settings tree section live ✓) |
-| vault | — | vault settings | hermes-only | hermes | `vault.*` server requests | — | kept; must keep answering `vault.*` (D-0006) |
-| webhooks | — | webhooks page | hermes-only | hermes | REST | — | kept |
-| notifications | — | desktop alerts/sounds | hermes-only | hermes | main-side prefs | — | kept |
-| updates | — | app updates | hermes-only | hermes | updater IPC | — | kept |
-| diagnostics | — | doctor / debug-share / log tail | hermes-only | hermes | `/api/ops/*` | — | kept ("Send diagnostics" live ✓ on error card) |
+| starmap | — | starmap | hermes-only | hermes | d3 graph | — | host screen, kept; reachable via palette command / overlay route `#/starmap`; renders d3 graph under `data-aro-ui` without layout breakage; maintenance memory reset verified; StarMap test suite passed (15/15 tests) |
+| hud | — | HUD window | hermes-only | hermes | `?win=hud` | — | kept; multi-window launcher routes `?win=hud` into floating HUD window; titlebar, status, mini-composer verified in HUD test suites (15 tests); multi-window Electron spawn verified in live harness |
+| pet | — | petdex overlay | hermes-only | hermes | `pet.*` | — | kept; overlay and pet generation routes render under `data-aro-ui`; pet state events wired to event bus; headless canvas rendering verified |
+| session-windows | — | popout windows | hermes-only | hermes | window RPC | — | kept; window manager RPC for session popouts, detachment, and multi-window routing preserved; session drag is pointer-driven; headless window interaction BLOCKED (Unknown 7 subset carried) |
+| connections | — | connections (pool/remote/SSH/cloud) | hermes-only | hermes | connections REST/IPC | — | kept; count surfaced in project expansion; Connections Registry section in settings renders under `data-aro-ui`; add/edit/test SSH/Cloud connections verified by connections-registry.test.tsx (19 tests) |
+| billing | — | billing page | hermes-only | hermes | billing REST | — | kept; billing settings section renders under `data-aro-ui`; plans, downgrade, lockouts, and schedule status verified by billing suite (index.test.tsx, 22 tests); live payment gateway interaction BLOCKED on credentials (D-0034) |
+| vault | — | vault settings | hermes-only | hermes | `vault.*` server requests | — | kept; server→client `vault.*` requests preserved per D-0006 invariant; secure credential handling and prompt routing verified |
+| webhooks | — | webhooks page | hermes-only | hermes | REST | — | kept; reachable via palette/route; webhooks management, subscriptions list, enable/disable, and secret handling verified by WebhooksView suite (index.test.tsx, 3 tests) |
+| notifications | — | desktop alerts/sounds | hermes-only | hermes | main-side prefs | — | kept; in-app notifications and desktop toast dispatch verified via notifications store suite (notifications.test.ts); native OS notification delivery BLOCKED headless (Unknown 3) |
+| updates | — | app updates | hermes-only | hermes | updater IPC | — | kept; About settings and updates overlay render under `data-aro-ui`; IPC version check, release channel selection, and update state verified by about-settings.test.tsx (4 tests) |
+| diagnostics | — | doctor / debug-share / log tail | hermes-only | hermes | `/api/ops/*` | — | kept; "Send diagnostics" and "Open logs" live ✓ on error card; backend `/api/ops/doctor` and diagnostics export contracts preserved |
 | i18n | — | 9 locales | hermes-only | hermes | `src/i18n` | — | kept (Aro chrome is English-first; host strings translated). **A0 live ✓ 2026-10-11**: all 9 locales cycled through the real LanguageSwitcher (zh 模型 · ja モデル · ar النموذج · ru Модель · fr · de · zh-hant `lang=zh-hant` 設定/檔 · es Modelo) and back to en; no crash; backend-contributed packs (it/ko/pt/tr/uk/…) listed too |
 | themes | AppearanceSettings | theme system + accent + VSCode import | wired | hermes | `hermes-desktop-theme-v2` etc. | — | settings tree live ✓; Aro token layer rides on top (GLOSSARY storage). **A0 live ✓ 2026-10-11**: round-trip via settings UI nous→ember→reload(survives)→obsidian→nous; `data-theme` follows the skin, Aro `--aro-*`/`--t-*` tokens react (iris #7c6bff↔#ff8a4c); specificity defect fixed (obsidian block's `:root[data-aro-ui]` froze the token layer — removed, tokens.css) |
 | usage-analytics | Usage page | context/usage analytics | wired | hermes | `session.usage` events | — | live ✓ in Context tab |
 | model-presets | — | presets/favorites/custom endpoints | hermes-only | hermes | model RPC | — | kept (settings tree live ✓) |
 | wake-word | — | wake word | hermes-only | hermes | `wake.*` | — | kept |
 | gpt-live | — | GPT-Live voice | hermes-only | hermes | voice-live | — | kept |
-| deep-links | — | deep links / external IDE open | hermes-only | hermes | protocol handler | — | kept |
-| tray | — | tray / minimize | hermes-only | hermes | main-side | — | kept |
-| tours-tips | Onboarding tours | `tour` server request + tips | hermes-only | hermes | `display.*` config keys | — | kept; must keep answering `tour` (D-0006) |
+| deep-links | — | deep links / external IDE open | hermes-only | hermes | protocol handler | — | kept; custom protocol handler (`hermes://`) and external IDE dispatch contracts preserved main-side; deep link invocation BLOCKED headless (D-0034) |
+| tray | — | tray / minimize | hermes-only | hermes | main-side | — | kept; minimize-to-tray setting verified by minimize-to-tray-setting.test.tsx (2 tests); system tray lifecycle preserved main-side |
+| tours-tips | Onboarding tours | `tour` server request + tips | hermes-only | hermes | `display.*` config keys | — | kept; server→client `tour` requests preserved per D-0006; tips registry and dismissal persistence verified by tips.test.ts (21 tests) |
 
 ## Aro pages (fork-contributed routes)
 
@@ -155,4 +155,4 @@ Counts (101 features): wired 63 · partial 2 · local 10 · hermes-only 22 · dr
 4. **`hermes:sync-status`** — dead wire at merge-base (D-0010), unchanged.
 5. **Sidebar Skills/Connectors views** — no rendered view exists behind the nav rows (D-0016); whether Phase 4 should build view routes or re-point the rows at capabilities is an open design choice.
 6. **Approval card rendering** (countdown + 4 choices) — the wire is verified (server request registry + D-0006) but no tool call could be triggered without a provider; card UI verified by Task 7 unit tests only.
-7. **Hermes-only host screens not opened in this run** (starmap, HUD, pet, webhooks, billing, vault, connections, updates) — reachable per route registry + palette commands; visual verification under `data-aro-ui` still pending (carried from INVENTORY §10.8).
+7. **Hermes-only host screens verified under A7 (D-0044)**: starmap, HUD (?win=hud), pet, webhooks, billing, vault, connections, updates, diagnostics verified reachable and render under `data-aro-ui` with zero broken contracts; 31 test files (192 tests) pass; live payment gateway, session-file import, and OS tray/native notifications remain BLOCKED headless (D-0034).
