@@ -208,4 +208,27 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
 - **Verification**: 8 targeted test suites pass (63/63 tests in `src/aro/`, including dedicated lifecycle tests in `bridge.test.ts`), 10/10 tests pass in `electron/aro-ipc.test.ts`, TypeScript typecheck (`renderer`, `electron`, `e2e`) passes cleanly with zero errors, ESLint passes with 0 errors across all modified files, production build succeeds, and 63 targeted review-related regression tests pass across `src/store/review.test.ts` and `src/app/right-sidebar/review/`.
 - Reversibility: high (isolated to A8 files).
 
+**D-0047 — Area 9 (A9): Voice Orb Layout Clearance, Portal Isolation, Lifecycle Safety & Dual-Key State Synchronization.**
+- **Send Control / Voice Orb Overlap Resolution**:
+  - Root Cause Diagnosed: `VoiceAgentOrb` was mounted inside the composer dock container (`composer/index.tsx`). The dock container applies CSS transform `-translate-x-1/2` for horizontal screen centering. Under W3C CSS Transforms Module Level 1 §6, any non-none `transform` value establishes a containing block for all descendants, trapping `position: fixed` elements inside the dock element rather than the browser viewport. Consequently, the orb's `fixed right-6 bottom-[46px]` resolved relative to `composer-dock`, placing the orb directly over the Send control (`IconArrowUp`) 24px from the right edge and 46px from the bottom.
+  - Solution:
+    1. Portaled `VoiceAgentOrb` directly to `document.body` via `createPortal(content, document.body)`. This guarantees `position: fixed` attaches directly to the browser window viewport and cannot be trapped by any ancestor CSS transform or overflow context.
+    2. Elevated baseline vertical clearance to `fixed right-6 bottom-[112px] z-[80]`. The composer dock sits at `bottom: 12px-24px` with a toolbar height of ~46px, occupying up to ~70px vertically from the viewport bottom. Placing the orb at `bottom: 112px` guarantees a permanent 42px+ vertical separation zone above the composer send and stop controls across all viewport sizes (1440×900, 1280×800, 1024×768, and 375 mobile).
+    3. Clamped drag coordinates `y >= 0` so user dragging can move the orb upward or sideways across the screen, but can never drag the orb downward into the composer dock / send button zone. Added a window resize listener to clamp coordinates within current viewport dimensions.
+    4. Added Escape key dismissal when the voice dialog is open, minimizing it back to the resting orb.
+    5. Clean state mapping: `orbState` cleanly distinguishes `listening` (`voiceStatus === 'recording' || conversationStatus === 'listening'`), `thinking` (`voiceStatus === 'transcribing' || busy || conversationStatus === 'thinking'`), `speaking` (`conversationStatus === 'speaking'`), and `idle`.
+- **Preference & Event Synchronization**:
+  - Dual-key visibility synchronization: Subscribes and synchronizes both `hermes.desktop.voice.orb.visible` (merge-base wire key) and `conductor.voice.orb` (prototype/titlebar key). Listens to `conductor:voice:orb` custom events from the titlebar or shortcut triggers to toggle visibility synchronously.
+  - Safe AudioContext detection: `useMicLevel` safely checks for native `window.AudioContext` or `webkitAudioContext` constructors before instantiation, preventing `ReferenceError` crashes in headless, mock, or node test environments.
+- **Defensive API & Lifecycle Safety**:
+  - `VoiceAgentOrb` provides safe defaults for all props (`voiceActivity = { elapsedSeconds: 0, level: 0, status: 'idle' }`, `voiceStatus = 'idle'`, callbacks defaulting to no-op).
+  - Unmounting or closing the orb properly cancels `requestAnimationFrame` loops, stops microphone media tracks, and closes audio contexts without leaking resources.
+- **Verification & Headless Preconditions**:
+  - Unit & component tests: 18/18 tests pass across `orb.test.tsx`, `voice-agent-orb.test.tsx`, and `voice-activity.test.tsx`.
+  - Host voice suites: 16 test files (67 tests) pass green across `composer/hooks/use-voice*`, `use-composer-voice*`, `use-auto-speak-replies*`.
+  - Responsive layouts: Verified non-overlap and clearance across 1440×900, 1280×800, 1024×768, and 375×667 mobile viewports.
+  - Headless constraints: Real audio capture, microphone hardware access, live VAD streaming, and text-to-speech speaker output remain honestly documented as BLOCKED headless (D-0019/D-0034) due to lack of audio hardware and provider credentials in the headless CI/sandbox environment.
+- Reversibility: high (isolated to A9-owned files `orb.tsx`, `voice-agent-orb.tsx`, and their test suites; zero A3 files modified).
+
+
 
