@@ -5,6 +5,7 @@ import { $reviewFiles, $reviewIsRepo } from '@/store/review'
 import { $currentCwd } from '@/store/session'
 
 import { AroBridgeView } from './AroBridgeView'
+import { useAroBridge } from './bridge'
 import { AroDesignSystemPage } from './DesignSystemAro'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
@@ -233,6 +234,31 @@ describe('Aro Pages Component Tests', () => {
       // Steps rendered
       expect(screen.getByText('Reading repository structure')).toBeDefined()
       expect(screen.getByText('Here are the design tokens for Aro.')).toBeDefined()
+    })
+
+    it('renders idle status and Start bridge button when bridge is not yet started', () => {
+      const mockBridge = vi.mocked(useAroBridge)
+      mockBridge.mockReturnValueOnce({
+        status: 'idle' as const,
+        sessionId: null,
+        activeSessionId: 'sess_active123',
+        startError: null,
+        steps: [],
+        events: [],
+        busy: false,
+        start: vi.fn(async () => undefined),
+        send: vi.fn(),
+        toolResult: vi.fn(),
+        interrupt: vi.fn(),
+        stop: vi.fn(),
+        restart: vi.fn(async () => undefined)
+      })
+
+      render(<AroBridgeView />)
+
+      expect(screen.getByText('idle')).toBeDefined()
+      expect(screen.getByRole('button', { name: /Start bridge/i })).toBeDefined()
+      expect(screen.getByText('Bridge daemon idle')).toBeDefined()
     })
   })
 })

@@ -18,7 +18,7 @@ import { $activeSessionId, $currentCwd } from '@/store/session'
 
 export type { AroBridgeEvent, AroBridgeStartOptions }
 
-export type AroBridgeStatus = 'starting' | 'ready' | 'exited'
+export type AroBridgeStatus = 'idle' | 'starting' | 'ready' | 'exited'
 
 /** A renderable timeline entry derived from the event stream: thinking rows,
  * tool cards (call + merged result), the accumulating reply block, errors. */
@@ -122,15 +122,16 @@ export interface UseAroBridge {
   toolResult: (callId: string, ok: boolean, output: string) => void
   interrupt: () => void
   stop: () => void
+  start: (opts: AroBridgeStartOptions) => Promise<void>
   /** Tear the session down and start a new one (engine dial / restart). */
-  restart: (opts: AroBridgeStartOptions) => void
+  restart: (opts: AroBridgeStartOptions) => Promise<void>
 }
 
 export function useAroBridge(): UseAroBridge {
   const activeSessionId = useStore($activeSessionId)
   const currentCwd = useStore($currentCwd)
 
-  const [status, setStatus] = useState<AroBridgeStatus>('starting')
+  const [status, setStatus] = useState<AroBridgeStatus>('idle')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
   const [events, setEvents] = useState<AroBridgeEvent[]>([])
@@ -157,9 +158,9 @@ export function useAroBridge(): UseAroBridge {
 
   const startSession = useCallback(
     async (opts: AroBridgeStartOptions): Promise<void> => {
+      teardown()
       const token = ++startTokenRef.current
 
-      teardown()
       setEvents([])
       setStartError(null)
       setBusy(false)
@@ -229,14 +230,22 @@ export function useAroBridge(): UseAroBridge {
     [currentCwd, teardown]
   )
 
-  // One session per active session & workspace mount, demo engine by default
+  // Invalidate and tear down previous daemon session on session/workspace context switch
+  // without automatically spawning a new daemon.
   useEffect(() => {
-    void startSession({ engine: 'demo' })
+    teardown()
+    setStatus('idle')
+    setEvents([])
+    setStartError(null)
+    setBusy(false)
+  }, [activeSessionId, currentCwd, teardown])
 
+  // Clean up daemon process and subscriptions on unmount
+  useEffect(() => {
     return () => {
       teardown()
     }
-  }, [activeSessionId, currentCwd, startSession, teardown])
+  }, [teardown])
 
   const send = useCallback((text: string): void => {
     const sid = sessionRef.current
@@ -282,6 +291,7 @@ export function useAroBridge(): UseAroBridge {
     events,
     steps,
     busy,
+    start: startSession,
     send,
     toolResult,
     interrupt,

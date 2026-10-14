@@ -106,11 +106,15 @@ export function AroBridgeView() {
   const chip =
     status === 'ready' ? <Badge dot mono tone="mint">ready</Badge>
     : status === 'starting' ? <Badge dot mono tone="amber">starting</Badge>
+    : status === 'idle' ? <Badge dot mono tone="neutral">idle</Badge>
     : <Badge dot mono tone="rose">exited</Badge>
 
   const handleEngineChange = (newEngine: 'demo' | 'openai') => {
     setEngine(newEngine)
-    restart({ engine: newEngine, ...(newEngine === 'openai' ? { baseUrl, model, apiKey } : {}) })
+
+    if (status !== 'idle') {
+      restart({ engine: newEngine, ...(newEngine === 'openai' ? { baseUrl, model, apiKey } : {}) })
+    }
   }
 
   return (
@@ -135,11 +139,11 @@ export function AroBridgeView() {
             value={engine}
           />
           <Button
-            icon={IconRefresh}
+            icon={status === 'idle' ? IconBolt : IconRefresh}
             onClick={() => restart({ engine, ...(engine === 'openai' ? { baseUrl, model, apiKey } : {}) })}
-            variant="outline"
+            variant={status === 'idle' ? 'primary' : 'outline'}
           >
-            Restart
+            {status === 'idle' ? 'Start bridge' : 'Restart'}
           </Button>
         </div>
       </header>
@@ -186,9 +190,19 @@ export function AroBridgeView() {
 
           {steps.length === 0 && !startError && (
             <EmptyState
-              body="Send a prompt below — the daemon streams its thinking, tool calls and reply here."
+              body={
+                status === 'idle'
+                  ? 'The bridge daemon runs in an isolated child process. Click Start bridge to begin.'
+                  : 'Send a prompt below — the daemon streams its thinking, tool calls and reply here.'
+              }
               icon={IconBolt}
-              title={status === 'starting' ? 'Starting the bridge daemon…' : 'No events yet'}
+              title={
+                status === 'starting'
+                  ? 'Starting the bridge daemon…'
+                  : status === 'idle'
+                    ? 'Bridge daemon idle'
+                    : 'No events yet'
+              }
             />
           )}
 
@@ -229,7 +243,15 @@ export function AroBridgeView() {
                 setDraft('')
               }
             }}
-            placeholder={status === 'ready' ? 'Ask the bridge…' : status === 'starting' ? 'Starting the daemon…' : 'Session ended — Restart first'}
+            placeholder={
+              status === 'ready'
+                ? 'Ask the bridge…'
+                : status === 'starting'
+                  ? 'Starting the daemon…'
+                  : status === 'idle'
+                    ? 'Bridge daemon idle — click Start bridge first'
+                    : 'Session ended — Restart first'
+            }
             value={draft}
           />
           <Button
