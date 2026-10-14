@@ -5,14 +5,17 @@ import { registry } from '@/contrib/registry'
 
 import {
   ARO_AGENT_ROUTE,
+  ARO_AGENTS_ROUTE,
   ARO_DESIGN_ROUTE,
+  ARO_DOCTOR_ROUTE,
   ARO_REVIEW_ROUTE,
+  ARO_RULES_ROUTE,
   ARO_TASKS_ROUTE,
   ARO_TRANSCRIPT_ROUTE
 } from './register'
 
 describe('Aro Registration (register.tsx)', () => {
-  it('registers all five contributed routes in ROUTES_AREA', () => {
+  it('registers all eight contributed routes in ROUTES_AREA', () => {
     const routeItems = registry.getArea(ROUTES_AREA)
     const paths = routeItems.map(item => (item.data as { path?: string })?.path)
 
@@ -21,9 +24,12 @@ describe('Aro Registration (register.tsx)', () => {
     expect(paths).toContain(ARO_TASKS_ROUTE)
     expect(paths).toContain(ARO_DESIGN_ROUTE)
     expect(paths).toContain(ARO_AGENT_ROUTE)
+    expect(paths).toContain(ARO_RULES_ROUTE)
+    expect(paths).toContain(ARO_AGENTS_ROUTE)
+    expect(paths).toContain(ARO_DOCTOR_ROUTE)
   })
 
-  it('registers all five sidebar navigation rows in SIDEBAR_NAV_AREA with correct order', () => {
+  it('registers all eight sidebar navigation rows in SIDEBAR_NAV_AREA with correct order', () => {
     const navItems = registry.getArea(SIDEBAR_NAV_AREA)
 
     const aroNavs = navItems.filter(item => {
@@ -34,11 +40,14 @@ describe('Aro Registration (register.tsx)', () => {
         ARO_AGENT_ROUTE,
         ARO_REVIEW_ROUTE,
         ARO_TASKS_ROUTE,
-        ARO_DESIGN_ROUTE
+        ARO_DESIGN_ROUTE,
+        ARO_RULES_ROUTE,
+        ARO_AGENTS_ROUTE,
+        ARO_DOCTOR_ROUTE
       ].includes(path) : false
     })
 
-    expect(aroNavs.length).toBe(5)
+    expect(aroNavs.length).toBe(8)
 
     const transcriptNav = navItems.find(item => (item.data as { path?: string })?.path === ARO_TRANSCRIPT_ROUTE)
     expect(transcriptNav?.order).toBe(50)
@@ -59,6 +68,18 @@ describe('Aro Registration (register.tsx)', () => {
     const designNav = navItems.find(item => (item.data as { path?: string })?.path === ARO_DESIGN_ROUTE)
     expect(designNav?.order).toBe(53)
     expect((designNav?.data as { label?: string })?.label).toBe('Aro Design')
+
+    const rulesNav = navItems.find(item => (item.data as { path?: string })?.path === ARO_RULES_ROUTE)
+    expect(rulesNav?.order).toBe(54)
+    expect((rulesNav?.data as { label?: string })?.label).toBe('Aro Rules')
+
+    const agentsNav = navItems.find(item => (item.data as { path?: string })?.path === ARO_AGENTS_ROUTE)
+    expect(agentsNav?.order).toBe(55)
+    expect((agentsNav?.data as { label?: string })?.label).toBe('Aro Agents')
+
+    const doctorNav = navItems.find(item => (item.data as { path?: string })?.path === ARO_DOCTOR_ROUTE)
+    expect(doctorNav?.order).toBe(56)
+    expect((doctorNav?.data as { label?: string })?.label).toBe('Aro Doctor')
   })
 
   it('provides render functions for every contributed route', () => {
@@ -72,7 +93,10 @@ describe('Aro Registration (register.tsx)', () => {
         ARO_REVIEW_ROUTE,
         ARO_TASKS_ROUTE,
         ARO_DESIGN_ROUTE,
-        ARO_AGENT_ROUTE
+        ARO_AGENT_ROUTE,
+        ARO_RULES_ROUTE,
+        ARO_AGENTS_ROUTE,
+        ARO_DOCTOR_ROUTE
       ].includes(path) : false
     })
 

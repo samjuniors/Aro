@@ -26,9 +26,12 @@
 import { type RouteContribution, ROUTES_AREA, SIDEBAR_NAV_AREA, type SidebarNavContribution } from '@/app/routes'
 import { registry } from '@/contrib/registry'
 
+import { AroAgentsPage } from './AgentsView'
 import { AroBridgeView } from './AroBridgeView'
 import { AroDesignSystemPage } from './DesignSystemAro'
+import { AroDoctorPage } from './OnboardingDoctorView'
 import { AroReviewPage } from './ReviewHunks'
+import { AroRulesPage } from './RulesView'
 import { AroTasksPage } from './TasksBoard'
 import { AroTranscriptPage } from './ToolTimeline'
 
@@ -38,6 +41,9 @@ export const ARO_TRANSCRIPT_ROUTE = '/aro-transcript'
 export const ARO_REVIEW_ROUTE = '/aro-review'
 export const ARO_TASKS_ROUTE = '/aro-tasks'
 export const ARO_AGENT_ROUTE = '/aro-agent'
+export const ARO_RULES_ROUTE = '/aro-rules'
+export const ARO_AGENTS_ROUTE = '/aro-agents'
+export const ARO_DOCTOR_ROUTE = '/aro-doctor'
 
 registry.registerMany([
   /* ── pages ─────────────────────────────────────────────────────── */
@@ -76,6 +82,27 @@ registry.registerMany([
     data: { path: ARO_AGENT_ROUTE } satisfies RouteContribution,
     render: () => <AroBridgeView />,
   },
+  {
+    id: 'aro-rules',
+    area: ROUTES_AREA,
+    title: 'Aro Rules',
+    data: { path: ARO_RULES_ROUTE } satisfies RouteContribution,
+    render: () => <AroRulesPage />,
+  },
+  {
+    id: 'aro-agents',
+    area: ROUTES_AREA,
+    title: 'Aro Agents',
+    data: { path: ARO_AGENTS_ROUTE } satisfies RouteContribution,
+    render: () => <AroAgentsPage />,
+  },
+  {
+    id: 'aro-doctor',
+    area: ROUTES_AREA,
+    title: 'Aro Doctor',
+    data: { path: ARO_DOCTOR_ROUTE } satisfies RouteContribution,
+    render: () => <AroDoctorPage />,
+  },
 
   /* ── sidebar nav rows ──────────────────────────────────────────── */
   {
@@ -107,5 +134,23 @@ registry.registerMany([
     area: SIDEBAR_NAV_AREA,
     order: 53,
     data: { codicon: 'symbol-color', label: 'Aro Design', path: ARO_DESIGN_ROUTE } satisfies SidebarNavContribution,
+  },
+  {
+    id: 'aro-rules',
+    area: SIDEBAR_NAV_AREA,
+    order: 54,
+    data: { codicon: 'book', label: 'Aro Rules', path: ARO_RULES_ROUTE } satisfies SidebarNavContribution,
+  },
+  {
+    id: 'aro-agents',
+    area: SIDEBAR_NAV_AREA,
+    order: 55,
+    data: { codicon: 'hubot', label: 'Aro Agents', path: ARO_AGENTS_ROUTE } satisfies SidebarNavContribution,
+  },
+  {
+    id: 'aro-doctor',
+    area: SIDEBAR_NAV_AREA,
+    order: 56,
+    data: { codicon: 'pulse', label: 'Aro Doctor', path: ARO_DOCTOR_ROUTE } satisfies SidebarNavContribution,
   },
 ])

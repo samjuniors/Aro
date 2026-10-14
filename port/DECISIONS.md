@@ -230,5 +230,37 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
   - Headless constraints: Real audio capture, microphone hardware access, live VAD streaming, and text-to-speech speaker output remain honestly documented as BLOCKED headless (D-0019/D-0034) due to lack of audio hardware and provider credentials in the headless CI/sandbox environment.
 - Reversibility: high (isolated to A9-owned files `orb.tsx`, `voice-agent-orb.tsx`, and their test suites; zero A3 files modified).
 
+**D-0048 — Area 10 (A10): Local Surfaces (Rules, Agent Adapters, Onboarding & Doctor) Integration, Persistence & Diagnostic Integrity.**
+- **Rules Surface (`apps/desktop/src/aro/RulesView.tsx`)**:
+  - Full CRUD operations via `adapters.rules` interacting directly with genuine persistence under `conductor.workspace.v3.rules`.
+  - Enable/disable toggles persist rule state under `conductor.workspace.v3.rules.disabled`.
+  - Inline editing with dirty tracking: explicitly distinguishes saved rules from unsaved pending edits via an `Unsaved edits pending` indicator and disables Save when unedited.
+  - Search, tag filtering, error handling with honest error alerts, and genuine empty state when no rules are configured.
+  - Backend integration boundary clearly documented and marked with `// BACKEND-TODO(rules)` for future server-side profile/rules synchronization.
+- **Agent Adapters Surface (`apps/desktop/src/aro/AgentsView.tsx`)**:
+  - Displays seed coding agent catalog alongside user-registered custom agents.
+  - Real custom agent registration and unregistration via `adapters.agents` backed by `conductor.workspace.v3.agents` persistence.
+  - Enforces unregister protection on built-in seed agents (Aro, Hermes, Claude, OpenAI, Cursor, Cline).
+  - Session isolation: Active session subagents monitor reads strictly from `$subagentsBySession[$activeSessionId]`, preventing cross-session leakage. When no session is active or the active session has no subagents, an honest empty state is rendered.
+  - Transparent status reporting: Model tools and subagents are badged as active or available based on real session state; marked with `// BACKEND-TODO(agents)`.
+- **Onboarding and Doctor Surface (`apps/desktop/src/aro/OnboardingDoctorView.tsx`)**:
+  - Reusable `OnboardingStrip` evaluates real application state: workspace folder presence (`$currentCwd`), active session count (`$allSessions`), and provider readiness. Onboarding completion/dismissal is persisted under `conductor.onboarding.done`.
+  - System Doctor (`AroDoctorPage`) runs genuine local checks via `adapters.doctor.sweep()` and reports honest diagnostic states: `pass`, `warn`, `fail`, and `unknown` (e.g., providers correctly identified as `unknown` when credentials are not configured rather than claiming pass).
+  - Deep Hermes backend diagnostics integration via `runDoctor()` calling `/api/ops/doctor`. Displays real process name, PID, and health status, and distinguishes connection offline states (`closed`/`connecting`) from runtime failures.
+  - Honest remediation: "Run doctor sweep" and "Recheck backend" execute real operations without fabricating success; marked with `// BACKEND-TODO(onboarding-doctor)`.
+- **Route and Navigation Registration (`apps/desktop/src/aro/register.tsx`)**:
+  - Contributed 3 dedicated routes: `ARO_RULES_ROUTE` (`/aro-rules`), `ARO_AGENTS_ROUTE` (`/aro-agents`), `ARO_DOCTOR_ROUTE` (`/aro-doctor`).
+  - Added 3 sidebar navigation items (order 54, 55, 56) with appropriate glyphs and labels (`Rules`, `Agents`, `Doctor`).
+- **Verification**:
+  - 4 focused A10 test files pass cleanly (28/28 tests): `RulesView.test.tsx` (8 tests), `AgentsView.test.tsx` (8 tests), `OnboardingDoctorView.test.tsx` (9 tests), `register.test.tsx` (3 tests).
+  - Full `src/aro/` test suite passes (88/88 tests across 11 files).
+  - Adapters test suite passes (31/31 tests across 8 files).
+  - Cross-area targeted regressions pass (107/107 tests across 17 test files spanning A0–A9).
+  - TypeScript typecheck (`npm --prefix apps/desktop run typecheck`) passes with 0 errors.
+  - ESLint passes with 0 errors and 0 warnings on all touched files.
+  - Production build (`npm --prefix apps/desktop run build`) succeeds with exit code 0.
+- Reversibility: high (isolated to A10-owned files `RulesView.tsx`, `AgentsView.tsx`, `OnboardingDoctorView.tsx`, `register.tsx`, and their companion test files; no adapter files or frozen Electron files modified).
+
+
 
 
