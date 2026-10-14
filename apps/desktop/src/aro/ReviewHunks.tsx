@@ -20,18 +20,17 @@ import { activeGateway } from '@/store/gateway'
 import { $activeSessionId } from '@/store/session'
 
 import { DiffView } from './DiffCard'
-import { IconCheck, IconFile, IconPencil, IconSpark, IconUndo, IconX } from './Icons'
+import { IconCheck, IconFile, IconPencil, IconUndo, IconX } from './Icons'
 import { InlineHint, SourceBadge, useAroCheckpoints, useAroReview } from './live'
 import { ToastHost, useToasts } from './toasts'
-import { Badge, Button, Input, Segmented } from './ui'
+import { Button, Input, Segmented } from './ui'
 import type { Hunk } from './workbenchData'
-import { REVIEW_FILES, REVIEW_TOTAL_HUNKS, splitHunks } from './workbenchData'
+import { splitHunks } from './workbenchData'
 
 type HunkVerdict = 'accepted' | 'rejected'
 type HunkThreadData = { id: string; hunkKey: string; text: string }
 
 function HunkThread({ thread }: { thread: HunkThreadData }) {
-  const [queued, setQueued] = useState(false)
   const [resolved, setResolved] = useState(false)
 
   return (
@@ -48,17 +47,7 @@ function HunkThread({ thread }: { thread: HunkThreadData }) {
           </Button>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 border-t border-aro-amber/20 pt-1.5">
-          {queued ? (
-            <>
-              <IconCheck className="shrink-0 text-aro-mint" size={10} />
-              <span className="font-aro-mono text-[10px] text-aro-mint">Aro queued fix · patch incoming</span>
-            </>
-          ) : (
-            <>
-              <i className="size-[5px] shrink-0 animate-aro-breathe rounded-full bg-aro-amber" />
-              <span className="font-aro-mono text-[10px] text-aro-ink-4">Aro will address this before the next checkpoint</span>
-            </>
-          )}
+          <span className="font-aro-mono text-[10px] text-aro-ink-4">Review note (local)</span>
         </div>
       </div>
     </div>
@@ -67,13 +56,11 @@ function HunkThread({ thread }: { thread: HunkThreadData }) {
 
 export function AroReviewPage() {
   const { items, toast } = useToasts()
-  const { files: liveFiles, live, loading, stagedSet, toggleStaged, refresh } = useAroReview()
+  const { files, live, available, error, loading, stagedSet, toggleStaged, refresh } = useAroReview()
   const sessionId = useStore($activeSessionId)
   const checkpoints = useAroCheckpoints(sessionId, live)
 
-  const files = live ? liveFiles : REVIEW_FILES
   const [active, setActive] = useState(0)
-  const [demoStaged, setDemoStaged] = useState<string[]>([REVIEW_FILES[0]?.path ?? ''])
   const [layout, setLayout] = useState<'unified' | 'split'>('split')
   const [verdicts, setVerdicts] = useState<Record<string, HunkVerdict>>({})
   const [commenting, setCommenting] = useState<string | null>(null)
@@ -83,17 +70,13 @@ export function AroReviewPage() {
   const index = files.length === 0 ? 0 : Math.min(active, files.length - 1)
   const file = files[index]
   const hunks: Hunk[] = file ? splitHunks(file) : []
-  const totalHunks = live ? files.reduce((n, f) => n + splitHunks(f).length, 0) : REVIEW_TOTAL_HUNKS
+  const totalHunks = files.reduce((n, f) => n + splitHunks(f).length, 0)
   const hkey = (i: number) => `${file?.path ?? 'file'}#${i}`
-  const isStaged = (path: string) => (live ? stagedSet.has(path) : demoStaged.includes(path))
+  const isStaged = (path: string) => stagedSet.has(path)
 
   const onToggleStaged = (path: string) => {
-    if (live) {
-      toggleStaged(path)
-      toast(`Git index updated — ${path}`, 'mint')
-    } else {
-      setDemoStaged(x => (x.includes(path) ? x.filter(p => p !== path) : [...x, path]))
-    }
+    toggleStaged(path)
+    toast(`Git index updated — ${path}`, 'mint')
   }
 
   const restoreCheckpoint = async (hash?: string) => {
@@ -161,9 +144,33 @@ export function AroReviewPage() {
     setThreads((ts) => [...ts, { id: `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, hunkKey: key, text }])
     setDraft('')
     setCommenting(null)
-    toast('Comment sent — Aro will address it before the next checkpoint', 'amber')
+    toast('Review comment added', 'amber')
   }
 
+  // Honest unavailable state when git review is unavailable or in error
+  if (!available || error) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
+        <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
+          <div className="min-w-0">
+            <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+            <h1 className="text-[15px] font-semibold text-aro-ink">Review changes</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2"><SourceBadge demoLabel="unavailable" live={false} /></div>
+        </header>
+        <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
+          <div className="max-w-[440px] space-y-3 text-center">
+            <InlineHint>
+              {error || 'Git review is unavailable for this session — no active repository workspace or desktop Git bridge found.'}
+            </InlineHint>
+          </div>
+        </div>
+        <ToastHost items={items} />
+      </div>
+    )
+  }
+
+  // Genuine clean working tree empty state
   if (!file) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
@@ -172,14 +179,14 @@ export function AroReviewPage() {
             <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
             <h1 className="text-[15px] font-semibold text-aro-ink">Review changes</h1>
           </div>
-          <div className="ml-auto flex items-center gap-2"><SourceBadge live={live} /></div>
+          <div className="ml-auto flex items-center gap-2"><SourceBadge live={true} /></div>
         </header>
         <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
-          <div className="max-w-[420px] space-y-3 text-center">
+          <div className="max-w-[440px] space-y-3 text-center">
             {loading ? (
               <InlineHint><span className="font-aro-mono text-[10.5px] text-aro-cyan">scanning working tree…</span></InlineHint>
             ) : (
-              <InlineHint>No changes in the working tree. When the agent edits files they land here as one reviewable diff — hunk by hunk.</InlineHint>
+              <InlineHint>Working tree clean. No uncommitted changes in the repository. When files are modified, they appear here as reviewable hunks.</InlineHint>
             )}
           </div>
         </div>
@@ -200,8 +207,8 @@ export function AroReviewPage() {
           <SourceBadge live={live} />
           <Segmented items={[{ value: 'unified', label: 'Unified' }, { value: 'split', label: 'Side by side' }]} onChange={setLayout} value={layout} />
           <Button icon={IconUndo} onClick={() => void restoreCheckpoint()} variant="secondary">Restore checkpoint</Button>
-          <Button onClick={() => toast(`Changes requested — Aro is rewriting ${gRej} hunk${gRej === 1 ? '' : 's'}`, 'amber')} variant="danger">Request changes</Button>
-          <Button icon={IconCheck} onClick={() => toast(`Accepted ${gAcc}/${totalHunks} hunks · ${gRej} rejected · ${threads.length} commented`, 'mint')} variant="primary">
+          <Button onClick={() => toast(gRej > 0 ? `${gRej} hunk${gRej === 1 ? '' : 's'} marked as rejected — review verdict saved locally` : 'No rejected hunks marked', 'amber')} variant="danger">Request changes</Button>
+          <Button icon={IconCheck} onClick={() => toast(`Review verdict: ${gAcc}/${totalHunks} hunks accepted · ${gRej} rejected`, 'mint')} variant="primary">
             Accept {gAcc}/{totalHunks} hunks
           </Button>
         </div>
@@ -347,19 +354,6 @@ export function AroReviewPage() {
                   </div>
                 )
               })
-            )}
-
-            {!live && (
-              <div className="mt-3 rounded-[10px] border border-aro-line-soft bg-aro-raise p-3">
-                <div className="flex items-center gap-2">
-                  <IconSpark className="text-aro-iris-soft" size={12} />
-                  <span className="text-[12.5px] font-medium text-aro-ink">Why this change</span>
-                  <Badge className="text-[9.5px]" mono tone="iris">aro</Badge>
-                </div>
-                <p className="mt-1.5 text-[12px] leading-[1.6] text-aro-ink-3">
-                  Replaces the one-shot snapshot with a streaming <code className="font-aro-mono text-aro-cyan">SessionChannel</code>. Editor sockets negotiate capabilities and every editor-originated patch enters the same reviewer, so review, checkpoint and rewind behave identically regardless of who made the edit.
-                </p>
-              </div>
             )}
           </div>
         </div>

@@ -737,6 +737,8 @@ export interface AroBridgeStartOptions {
   baseUrl?: string
   model?: string
   apiKey?: string
+  sessionId?: string
+  cwd?: string
 }
 
 /** The pm receipt shape (pm/receipt.py schema 1) — one machine-readable

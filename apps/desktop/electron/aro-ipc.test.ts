@@ -85,13 +85,23 @@ beforeEach((): void => {
 const SPEC = { command: '/fake/venv/bin/python', args: ['-m', 'aro_bridge.daemon', '--engine', 'demo'], env: {}, cwd: '/repo' }
 
 interface FakeSender {
+  id: number
   send: ReturnType<typeof vi.fn>
   once: ReturnType<typeof vi.fn>
+  removeListener: ReturnType<typeof vi.fn>
   isDestroyed?: ReturnType<typeof vi.fn>
 }
 
+let senderIdCounter = 1
+
 function makeSender(): FakeSender {
-  return { send: vi.fn(), once: vi.fn(), isDestroyed: vi.fn(() => false) }
+  return {
+    id: senderIdCounter++,
+    send: vi.fn(),
+    once: vi.fn(),
+    removeListener: vi.fn(),
+    isDestroyed: vi.fn(() => false)
+  }
 }
 
 function handler(channel: string): (event: unknown, ...args: unknown[]) => unknown {
@@ -260,3 +270,65 @@ test('resolveDefaultAroDaemon builds the checkout spec (venv python, repo root)'
   // The demo engine is the default when nothing is requested.
   assert.deepEqual(resolveDefaultAroDaemon()?.args, ['-m', 'aro_bridge.daemon', '--engine', 'demo'])
 })
+
+test('repeated start calls from same sender teardown the previous daemon without leaking duplicates', async (): Promise<void> => {
+  registerAroIpc({ resolveAroDaemon: () => SPEC })
+
+  const sender = makeSender()
+  const start = handler('hermes:aro:bridge:start')
+
+  // First start
+  const firstSession = await startSession(start, sender)
+  assert.equal(firstSession.child.kill.mock.calls.length, 0)
+  assert.equal(spawned.length, 1)
+
+  // Second start from same sender without stopping first
+  const secondPending = Promise.resolve(start({ sender }, { engine: 'demo' }))
+  assert.equal(firstSession.child.kill.mock.calls.length, 1, 'first child killed on re-start')
+  assert.equal(spawned.length, 2, 'second child spawned')
+
+  const secondChild = spawned[1]!
+  emitLine(secondChild, { type: 'session_start', sessionId: 'as_test2', model: 'aro-4-70b', tools: ['web_search'] })
+  const { sessionId: secondSid } = (await secondPending) as { sessionId: string }
+
+  assert.equal(secondSid, 'as_test2')
+})
+
+test('starting an already running session by sessionId returns deterministically without spawning a new child', async (): Promise<void> => {
+  registerAroIpc({ resolveAroDaemon: () => SPEC })
+
+  const sender = makeSender()
+  const start = handler('hermes:aro:bridge:start')
+
+  const { sessionId } = await startSession(start, sender)
+  assert.equal(spawned.length, 1)
+
+  // Request start with the exact existing sessionId
+  const reused = (await start({ sender }, { sessionId, engine: 'demo' })) as { sessionId: string }
+  assert.equal(reused.sessionId, sessionId)
+  assert.equal(spawned.length, 1, 'no second child process spawned')
+})
+
+test('stop followed by start works cleanly and removes destroyed listener on teardown', async (): Promise<void> => {
+  registerAroIpc({ resolveAroDaemon: () => SPEC })
+
+  const sender = makeSender()
+  const start = handler('hermes:aro:bridge:start')
+  const stop = handler('hermes:aro:bridge:stop')
+
+  const { child, sessionId } = await startSession(start, sender)
+  assert.equal(sender.once.mock.calls.length, 1)
+
+  // Stop session
+  const stopped = stop(undefined, sessionId)
+  assert.equal(stopped, true)
+  assert.equal(child.kill.mock.calls.length, 1)
+  assert.equal(sender.removeListener.mock.calls.length, 1, 'sender destroyed listener removed on stop')
+
+  // Start a new session
+  const nextSession = await startSession(start, sender)
+  assert.equal(spawned.length, 2)
+  assert.ok(nextSession.sessionId)
+  assert.equal(sender.once.mock.calls.length, 2)
+})
+

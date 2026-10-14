@@ -1,50 +1,87 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { $reviewFiles, $reviewIsRepo } from '@/store/review'
+import { $currentCwd } from '@/store/session'
 
 import { AroBridgeView } from './AroBridgeView'
-import type * as bridgeModule from './bridge'
 import { AroDesignSystemPage } from './DesignSystemAro'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
 import { AroTranscriptPage } from './ToolTimeline'
 
-// Mock useAroBridge for AroBridgeView tests
-vi.mock('./bridge', async (importOriginal) => {
-  const actual = await importOriginal<typeof bridgeModule>()
+// Mock useAroBridge for AroBridgeView tests without circular imports
+vi.mock('./bridge', () => ({
+  useAroBridge: vi.fn(() => ({
+    status: 'ready' as const,
+    sessionId: 'as_mock123456',
+    activeSessionId: 'sess_active123',
+    startError: null,
+    steps: [
+      { kind: 'thinking' as const, label: 'Reading repository structure', ms: 1200 },
+      {
+        kind: 'tool' as const,
+        callId: 'call_1',
+        tool: 'web_search',
+        args: { query: 'Aro design system' },
+        ok: true,
+        ms: 350,
+        summary: 'Found 3 results',
+        lines: ['- Result 1', '- Result 2']
+      },
+      { kind: 'reply' as const, text: 'Here are the design tokens for Aro.', closed: true, ms: 800 }
+    ],
+    busy: false,
+    send: vi.fn(),
+    toolResult: vi.fn(),
+    interrupt: vi.fn(),
+    stop: vi.fn(),
+    restart: vi.fn()
+  }))
+}))
 
-  return {
-    ...actual,
-    useAroBridge: vi.fn(() => ({
-      status: 'ready' as const,
-      sessionId: 'as_mock123456',
-      startError: null,
-      steps: [
-        { kind: 'thinking' as const, label: 'Reading repository structure', ms: 1200 },
-        {
-          kind: 'tool' as const,
-          callId: 'call_1',
-          tool: 'web_search',
-          args: { query: 'Aro design system' },
-          ok: true,
-          ms: 350,
-          summary: 'Found 3 results',
-          lines: ['- Result 1', '- Result 2']
-        },
-        { kind: 'reply' as const, text: 'Here are the design tokens for Aro.', closed: true, ms: 800 }
-      ],
-      busy: false,
-      send: vi.fn(),
-      toolResult: vi.fn(),
-      interrupt: vi.fn(),
-      stop: vi.fn(),
-      restart: vi.fn()
-    }))
+function stubGitReview(diffContent = '') {
+  const diffMock = vi.fn(async () => diffContent)
+  const stageMock = vi.fn(async () => undefined)
+
+  const unstageMock = vi.fn(async () => undefined)
+
+  ;(window as unknown as { hermesDesktop?: unknown }).hermesDesktop = {
+    git: {
+      review: {
+        diff: diffMock,
+        stage: stageMock,
+        unstage: unstageMock,
+        list: vi.fn(async () => ({ files: [] })),
+        revert: vi.fn(async () => undefined)
+      }
+    }
   }
-})
+
+  return { diffMock, stageMock, unstageMock }
+}
+
+const SAMPLE_UNIFIED_DIFF = `diff --git a/src/core.ts b/src/core.ts
+--- a/src/core.ts
++++ b/src/core.ts
+@@ -1,2 +1,3 @@
+ const a = 1
+-const b = 2
++const b = 20
++const c = 30
+`
 
 describe('Aro Pages Component Tests', () => {
+  beforeEach(() => {
+    $currentCwd.set('/repo')
+    $reviewIsRepo.set(true)
+    $reviewFiles.set([])
+    stubGitReview('')
+  })
+
   afterEach(() => {
     cleanup()
+    delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
   })
 
   describe('AroTranscriptPage (/aro-transcript)', () => {
@@ -53,16 +90,55 @@ describe('Aro Pages Component Tests', () => {
 
       expect(screen.getByText('Session transcript')).toBeDefined()
       expect(screen.getByText(/tool timeline/)).toBeDefined()
-      // Check that tool cards and prose steps are rendered from seed or live data
       expect(screen.getAllByText(/edit|read|shell|search|plan/).length).toBeGreaterThan(0)
     })
   })
 
   describe('AroReviewPage (/aro-review)', () => {
-    it('renders review header, files list, diff view, and layout switchers', () => {
+    it('renders genuine empty state when working tree is clean', () => {
+      $reviewIsRepo.set(true)
+      $reviewFiles.set([])
+
       render(<AroReviewPage />)
 
       expect(screen.getByText('Review changes')).toBeDefined()
+      expect(screen.getByText('live')).toBeDefined()
+      expect(screen.getByText(/Working tree clean/)).toBeDefined()
+    })
+
+    it('renders honest unavailable state when git review is unavailable', () => {
+      $reviewIsRepo.set(false)
+      $reviewFiles.set([])
+
+      render(<AroReviewPage />)
+
+      expect(screen.getByText('Review changes')).toBeDefined()
+      expect(screen.getByText('unavailable')).toBeDefined()
+      expect(screen.getByText(/Git review unavailable|Git review is unavailable/)).toBeDefined()
+    })
+
+    it('renders real diff files, hunks, layout switchers, and comment composer without mock fallback', async () => {
+      stubGitReview(SAMPLE_UNIFIED_DIFF)
+      $reviewIsRepo.set(true)
+      $reviewFiles.set([
+        {
+          path: 'src/core.ts',
+          status: 'modified',
+          staged: false,
+          added: 2,
+          removed: 1
+        } as any
+      ])
+
+      render(<AroReviewPage />)
+
+      expect(screen.getByText('Review changes')).toBeDefined()
+
+      // Wait for diff to load and render the file and hunks
+      await waitFor(() => {
+        expect(screen.getByText('src/core.ts')).toBeDefined()
+      })
+
       expect(screen.getByText('Side by side')).toBeDefined()
       expect(screen.getByText('Unified')).toBeDefined()
 
@@ -73,20 +149,19 @@ describe('Aro Pages Component Tests', () => {
       // Check action buttons
       expect(screen.getByText('Restore checkpoint')).toBeDefined()
       expect(screen.getByText('Request changes')).toBeDefined()
-    })
 
-    it('allows opening comment composer and typing comments on hunks', () => {
-      render(<AroReviewPage />)
+      // Accept hunk
+      const acceptButton = screen.getByRole('button', { name: /Accept hunk 1/i })
+      fireEvent.click(acceptButton)
+      expect(screen.getByText('accepted ✓')).toBeDefined()
 
-      const commentButton = screen.getAllByRole('button', { name: /Comment/i })[0]
-
-      if (commentButton) {
-        fireEvent.click(commentButton)
-        const input = screen.getByPlaceholderText(/Comment on this hunk/i)
-        expect(input).toBeDefined()
-        fireEvent.change(input, { target: { value: 'Please rename this variable' } })
-        expect((input as HTMLInputElement).value).toBe('Please rename this variable')
-      }
+      // Open comment composer
+      const commentButton = screen.getByRole('button', { name: /Comment on hunk 1/i })
+      fireEvent.click(commentButton)
+      const input = screen.getByPlaceholderText(/Comment on this hunk/i)
+      expect(input).toBeDefined()
+      fireEvent.change(input, { target: { value: 'Please rename this variable' } })
+      expect((input as HTMLInputElement).value).toBe('Please rename this variable')
     })
   })
 
@@ -136,20 +211,24 @@ describe('Aro Pages Component Tests', () => {
   })
 
   describe('AroBridgeView (/aro-agent)', () => {
-    it('renders bridge session status, timeline steps, and engine switcher', () => {
+    it('renders bridge session status, timeline steps, demo badge, and engine switcher', () => {
       render(<AroBridgeView />)
 
       expect(screen.getByText('Bridge session')).toBeDefined()
       expect(screen.getByText('ready')).toBeDefined()
-      expect(screen.getByText(/session as_mock/)).toBeDefined()
+      expect(screen.getByText(/bridge as_mock/)).toBeDefined()
+      expect(screen.getByText(/session sess_act/)).toBeDefined()
+      expect(screen.getByText('demo mode (synthetic)')).toBeDefined()
+      expect(screen.getByText(/Running in/)).toBeDefined()
       expect(screen.getByText('Demo')).toBeDefined()
-      expect(screen.getByText('OpenAI')).toBeDefined()
+      expect(screen.getByRole('button', { name: 'OpenAI' })).toBeDefined()
 
       // Switching to OpenAI reveals endpoint controls
-      fireEvent.click(screen.getByText('OpenAI'))
+      fireEvent.click(screen.getByRole('button', { name: 'OpenAI' }))
       expect(screen.getByText('endpoint')).toBeDefined()
       expect(screen.getByLabelText('base url')).toBeDefined()
       expect(screen.getByLabelText('model')).toBeDefined()
+      expect(screen.getByLabelText('api key')).toBeDefined()
 
       // Steps rendered
       expect(screen.getByText('Reading repository structure')).toBeDefined()

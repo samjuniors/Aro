@@ -18747,7 +18747,11 @@ const terminalIpc = registerTerminalIpc({
   getSshConnectionState: scope => sshConnections.get(scope)
 })
 // Aro bridge daemon ownership (hermes:aro:bridge:*) — see aro-ipc.ts.
-registerAroIpc({ resolveAroDaemon: resolveDefaultAroDaemon })
+try {
+  registerAroIpc({ resolveAroDaemon: resolveDefaultAroDaemon })
+} catch (error) {
+  rememberLog?.(`[aro-bridge] failed to register aro IPC: ${error instanceof Error ? error.message : String(error)}`)
+}
 
 const disposeTerminalSession = terminalIpc.disposeTerminalSession
 

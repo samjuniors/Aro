@@ -33,7 +33,7 @@ import { parseTodos, type TodoItem } from '@/lib/todos'
 import { cn } from '@/lib/utils'
 import { activeGateway } from '@/store/gateway'
 import { $approvalRequests, answerApproval, type ApprovalRequest } from '@/store/prompts'
-import { $reviewFiles, refreshReview, reviewRepoCwd, stageReviewFile, unstageReviewFile } from '@/store/review'
+import { $reviewFiles, $reviewIsRepo, refreshReview, reviewRepoCwd, stageReviewFile, unstageReviewFile } from '@/store/review'
 import { $activeSessionId, $busy, $messages, $sessions } from '@/store/session'
 import { $sessionStates } from '@/store/session-states'
 import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
@@ -491,6 +491,8 @@ export function useAroTranscript() {
 export interface AroReviewData {
   files: DiffFile[]
   live: boolean
+  available: boolean
+  error: string | null
   loading: boolean
   stagedSet: ReadonlySet<string>
   toggleStaged: (path: string) => void
@@ -499,38 +501,53 @@ export interface AroReviewData {
 
 export function useAroReview(): AroReviewData {
   const liveFiles = useStore($reviewFiles)
+  const isRepo = useStore($reviewIsRepo)
   const tick = useStore($workspaceChangeTick)
   const [diffs, setDiffs] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
+  const [diffLoading, setDiffLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const seq = useRef(0)
 
-  const live = liveFiles.length > 0
+  const git = desktopGit()
+  const cwd = reviewRepoCwd()
+  const available = Boolean(git?.review && cwd && isRepo)
+  const live = available && error === null
 
-  // Keep the host's changed-file store fresh (it also refreshes on its own
-  // workspace ticks; this primes it when our page is the open surface).
-  useEffect(() => {
-    void refreshReview()
-  }, [tick])
 
   // Fetch the unified diff per changed file (uncommitted scope) — the same
   // git bridge the host review pane uses. Re-runs when the agent edits files.
   useEffect(() => {
-    if (!live) {return}
-    const mine = ++seq.current
-    const git = desktopGit()
-    const cwd = reviewRepoCwd()
+    if (!available) {
+      setDiffs({})
+      setError('Git review unavailable — no Git repository or desktop Git bridge')
 
-    if (!git || !cwd) {
+      return
+    }
+
+    setError(null)
+
+    if (liveFiles.length === 0) {
       setDiffs({})
 
       return
     }
 
-    setLoading(true)
+    const mine = ++seq.current
+    const gitReview = desktopGit()?.review
+    const currentCwd = reviewRepoCwd()
+
+    if (!gitReview || !currentCwd) {
+      setDiffs({})
+      setError('Git review unavailable — no Git repository or desktop Git bridge')
+
+      return
+    }
+
+    setDiffLoading(true)
     void Promise.all(
       liveFiles.slice(0, 40).map(async (f): Promise<[string, string]> => {
         try {
-          return [f.path, await git.review.diff(cwd, f.path, 'uncommitted', undefined, f.staged)]
+          return [f.path, await gitReview.diff(currentCwd, f.path, 'uncommitted', undefined, f.staged)]
         } catch {
           return [f.path, '']
         }
@@ -538,12 +555,16 @@ export function useAroReview(): AroReviewData {
     ).then(entries => {
       if (mine !== seq.current) {return}
       setDiffs(Object.fromEntries(entries.filter(([, d]) => d && d.trim().length > 0)))
-      setLoading(false)
+      setDiffLoading(false)
+    }).catch(err => {
+      if (mine !== seq.current) {return}
+      setError(err instanceof Error ? err.message : String(err))
+      setDiffLoading(false)
     })
-  }, [live, liveFiles])
+  }, [available, liveFiles])
 
   const files = useMemo<DiffFile[]>(() => {
-    if (!live) {return []}
+    if (!available || liveFiles.length === 0) {return []}
 
     return liveFiles.map(f => {
       const parsed = parseUnifiedDiff(diffs[f.path] ?? '', f.path)
@@ -552,9 +573,9 @@ export function useAroReview(): AroReviewData {
         ? { ...parsed, path: f.path, adds: f.added || parsed.adds, dels: f.removed || parsed.dels }
         : { path: f.path, adds: f.added, dels: f.removed, lines: [] as DiffLine[] }
     })
-  }, [live, liveFiles, diffs])
+  }, [available, liveFiles, diffs])
 
-  const stagedSet = useMemo(() => new Set(live ? liveFiles.filter(f => f.staged).map(f => f.path) : []), [live, liveFiles])
+  const stagedSet = useMemo(() => new Set(available ? liveFiles.filter(f => f.staged).map(f => f.path) : []), [available, liveFiles])
 
   const toggleStaged = useCallback(
     (path: string) => {
@@ -568,7 +589,7 @@ export function useAroReview(): AroReviewData {
     void refreshReview()
   }, [])
 
-  return { files, live, loading, stagedSet, toggleStaged, refresh }
+  return { files, live, available, error, loading: diffLoading, stagedSet, toggleStaged, refresh }
 }
 
 /* ============================ tasks ============================ */

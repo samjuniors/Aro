@@ -184,6 +184,11 @@ describe('Aro Live Adapters & Pure Functions (live.tsx & bridge.ts)', () => {
       render(<SourceBadge demoLabel="preview data" live={false} />)
       expect(screen.getByText('preview data')).toBeDefined()
     })
+
+    it('renders unavailable badge when demoLabel is unavailable and live is false', () => {
+      render(<SourceBadge demoLabel="unavailable" live={false} />)
+      expect(screen.getByText('unavailable')).toBeDefined()
+    })
   })
 
   describe('deriveAroSteps (bridge.ts)', () => {
