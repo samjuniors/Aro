@@ -23,7 +23,7 @@ describe('AroRulesPage (RulesView.tsx)', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Global Rules' })).toBeDefined()
     expect(screen.getByText('No global rules added')).toBeDefined()
     expect(screen.getByText('local adapter')).toBeDefined()
-    expect(screen.getByText('conductor.workspace.v3.rules')).toBeDefined()
+    expect(screen.getAllByText('conductor.workspace.v3.rules').length).toBeGreaterThan(0)
 
     // Add rule input & button
     expect(
@@ -163,4 +163,18 @@ describe('AroRulesPage (RulesView.tsx)', () => {
     expect(screen.getByText('TypeScript coding standards')).toBeDefined()
     expect(screen.queryByText('Git commit message convention')).toBeNull()
   })
+
+  it('renders clear runtime boundary notice explaining rules are stored locally and not injected into Hermes agent execution', () => {
+    render(<AroRulesPage />)
+
+    expect(
+      screen.getByText('Locally Saved Rules (Not Injected into Hermes Runtime)')
+    ).toBeDefined()
+    expect(screen.getByText('local storage only')).toBeDefined()
+    expect(
+      screen.getByText(/Active Hermes agent instructions are configured via Profile SOUL.md/i)
+    ).toBeDefined()
+    expect(screen.getByText('Locally enabled (not in Hermes)')).toBeDefined()
+  })
 })
+

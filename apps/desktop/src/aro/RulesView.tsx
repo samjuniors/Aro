@@ -257,7 +257,7 @@ export function AroRulesPage() {
               Global Rules
             </h1>
             <p className="text-[12px] text-aro-ink-3">
-              Global instructions you write. Stored locally to guide agent responses and workflows across sessions.
+              Locally saved instructions stored in workspace preferences. Note: Active Hermes agent instructions are configured via Profile SOUL.md; these local rules are stored locally and do not alter live Hermes agent execution.
             </p>
           </div>
 
@@ -276,6 +276,25 @@ export function AroRulesPage() {
 
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
+        {/* Runtime Boundary Notice */}
+        <section
+          aria-label="Runtime Integration Notice"
+          className="rounded-[10px] border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
+        >
+          <div className="flex items-center gap-2">
+            <IconSliders className="text-aro-iris" size={15} />
+            <h2 className="text-[12.5px] font-semibold text-aro-ink">
+              Locally Saved Rules (Not Injected into Hermes Runtime)
+            </h2>
+            <Badge mono tone="amber">
+              local storage only
+            </Badge>
+          </div>
+          <p className="text-[11.5px] text-aro-ink-3">
+            These rules are persisted strictly in local workspace preferences (<code className="font-aro-mono text-[10.5px]">conductor.workspace.v3.rules</code>). Hermes agent execution instructions are loaded from Profile <code className="font-aro-mono text-[10.5px]">SOUL.md</code>. Creating, editing, enabling, or disabling rules here does not alter live Hermes agent execution until server-side rules synchronization is connected.
+          </p>
+        </section>
+
         {/* Stats Row */}
         <section aria-label="Rule Statistics" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Stat
@@ -286,13 +305,13 @@ export function AroRulesPage() {
           />
           <Stat
             label="Active Rules"
-            sub="Passed to agent sessions"
+            sub="Locally enabled (not in Hermes)"
             tone="mint"
             value={enabledCount}
           />
           <Stat
             label="Disabled Rules"
-            sub="Toggled off without deletion"
+            sub="Toggled off locally"
             tone={disabledCount > 0 ? 'amber' : 'neutral'}
             value={disabledCount}
           />

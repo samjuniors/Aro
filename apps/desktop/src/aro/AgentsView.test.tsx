@@ -28,7 +28,7 @@ describe('AroAgentsPage (AgentsView.tsx)', () => {
       screen.getByRole('heading', { level: 1, name: 'Coding Agent Adapters' })
     ).toBeDefined()
     expect(screen.getByText('local catalog')).toBeDefined()
-    expect(screen.getByText('conductor.workspace.v3.agents')).toBeDefined()
+    expect(screen.getAllByText('conductor.workspace.v3.agents').length).toBeGreaterThan(0)
 
     // Seed agents should be rendered
     expect(screen.getByText('Aro Agent')).toBeDefined()
@@ -225,4 +225,23 @@ describe('AroAgentsPage (AgentsView.tsx)', () => {
       screen.getByText('No subagent tasks have been spawned in the current session.')
     ).toBeDefined()
   })
+
+  it('renders clear execution boundary notice and honest status distinguishing reference specifications from live subagents', () => {
+    render(<AroAgentsPage />)
+
+    // Notice
+    expect(
+      screen.getByText('Catalog & Runtime Execution Boundaries')
+    ).toBeDefined()
+    expect(screen.getByText('catalog metadata')).toBeDefined()
+    expect(
+      screen.getByText(/reference specifications from the prototype catalog, not verified local host installations/i)
+    ).toBeDefined()
+
+    // Honest card status
+    expect(
+      screen.getAllByText('Catalog reference specification (not locally verified)').length
+    ).toBeGreaterThan(0)
+  })
 })
+

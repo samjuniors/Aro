@@ -121,7 +121,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
       }
 
       toast(
-        `Selected ${id} adapter. A compatible runtime connection is required for execution.`,
+        `Saved ${id} as workspace adapter preference. Note: Hermes session turns execute through the active profile model; this preference is stored locally.`,
         'iris'
       )
     },
@@ -204,7 +204,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
         setFormStrengths('')
         setFormWeakSpots('')
         setRegisterError(null)
-        toast(`Registered agent adapter "${cleanName}"`, 'mint')
+        toast(`Registered custom agent adapter metadata "${cleanName}"`, 'mint')
       } else {
         setRegisterError('Failed to register agent adapter.')
       }
@@ -244,7 +244,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               Coding Agent Adapters
             </h1>
             <p className="text-[12px] text-aro-ink-3">
-              Catalog of supported coding agent adapters and live session subagents. Installation and runtime status are reported honestly.
+              Reference catalog of coding agent definitions and live Hermes session subagents. Catalog entries represent reference specifications; custom registrations store local metadata only.
             </p>
           </div>
 
@@ -263,6 +263,25 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
       {/* Main Container */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
+        {/* Runtime Boundary Notice */}
+        <section
+          aria-label="Agent Execution Notice"
+          className="rounded-[10px] border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
+        >
+          <div className="flex items-center gap-2">
+            <IconTerminal className="text-aro-iris" size={15} />
+            <h2 className="text-[12.5px] font-semibold text-aro-ink">
+              Catalog & Runtime Execution Boundaries
+            </h2>
+            <Badge mono tone="iris">
+              catalog metadata
+            </Badge>
+          </div>
+          <p className="text-[11.5px] text-aro-ink-3">
+            <strong>Built-in catalog entries</strong> are reference specifications from the prototype catalog, not verified local host installations. <strong>Custom agent registration</strong> saves adapter metadata locally to workspace preferences (<code className="font-aro-mono text-[10.5px]">conductor.workspace.v3.agents</code>); it does not create an executable process or register a tool with the Hermes backend. <strong>Active Session Subagents</strong> below are genuine live subagents streamed from Hermes gateway events.
+          </p>
+        </section>
+
         {/* Statistics Row */}
         <section aria-label="Catalog Statistics" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Stat
@@ -273,7 +292,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
           />
           <Stat
             label="Selected Adapter"
-            sub="Active session preference"
+            sub="Local preference (conductor.adapter.selected)"
             tone="mint"
             value={selectedAdapterId.toUpperCase()}
           />
@@ -374,9 +393,14 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
             className="rounded-[10px] border border-aro-iris/40 bg-aro-raise p-4 shadow-aro-e2 space-y-3"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-[13px] font-semibold text-aro-ink">
-                Register Custom Agent Adapter
-              </h3>
+              <div>
+                <h3 className="text-[13px] font-semibold text-aro-ink">
+                  Register Custom Agent Adapter
+                </h3>
+                <p className="text-[11px] text-aro-ink-3">
+                  Saves adapter metadata to local workspace storage (<code className="font-aro-mono text-[10px]">conductor.workspace.v3.agents</code>). Does not spawn an executable process.
+                </p>
+              </div>
               <IconButton
                 icon={IconX}
                 label="Close form"
@@ -606,11 +630,9 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                             STATUS:
                           </span>
                           <span className="text-aro-ink-3">
-                            {agent.status === 'connected'
-                              ? 'Adapter definition reachable'
-                              : agent.status === 'degraded'
-                                ? 'Degraded status reported'
-                                : 'Runtime not connected'}
+                            {agent.custom
+                              ? 'Local metadata definition (not an executable process)'
+                              : 'Catalog reference specification (not locally verified)'}
                           </span>
                         </div>
 
@@ -651,7 +673,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                           size="xs"
                           variant={isSelected ? 'secondary' : 'ghost'}
                         >
-                          {isSelected ? 'Selected' : 'Use in session'}
+                          {isSelected ? 'Selected' : 'Select'}
                         </Button>
                       </div>
                     </div>

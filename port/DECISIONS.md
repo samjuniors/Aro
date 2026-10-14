@@ -231,18 +231,21 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
 - Reversibility: high (isolated to A9-owned files `orb.tsx`, `voice-agent-orb.tsx`, and their test suites; zero A3 files modified).
 
 **D-0048 — Area 10 (A10): Local Surfaces (Rules, Agent Adapters, Onboarding & Doctor) Integration, Persistence & Diagnostic Integrity.**
-- **Rules Surface (`apps/desktop/src/aro/RulesView.tsx`)**:
+- **Rules Surface & Runtime Boundary (`apps/desktop/src/aro/RulesView.tsx`)**:
   - Full CRUD operations via `adapters.rules` interacting directly with genuine persistence under `conductor.workspace.v3.rules`.
   - Enable/disable toggles persist rule state under `conductor.workspace.v3.rules.disabled`.
+  - Explicit Runtime Boundary: Rules are strictly locally saved instructions stored in workspace preferences. Hermes agent instructions are managed through Profile `SOUL.md`; local rules are not currently injected into Hermes runtime execution, and enable/disable toggles do not alter live agent turns.
+  - UI transparency: Explicitly labeled with a prominent runtime notice box, "Local Workspace Rules (Not Injected into Hermes Runtime)", stat subtitles ("Locally enabled (not in Hermes)"), and `local storage only` badges.
   - Inline editing with dirty tracking: explicitly distinguishes saved rules from unsaved pending edits via an `Unsaved edits pending` indicator and disables Save when unedited.
   - Search, tag filtering, error handling with honest error alerts, and genuine empty state when no rules are configured.
   - Backend integration boundary clearly documented and marked with `// BACKEND-TODO(rules)` for future server-side profile/rules synchronization.
-- **Agent Adapters Surface (`apps/desktop/src/aro/AgentsView.tsx`)**:
-  - Displays seed coding agent catalog alongside user-registered custom agents.
-  - Real custom agent registration and unregistration via `adapters.agents` backed by `conductor.workspace.v3.agents` persistence.
-  - Enforces unregister protection on built-in seed agents (Aro, Hermes, Claude, OpenAI, Cursor, Cline).
-  - Session isolation: Active session subagents monitor reads strictly from `$subagentsBySession[$activeSessionId]`, preventing cross-session leakage. When no session is active or the active session has no subagents, an honest empty state is rendered.
-  - Transparent status reporting: Model tools and subagents are badged as active or available based on real session state; marked with `// BACKEND-TODO(agents)`.
+- **Agent Adapters Surface & Runtime Execution Boundaries (`apps/desktop/src/aro/AgentsView.tsx`)**:
+  - Adapter Catalog Distinction: Built-in catalog entries (`SEED_AGENTS`) are reference specifications from the prototype catalog, not verified local host installations. Cards honestly report `STATUS: Catalog reference specification (not locally verified)`.
+  - Local Metadata Registration: Custom agent registration saves adapter metadata (`id`, `name`, `vendor`, `kind`, `glyph`, `version`, `strengths`, `weakSpots`) to `conductor.workspace.v3.agents`. It does not create an executable runtime process or register tools with the Hermes backend.
+  - Selection Preference: Selecting an adapter writes `conductor.adapter.selected` in local storage; it does not change the Hermes backend execution model.
+  - Genuine Live Subagents: Active session subagents displayed in the view are genuine Hermes runtime subagents streamed from gateway events (`subagent.progress`, `subagent.thinking`, `subagent.complete`) via `$subagentsBySession[$activeSessionId]`. Session isolation is enforced strictly against `$activeSessionId`.
+  - Unregister Safety: Custom agent unregistration removes local metadata from storage; seed agents are strictly protected from deletion.
+  - Backend integration boundary preserved and marked with `// BACKEND-TODO(agents)`.
 - **Onboarding and Doctor Surface (`apps/desktop/src/aro/OnboardingDoctorView.tsx`)**:
   - Reusable `OnboardingStrip` evaluates real application state: workspace folder presence (`$currentCwd`), active session count (`$allSessions`), and provider readiness. Onboarding completion/dismissal is persisted under `conductor.onboarding.done`.
   - System Doctor (`AroDoctorPage`) runs genuine local checks via `adapters.doctor.sweep()` and reports honest diagnostic states: `pass`, `warn`, `fail`, and `unknown` (e.g., providers correctly identified as `unknown` when credentials are not configured rather than claiming pass).
@@ -252,11 +255,11 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
   - Contributed 3 dedicated routes: `ARO_RULES_ROUTE` (`/aro-rules`), `ARO_AGENTS_ROUTE` (`/aro-agents`), `ARO_DOCTOR_ROUTE` (`/aro-doctor`).
   - Added 3 sidebar navigation items (order 54, 55, 56) with appropriate glyphs and labels (`Rules`, `Agents`, `Doctor`).
 - **Verification**:
-  - 4 focused A10 test files pass cleanly (28/28 tests): `RulesView.test.tsx` (8 tests), `AgentsView.test.tsx` (8 tests), `OnboardingDoctorView.test.tsx` (9 tests), `register.test.tsx` (3 tests).
-  - Full `src/aro/` test suite passes (88/88 tests across 11 files).
+  - 4 focused A10 test files pass cleanly (30/30 tests): `RulesView.test.tsx` (9 tests), `AgentsView.test.tsx` (9 tests), `OnboardingDoctorView.test.tsx` (9 tests), `register.test.tsx` (3 tests).
+  - Full `src/aro/` test suite passes (90/90 tests across 11 files).
   - Adapters test suite passes (31/31 tests across 8 files).
   - Cross-area targeted regressions pass (107/107 tests across 17 test files spanning A0–A9).
-  - TypeScript typecheck (`npm --prefix apps/desktop run typecheck`) passes with 0 errors.
+  - TypeScript typecheck (`npm --prefix apps/desktop run typecheck`) passes with 0 errors across renderer, electron, and e2e configs.
   - ESLint passes with 0 errors and 0 warnings on all touched files.
   - Production build (`npm --prefix apps/desktop run build`) succeeds with exit code 0.
 - Reversibility: high (isolated to A10-owned files `RulesView.tsx`, `AgentsView.tsx`, `OnboardingDoctorView.tsx`, `register.tsx`, and their companion test files; no adapter files or frozen Electron files modified).
