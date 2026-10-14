@@ -27,20 +27,19 @@ import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { useWindowControlsOverlayWidth } from '@/app/shell/hooks/use-window-controls-overlay-width'
 import { titlebarControlsPosition, titlebarToolsRightCss } from '@/app/shell/titlebar'
+import { $workspaceOwnerLabels } from '@/components/pane-shell/workspace-scope'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tip } from '@/components/ui/tooltip'
 import { sessionTitle } from '@/lib/chat-runtime'
+import { $openBotChat, $selectedBot } from '@/plugins/hermes-bots/bot-state'
 import { $repoStatus, repoStatusForCwd } from '@/store/coding-status'
 import { openCommandPalette } from '@/store/command-palette'
 import { $fileBrowserOpen, $leftSideOpen, toggleLeftSide, toggleRightSide } from '@/store/layout'
 import { $activeGatewayProfile, $profiles, profileLabel, selectProfile } from '@/store/profile'
+import { $projectOwnerBySessionId, $projects, openFolderAsProject } from '@/store/projects'
 import { $connection, $currentCwd, $selectedStoredSessionId, $sessions } from '@/store/session'
 import { $botChatScopes } from '@/store/session-states'
 import { $statusbarVisible } from '@/store/statusbar-prefs'
-import { $projectOwnerBySessionId, $projects, openFolderAsProject } from '@/store/projects'
-import { $aroSessionProjectMap, resolveAroSessionProjectId } from './project-session-map'
-import { $workspaceOwnerLabels } from '@/components/pane-shell/workspace-scope'
-import { $openBotChat, $selectedBot } from '@/plugins/hermes-bots/bot-state'
 
 import {
   IconBranch,
@@ -56,6 +55,7 @@ import {
   LogoMark
 } from './Icons'
 import { $aroProductMode, setAroProductMode } from './mode'
+import { $aroSessionProjectMap, resolveAroSessionProjectId } from './project-session-map'
 import { IconButton, Kbd } from './ui'
 
 export interface AroThemeOption {
@@ -167,6 +167,7 @@ export function AroTitlebar() {
   const profileDisplayName = matchedProfile ? profileLabel(matchedProfile) : (currentProfileName !== 'default' ? currentProfileName : '')
 
   const activeBotKey = openBotChat?.key || selectedBot || 'default'
+
   const botDisplayName =
     workspaceOwnerLabels[activeBotKey] ||
     botScope?.workspaceTabTitle ||
@@ -185,8 +186,9 @@ export function AroTitlebar() {
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
 
   const activeProject = useMemo(() => {
-    if (!activeSession) return null
+    if (!activeSession) {return null}
     const pId = resolveAroSessionProjectId(activeSession, projects, projectOwners, aroSessionProjectMap)
+
     return pId ? projects.find(p => p.id === pId) : null
   }, [activeSession, projects, projectOwners, aroSessionProjectMap])
 

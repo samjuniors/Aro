@@ -501,15 +501,15 @@ export const IconFilePlus = (p: P) => (
   <svg {...base(p)}>
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
     <path d="M14 2v6h6" />
-    <line x1="12" y1="18" x2="12" y2="12" />
-    <line x1="9" y1="15" x2="15" y2="15" />
+    <line x1="12" x2="12" y1="18" y2="12" />
+    <line x1="9" x2="15" y1="15" y2="15" />
   </svg>
 )
 
 export const IconSplitVertical = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="12" y1="3" x2="12" y2="21" />
+    <rect height="18" rx="2" width="18" x="3" y="3" />
+    <line x1="12" x2="12" y1="3" y2="21" />
   </svg>
 )
 
@@ -533,7 +533,7 @@ export const IconMinimize = (p: P) => (
 
 export const IconPanelClose = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <rect height="16" rx="2.5" width="18" x="3" y="4" />
     <path d="M15 4v16" />
     <path d="m8 9 3 3-3 3" />
   </svg>
@@ -547,7 +547,7 @@ export const IconChevronRight = (p: P) => (
 
 export const IconColumns = (p: P) => (
   <svg {...base(p)}>
-    <rect x="3" y="4.5" width="18" height="15" rx="2.2" />
+    <rect height="15" rx="2.2" width="18" x="3" y="4.5" />
     <path d="M15 4.5v15" />
   </svg>
 )

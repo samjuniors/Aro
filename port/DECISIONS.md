@@ -289,6 +289,15 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
   - Production build (`npm --prefix apps/desktop run build`) succeeds cleanly with exit code 0.
 - Reversibility: high (isolated to A11-owned files `AroAppearanceSettings.tsx`, `AroAppearanceSettings.test.tsx`, `design-axes.ts`, `design-axes.test.ts`, and registration in `register.tsx`; zero modifications to frozen files or host Hermes settings files).
 
-
-
-
+**D-0050 — Phase 5: Parity Gate Verification, Wire Conformance Audit, and Full-Tree Test Certification.**
+- **Verification Audit**:
+  - Full TypeScript typecheck (`npm --prefix apps/desktop run typecheck`) across all four project configurations (`tsconfig.json`, `tsconfig.electron.json`, `tsconfig.e2e.json`, `electron-builder.config.cjs`) passes cleanly with 0 errors.
+  - Targeted ESLint check on all fork-owned surfaces (`src/aro/` and `src/adapters/`) passes with 0 errors and 0 warnings.
+  - Complete UI test suite (`npm --prefix apps/desktop run test:ui -- src/aro/ src/adapters/`) passes with 133/133 tests green across 20 test files.
+  - Production build (`npm --prefix apps/desktop run build`) executes through `scripts/build.mjs` and generates a verified production artifact bundle (`electron-main.mjs`, `electron-preload.js`, and Vite assets) with exit code 0.
+- **Wire Baseline Conformance**:
+  - Every IPC channel, preload member, JSON-RPC frame, REST endpoint, and persisted storage namespace used in the ported UI was audited against `port/WIRE_BASELINE.md`. Zero undocumented or unauthorized wire additions exist outside the recorded fork extensions (§G.1–§G.5).
+- **Parity Gate & Renderer Preservation**:
+  - Formal parity gate passed and documented in `port/PARITY_REPORT.md`.
+  - In adherence to Rule 4, the host Hermes renderer is preserved intact until final user acceptance.
+- Reversibility: high (contract audit and verification record; zero production functional code altered).

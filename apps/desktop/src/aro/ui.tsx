@@ -11,8 +11,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import { cn } from '@/lib/utils'
 
@@ -245,6 +245,7 @@ export function Menu({
 
   const ref = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
   const [coords, setCoords] = useState<{ top: number; left: number; opensAbove: boolean }>({
     top: 0,
     left: 0,
@@ -252,7 +253,7 @@ export function Menu({
   })
 
   const updatePosition = useCallback(() => {
-    if (!ref.current) return
+    if (!ref.current) {return}
     const rect = ref.current.getBoundingClientRect()
     const spaceBelow = window.innerHeight - rect.bottom
     const spaceAbove = rect.top
@@ -265,6 +266,7 @@ export function Menu({
     if (left + width > window.innerWidth - 8) {
       left = Math.max(8, window.innerWidth - width - 8)
     }
+
     if (left < 8) {
       left = 8
     }
@@ -273,12 +275,13 @@ export function Menu({
   }, [align, width])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {return}
 
     updatePosition()
 
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as Node
+
       if (
         ref.current &&
         !ref.current.contains(target) &&
@@ -319,13 +322,13 @@ export function Menu({
         typeof document !== 'undefined' &&
         createPortal(
           <div
-            ref={menuRef}
             className={cn(
               'fixed z-[99999] overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
               coords.opensAbove
                 ? 'origin-bottom animate-aro-slide-up -translate-y-full'
                 : 'origin-top animate-aro-slide-down',
             )}
+            ref={menuRef}
             style={{
               top: coords.top,
               left: coords.left,
@@ -709,6 +712,7 @@ export function Modal({
   }, [open, onClose])
 
   if (!open) {return null}
+
   if (typeof document === 'undefined') {return null}
 
   return createPortal(
