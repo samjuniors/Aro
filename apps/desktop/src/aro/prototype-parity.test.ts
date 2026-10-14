@@ -112,17 +112,21 @@ describe('prototype webfont parity (identity faces are actually shipped)', () =>
   const FONTS_DIR = resolve(here, '../fonts')
 
   // The five families prototype/src/app/layout.tsx loads via next/font.
-  const FACES: Array<{ family: string; file: string }> = [
-    { family: 'Space Grotesk', file: 'SpaceGrotesk-Variable.woff2' },
-    { family: 'Inter', file: 'Inter-Variable.woff2' },
-    { family: 'Newsreader', file: 'Newsreader-Variable.woff2' },
-    { family: 'DM Sans', file: 'DMSans-Variable.woff2' },
-    { family: 'JetBrains Mono', file: 'JetBrainsMono-Regular.woff2' }
+  // JetBrains Mono's @font-face pre-dates the Aro port and lives in styles.css;
+  // the four Aro identity faces were added to tokens.css.
+  const FACES: Array<{ family: string; file: string; declaredIn: 'tokens' | 'styles' }> = [
+    { family: 'Space Grotesk', file: 'SpaceGrotesk-Variable.woff2', declaredIn: 'tokens' },
+    { family: 'Inter', file: 'Inter-Variable.woff2', declaredIn: 'tokens' },
+    { family: 'Newsreader', file: 'Newsreader-Variable.woff2', declaredIn: 'tokens' },
+    { family: 'DM Sans', file: 'DMSans-Variable.woff2', declaredIn: 'tokens' },
+    { family: 'JetBrains Mono', file: 'JetBrainsMono-Regular.woff2', declaredIn: 'styles' }
   ]
+  const stylesCss = readFileSync(resolve(here, '../styles.css'), 'utf8')
 
-  it.each(FACES)('declares an @font-face for $family and ships the woff2', ({ family, file }) => {
-    // @font-face present in the token layer (loads via styles.css @import).
-    expect(desktopCss, `tokens.css missing @font-face for "${family}"`).toContain(
+  it.each(FACES)('declares an @font-face for $family and ships the woff2', ({ family, file, declaredIn }) => {
+    // @font-face present in the right stylesheet (loads via styles.css @import).
+    const css = declaredIn === 'tokens' ? desktopCss : stylesCss
+    expect(css, `${declaredIn}.css missing @font-face for "${family}"`).toContain(
       `font-family: '${family}'`
     )
     // The referenced woff2 is actually on disk.
