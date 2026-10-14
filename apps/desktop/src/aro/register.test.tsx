@@ -104,4 +104,14 @@ describe('Aro Registration (register.tsx)', () => {
       expect(typeof route.render).toBe('function')
     }
   })
+
+  it('registers AroAppearanceSettings in APPEARANCE_AREAS.extra with render function', () => {
+    const extraItems = registry.getArea('appearance.extra')
+    const aroAppearance = extraItems.find(item => item.id === 'aro-appearance-settings')
+
+    expect(aroAppearance).toBeDefined()
+    expect(aroAppearance?.title).toBe('Aro Design System & Preferences')
+    expect(aroAppearance?.order).toBe(10)
+    expect(typeof aroAppearance?.render).toBe('function')
+  })
 })

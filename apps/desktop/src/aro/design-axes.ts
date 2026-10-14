@@ -95,3 +95,74 @@ export function setMotion(motion: Motion): void {
   writePref(DESIGN_AXIS_KEYS.motion, motion)
   document.documentElement.dataset.motion = motion
 }
+
+/**
+ * Recommended Hermes built-in themes per design profile.
+ * Resolves the deferred A11 theme-profile coupling:
+ * - Aro, Codex, Cursor default to Obsidian (deep dark surface).
+ * - Claude Code defaults to Ember (warm graphite).
+ * - Editorial defaults to Nous (classic high-contrast).
+ */
+export const RECOMMENDED_THEMES: Record<DesignProfile, string> = {
+  aro: 'obsidian',
+  codex: 'obsidian',
+  claude: 'ember',
+  editorial: 'nous',
+  cursor: 'obsidian'
+} as const
+
+export const THEME_SYNC_KEY = 'conductor.design.syncTheme'
+
+export function getThemeSyncEnabled(): boolean {
+  return readPref(THEME_SYNC_KEY) === 'true'
+}
+
+export function setThemeSyncEnabled(enabled: boolean): void {
+  writePref(THEME_SYNC_KEY, enabled ? 'true' : 'false')
+}
+
+export const VOICE_ORB_KEY = 'conductor.voice.orb'
+
+export function getVoiceOrbVisible(): boolean {
+  const stored = readPref(VOICE_ORB_KEY)
+
+  if (stored !== null) {
+    return stored !== 'false'
+  }
+
+  try {
+    const hermesVal = window.localStorage.getItem('hermes.desktop.voice.orb.visible')
+
+    if (hermesVal !== null) {
+      return hermesVal !== 'false'
+    }
+  } catch {
+    // storage error
+  }
+
+  return true
+}
+
+export function setVoiceOrbVisible(visible: boolean): void {
+  writePref(VOICE_ORB_KEY, visible ? 'true' : 'false')
+
+  try {
+    window.localStorage.setItem('hermes.desktop.voice.orb.visible', visible ? 'true' : 'false')
+  } catch {
+    // storage error
+  }
+
+  window.dispatchEvent(new CustomEvent('conductor:voice:orb', { detail: visible }))
+}
+
+export const MERGE_STRATEGY_KEY = 'conductor.pref.merge'
+export const MERGE_STRATEGIES = ['merge', 'rebase', 'squash'] as const
+export type MergeStrategy = (typeof MERGE_STRATEGIES)[number]
+
+export function getMergeStrategy(): MergeStrategy {
+  return oneOf(MERGE_STRATEGIES, 'merge', readPref(MERGE_STRATEGY_KEY))
+}
+
+export function setMergeStrategy(strategy: MergeStrategy): void {
+  writePref(MERGE_STRATEGY_KEY, strategy)
+}

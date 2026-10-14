@@ -264,6 +264,31 @@ Format: decision, reason, alternatives, reversibility. One entry per decision ma
   - Production build (`npm --prefix apps/desktop run build`) succeeds with exit code 0.
 - Reversibility: high (isolated to A10-owned files `RulesView.tsx`, `AgentsView.tsx`, `OnboardingDoctorView.tsx`, `register.tsx`, and their companion test files; no adapter files or frozen Electron files modified).
 
+**D-0049 — Area 11 (A11): Settings & Preferences Integration, Design Axes Fold-In, Non-Clobbering Theme-Profile Coupling Resolution & Local Surfaces Continuity.**
+- **Settings Architecture & Seam Preservation**:
+  - Full Hermes settings architecture preserved: schema-driven sections (`config:model`, `config:chat`, `config:workspace`, `config:safety`, `config:browser`, `config:memory`, `config:voice`, `config:advanced`), custom views (`providers`, `gateway`, `keybinds`, `vault`, `notifications`, `billing`, `sessions`, `about`), and deep-linked tabs and subpages (`?tab=...&page=...`).
+  - No legacy settings UI was deleted or replaced.
+  - Port integration uses the sanctioned plugin/extension seam: `APPEARANCE_AREAS.extra` (`'appearance.extra'`) mounted by `<AppearanceExtraSlot />` in `apps/desktop/src/app/settings/appearance-settings.tsx`.
+- **Aro Appearance & Preferences Component (`apps/desktop/src/aro/AroAppearanceSettings.tsx`)**:
+  - **Design System Profiles**: Renders the 5 structural profiles (`aro`, `codex`, `claude`, `editorial`, `cursor`) with live swatches and card mockups matching the prototype. Switching profiles updates `conductor.design` and immediately updates `document.documentElement.dataset.design`.
+  - **Deferred Theme-Profile Coupling Resolution**:
+    1. User's active Hermes theme (`hermes-desktop-theme-v2` / `skinPref`) is treated as authoritative and is never silently overwritten upon profile selection.
+    2. Suggests compatible themes per profile (`obsidian` for Aro/Codex/Cursor, `ember` for Claude Code, `nous` for Editorial) via a dynamic badge and an explicit "Apply [Theme]" action.
+    3. Provides an opt-in checkbox ("Auto-sync theme", persisted in `conductor.design.syncTheme`), allowing users who desire prototype coupling behavior to opt in without clobbering existing user settings by default.
+  - **Layout Density**: Controls `conductor.density` (`comfortable` vs `compact`), updating `document.documentElement.dataset.density`.
+  - **Animation Motion**: Controls `conductor.motion` (`system` vs `reduced`), updating `document.documentElement.dataset.motion`.
+  - **Voice Assistant Orb Visibility**: Toggles `conductor.voice.orb` (and syncs with `hermes.desktop.voice.orb.visible`), dispatching `conductor:voice:orb` events.
+  - **Preferred Git Merge Strategy**: Persists user choice (`merge`, `rebase`, `squash`) under `conductor.pref.merge` as an inert preference record.
+  - **Local Surfaces Continuity**: Provides direct navigation links to A10's dedicated routes (`/aro-rules`, `/aro-agents`, `/aro-doctor`) and A8's design spec (`/aro-design`), fulfilling `port/AREA_PLAN.md` §7 Item 2 without duplicating CRUD engines.
+- **Verification**:
+  - 13 test files (101 tests) pass green in `src/aro/`, including 9/9 tests in `AroAppearanceSettings.test.tsx` and 8/8 tests in `design-axes.test.ts`.
+  - 16 cross-area regression test files (153 tests across A0–A11) pass with zero errors.
+  - Appearance extra slot tests pass (3/3 tests across `appearance-contrib.test.tsx` and `appearance-settings.extra-slot.test.tsx`).
+  - TypeScript typecheck (`npm --prefix apps/desktop run typecheck`) passes with 0 errors across renderer, electron, and e2e configs.
+  - ESLint passes with 0 errors and 0 warnings on all touched files.
+  - Production build (`npm --prefix apps/desktop run build`) succeeds cleanly with exit code 0.
+- Reversibility: high (isolated to A11-owned files `AroAppearanceSettings.tsx`, `AroAppearanceSettings.test.tsx`, `design-axes.ts`, `design-axes.test.ts`, and registration in `register.tsx`; zero modifications to frozen files or host Hermes settings files).
+
 
 
 

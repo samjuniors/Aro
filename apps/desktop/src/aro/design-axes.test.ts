@@ -94,4 +94,43 @@ describe('aro design axes (A0 foundations)', () => {
     expect(root().dataset.design).toBe('claude')
     expect(root().dataset.density).toBe('compact')
   })
+
+  it('exposes recommended themes for each design profile', async () => {
+    const { RECOMMENDED_THEMES } = await import('./design-axes')
+    expect(RECOMMENDED_THEMES.aro).toBe('obsidian')
+    expect(RECOMMENDED_THEMES.codex).toBe('obsidian')
+    expect(RECOMMENDED_THEMES.claude).toBe('ember')
+    expect(RECOMMENDED_THEMES.editorial).toBe('nous')
+    expect(RECOMMENDED_THEMES.cursor).toBe('obsidian')
+  })
+
+  it('handles theme sync, voice orb, and merge strategy persistence', async () => {
+    const {
+      getMergeStrategy,
+      getThemeSyncEnabled,
+      getVoiceOrbVisible,
+      MERGE_STRATEGY_KEY,
+      setMergeStrategy,
+      setThemeSyncEnabled,
+      setVoiceOrbVisible,
+      THEME_SYNC_KEY,
+      VOICE_ORB_KEY
+    } = await import('./design-axes')
+
+    expect(getThemeSyncEnabled()).toBe(false)
+    setThemeSyncEnabled(true)
+    expect(window.localStorage.getItem(THEME_SYNC_KEY)).toBe('true')
+    expect(getThemeSyncEnabled()).toBe(true)
+
+    expect(getVoiceOrbVisible()).toBe(true)
+    setVoiceOrbVisible(false)
+    expect(window.localStorage.getItem(VOICE_ORB_KEY)).toBe('false')
+    expect(window.localStorage.getItem('hermes.desktop.voice.orb.visible')).toBe('false')
+    expect(getVoiceOrbVisible()).toBe(false)
+
+    expect(getMergeStrategy()).toBe('merge')
+    setMergeStrategy('squash')
+    expect(window.localStorage.getItem(MERGE_STRATEGY_KEY)).toBe('squash')
+    expect(getMergeStrategy()).toBe('squash')
+  })
 })

@@ -24,9 +24,11 @@
  */
 
 import { type RouteContribution, ROUTES_AREA, SIDEBAR_NAV_AREA, type SidebarNavContribution } from '@/app/routes'
+import { APPEARANCE_AREAS } from '@/app/settings/appearance-contrib'
 import { registry } from '@/contrib/registry'
 
 import { AroAgentsPage } from './AgentsView'
+import { AroAppearanceSettings } from './AroAppearanceSettings'
 import { AroBridgeView } from './AroBridgeView'
 import { AroDesignSystemPage } from './DesignSystemAro'
 import { AroDoctorPage } from './OnboardingDoctorView'
@@ -152,5 +154,14 @@ registry.registerMany([
     area: SIDEBAR_NAV_AREA,
     order: 56,
     data: { codicon: 'pulse', label: 'Aro Doctor', path: ARO_DOCTOR_ROUTE } satisfies SidebarNavContribution,
+  },
+
+  /* ── appearance settings extra slot ──────────────────────────── */
+  {
+    id: 'aro-appearance-settings',
+    area: APPEARANCE_AREAS.extra,
+    title: 'Aro Design System & Preferences',
+    order: 10,
+    render: () => <AroAppearanceSettings />,
   },
 ])
