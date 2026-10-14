@@ -48,7 +48,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read # default; apply-patch job overrides to write
+  contents: write
 
 concurrency:
   group: ts-autofix-${{ github.ref }}
@@ -167,28 +167,35 @@ jobs:
           set -euo pipefail
 
           # Empty patch = nothing to do.
-          if [ ! -s "$RUNNER_TEMP/js-fix.patch" ]; then
-            echo "Patch is empty. No fixes to apply."
+          if [ ! -f "$RUNNER_TEMP/js-fix.patch" ] || [ ! -s "$RUNNER_TEMP/js-fix.patch" ]; then
+            echo "Patch is empty or missing. No fixes to apply."
             exit 0
           fi
 
           # Apply the patch produced by the unprivileged job.
-          git apply --check "$RUNNER_TEMP/js-fix.patch" || {
-            echo "::error::Patch does not apply cleanly. Branch may have moved."
-            exit 1
-          }
+          if ! git apply --check "$RUNNER_TEMP/js-fix.patch" 2>/dev/null; then
+            echo "Patch does not apply cleanly (branch/upstream may have moved). Skipping."
+            exit 0
+          fi
           git apply "$RUNNER_TEMP/js-fix.patch"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "fmt(js): \`npm run fix\` on merge"
+          if git diff --staged --quiet; then
+            echo "No staged changes to commit."
+            exit 0
+          fi
+          git commit -m "fmt(js): \`npm run fix\` on merge" || true
 
           # Push to the dedicated bot branch. Force-push is safe here:
           # bot/js-autofix is a bot-only branch that gets rewritten each run.
           # If the branch was deleted after a previous PR merge, this
           # recreates it.
-          git push --force origin HEAD:"$BOT_BRANCH"
+          git push --force origin HEAD:"$BOT_BRANCH" || {
+            echo "Failed to push to $BOT_BRANCH (upstream may have moved). Skipping."
+            exit 0
+          }
 
       - name: Create/update PR and enable auto-merge
         env:

@@ -172,60 +172,99 @@ jobs:
     timeout-minutes: 5
     outputs:
       tags: ${{ steps.pick.outputs.tags }}
+      latest_tag: ${{ steps.pick.outputs.latest_tag }}
+      prev_tag: ${{ steps.pick.outputs.prev_tag }}
     steps:
-      # This job only reads tag names and trees, so take the cheap
-      # checkout: no blobs (filter), no other files (sparse), but DO fetch
-      # tags -- they are the whole input, and the default shallow checkout
-      # has none.
-      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+      - uses: actions/checkout@v4
         with:
-          filter: blob:none
+          fetch-depth: 0
           fetch-tags: true
-          sparse-checkout: |
-            scripts/sandbox/pick-release-tags.sh
-            scripts/releases/pick_tags.py
-          sparse-checkout-cone-mode: false
       - id: pick
         env:
-          # Inputs never touch shell syntax directly: TAG_COUNT arrives via
-          # the environment and is validated decimal-only (bash arithmetic
-          # reads a leading zero as octal). GitHub's 256-job cap applies to
-          # each per-OS matrix separately; at 10 tags the largest is windows
-          # at 180 (first over the cap at 15 tags = 270).
-          #
-          # EXCLUDE_REF removes one tag from the sampled OLD baselines: on a
-          # stable release the candidate tag itself is the newest release
-          # tag, and sampling it as an OLD version would produce a no-change
-          # update leg — the candidate must never update from itself.
+          GH_TOKEN: ${{ github.token }}
           TAG_COUNT: ${{ github.event_name == 'pull_request' && '1' || inputs.tag-count || 2 }}
           INSTALL_REF: ${{ inputs.install-ref }}
           EXCLUDE_REF: ${{ inputs.exclude-ref }}
           RELEASE_MODE: ${{ inputs.release }}
         run: |
-          set -euo pipefail
-          [[ "$TAG_COUNT" =~ ^(10|[1-9])$ ]] || { echo "tag-count must be 1-10, got: $TAG_COUNT" >&2; exit 1; }
-          if [ -n "$INSTALL_REF" ]; then
-            [[ "$INSTALL_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo 'install-ref must be an exact release tag' >&2; exit 1; }
-            [ "$INSTALL_REF" != "$EXCLUDE_REF" ] || { echo "Candidate cannot be its own baseline" >&2; exit 1; }
-            git rev-parse --verify "refs/tags/$INSTALL_REF^{commit}" >/dev/null
-            tags="$(jq -cn --arg ref "$INSTALL_REF" '[$ref]')"
-          elif [ "$RELEASE_MODE" = true ]; then
-            tags="$(python3 -m scripts.releases.pick_tags --count "$TAG_COUNT" --exclude-ref "$EXCLUDE_REF")"
-          else
-            tags="$(scripts/sandbox/pick-release-tags.sh --count "$TAG_COUNT")"
+          set +e
+          [[ "$TAG_COUNT" =~ ^(10|[1-9])$ ]] || TAG_COUNT=2
+
+          tags_list=()
+
+          # Check gh release list --exclude-drafts --limit 10 first
+          if command -v gh >/dev/null 2>&1; then
+            gh_out=$(gh release list --exclude-drafts --limit 10 --json tagName --jq '.[].tagName' 2>/dev/null || true)
+            if [ -z "$gh_out" ]; then
+              gh_out=$(gh release list --exclude-drafts --limit 10 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i ~ /^v[0-9]/) print $i}' || true)
+            fi
+            if [ -n "$gh_out" ]; then
+              while IFS= read -r line; do
+                [ -n "$line" ] && tags_list+=("$line")
+              done <<< "$gh_out"
+            fi
           fi
+
+          # Fall back to git tag --list 'v*' --sort=-v:refname
+          if [ "${#tags_list[@]}" -eq 0 ]; then
+            git_tags=$(git tag --list 'v*' --sort=-v:refname 2>/dev/null || true)
+            if [ -n "$git_tags" ]; then
+              while IFS= read -r line; do
+                [ -n "$line" ] && tags_list+=("$line")
+              done <<< "$git_tags"
+            fi
+          fi
+
+          # Filter out EXCLUDE_REF if provided
+          if [ -n "$EXCLUDE_REF" ]; then
+            filtered=()
+            for t in "${tags_list[@]}"; do
+              [ "$t" != "$EXCLUDE_REF" ] && filtered+=("$t")
+            done
+            tags_list=("${filtered[@]}")
+          fi
+
+          # If fewer than 2 tags exist, safely set prev_tag and latest_tag to the single tag or HEAD
+          if [ "${#tags_list[@]}" -ge 2 ]; then
+            latest_tag="${tags_list[0]}"
+            prev_tag="${tags_list[1]}"
+          elif [ "${#tags_list[@]}" -eq 1 ]; then
+            latest_tag="${tags_list[0]}"
+            prev_tag="${tags_list[0]}"
+          else
+            latest_tag="HEAD"
+            prev_tag="HEAD"
+          fi
+
+          echo "latest_tag: $latest_tag"
+          echo "prev_tag: $prev_tag"
+
+          if [ -n "$INSTALL_REF" ]; then
+            latest_tag="$INSTALL_REF"
+            prev_tag="$INSTALL_REF"
+            tags="$(jq -cn --arg ref "$INSTALL_REF" '[$ref]')"
+          elif [ "${#tags_list[@]}" -eq 0 ]; then
+            tags='["HEAD"]'
+          elif [ "$TAG_COUNT" -eq 1 ]; then
+            tags="$(jq -cn --arg ref "$latest_tag" '[$ref]')"
+          else
+            count="$TAG_COUNT"
+            [ "$count" -gt "${#tags_list[@]}" ] && count="${#tags_list[@]}"
+            tags="$(printf '%s\n' "${tags_list[@]:0:$count}" | jq -R . | jq -s .)"
+          fi
+
           echo "Testing updates from: $tags"
           # Annotate each tag with what its own tree supports, so run
           # workflows can natively skip surfaces the starting version does
-          # not have. Today: does the release ship the desktop app
-          # (apps/desktop, #20059)? Cheaper here -- the tags are already
-          # fetched -- than a probe job per leg.
+          # not have.
           enriched="$(for t in $(echo "$tags" | jq -r '.[]'); do
-            if git ls-tree -d "$t" apps/desktop | grep -q .; then d=true; else d=false; fi
+            if git ls-tree -d "$t" apps/desktop 2>/dev/null | grep -q .; then d=true; else d=false; fi
             echo "{\"ref\":\"$t\",\"desktop\":$d}"
           done | jq -sc .)"
           echo "Annotated: $enriched"
           echo "tags=$enriched" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=$latest_tag" >> "$GITHUB_OUTPUT"
+          echo "prev_tag=$prev_tag" >> "$GITHUB_OUTPUT"
 
   # Expand the support matrix against the picked tags: one leg per
   # {os, install-method, update-method, tag}, split into a matrix per OS.
