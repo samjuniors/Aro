@@ -24,6 +24,65 @@
    ============================================================================ */
 
 /* ============================================================================
+   0 · WEBFONTS — the prototype's identity faces, bundled locally
+   ----------------------------------------------------------------------------
+   The prototype loads these via next/font/google (src/app/layout.tsx), which
+   defines `--f-grotesk`, `--f-inter`, `--f-newsreader`, `--f-dmsans`, `--f-jbmono`
+   on <html>. Every `--d-font-*` below is written `var(--f-grotesk, "Space Grotesk")`,
+   so with no local face it silently fell back to the system UI font and the
+   design system lost its identity (Space Grotesk display, Newsreader serif,
+   DM Sans prose). We ship the same SIL-OFL faces as bundled variable woff2 and
+   bind them here so the fallback chain resolves to the real typefaces offline.
+   ============================================================================ */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;   /* variable axis — covers the 500/600 the profiles use */
+  font-display: swap;
+  src: url('../fonts/SpaceGrotesk-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;   /* variable axis — covers the 400/500/600 body+meta steps */
+  font-display: swap;
+  src: url('../fonts/Inter-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 200 800;   /* variable axis — the editorial (serif) display face */
+  font-display: swap;
+  src: url('../fonts/Newsreader-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 100 1000;  /* variable axis — the editorial body/meta face */
+  font-display: swap;
+  src: url('../fonts/DMSans-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+/* The prototype's next/font CSS variables, bound to the bundled families so
+   the `var(--f-…, "Family")` indirection in the design profiles resolves to a
+   real loaded face instead of dropping through to the system font. JetBrains
+   Mono is already bundled in styles.css; we bind its variable here for parity. */
+:root {
+  --f-grotesk: 'Space Grotesk';
+  --f-inter: 'Inter';
+  --f-newsreader: 'Newsreader';
+  --f-dmsans: 'DM Sans';
+  --f-jbmono: 'JetBrains Mono';
+}
+
+/* ============================================================================
    1 · TAILWIND THEME BRIDGE — namespaced tokens over raw Aro variables
    ============================================================================ */
 @theme inline {
@@ -176,6 +235,16 @@
 [data-theme] {
   --aro-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --aro-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --aro-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --aro-ease-in-quit: cubic-bezier(0.4, 0, 1, 1);
+  --aro-ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Duration ladder — prototype's --dur-fast/mid/slow/panel, renamed to the
+     aro namespace so transitions can reference a shared timing scale instead
+     of hardcoding milliseconds at each call site. */
+  --aro-dur-fast: 100ms;
+  --aro-dur-mid: 150ms;
+  --aro-dur-slow: 220ms;
+  --aro-dur-panel: 260ms;
 }
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */
@@ -428,6 +497,44 @@ html[data-theme='paper'],
   --aro-shadow-b: rgba(60, 45, 20, 0.09);
   --aro-shadow-c: rgba(60, 45, 20, 0.15);
   --aro-shadow-d: rgba(60, 45, 20, 0.22);
+}
+
+/* ---- ink · editorial dark variant — warm near-black paper, ember signal ----
+   The prototype's editorial (serif) dark counterpart to `paper`. Values
+   verbatim from prototype globals.css `html[data-theme="ink"]`. */
+html[data-theme='ink'],
+[data-theme='ink'] {
+  color-scheme: dark;
+  --aro-void: #100d0a;
+  --aro-sunken: #16120e;
+  --aro-bg: #1a1611;
+  --aro-raise: #221d17;
+  --aro-hover: #2b241c;
+  --aro-overlay: #241e18;
+  --aro-well: #1e1913;
+  --aro-code: #0c0a07;
+  --aro-track: #302820;
+  --aro-line: #3a3128;
+  --aro-line-soft: #2c251c;
+  --aro-line-strong: #e8e2d6;
+  --aro-ink: #f0ead9;
+  --aro-ink-2: #c3b8a3;
+  --aro-ink-3: #8d8271;
+  --aro-ink-4: #6a6152;
+  --aro-iris: #e8663a;
+  --aro-iris-soft: #f08c62;
+  --aro-iris-deep: #b8411c;
+  --aro-on-iris: #100d0a;
+  --aro-cyan: #5cb8a8;
+  --aro-mint: #7bbf7a;
+  --aro-amber: #d9a441;
+  --aro-rose: #dd6a5c;
+  --aro-sky: #7ba4d4;
+  --aro-plum: #b882ab;
+  --aro-shadow-a: rgba(0, 0, 0, 0.5);
+  --aro-shadow-b: rgba(0, 0, 0, 0.6);
+  --aro-shadow-c: rgba(0, 0, 0, 0.7);
+  --aro-shadow-d: rgba(0, 0, 0, 0.85);
 }
 
 /* ============================================================================
