@@ -13,6 +13,7 @@ import {
   IconMaximize,
   IconMinimize,
   IconMore,
+  IconPlus,
   IconRefresh,
   IconSearch,
   IconTerminal,
@@ -20,6 +21,7 @@ import {
 } from '@/aro/Icons'
 import { TreeSkeleton } from '@/components/chat/skeletons'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { isPaneVisible } from '@/components/pane-shell/tree/store'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import {
@@ -137,6 +139,48 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     }
     return count
   }, [sessionId, bgStatus, subagents])
+
+  const isDedicatedReviewVisible = isPaneVisible('review')
+  useEffect(() => {
+    if (isDedicatedReviewVisible && section === 'changes') {
+      setRightSidebarSection('files')
+    }
+  }, [isDedicatedReviewVisible, section])
+
+  const SECTIONS_CONFIG: Record<ContextSectionId, { label: string; icon: ComponentType<{ size?: number; className?: string }> }> = {
+    changes: { label: 'Review', icon: IconGit },
+    files: { label: 'Files', icon: IconFolder },
+    terminal: { label: 'powershell.exe', icon: IconTerminal },
+    launchpad: { label: 'New Tab', icon: IconPlus },
+    search: { label: 'Search', icon: IconSearch },
+    browser: { label: 'Browser', icon: IconGlobe },
+    plan: { label: 'Plan', icon: IconList },
+    context: { label: 'Plugins', icon: IconBrain },
+    git: { label: 'Git', icon: IconBranch }
+  }
+
+  const [openTabs, setOpenTabs] = useState<ContextSectionId[]>(() => {
+    if (section === 'files') return ['files', 'terminal']
+    if (section === 'changes') return ['changes', 'terminal']
+    if (section === 'terminal') return ['changes', 'terminal']
+    return ['changes', 'terminal']
+  })
+
+  useEffect(() => {
+    if (section !== 'launchpad' && !openTabs.includes(section)) {
+      setOpenTabs(prev => (prev.includes(section) ? prev : [...prev, section]))
+    }
+  }, [section, openTabs])
+
+  const handleCloseTab = (tabId: ContextSectionId, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const nextTabs = openTabs.filter(t => t !== tabId)
+    const fallback = nextTabs.length > 0 ? nextTabs : (['files'] as ContextSectionId[])
+    setOpenTabs(fallback)
+    if (section === tabId) {
+      setRightSidebarSection(fallback[0] || 'files')
+    }
+  }
 
   const {
     collapseAll,
@@ -264,26 +308,34 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                 <IconChevronRight size={11} className="text-aro-ink-4" />
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
+              <div className="px-2.5 py-1 text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">More Tools</div>
               <DropdownMenuItem
-                onClick={() => setRightSidebarSection('terminal')}
-                className="flex items-center justify-between py-1.5 px-2 text-[12px] text-aro-ink rounded cursor-pointer hover:bg-aro-hover"
+                onClick={() => setRightSidebarSection('search')}
+                className="flex items-center gap-2 py-1.5 px-2 text-[12px] text-aro-ink rounded cursor-pointer hover:bg-aro-hover"
               >
-                <div className="flex items-center gap-2">
-                  <Codicon
-                    name="server-process"
-                    size="0.8rem"
-                    className={backgroundTasksCount > 0 ? 'text-emerald-500 animate-pulse' : 'text-aro-ink-4'}
-                  />
-                  <span>Background Tasks</span>
-                </div>
-                <span
-                  className={cn(
-                    'rounded-full px-1.5 py-0.2 font-mono text-[10px] font-bold',
-                    backgroundTasksCount > 0 ? 'bg-aro-iris/20 text-aro-iris-soft' : 'bg-aro-hover text-aro-ink-4'
-                  )}
-                >
-                  {backgroundTasksCount}
-                </span>
+                <IconSearch size={13} className="text-aro-ink-3" />
+                <span>Search</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setRightSidebarSection('browser')}
+                className="flex items-center gap-2 py-1.5 px-2 text-[12px] text-aro-ink rounded cursor-pointer hover:bg-aro-hover"
+              >
+                <IconGlobe size={13} className="text-aro-ink-3" />
+                <span>Browser</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setRightSidebarSection('plan')}
+                className="flex items-center gap-2 py-1.5 px-2 text-[12px] text-aro-ink rounded cursor-pointer hover:bg-aro-hover"
+              >
+                <IconList size={13} className="text-aro-ink-3" />
+                <span>Plan</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setRightSidebarSection('git')}
+                className="flex items-center gap-2 py-1.5 px-2 text-[12px] text-aro-ink rounded cursor-pointer hover:bg-aro-hover"
+              >
+                <IconBranch size={13} className="text-aro-ink-3" />
+                <span>Git History</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -313,7 +365,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                   aria-label={item.label}
                   className="workspace-tab-main"
                   onClick={() => setRightSidebarSection(item.id)}
-                  title={item.label}
+                  title={item.id === 'changes' ? 'Changes / Review' : item.label}
                   type="button"
                 >
                   <item.icon size={11} />
@@ -327,6 +379,17 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
               </div>
             )
           })}
+
+          {/* New Tab (+) Button leading to Launchpad */}
+          <button
+            type="button"
+            className={cn('workspace-tab-new', section === 'launchpad' && 'is-on text-aro-iris-soft bg-aro-hover')}
+            title="New Tab · Open Launchpad"
+            aria-label="New tab"
+            onClick={() => setRightSidebarSection('launchpad')}
+          >
+            <IconPlus size={11} />
+          </button>
         </div>
 
         {/* Toolbar: Open IDE button (Screenshot 1 & 5) + Panel controls */}
@@ -368,6 +431,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
       {/* Workspace Body */}
       <div className="workspace-body flex min-h-0 flex-1 flex-col overflow-hidden">
+        {section === 'launchpad' && <WorkspaceLaunchpad onSelectAction={setRightSidebarSection} />}
         {section === 'files' && (
           <FilesystemTab
             canCollapse={canCollapse}
@@ -450,9 +514,8 @@ function FilesystemTab({
   // folder — entirely decoupled from $currentCwd.
   if (!hasWorkspace) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        {/* Accessible fallback ensuring backwards-compatibility with unit test suite */}
-        <div className="sr-only" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <div className="flex flex-col items-center justify-center gap-2 p-6 text-center border-b border-aro-line-soft">
           <SidebarPanelLabel className="pl-0 text-(--ui-text-quaternary)">{r.noProjectOpen}</SidebarPanelLabel>
           <Button className="h-7 gap-1.5 text-xs" onClick={() => void openFolderAsProject()} size="sm" variant="outline">
             <Codicon name="folder-opened" size="0.8125rem" />

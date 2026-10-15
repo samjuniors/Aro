@@ -16,7 +16,7 @@ export const DEFAULT_TREE = split(
   [
     group(['sessions'], { id: 'grp-sessions' }),
     group(['workspace'], { id: 'grp-main' }),
-    group(['files', 'review'], { id: 'grp-context' })
+    group(['files'], { id: 'grp-context' })
   ],
   [1, 3.2, 2.2],
   'spl-root'
@@ -26,7 +26,7 @@ export const DEFAULT_TREE = split(
 // workspace maximum width. Tooling stays behind the main conversation.
 const FOCUS_TREE = split(
   'row',
-  [group(['sessions']), split('column', [group(['workspace', 'files', 'review']), group(['terminal'])], [3, 1])],
+  [group(['sessions']), split('column', [group(['workspace', 'files']), group(['terminal'])], [3, 1])],
   [1, 4.8]
 )
 
@@ -37,17 +37,17 @@ export const BASIC_TREE = split(
   [
     group(['sessions']),
     split('column', [group(['workspace']), group(['terminal'])], [3, 1]),
-    group(['files', 'review'])
+    group(['files'])
   ],
   [1, 3.8, 1.2]
 )
 
-const BASIC_RESTING = ['terminal', 'files', 'review'] as const
+const BASIC_RESTING = ['terminal', 'files'] as const
 
 const TERMINAL_TREE = split(
   'column',
   [
-    split('row', [group(['sessions']), group(['workspace']), group(['files', 'review'])], [1, 3.2, 1.2]),
+    split('row', [group(['sessions']), group(['workspace']), group(['files'])], [1, 3.2, 1.2]),
     group(['terminal'])
   ],
   [3, 1]

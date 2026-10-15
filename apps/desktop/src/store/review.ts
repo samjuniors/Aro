@@ -1,6 +1,7 @@
 import { atom, computed } from 'nanostores'
 
 import { SIDEBAR_COLLAPSE_MEDIA_QUERY } from '@/app/layout-constants'
+import { setRightSidebarSection } from '@/app/right-sidebar/store'
 import { PANE_TOGGLE_REVEAL_EVENT } from '@/components/pane-shell'
 import { isPaneVisible, revealTreePane } from '@/components/pane-shell/tree/store'
 import type { HermesReviewFile, HermesReviewScope, HermesReviewShipInfo } from '@/global'
@@ -376,6 +377,7 @@ export function openReview(scopeCwd: null | string = null, scopeTarget = 'main')
   $reviewScopeCwd.set(scopeCwd?.trim() || null)
   $reviewScopeTarget.set(scopeTarget.trim() || 'main')
   $reviewOpen.set(true)
+  setRightSidebarSection('changes')
   recordFeatureUse('review_pane')
   void refreshReview()
   void refreshShipInfo()
@@ -387,6 +389,7 @@ export function closeReview(): void {
   $reviewScopeCwd.set(null)
   $reviewScopeTarget.set('main')
   clearReviewSelection()
+  setRightSidebarSection('files')
 }
 
 export function toggleReview(scopeCwd: null | string = null, scopeTarget = 'main'): void {

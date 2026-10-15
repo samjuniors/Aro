@@ -45,6 +45,7 @@ export type ContextSectionId =
   | 'plan'
   | 'context'
   | 'git'
+  | 'launchpad'
 
 export const PANEL_SECTION_STORAGE_KEY = 'conductor.workspace.panel.section'
 
@@ -56,7 +57,8 @@ const VALID_SECTIONS = new Set<ContextSectionId>([
   'browser',
   'plan',
   'context',
-  'git'
+  'git',
+  'launchpad'
 ])
 
 function readInitialSection(): ContextSectionId {

@@ -606,15 +606,44 @@ export function setSplitWeights(root: LayoutNode, splitId: string, weights: numb
  * A stored `false` is dropped for the same reason in reverse: most were written
  * by the layout's own repair paths, not by anyone choosing to see a strip.
  */
+function collectTreePanes(node: LayoutNode, out: string[] = []): string[] {
+  if (node.type === 'group') {
+    out.push(...node.panes)
+  } else {
+    for (const child of node.children) {
+      collectTreePanes(child, out)
+    }
+  }
+  return out
+}
+
 export function migratePersistedTree(node: LayoutNode): LayoutNode {
   if (node.type === 'group') {
     const { headerHidden, ...rest } = node as GroupNode & { headerHidden?: unknown }
-    const tabStrip = rest.tabStrip === 'always' || rest.tabStrip === 'never' ? rest.tabStrip : undefined
+    const isFilesGroup = rest.panes.includes('files')
+    const rawTabStrip = isFilesGroup && rest.tabStrip === 'always' ? undefined : rest.tabStrip
+    const tabStrip = rawTabStrip === 'always' || rawTabStrip === 'never' ? rawTabStrip : undefined
 
     return headerHidden === undefined && rest.tabStrip === tabStrip ? node : { ...rest, tabStrip }
   }
 
-  return { ...node, children: node.children.map(migratePersistedTree) }
+  const allPanes = collectTreePanes(node)
+  const hasFiles = allPanes.includes('files')
+
+  const children: LayoutNode[] = []
+  const weights: number[] = []
+
+  node.children.forEach((child, i) => {
+    // If the layout has the unified 'files' companion panel, prune legacy standalone 'review'
+    // group to prevent duplicate side-by-side Review surfaces.
+    if (hasFiles && child.type === 'group' && child.panes.length === 1 && child.panes[0] === 'review') {
+      return
+    }
+    children.push(migratePersistedTree(child))
+    weights.push(node.weights[i] ?? 1)
+  })
+
+  return { ...node, children, weights: weights.length > 0 ? weights : [1] }
 }
 
 export function isLayoutNode(value: unknown): value is LayoutNode {
