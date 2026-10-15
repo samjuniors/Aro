@@ -375,37 +375,41 @@ async function fetchProviderDefaultModel(
   }
 
   // Re-login to the provider already in use (expired OAuth grant): keep the
-  // model the user was on. Swapping in the provider's recommended default
-  // would silently change what they're chatting with.
+  // model the user was on only if it is genuinely present in the provider's
+  // options list (avoiding synthetic current_model prepends from trapping the user).
   const currentModel = String(options?.model ?? '')
+
+  // Prefer the backend's recommended default — it mirrors the curation
+  // `hermes model` does (for Nous it honors the user's free/paid tier from the
+  // live Portal, so a free user gets a free model rather than a paid default like opus).
+  let recommendedModel = ''
+  try {
+    const recommended = await getRecommendedDefaultModel(String(matched.slug), profile)
+    if (recommended.model) {
+      recommendedModel = recommended.model
+    }
+  } catch {
+    // Endpoint unavailable
+  }
+
+  // If currentModel is set and genuinely present (not just synthetically prepended),
+  // retain it; otherwise prioritize the live recommended model.
+  const isGenuinelyInCatalog =
+    models.map(String).includes(currentModel) &&
+    (models.length <= 1 || models.slice(1).includes(currentModel) || models[0] !== currentModel)
 
   if (
     currentModel &&
     String(options?.provider ?? '').toLowerCase() === String(matched.slug).toLowerCase() &&
-    models.map(String).includes(currentModel)
+    isGenuinelyInCatalog
   ) {
     return { providerSlug: String(matched.slug), defaultModel: currentModel }
   }
 
-  // Prefer the backend's recommended default — it mirrors the curation
-  // `hermes model` does (for Nous it honors the user's free/paid tier, so a
-  // free user gets a free model rather than a paid default like opus). Fall
-  // back to the first curated model if the endpoint can't resolve one.
-  let defaultModel = String(models[0])
+  let defaultModel = recommendedModel || String(models[0] || '')
 
-  try {
-    const recommended = await getRecommendedDefaultModel(String(matched.slug), profile)
-
-    if (recommended.model && models.map(String).includes(recommended.model)) {
-      defaultModel = recommended.model
-    } else if (recommended.model) {
-      // Recommended model isn't in the curated options list (e.g. a Portal
-      // free-recommendation the picker list didn't include); trust it anyway.
-      defaultModel = recommended.model
-    }
-  } catch {
-    // Endpoint unavailable — keep models[0]. Non-fatal: the confirm card still
-    // shows and the user can change it.
+  if (recommendedModel && models.map(String).includes(recommendedModel)) {
+    defaultModel = recommendedModel
   }
 
   return {
@@ -453,29 +457,55 @@ async function completeWithModelConfirm(
     // Persist the chosen provider/model before the runtime gate so a stale
     // config provider (e.g. anthropic from a prior failed setup) cannot make
     // setup.runtime_check validate the wrong backend after a fresh OAuth login.
+    let saved = false
+    let lastError: unknown = null
+
+    // Build model candidates: try the resolved default first. If that candidate fails
+    // (e.g., stale custom model name or invalid suffix in prior config), fall back to
+    // the provider's authoritative recommended default from the live API.
+    const candidates = [defaults.defaultModel]
     try {
-      const res = await setMainModelAssignment(
-        {
-          provider: defaults.providerSlug,
-          model: defaults.defaultModel
-        },
-        ctx.scope,
-        // Headless automated flow: nothing is mounted to click a guard
-        // prompt, so fail with the message instead of hanging.
-        { skipConfirmPrompt: true }
-      )
+      const rec = await getRecommendedDefaultModel(defaults.providerSlug, ctx.scope)
+      if (rec?.model && !candidates.includes(rec.model)) {
+        candidates.push(rec.model)
+      }
+    } catch {
+      // ignore
+    }
 
+    for (const candidate of candidates) {
+      if (!candidate) continue
+      try {
+        const res = await setMainModelAssignment(
+          {
+            provider: defaults.providerSlug,
+            model: candidate
+          },
+          ctx.scope,
+          // Headless automated flow: nothing is mounted to click a guard
+          // prompt, so fail with the message instead of hanging.
+          { skipConfirmPrompt: true }
+        )
+
+        if (generation !== flowGeneration) {
+          return
+        }
+
+        notifyGatewayTools(res.gateway_tools)
+        defaults.defaultModel = candidate
+        saved = true
+        break
+      } catch (error) {
+        lastError = error
+      }
+    }
+
+    if (!saved) {
       if (generation !== flowGeneration) {
         return
       }
 
-      notifyGatewayTools(res.gateway_tools)
-    } catch (error) {
-      if (generation !== flowGeneration) {
-        return
-      }
-
-      onFail(error instanceof Error ? error.message : 'Hermes could not save the selected model.')
+      onFail(lastError instanceof Error ? lastError.message : 'Hermes could not save the selected model.')
 
       return
     }
