@@ -683,7 +683,7 @@ export function AroSidebar({
         <button
           className="min-w-0 flex-1 truncate text-left text-[13px] text-aro-ink-2"
           onClick={() => handleSelectSession(session.id)}
-          title={title}
+          aria-label={title}
           type="button"
         >
           {title}
@@ -1166,7 +1166,7 @@ export function AroSidebar({
                                       close()
                                     }}
                                     style={{ backgroundColor: c.value }}
-                                    title={c.label}
+                                    aria-label={`Select ${c.label} color`}
                                     type="button"
                                   >
                                     {color === c.value && (

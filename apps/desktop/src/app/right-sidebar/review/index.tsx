@@ -466,7 +466,7 @@ export function ReviewPane() {
                         type="button"
                         onClick={() => void selectReviewFile(file)}
                         className={cn('codex-file-row-btn group', isSelected && 'is-selected')}
-                        title={displayPath(file.path)}
+                        aria-label={displayPath(file.path)}
                       >
                         {getFileIcon(file.path)}
                         <div className="flex-1 min-w-0 text-left">
@@ -525,7 +525,7 @@ export function ReviewPane() {
                         type="button"
                         onClick={() => void selectReviewFile(file)}
                         className={cn('codex-file-row-btn group', isSelected && 'is-selected')}
-                        title={displayPath(file.path)}
+                        aria-label={displayPath(file.path)}
                       >
                         {getFileIcon(file.path)}
                         <div className="flex-1 min-w-0 text-left">

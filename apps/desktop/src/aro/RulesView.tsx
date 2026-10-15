@@ -532,7 +532,6 @@ export function AroRulesPage() {
                         <Button
                           onClick={() => handleToggle(text)}
                           size="xs"
-                          title={disabled ? 'Enable rule' : 'Disable rule'}
                           variant={disabled ? 'secondary' : 'ghost'}
                         >
                           {disabled ? 'Enable' : 'Disable'}

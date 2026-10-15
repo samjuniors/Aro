@@ -175,9 +175,9 @@ describe('Aro Live Adapters & Pure Functions (live.tsx & bridge.ts)', () => {
       expect(screen.getByText('your list · local')).toBeDefined()
     })
 
-    it('renders demo badge with default label when neither live nor local', () => {
+    it('renders offline badge with default label when neither live nor local', () => {
       render(<SourceBadge live={false} />)
-      expect(screen.getByText('demo data')).toBeDefined()
+      expect(screen.getByText('offline')).toBeDefined()
     })
 
     it('renders custom demo label when provided', () => {

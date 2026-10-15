@@ -1956,11 +1956,6 @@ function ProjectPickerControl({
           data-aro-project-selected={currentLabel ? '' : undefined}
           disabled={disabled}
           size="icon"
-          title={
-            currentLabel
-              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` · Git: ${effectiveStatus.branch}` : ''}`
-              : 'Attach a project'
-          }
           type="button"
           variant="ghost"
         >

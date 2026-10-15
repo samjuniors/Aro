@@ -260,7 +260,6 @@ export function AroProjectDialog() {
                     key={c.value}
                     onClick={() => setColor(c.value)}
                     style={{ backgroundColor: c.value }}
-                    title={c.label}
                     type="button"
                   >
                     {color === c.value && (

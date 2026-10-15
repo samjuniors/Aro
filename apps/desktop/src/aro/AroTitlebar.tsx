@@ -344,10 +344,9 @@ export function AroTitlebar() {
       {/* ── Center Area: Global Search Pill (Command Palette) ── */}
       <div className="shrink-0 flex items-center" data-no-drag>
         <button
-          aria-label="Search sessions and commands"
+          aria-label="Search sessions and commands · ⌘K"
           className="titlebar-search"
           onClick={() => openCommandPalette()}
-          title="Search sessions and commands · ⌘K"
           type="button"
         >
           <IconSearch size={12} />
@@ -504,7 +503,6 @@ export function AroTitlebar() {
                   className={`quick-theme-dot ${activeTheme === t.id ? 'is-active' : ''}`}
                   key={t.id}
                   onClick={() => handleSetTheme(t.id)}
-                  title={t.label}
                   type="button"
                 >
                   <i style={{ ['--dot' as string]: t.swatch[2] }} />

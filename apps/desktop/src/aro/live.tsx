@@ -40,7 +40,7 @@ import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 import { $workspaceChangeTick } from '@/store/workspace-events'
 import type { SessionInfo } from '@/types/hermes'
 
-import { type DiffFile, type DiffLine, REVIEW_CHECKPOINTS, type Step, type Task, TASKS, type TaskStatus, type ToolName, TRANSCRIPT } from './workbenchData'
+import { type DiffFile, type DiffLine, type Step, type Task, type TaskStatus, type ToolName } from './workbenchData'
 
 /* ============================ pure adapters ============================ */
 
@@ -168,7 +168,8 @@ export function fmtClock(unixSeconds?: number): string {
   }
 }
 
-function textOfParts(parts: readonly ChatMessagePart[]): string {
+function textOfParts(parts: readonly ChatMessagePart[] | undefined): string {
+  if (!parts || !Array.isArray(parts)) {return ''}
   let text = ''
 
   for (const p of parts) {if (p.type === 'text' && typeof p.text === 'string') {text += p.text}}
@@ -194,7 +195,7 @@ export function messagesToSteps(messages: readonly ChatMessage[]): Step[] {
     if (msg.role !== 'assistant') {continue}
     let pendingText = ''
 
-    for (const part of msg.parts) {
+    for (const part of (msg.parts ?? [])) {
       if (part.type === 'reasoning') {
         const text = (part.text ?? '').trim()
         const ms = part.timestamp && part.completedAt ? Math.max(0, Math.round((part.completedAt - part.timestamp) * 1000)) : 0
@@ -370,11 +371,11 @@ export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLab
 
   return (
     <span
-      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-amber/30 bg-aro-amber-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-amber uppercase"
-      title="No live data yet — the seed shapes from the prototype are shown. Start a session (or open one) and this page goes live on its own."
+      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-3 uppercase"
+      title="No active live data stream connected."
     >
-      <i className="size-[5px] rounded-full bg-aro-amber" />
-      {demoLabel ?? 'demo data'}
+      <i className="size-[5px] rounded-full bg-aro-ink-4" />
+      {demoLabel ?? 'offline'}
     </span>
   )
 }
@@ -385,8 +386,7 @@ export interface AroCheckpoint { hash: string; label: string; at: string }
 
 type RollbackListReply = { enabled?: boolean; checkpoints?: { hash?: string; message?: string; timestamp?: string }[] }
 
-/** Checkpoints via the real `rollback.list` RPC; empty (and the page falls
- *  back to the seed strip) when the backend is offline or has none. */
+/** Checkpoints via the real `rollback.list` RPC; empty when the backend is offline or has none. */
 export function useAroCheckpoints(sessionId: string | null, live: boolean): AroCheckpoint[] {
   const [checkpoints, setCheckpoints] = useState<AroCheckpoint[]>([])
   useEffect(() => {
@@ -417,7 +417,7 @@ export function useAroCheckpoints(sessionId: string | null, live: boolean): AroC
     return () => { cancelled = true }
   }, [live, sessionId])
 
-  return live && checkpoints.length > 0 ? checkpoints : live ? [] : REVIEW_CHECKPOINTS
+  return live && checkpoints.length > 0 ? checkpoints : []
 }
 
 /* ============================ transcript ============================ */
@@ -438,7 +438,7 @@ export function useAroTranscript() {
   const state = sessionId ? states[sessionId] : undefined
   const live = messages.length > 0 || busy
 
-  const steps = useMemo<Step[]>(() => (live ? messagesToSteps(messages) : TRANSCRIPT), [live, messages])
+  const steps = useMemo<Step[]>(() => (live ? messagesToSteps(messages) : []), [live, messages])
 
   const approvals = useMemo<AroLiveApproval[]>(() => {
     if (!live) {return []}
@@ -667,7 +667,7 @@ export function useAroTasks(): AroTasksData {
   const userCards = useMemo(() => userTasks.map(userTaskToCard), [userTasks])
 
   const tasks = useMemo<Task[]>(
-    () => (live ? [...todosToTasks(todos), ...userCards] : userCards.length > 0 ? userCards : TASKS),
+    () => (live ? [...todosToTasks(todos), ...userCards] : userCards),
     [live, todos, userCards]
   )
 

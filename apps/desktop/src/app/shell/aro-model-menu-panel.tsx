@@ -271,11 +271,6 @@ function EffortSliderRow({
               key={eff.id}
               onClick={() => handleSelectIdx(i)}
               role="radio"
-              title={
-                isSupported
-                  ? `${eff.label}: ${eff.desc}`
-                  : `${eff.label} — Exceeds max effort supported by ${model}`
-              }
               type="button"
             >
               <span className="text-[10.5px] tracking-tight">{eff.short}</span>

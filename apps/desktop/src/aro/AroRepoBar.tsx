@@ -180,7 +180,7 @@ export function AroRepoBar({
       <button
         className="repo-dock-repo"
         onClick={onOpenDiff}
-        title="Open changes panel"
+        aria-label="Open changes panel"
         type="button"
       >
         <IconGit className="repo-dock-repo-icon" size={13} />
@@ -196,7 +196,7 @@ export function AroRepoBar({
           <button
             className="repo-dock-branch"
             disabled={switching}
-            title={`Branch: ${currentBranch} (Click to switch or create)`}
+            aria-label={`Branch: ${currentBranch} (Click to switch or create)`}
             type="button"
           >
             <IconBranch className="shrink-0" size={11} />
@@ -337,7 +337,7 @@ export function AroRepoBar({
       <button
         className={cn('repo-dock-diff', !hasChanges && 'repo-dock-diff-empty')}
         onClick={onOpenDiff}
-        title={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
+        aria-label={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
         type="button"
       >
         {hasChanges ? (
@@ -363,7 +363,7 @@ export function AroRepoBar({
                 notify({ kind: 'info', message: `PR #${pr.number}: ${pr.title}` })
               }
             }}
-            title={`View PR #${pr.number}: ${pr.title}`}
+            aria-label={`View PR #${pr.number}: ${pr.title}`}
             type="button"
           >
             <IconGit size={12} /> Merge PR #{pr.number}
@@ -374,7 +374,7 @@ export function AroRepoBar({
             onClick={() => {
               notify({ kind: 'info', message: 'No open pull request on this branch.' })
             }}
-            title="Merge PR (No open PR)"
+            aria-label="Merge PR (No open PR)"
             type="button"
           >
             <IconGit size={12} /> Merge PR
@@ -384,7 +384,6 @@ export function AroRepoBar({
           aria-label="Project settings"
           className="repo-dock-gear"
           onClick={onOpenSettings}
-          title="Project & worktree settings"
           type="button"
         >
           <IconSettings size={13} />

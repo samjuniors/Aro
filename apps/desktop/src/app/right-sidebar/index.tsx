@@ -259,7 +259,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
               <button
                 type="button"
                 className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-aro-ink hover:bg-aro-hover transition-colors"
-                title="Workspace Overview & Tasks"
+                aria-label="Workspace Overview & Tasks"
               >
                 <span>Overview</span>
                 {backgroundTasksCount > 0 && (
@@ -365,7 +365,6 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                   aria-label={item.label}
                   className="workspace-tab-main"
                   onClick={() => setRightSidebarSection(item.id)}
-                  title={item.id === 'changes' ? 'Changes / Review' : item.label}
                   type="button"
                 >
                   <item.icon size={11} />
@@ -384,8 +383,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
           <button
             type="button"
             className={cn('workspace-tab-new', section === 'launchpad' && 'is-on text-aro-iris-soft bg-aro-hover')}
-            title="New Tab · Open Launchpad"
-            aria-label="New tab"
+            aria-label="New tab · Open Launchpad"
             onClick={() => setRightSidebarSection('launchpad')}
           >
             <IconPlus size={11} />

@@ -170,7 +170,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
                 <button
                   className="flex w-full items-center gap-2 border-b border-aro-line-soft bg-aro-raise/40 px-2.5 py-1.5 text-left transition-colors hover:bg-aro-hover"
                   onClick={() => onPreviewFile?.(filePath)}
-                  title={`Open ${filePath}`}
+                  aria-label={`Open ${filePath}`}
                   type="button"
                 >
                   <IconFolder className="shrink-0 text-aro-ink-4" size={11} />
@@ -187,7 +187,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
                       className="group flex w-full items-start gap-2 px-2.5 py-1 text-left transition-colors hover:bg-aro-hover/60"
                       key={`${hit.line}-${idx}`}
                       onClick={() => onPreviewFile?.(hit.path)}
-                      title={`Open line ${hit.line}`}
+                      aria-label={`Open line ${hit.line}`}
                       type="button"
                     >
                       <span className="w-6 shrink-0 text-right font-aro-mono text-[10px] text-aro-ink-4 group-hover:text-aro-ink-2">

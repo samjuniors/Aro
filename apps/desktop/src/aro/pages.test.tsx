@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { $reviewFiles, $reviewIsRepo } from '@/store/review'
-import { $currentCwd } from '@/store/session'
+import { $currentCwd, $messages } from '@/store/session'
 
 import { AroBridgeView } from './AroBridgeView'
 import { useAroBridge } from './bridge'
@@ -77,6 +77,7 @@ describe('Aro Pages Component Tests', () => {
     $currentCwd.set('/repo')
     $reviewIsRepo.set(true)
     $reviewFiles.set([])
+    $messages.set([])
     stubGitReview('')
   })
 
@@ -86,12 +87,41 @@ describe('Aro Pages Component Tests', () => {
   })
 
   describe('AroTranscriptPage (/aro-transcript)', () => {
-    it('renders the timeline header, session details, and step cards', () => {
+    it('renders genuine empty state when no activity in session', () => {
       render(<AroTranscriptPage />)
 
       expect(screen.getByText('Session transcript')).toBeDefined()
       expect(screen.getByText(/tool timeline/)).toBeDefined()
-      expect(screen.getAllByText(/edit|read|shell|search|plan/).length).toBeGreaterThan(0)
+      expect(screen.getByText(/No activity in this session yet/)).toBeDefined()
+    })
+
+    it('renders real tool cards when messages are present in session', () => {
+      $messages.set([
+        {
+          id: 'msg-1',
+          role: 'user',
+          parts: [{ type: 'text', text: 'Run git status' }],
+          timestamp: Date.now() / 1000
+        },
+        {
+          id: 'msg-2',
+          role: 'assistant',
+          parts: [
+            {
+              type: 'tool-call',
+              callId: 'call-1',
+              toolName: 'bash',
+              args: { command: 'git status' },
+              state: 'completed'
+            }
+          ],
+          timestamp: Date.now() / 1000
+        }
+      ] as any)
+
+      render(<AroTranscriptPage />)
+      expect(screen.getByText('Session transcript')).toBeDefined()
+      expect(screen.getAllByText(/shell/).length).toBeGreaterThan(0)
     })
   })
 

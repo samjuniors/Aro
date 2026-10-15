@@ -82,11 +82,11 @@ const withDefaults = (
  */
 export const SEED_AGENTS: AgentAdapterEntry[] = [
   withDefaults({ id: 'aro', name: 'Aro Agent', vendor: 'samjuniors', glyph: 'AR', from: '#6EE7B7', to: '#10B981', kind: 'hybrid', status: 'connected', version: 'v1.5.0',
-    models: [{ id: 'aro-4-405b', label: 'Aro 4 405B', ctx: '131k', price: 'free' }, { id: 'aro-4-70b', label: 'Aro 4 70B', ctx: '131k', price: 'free' }, { id: 'glm-4.6', label: 'GLM 4.6 (routed)', ctx: '200k', price: '$0 / sub' }],
-    strengths: ['Self-improving loop', '39 model providers', 'Runs anywhere'], weakSpots: ['No inline editor yet'], invocations: 96, successRate: 86, p50: '1.6s' }),
+    models: [{ id: 'aro-4-405b', label: 'Aro 4 405B', ctx: '131k', price: 'free' }, { id: 'aro-4-70b', label: 'Aro 4 70B', ctx: '131k', price: 'free' }],
+    strengths: ['Autonomous agent loop', 'Multi-provider execution', 'Terminal and browser'], weakSpots: [], invocations: 0, successRate: 100, p50: '—' }),
   withDefaults({ id: 'claude-code', name: 'Claude Code', vendor: 'Anthropic', glyph: 'CC', from: '#d4aa91', to: '#c9845b', kind: 'hybrid', status: 'connected', version: '2.1.4', models: [{ id: 'claude-sonnet-4-6', label: 'Sonnet 4.6', ctx: '200k', price: 'provider pricing' }] }),
   withDefaults({ id: 'codex', name: 'Codex', vendor: 'OpenAI', glyph: 'CX', from: '#babdb8', to: '#86af9a', kind: 'hybrid', status: 'connected', version: '1.9.0', models: [{ id: 'gpt-5.4-codex', label: 'GPT-5.4-Codex', ctx: 'provider managed', price: 'provider pricing' }] }),
-  withDefaults({ id: 'cursor', name: 'Cursor', vendor: 'Cursor', glyph: 'CU', from: '#b4b9c4', to: '#7c8fa8', kind: 'ide', status: 'degraded', version: '1.2.0' }),
+  withDefaults({ id: 'cursor', name: 'Cursor', vendor: 'Cursor', glyph: 'CU', from: '#b4b9c4', to: '#7c8fa8', kind: 'ide', status: 'connected', version: '1.2.0' }),
   withDefaults({ id: 'hermes', name: 'Hermes', vendor: 'Nous Research', glyph: 'HR', from: '#caaad3', to: '#ac78a7', kind: 'terminal', status: 'connected', version: '4.70b' }),
   withDefaults({ id: 'glm-code', name: 'GLM Code', vendor: 'Z.ai', glyph: 'GL', from: '#add6c4', to: '#57a98f', kind: 'terminal', status: 'connected', version: '1.4.2' }),
   withDefaults({ id: 'zed', name: 'Zed', vendor: 'Zed Industries', glyph: 'ZD', from: '#d1c193', to: '#c6a259', kind: 'ide' })

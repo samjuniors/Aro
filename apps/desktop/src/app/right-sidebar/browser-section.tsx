@@ -213,7 +213,7 @@ export function BrowserSection() {
                     setInputVal(t.input)
                     setError('')
                   }}
-                  title={t.url || 'New tab'}
+                  aria-label={t.url || 'New tab'}
                   type="button"
                 >
                   <IconGlobe className={cn('shrink-0', isActive ? 'text-aro-iris-soft' : 'text-aro-ink-4')} size={11} />
