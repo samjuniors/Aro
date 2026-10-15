@@ -18,6 +18,7 @@ import { useHudComposerDrag } from '@/app/hud/composer-drag'
 import { AroRepoBar } from '@/aro/AroRepoBar'
 import { IconBranch, IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
 import {
+  $aroDraftProjectId,
   $aroSessionProjectMap,
   assignSessionToProject,
   setAroDraftProject,
@@ -1178,15 +1179,15 @@ export function ChatBar({
   const explicitProjects = useStore($projects)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
 
   const chatBarSessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const chatBarCurrentProjectId = sessionId ? (chatBarSessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const chatBarCurrentProject = projects.find(project => project.id === chatBarCurrentProjectId) || explicitProjects.find(p => p.id === chatBarCurrentProjectId)
+  const chatBarCurrentProjectId = sessionId ? chatBarSessionProjectFromMap : (aroDraftProjectId || projectScope)
+  const chatBarCurrentProject = chatBarCurrentProjectId ? explicitProjects.find(p => p.id === chatBarCurrentProjectId && !p.archived) : null
 
-  const chatBarCurrentRoot = (chatBarCurrentProject && 'label' in chatBarCurrentProject ? projectRootCwd(chatBarCurrentProject) : null)
-    || (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null)
+  const chatBarCurrentRoot = (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null)
     || (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null)
-    || (cwd || null)
+    || null
 
   const leadingCluster = (
     <div className="flex min-w-0 items-center gap-1" data-aro-composer-leading="">
@@ -1679,7 +1680,7 @@ export function ChatBar({
               </div>
             </div>
           </ComposerPrimitive.Root>
-          {isAro && Boolean(chatBarCurrentRoot || chatBarCurrentProject) && (
+          {isAro && Boolean(chatBarCurrentProject && chatBarCurrentRoot) && (
             <AroRepoBar
               cwd={chatBarCurrentRoot}
               onOpenDiff={() => toggleReview(chatBarCurrentRoot, scope.target)}
@@ -1768,20 +1769,19 @@ function ProjectPickerControl({
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
   const [open, setOpen] = useState(false)
   const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
   const [search, setSearch] = useState('')
   const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? (sessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
+  const currentProjectId = sessionId ? sessionProjectFromMap : (aroDraftProjectId || projectScope)
+  const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
 
-  const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
-    || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
+  const currentRoot = (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
     || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
-    || (cwd || null)
+    || null
 
-  const folderName = currentRoot ? currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : undefined
-  const currentLabel = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : folderName
+  const currentLabel = currentProject?.name
 
   const $repoStatus = repoStatusForCwd(currentRoot)
   const liveRepoStatus = useStore($repoStatus)
@@ -1833,9 +1833,9 @@ function ProjectPickerControl({
     const list: Array<{ id: string; label: string; path: string; color?: string; isDemo?: boolean }> = []
     const seen = new Set<string>()
 
-    // 1. From explicit projects ($projects)
+    // Strictly from explicit projects ($projects)
     for (const p of explicitProjects) {
-      if (p.id && !p.archived) {
+      if (p.id && !p.archived && !seen.has(p.id)) {
         seen.add(p.id)
         const pPath = p.primary_path || p.folders?.[0]?.path || ''
         list.push({
@@ -1848,44 +1848,8 @@ function ProjectPickerControl({
       }
     }
 
-    // 2. From project tree ($projectTree)
-    for (const node of projects) {
-      if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
-        seen.add(node.id)
-        const root = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
-        const label = node.label || (root ? root.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
-        list.push({
-          id: node.id,
-          label,
-          path: root,
-          color: node.color || undefined,
-          isDemo: node.id.includes('demo') || label.toLowerCase().includes('demo')
-        })
-      }
-    }
-
-    // 3. Child repos from project tree nodes (ensures auto-discovered repos appear in chooser)
-    for (const node of projects) {
-      if (node.repos && node.repos.length > 0) {
-        for (const repo of node.repos) {
-          if (repo.id && repo.id !== '__no_project__' && !seen.has(repo.id)) {
-            seen.add(repo.id)
-            const repoPath = repo.path || ''
-            const repoLabel = repo.label || (repoPath ? repoPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || repo.id
-            list.push({
-              id: repo.id,
-              label: repoLabel,
-              path: repoPath,
-              color: node.color || undefined,
-              isDemo: repo.id.includes('demo') || repoLabel.toLowerCase().includes('demo')
-            })
-          }
-        }
-      }
-    }
-
     return list
-  }, [projects, explicitProjects])
+  }, [explicitProjects])
 
   const filteredProjects = useMemo(() => {
     if (!search.trim()) {return availableProjects}
@@ -2018,7 +1982,7 @@ function ProjectPickerControl({
                 {!currentProjectId ? <IconCheck className="repo-chooser-check" size={13} /> : null}
               </button>
             )}
-            {loading && projects.length === 0 ? (
+            {loading && explicitProjects.length === 0 ? (
               <div className="p-3 text-center text-xs text-aro-ink-3">Loading projects…</div>
             ) : filteredProjects.length === 0 && search.trim() && !'default'.includes(search.toLowerCase()) ? (
               <p className="repo-chooser-empty">

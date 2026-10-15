@@ -312,13 +312,13 @@ export function AroSidebar({
   const gatewayState = useStore($gatewayState)
   const gatewayReady = gatewayState === 'open'
 
-  // Refresh projects, authoritative tree, and discovered repos on load & whenever gateway connects or profile changes
+  // Refresh projects and authoritative tree on load & whenever gateway connects or profile changes
   useEffect(() => {
     void refreshProjects()
-    void refreshProjectTree().finally(() => void scanAndRecordRepos())
+    void refreshProjectTree()
   }, [gatewayReady, activeGatewayProfile])
 
-  // Unified authoritative projects combining explicit $projects, $projectTree, and child repos (matching Composer)
+  // Explicit user-created projects ($projects), enriched with tree repository metadata
   const effectiveProjects = useMemo(() => {
     const list: Array<{
       id: string
@@ -331,9 +331,9 @@ export function AroSidebar({
 
     const seen = new Set<string>()
 
-    // 1. Explicit projects from $projects
+    // Explicit projects from $projects
     for (const p of projects) {
-      if (p.id && !p.archived) {
+      if (p.id && !p.archived && !seen.has(p.id)) {
         seen.add(p.id)
         const pPath = p.primary_path || p.folders?.[0]?.path
         const pName = p.name || (pPath ? pPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || p.id
@@ -355,33 +355,6 @@ export function AroSidebar({
           path: pPath,
           folders: mergedFolders,
           archived: p.archived
-        })
-      }
-    }
-
-    // 2. Authoritative project tree from $projectTree (covers auto-projects and explicit ones)
-    for (const node of projectTree) {
-      if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
-        seen.add(node.id)
-        const rootPath = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
-        const label = node.label || (rootPath ? rootPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
-        const nodeFolders: Array<{ path: string }> = rootPath ? [{ path: rootPath }] : []
-
-        if (node.repos) {
-          for (const r of node.repos) {
-            if (r.path && !nodeFolders.some(f => f.path === r.path)) {
-              nodeFolders.push({ path: r.path })
-            }
-          }
-        }
-
-        list.push({
-          id: node.id,
-          name: label,
-          color: node.color,
-          path: rootPath,
-          folders: nodeFolders,
-          archived: node.archived
         })
       }
     }
@@ -510,7 +483,7 @@ export function AroSidebar({
         $activeProjectId.set(null)
         exitProjectScope()
         void setActiveProject(null).catch(() => {})
-        setCurrentCwd(null as unknown as string)
+        setCurrentCwd('')
 
         if (onNewSessionInWorkspace) {
           onNewSessionInWorkspace(null)

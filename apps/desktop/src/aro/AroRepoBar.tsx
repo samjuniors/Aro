@@ -10,7 +10,7 @@ import {
   IconSearch,
   IconSettings
 } from '@/aro/Icons'
-import { $aroSessionProjectMap } from '@/aro/project-session-map'
+import { $aroDraftProjectId, $aroSessionProjectMap } from '@/aro/project-session-map'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -60,17 +60,24 @@ export function AroRepoBar({
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
 
   const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? (sessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
+  const currentProjectId = sessionId ? sessionProjectFromMap : ($aroDraftProjectId.get() || projectScope)
+  const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
 
-  const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
-    || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
-    || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
-    || (cwd || null)
+  if (!currentProject) {
+    return null
+  }
 
-  const folderName = currentRoot ? currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : undefined
-  const repoName = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : folderName || 'Repository'
-  const isDemo = Boolean(currentProject?.id?.includes('demo') || repoName.toLowerCase().includes('demo'))
+  const currentRoot = currentProject.primary_path
+    || currentProject.folders?.[0]?.path
+    || null
+
+  if (!currentRoot) {
+    return null
+  }
+
+  const folderName = currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop()
+  const repoName = currentProject.name || folderName || 'Repository'
+  const isDemo = Boolean(currentProject.id?.includes('demo') || repoName.toLowerCase().includes('demo'))
 
   // Live status
   const $status = repoStatusForCwd(currentRoot)

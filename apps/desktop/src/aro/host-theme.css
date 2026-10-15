@@ -2969,4 +2969,11 @@
   color: var(--aro-ink-2);
 }
 
+/* Aro UI: completely remove the vertical Restore sidebar rail */
+:root[data-aro-ui='true'] [title="Restore"],
+:root[data-aro-ui='true'] [data-tree-group] > [title="Restore"],
+:root[data-aro-ui='true'] [data-tree-group] [title="Restore"] {
+  display: none !important;
+}
+
 

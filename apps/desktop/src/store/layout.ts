@@ -673,6 +673,23 @@ export function toggleRightSide() {
 
   const group = rightSideGroup()
 
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  if (isAro) {
+    if (group && group.minimized) {
+      setTreeGroupMinimized(group.id, false)
+    }
+    const currentlyShown = group ? rightSideShown(group) : $fileBrowserOpen.get()
+    const nextOpen = !currentlyShown
+    setFileBrowserOpen(nextOpen)
+    if (nextOpen && group) {
+      const pane = group.active ?? group.panes[0]
+      if (pane) {
+        restoreTreePane(pane)
+      }
+    }
+    return
+  }
+
   if (!group) {
     // No foldable column on the right (terminal-on-bottom, a nested right
     // split): fall back to the semantic side collapse, never the left side.

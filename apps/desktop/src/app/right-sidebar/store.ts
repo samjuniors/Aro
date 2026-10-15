@@ -73,7 +73,64 @@ function readInitialSection(): ContextSectionId {
 
 export const $rightSidebarSection = atom<ContextSectionId>(readInitialSection())
 
+export const WORKSPACE_OPEN_TABS_STORAGE_KEY = 'conductor.workspace.panel.openTabs'
+
+function readInitialOpenTabs(): ContextSectionId[] {
+  const stored = readKey(WORKSPACE_OPEN_TABS_STORAGE_KEY)
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const valid = parsed.filter(s => VALID_SECTIONS.has(s as ContextSectionId) && s !== 'launchpad') as ContextSectionId[]
+        if (valid.length > 0) {
+          return valid
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+  return ['changes', 'terminal']
+}
+
+export const $workspaceOpenTabs = atom<ContextSectionId[]>(readInitialOpenTabs())
+
+export const openWorkspaceTab = (section: ContextSectionId) => {
+  if (section !== 'launchpad') {
+    const current = $workspaceOpenTabs.get()
+    if (!current.includes(section)) {
+      const next = [...current, section]
+      $workspaceOpenTabs.set(next)
+      writeKey(WORKSPACE_OPEN_TABS_STORAGE_KEY, JSON.stringify(next))
+    }
+  }
+  setRightSidebarSection(section)
+}
+
+export const closeWorkspaceTab = (section: ContextSectionId) => {
+  const current = $workspaceOpenTabs.get()
+  const next = current.filter(s => s !== section)
+  $workspaceOpenTabs.set(next)
+  writeKey(WORKSPACE_OPEN_TABS_STORAGE_KEY, JSON.stringify(next))
+
+  if ($rightSidebarSection.get() === section) {
+    if (next.length > 0) {
+      setRightSidebarSection(next[next.length - 1])
+    } else {
+      setRightSidebarSection('launchpad')
+    }
+  }
+}
+
 export const setRightSidebarSection = (section: ContextSectionId) => {
   writeKey(PANEL_SECTION_STORAGE_KEY, section)
   $rightSidebarSection.set(section)
+  if (section !== 'launchpad') {
+    const current = $workspaceOpenTabs.get()
+    if (!current.includes(section)) {
+      const next = [...current, section]
+      $workspaceOpenTabs.set(next)
+      writeKey(WORKSPACE_OPEN_TABS_STORAGE_KEY, JSON.stringify(next))
+    }
+  }
 }

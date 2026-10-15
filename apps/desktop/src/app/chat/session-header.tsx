@@ -1,20 +1,38 @@
 import { useStore } from '@nanostores/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { openSession } from '@/app/open-session'
+import { $rightSidebarSection, openWorkspaceTab } from '@/app/right-sidebar/store'
 import { NEW_CHAT_ROUTE } from '@/app/routes'
-import { IconBranch, IconChevronDown, IconChevronLeft, IconMore, IconPlus, IconSearch } from '@/aro/Icons'
+import { ExternalIdeControl } from '@/app/shell/external-ide-control'
+import {
+  IconBrain,
+  IconBranch,
+  IconChevronDown,
+  IconChevronRight,
+  IconFolder,
+  IconGit,
+  IconList,
+  IconMore,
+  IconPanelRight,
+  IconPlus,
+  IconSearch,
+  IconTerminal
+} from '@/aro/Icons'
 import { formatMessageTimestamp } from '@/components/assistant-ui/thread/timestamp'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { NEW_SESSION_TITLE, sessionTitle } from '@/lib/chat-runtime'
 import { cn } from '@/lib/utils'
 import { repoStatusForCwd } from '@/store/coding-status'
-import { $fileBrowserOpen, $pinnedSessionIds, toggleRightSide } from '@/store/layout'
+import { $backgroundStatusBySession } from '@/store/composer-status'
+import { $fileBrowserOpen, $pinnedSessionIds, setFileBrowserOpen, toggleRightSide } from '@/store/layout'
 import { $profiles } from '@/store/profile'
 import { $sessions, sessionMatchesStoredId, sessionPinId } from '@/store/session'
+import { $subagentsBySession } from '@/store/subagents'
 import { isAuxiliaryWindow } from '@/store/windows'
 
 import { ProfileTag } from './profile-tag'
@@ -25,6 +43,7 @@ export interface SessionHeaderProps {
   busy?: boolean
   cwd?: null | string
   isRoutedSessionView: boolean
+  messagesEmpty?: boolean
   onDeleteSelectedSession: () => void
   onToggleSelectedPin: () => void
   selectedSessionId: null | string
@@ -35,6 +54,7 @@ export function SessionHeader({
   busy,
   cwd,
   isRoutedSessionView,
+  messagesEmpty = true,
   onDeleteSelectedSession,
   onToggleSelectedPin,
   selectedSessionId
@@ -51,10 +71,46 @@ export function SessionHeader({
   const [search, setSearch] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
+  const bgStatus = useStore($backgroundStatusBySession)
+  const subagents = useStore($subagentsBySession)
+
+  const sessionId = selectedSessionId || activeSessionId
+
+  const backgroundTasksCount = useMemo(() => {
+    let count = 0
+    if (sessionId) {
+      count += (bgStatus[sessionId] ?? []).filter(i => i.state === 'running').length
+      count += (subagents[sessionId] ?? []).filter(i => i.status === 'running').length
+    } else {
+      for (const items of Object.values(bgStatus)) {
+        count += items.filter(i => i.state === 'running').length
+      }
+      for (const items of Object.values(subagents)) {
+        count += items.filter(i => i.status === 'running').length
+      }
+    }
+    return count
+  }, [sessionId, bgStatus, subagents])
+
   const activeStoredSession =
     ((selectedSessionId || activeSessionId) &&
       sessions.find(session => sessionMatchesStoredId(session, selectedSessionId || activeSessionId || ''))) ||
     null
+
+  const hasChat = !messagesEmpty || Boolean(busy)
+
+  const [overviewOpen, setOverviewOpen] = useState(Boolean(busy))
+  const prevBusyRef = useRef(Boolean(busy))
+
+  // Automatically open ONLY ONCE when a task hits (busy transitions from false to true)
+  useEffect(() => {
+    if (busy && !prevBusyRef.current) {
+      setOverviewOpen(true)
+    }
+    prevBusyRef.current = Boolean(busy)
+  }, [busy])
+
+  const section = useStore($rightSidebarSection)
 
   const title = activeStoredSession ? sessionTitle(activeStoredSession) : NEW_SESSION_TITLE
 
@@ -199,24 +255,126 @@ export function SessionHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        {!fileBrowserOpen && (
-          <Tip label="Workspace panel · ⌘J" placement="toolbar" side="bottom">
-            <button
-              aria-label="Toggle workspace panel"
-              className="workspace-arrow-toggle"
-              onClick={toggleRightSide}
-              type="button"
-            >
-              <IconChevronLeft size={13} />
-            </button>
-          </Tip>
+        {hasChat && (
+          <>
+            {cwd && <ExternalIdeControl compact />}
+
+            {/* Overview Popover: automatically opens when agent task is running, otherwise toggled via icon */}
+            <Popover modal={false} onOpenChange={setOverviewOpen} open={overviewOpen}>
+              <Tip label={overviewOpen ? 'Close overview' : 'Overview'} side="bottom">
+                <PopoverTrigger asChild>
+                  <button
+                    aria-label="Overview"
+                    aria-pressed={overviewOpen}
+                    className={cn(
+                      'flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
+                      overviewOpen && 'bg-aro-hover text-aro-iris-soft'
+                    )}
+                    type="button"
+                  >
+                    <IconList size={14} />
+                  </button>
+                </PopoverTrigger>
+              </Tip>
+              <PopoverContent
+                align="end"
+                className="w-52 rounded-[10px] border border-aro-line bg-aro-raise/95 p-1.5 shadow-2xl backdrop-blur-xl z-50 text-aro-ink"
+                onOpenAutoFocus={e => e.preventDefault()}
+                side="bottom"
+                sideOffset={6}
+                variant="menu"
+              >
+                <div className="flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-aro-ink-3 tracking-wider">
+                  <span>Overview</span>
+                  <IconMore size={12} className="text-aro-ink-4 hover:text-aro-ink-2 cursor-pointer" />
+                </div>
+                <div className="flex flex-col gap-0.5 mt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openWorkspaceTab('changes')
+                      if (!fileBrowserOpen) toggleRightSide()
+                      setOverviewOpen(false)
+                    }}
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                  >
+                    <IconGit size={13} className="text-aro-ink-3 shrink-0" />
+                    <span>Review</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openWorkspaceTab('files')
+                      if (!fileBrowserOpen) toggleRightSide()
+                      setOverviewOpen(false)
+                    }}
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                  >
+                    <IconFolder size={13} className="text-aro-ink-3 shrink-0" />
+                    <span>Files</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openWorkspaceTab('terminal')
+                      if (!fileBrowserOpen) toggleRightSide()
+                      setOverviewOpen(false)
+                    }}
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                  >
+                    <IconTerminal size={13} className="text-aro-ink-3 shrink-0" />
+                    <span>Terminal</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openWorkspaceTab('context')
+                      if (!fileBrowserOpen) toggleRightSide()
+                      setOverviewOpen(false)
+                    }}
+                    className="flex items-center justify-between w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <IconBrain size={13} className="text-aro-ink-3 shrink-0" />
+                      <span>Plugins</span>
+                    </div>
+                    <IconChevronRight size={11} className="text-aro-ink-4 shrink-0" />
+                  </button>
+                </div>
+                <div className="my-1 border-t border-aro-line-soft" />
+                <div className="flex items-center justify-between px-2 py-1 text-[11px] text-aro-ink-3">
+                  <span>Background Tasks</span>
+                  <span className="font-mono text-[11px] font-medium text-aro-ink-3">{backgroundTasksCount}</span>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Workspace panel open/close toggle beside overview panel icon */}
+            <Tip label={fileBrowserOpen ? 'Close workspace panel · ⌘J' : 'Open workspace panel · ⌘J'} side="bottom">
+              <button
+                aria-label="Toggle workspace panel"
+                aria-pressed={fileBrowserOpen}
+                className={cn(
+                  'flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
+                  fileBrowserOpen && 'bg-aro-hover text-aro-iris-soft'
+                )}
+                onClick={toggleRightSide}
+                type="button"
+              >
+                <IconPanelRight size={14} />
+              </button>
+            </Tip>
+          </>
         )}
 
         <Tip label="New session (⌘N)">
           <button
             aria-label="New session"
             className="flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
-            onClick={() => navigate(NEW_CHAT_ROUTE)}
+            onClick={() => {
+              setFileBrowserOpen(false)
+              navigate(NEW_CHAT_ROUTE)
+            }}
             type="button"
           >
             <IconPlus size={13} />

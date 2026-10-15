@@ -237,10 +237,16 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
 
   root.style.setProperty('color-scheme', rendered)
   root.dataset.hermesTheme = skinName
-  root.dataset.theme = skinName
-  root.dataset.aroUi = 'true'
   root.dataset.hermesMode = rendered
   root.classList.toggle('dark', isDark)
+
+  const isAro = root.dataset.aroUi === 'true'
+  if (isAro && typeof window !== 'undefined') {
+    const savedAroTheme = localStorage.getItem('aro.theme')
+    root.dataset.theme = savedAroTheme || (['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName) ? skinName : 'obsidian')
+  } else {
+    root.dataset.theme = skinName
+  }
 
   // Translucency is tuned per appearance, and "appearance" means the palette
   // actually painted — a skin that keeps a bright surface in "dark" wants

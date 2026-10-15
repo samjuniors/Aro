@@ -20,7 +20,7 @@
 import './titlebar.css'
 
 import { useStore } from '@nanostores/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
@@ -120,20 +120,37 @@ export function AroTitlebar() {
 
   // Active theme
   const [activeTheme, setActiveTheme] = useState<string>(() => {
-    return document.documentElement.dataset.theme || 'obsidian'
+    return (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) || document.documentElement.dataset.theme || 'obsidian'
   })
-
 
   const handleSetTheme = (themeId: string) => {
     setActiveTheme(themeId)
     document.documentElement.dataset.theme = themeId
+    const isLight = themeId === 'daylight' || themeId === 'paper'
+    document.documentElement.classList.toggle('dark', !isLight)
+    document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
 
     try {
       localStorage.setItem('aro.theme', themeId)
+      window.dispatchEvent(new CustomEvent('aro:theme', { detail: themeId }))
     } catch {
       // ignore
     }
   }
+
+  useEffect(() => {
+    const onThemeChange = () => {
+      const current = localStorage.getItem('aro.theme') || document.documentElement.dataset.theme || 'obsidian'
+      setActiveTheme(current)
+    }
+    window.addEventListener('aro:theme', onThemeChange)
+    window.addEventListener('storage', onThemeChange)
+
+    return () => {
+      window.removeEventListener('aro:theme', onThemeChange)
+      window.removeEventListener('storage', onThemeChange)
+    }
+  }, [])
 
   // Voice orb toggle state
   const [voiceOrbOn, setVoiceOrbOn] = useState<boolean>(() => {

@@ -147,6 +147,14 @@ export function AroAppearanceSettings() {
 
       if (syncTheme && recommended && recommended !== themeName) {
         setTheme(recommended)
+        try {
+          localStorage.setItem('aro.theme', recommended)
+          document.documentElement.dataset.theme = recommended
+          const isLight = recommended === 'daylight' || recommended === 'paper'
+          document.documentElement.classList.toggle('dark', !isLight)
+          document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
+          window.dispatchEvent(new CustomEvent('aro:theme', { detail: recommended }))
+        } catch {}
         setThemeFeedback(`Switched theme to ${recommended}`)
         setTimeout(() => setThemeFeedback(null), 3000)
       }
@@ -157,6 +165,14 @@ export function AroAppearanceSettings() {
   const handleApplyRecommendedTheme = useCallback(
     (recommended: string) => {
       setTheme(recommended)
+      try {
+        localStorage.setItem('aro.theme', recommended)
+        document.documentElement.dataset.theme = recommended
+        const isLight = recommended === 'daylight' || recommended === 'paper'
+        document.documentElement.classList.toggle('dark', !isLight)
+        document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
+        window.dispatchEvent(new CustomEvent('aro:theme', { detail: recommended }))
+      } catch {}
       triggerHaptic('success')
       setThemeFeedback(`Applied recommended theme: ${recommended}`)
       setTimeout(() => setThemeFeedback(null), 3000)
