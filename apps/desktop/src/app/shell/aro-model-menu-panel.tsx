@@ -334,7 +334,7 @@ function EffortSliderRow({
 
       {clamp ? (
         <p className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-4">
-          {copy.sendsOnRoute(copy[clamp.wire as keyof typeof copy] ?? clamp.wire)}
+          {copy.sendsOnRoute(typeof copy[clamp.wire as keyof typeof copy] === 'string' ? (copy[clamp.wire as keyof typeof copy] as string) : clamp.wire)}
         </p>
       ) : null}
     </div>

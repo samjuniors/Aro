@@ -2543,6 +2543,92 @@
   color: var(--aro-ink);
 }
 
+/* Commit Split Button (matching Google Antigravity Screenshot 1) */
+:root[data-aro-ui='true'] .codex-commit-split {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  background: var(--aro-iris);
+  color: #fff;
+  height: 26px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 120ms ease;
+}
+:root[data-aro-ui='true'] .codex-commit-split:hover {
+  background: color-mix(in srgb, var(--aro-iris) 85%, #fff);
+}
+:root[data-aro-ui='true'] .codex-commit-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+:root[data-aro-ui='true'] .codex-commit-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 20px;
+  padding: 0;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: background 120ms;
+}
+:root[data-aro-ui='true'] .codex-commit-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Review Scope Dropdown Button (matching Google Antigravity Screenshot 4) */
+:root[data-aro-ui='true'] .codex-scope-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--aro-well);
+  border: 1px solid var(--aro-line);
+  color: var(--aro-ink);
+  font-size: 11.5px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 120ms;
+}
+:root[data-aro-ui='true'] .codex-scope-trigger:hover {
+  background: var(--aro-hover);
+  border-color: var(--aro-line-strong);
+}
+
+/* Staged / Changes Drawer Partition Headers (Screenshot 2) */
+:root[data-aro-ui='true'] .codex-drawer-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--aro-ink-3);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+:root[data-aro-ui='true'] .codex-drawer-empty-hint {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--aro-ink-4);
+  font-style: italic;
+}
+
 :root[data-aro-ui='true'] .codex-changes-split-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 250px;
