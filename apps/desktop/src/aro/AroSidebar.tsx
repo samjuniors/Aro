@@ -48,6 +48,7 @@ import {
   $sidebarFiltersActive,
   $sidebarMessagingOpenIds,
   pinSession,
+  setFileBrowserOpen,
   toggleLeftSide,
   unpinSession
 } from '@/store/layout'
@@ -58,7 +59,9 @@ import {
   profileLabel,
   selectProfile
 } from '@/store/profile'
+import { exitProjectScope } from '@/store/project-scope'
 import {
+  $activeProjectId,
   $projectOwnerBySessionId,
   $projects,
   $projectTree,
@@ -70,6 +73,7 @@ import {
   refreshProjectTree,
   renameProject,
   scanAndRecordRepos,
+  setActiveProject,
   updateProject
 } from '@/store/projects'
 import {
@@ -111,6 +115,7 @@ import {
 } from './Icons'
 import { $aroProductMode } from './mode'
 import {
+  $aroDraftProjectId,
   $aroSessionProjectMap,
   assignSessionToProject,
   removeProjectFromMap,
@@ -497,10 +502,15 @@ export function AroSidebar({
         setActiveSessionId(newSessionId)
         setSelectedStoredSessionId(newSessionId)
         setMessages([])
+        setFileBrowserOpen(false)
         navigate(NEW_CHAT_ROUTE)
       } else {
         setAroDraftProject(null)
         setNewChatWorkspaceTarget(null)
+        $activeProjectId.set(null)
+        exitProjectScope()
+        void setActiveProject(null).catch(() => {})
+        setCurrentCwd(null as unknown as string)
 
         if (onNewSessionInWorkspace) {
           onNewSessionInWorkspace(null)
@@ -530,6 +540,7 @@ export function AroSidebar({
         setActiveSessionId(newSessionId)
         setSelectedStoredSessionId(newSessionId)
         setMessages([])
+        setFileBrowserOpen(false)
         navigate(NEW_CHAT_ROUTE)
       }
     },
@@ -1601,12 +1612,28 @@ export function AroSidebar({
             <Button
               onClick={async () => {
                 if (deletingProject) {
+                  const pid = deletingProject.id
+                  const pname = deletingProject.name
                   try {
-                    removeProjectFromMap(deletingProject.id)
-                    await deleteProject(deletingProject.id)
-                    notify({ kind: 'info', message: `Project '${deletingProject.name}' deleted` })
+                    removeProjectFromMap(pid)
+                    if ($aroDraftProjectId.get() === pid) {
+                      setAroDraftProject(null)
+                    }
+                    if ($activeProjectId.get() === pid) {
+                      $activeProjectId.set(null)
+                      exitProjectScope()
+                      void setActiveProject(null).catch(() => {})
+                    }
+                    await deleteProject(pid)
+                    notify({ kind: 'info', message: `Project '${pname}' deleted` })
                   } catch (err) {
-                    console.error('Failed to delete project:', err)
+                    console.error('Failed to delete project on backend, removing locally:', err)
+                    $projects.set($projects.get().filter(p => p.id !== pid))
+                    $projectTree.set($projectTree.get().filter(p => p.id !== pid))
+                    notify({ kind: 'info', message: `Project '${pname}' removed` })
+                  } finally {
+                    void refreshProjects().catch(() => {})
+                    void refreshProjectTree().catch(() => {})
                   }
 
                   setDeletingProject(null)

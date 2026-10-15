@@ -1315,6 +1315,7 @@ export async function deleteProject(id: string): Promise<void> {
       )
     )
   })
+  void refreshProjects()
   void refreshProjectTree()
 }
 

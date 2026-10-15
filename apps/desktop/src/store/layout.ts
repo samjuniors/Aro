@@ -84,7 +84,7 @@ export const FILES_PANE_ID = 'files'
 export type RightRailTabId = `artifact:${string}` | `file:${string}` | `url:${string}`
 
 ensurePaneRegistered(CHAT_SIDEBAR_PANE_ID, { open: true })
-ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: true })
+ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: false })
 
 export const $sidebarOpen: ReadableAtom<boolean> = computed(
   $paneStates,

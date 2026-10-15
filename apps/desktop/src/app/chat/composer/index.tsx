@@ -17,8 +17,12 @@ import { VoiceAgentOrb } from '@/app/chat/voice-agent-orb'
 import { useHudComposerDrag } from '@/app/hud/composer-drag'
 import { AroRepoBar } from '@/aro/AroRepoBar'
 import { IconBranch, IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
-import { $aroSessionProjectMap } from '@/aro/project-session-map'
-import { assignSessionToProject, setAroDraftProject } from '@/aro/project-session-map'
+import {
+  $aroSessionProjectMap,
+  assignSessionToProject,
+  setAroDraftProject,
+  unassignSessionFromProject
+} from '@/aro/project-session-map'
 import { composerFloatingStrip, composerInputBacking } from '@/components/chat/composer-dock'
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
@@ -48,6 +52,7 @@ import { $showsAdvancedChrome } from '@/store/interface-mode'
 import { notifyError } from '@/store/notifications'
 import { $projectScope, exitProjectScope } from '@/store/project-scope'
 import {
+  $activeProjectId,
   $projects,
   $projectTree,
   $projectTreeLoading,
@@ -58,11 +63,12 @@ import {
   projectRootCwd,
   refreshProjects,
   refreshProjectTree,
-  requestStartWorkSession
+  requestStartWorkSession,
+  setActiveProject
 } from '@/store/projects'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
-import { $gatewayState } from '@/store/session'
+import { $gatewayState, setNewChatWorkspaceTarget } from '@/store/session'
 import { $botChatSessionIds, $sessionStates, $sessionTiles, isBotChatSession } from '@/store/session-states'
 import { useForcedTextDirection } from '@/store/text-direction'
 import { $threadScrolledUpBySession } from '@/store/thread-scroll'
@@ -1894,7 +1900,18 @@ function ProjectPickerControl({
   const chooseProject = async (projectId?: string) => {
     if (!projectId) {
       exitProjectScope()
+      setAroDraftProject(null)
+      $activeProjectId.set(null)
+      void setActiveProject(null).catch(() => {})
+      setNewChatWorkspaceTarget(null)
+      if (sessionId) {
+        unassignSessionFromProject(sessionId)
+      }
       setOpen(false)
+      void Promise.all([
+        refreshProjects().catch(() => {}),
+        refreshProjectTree().catch(() => {})
+      ])
 
       return
     }
@@ -1946,7 +1963,7 @@ function ProjectPickerControl({
           aria-label={
             currentLabel
               ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
-              : 'Attach a project'
+              : 'Default (Attach a project)'
           }
           className={cn(
             'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
@@ -1985,11 +2002,27 @@ function ProjectPickerControl({
             />
           </div>
           <div className="repo-chooser-list">
+            {(!search.trim() || 'default'.includes(search.toLowerCase())) && (
+              <button
+                className={cn('repo-chooser-row', !currentProjectId && 'selected')}
+                onClick={() => void chooseProject(undefined)}
+                type="button"
+              >
+                <span className="repo-chooser-main">
+                  <span className="repo-chooser-name flex items-center gap-1.5">
+                    <span className="size-2 rounded-full shrink-0 bg-aro-ink-4" />
+                    <span>Default</span>
+                  </span>
+                  <span className="repo-chooser-sub">No project (standalone chat)</span>
+                </span>
+                {!currentProjectId ? <IconCheck className="repo-chooser-check" size={13} /> : null}
+              </button>
+            )}
             {loading && projects.length === 0 ? (
               <div className="p-3 text-center text-xs text-aro-ink-3">Loading projects…</div>
-            ) : filteredProjects.length === 0 ? (
+            ) : filteredProjects.length === 0 && search.trim() && !'default'.includes(search.toLowerCase()) ? (
               <p className="repo-chooser-empty">
-                {search ? `No repositories match “${search}”.` : 'No repositories attached yet.'}
+                {`No repositories match “${search}”.`}
               </p>
             ) : (
               filteredProjects.map(project => {
@@ -2027,60 +2060,12 @@ function ProjectPickerControl({
             className="repo-chooser-add"
             onClick={() => {
               setOpen(false)
-
-              if (isDesktopFsRemoteMode()) {
-                notifyError(new Error('Cloning is available in a local Aro connection. Switch to Local before cloning onto this computer.'), 'Could not clone repository')
-
-                return
-              }
-
-              const repositoryUrl = window.prompt('Enter a Git repository URL (HTTPS or SSH)')
-
-              if (!repositoryUrl?.trim()) {return}
-              void (async () => {
-                try {
-                  const cloned = await window.hermesDesktop.cloneRepository?.(repositoryUrl.trim())
-
-                  if (!cloned) {return}
-                  await openFolderAsProject(cloned.path)
-                } catch (error) {
-                  notifyError(error, 'Could not clone repository')
-                }
-              })()
-            }}
-            type="button"
-          >
-            <Codicon name="repo-clone" size="0.875rem" /> Clone repository…
-          </button>
-          <button
-            className="repo-chooser-add"
-            onClick={() => {
-              setOpen(false)
-              void openFolderAsProject().catch(error => notifyError(error, 'Could not open project'))
-            }}
-            type="button"
-          >
-            <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" /> Open local project…
-          </button>
-          <button
-            className="repo-chooser-add"
-            onClick={() => {
-              setOpen(false)
               openProjectCreate()
             }}
             type="button"
           >
-            <IconPlus size={12} /> Add repositories…
+            <IconPlus size={12} /> New project…
           </button>
-          {currentProjectId ? (
-            <button
-              className="repo-chooser-add repo-chooser-clear"
-              onClick={() => void chooseProject(undefined)}
-              type="button"
-            >
-              <IconX size={11} /> Continue without a project
-            </button>
-          ) : null}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

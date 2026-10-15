@@ -23,9 +23,12 @@ import {
   followEnteredProjectCwd,
   pickProjectFolder,
   projectIdForCwd,
+  refreshProjects,
   refreshProjectTree,
   renameProject
 } from '@/store/projects'
+
+import { setAroDraftProject } from './project-session-map'
 
 import { IconCheck, IconFolder, IconPlus, IconX } from './Icons'
 import { Button, Modal } from './ui'
@@ -144,40 +147,32 @@ export function AroProjectDialog() {
 
       try {
         const folder = folders[0]
-        await refreshProjectTree()
-        const existingId = folder ? projectIdForCwd(folder) : null
+        const dropPlacement = $newProjectDropPlacement.get() ?? undefined
 
+        const existingId = folder ? projectIdForCwd(folder) : null
         if (existingId) {
           enterProject(existingId)
-
+          setAroDraftProject(existingId)
           if (folder) {
             followEnteredProjectCwd(folder)
-            void desktopGit()
-              ?.repoStatus(folder)
-              .then(() => refreshProjectTree())
-              .catch(() => undefined)
           }
-
-          notify({ kind: 'info', message: 'Opened existing project' })
-          clearNewProjectDropPlacement()
           closeProjectDialog()
-
+          notify({ kind: 'info', message: 'Opened existing project' })
           return
         }
-
-        const dropPlacement = $newProjectDropPlacement.get() ?? undefined
 
         const created = await createProject({
           name: trimmed,
           color,
           folders,
-          primaryPath: folders[0] || undefined,
+          primaryPath: folder || undefined,
           use: true,
           dropPlacement
         })
 
         if (created) {
           enterProject(created.id)
+          setAroDraftProject(created.id)
           notify({ kind: 'info', message: `Project '${trimmed}' created` })
 
           if (folder) {
@@ -189,8 +184,12 @@ export function AroProjectDialog() {
           }
         }
 
-        clearNewProjectDropPlacement()
         closeProjectDialog()
+        clearNewProjectDropPlacement()
+        void Promise.all([
+          refreshProjects().catch(() => {}),
+          refreshProjectTree().catch(() => {})
+        ])
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
       } finally {
