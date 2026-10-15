@@ -1435,6 +1435,13 @@
   box-shadow: none !important;
   opacity: 0.35;
 }
+:root[data-aro-ui='true'] .effort-slider.is-thinking-off {
+  opacity: 0.72;
+}
+:root[data-aro-ui='true'] .effort-slider.is-thinking-off .effort-range {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
 :root[data-aro-ui='true'] .effort-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;

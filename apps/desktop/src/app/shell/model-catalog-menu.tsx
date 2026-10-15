@@ -126,10 +126,20 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
 export const LOCAL_PROVIDER_SLUG = 'llamacpp'
 
 /**
- * Determines whether a model is free (e.g. reported as free tier, zero cost input/output,
- * local on-device provider, or free-tier slug/variant).
+ * Determines whether a model is genuinely free based on dynamic real sources:
+ * - Provider account-level free tier flag (`provider.free_tier`, `provider.free_tier_row`)
+ * - Live provider pricing table (`pricing.free === true` or input/output === 0 / 'free')
+ * - Local on-device providers (`llamacpp`, `ollama`, `local`, `local-runtime`) with 0 API cost
+ * - Aggregator `:free` models (e.g. OpenRouter free variants)
+ * - Excludes locked models in `provider.unavailable_models`
  */
 export function isModelFree(family: ModelFamily, provider: ModelOptionProvider): boolean {
+  // If the model is locked/unavailable under current account entitlement, it is not free
+  if (provider.unavailable_models && provider.unavailable_models.includes(family.id)) {
+    return false
+  }
+
+  // 1. Live pricing metadata reported by the provider/gateway
   const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
 
   if (pricing) {
@@ -137,24 +147,37 @@ export function isModelFree(family: ModelFamily, provider: ModelOptionProvider):
       return true
     }
 
-    const inFree = !pricing.input || pricing.input === '0' || pricing.input === '0.00' || pricing.input.toLowerCase() === 'free'
-    const outFree = !pricing.output || pricing.output === '0' || pricing.output === '0.00' || pricing.output.toLowerCase() === 'free'
+    const inStr = (pricing.input || '').trim().toLowerCase()
+    const outStr = (pricing.output || '').trim().toLowerCase()
+
+    const inFree = !inStr || inStr === 'free' || inStr === '0' || inStr === '$0' || inStr === '0.00' || inStr === '$0.00'
+    const outFree = !outStr || outStr === 'free' || outStr === '0' || outStr === '$0' || outStr === '0.00' || outStr === '$0.00'
 
     if (inFree && outFree && (pricing.input || pricing.output)) {
       return true
     }
 
-    if (pricing.input && pricing.input !== '0' && pricing.output && pricing.output !== '0') {
+    if (pricing.input && !inFree && pricing.output && !outFree) {
       return false
     }
   }
 
+  // 2. Provider account-level free tier entitlement (e.g. Nous Portal free tier account or free-tier row)
+  if (provider.free_tier || provider.free_tier_row) {
+    return true
+  }
+
+  // 3. Local on-device runtimes (always 0 API cost)
   const pSlug = (provider.slug || '').toLowerCase()
   const pName = (provider.name || '').toLowerCase()
+  const pAuth = (provider.auth_type || '').toLowerCase()
+  const pSource = (provider.source || '').toLowerCase()
 
   if (
     pSlug === LOCAL_PROVIDER_SLUG ||
     pSlug === 'ollama' ||
+    pAuth === 'local' ||
+    pSource === 'local-runtime' ||
     pSlug.includes('local') ||
     pName.includes('local') ||
     pName.includes('ollama') ||
@@ -163,6 +186,7 @@ export function isModelFree(family: ModelFamily, provider: ModelOptionProvider):
     return true
   }
 
+  // 4. Aggregator free model tags (e.g. OpenRouter `:free` or `/free` slug)
   const id = family.id.toLowerCase()
 
   if (id.includes(':free') || id.includes('/free') || id.endsWith('-free')) {
@@ -170,6 +194,24 @@ export function isModelFree(family: ModelFamily, provider: ModelOptionProvider):
   }
 
   return false
+}
+
+/**
+ * Determines whether a model is paid/metered based on real sources:
+ * Returns false if the model is free. Returns true if it carries non-zero
+ * live pricing, or is a commercial API-keyed provider.
+ */
+export function isModelPaid(family: ModelFamily, provider: ModelOptionProvider): boolean {
+  if (isModelFree(family, provider)) {
+    return false
+  }
+
+  const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
+  if (pricing) {
+    return !pricing.free
+  }
+
+  return true
 }
 
 /** One model choice, everything a caller needs to act on a selection.
@@ -405,7 +447,7 @@ export function ModelCatalogMenu({
       return all.filter(r => isModelFree(r.family, r.provider))
     }
     if (tierFilter === 'paid') {
-      return all.filter(r => !isModelFree(r.family, r.provider))
+      return all.filter(r => isModelPaid(r.family, r.provider))
     }
     return all
   }, [pickerProviders, favoriteKeys, q, tierFilter])
@@ -1255,7 +1297,11 @@ function ModelFamilyRow({
           </span>
         ) : pricing ? (
           <ModelPrice pricing={pricing} />
-        ) : null}
+        ) : (
+          <span className="shrink-0 font-aro-mono text-[9px] text-(--ui-text-tertiary) opacity-70">
+            {provider.name}
+          </span>
+        )}
         {fastControl.kind !== 'none' && fastControl.on ? (
           <ModelChip setting>{copy.fast}</ModelChip>
         ) : null}
@@ -1520,7 +1566,7 @@ function groupModels(
           return isModelFree(family, provider)
         }
         if (tierFilter === 'paid') {
-          return !isModelFree(family, provider)
+          return isModelPaid(family, provider)
         }
         return true
       }

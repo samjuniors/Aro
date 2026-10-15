@@ -31,7 +31,7 @@ import {
 import { $defaultReasoningEffort } from '@/store/session'
 import type { LocalRuntimeJob } from '@/types/hermes'
 
-import { isModelFree, ModelCatalogMenu, ModelMenuCloseContext, type ModelMenuController } from './model-catalog-menu'
+import { isModelFree, isModelPaid, ModelCatalogMenu, ModelMenuCloseContext, type ModelMenuController } from './model-catalog-menu'
 import { MODEL_MENU_ROW_AREA, type ModelMenuRowContribution } from './model-menu-row-decorations'
 
 // Radix calls these on open; jsdom doesn't implement them.
@@ -761,6 +761,40 @@ describe('isModelFree helper', () => {
         { name: 'OpenRouter', slug: 'openrouter' }
       )
     ).toBe(true)
+  })
+
+  it('identifies provider account-level free tier entitlement, respecting unavailable_models', () => {
+    // Free tier account
+    expect(
+      isModelFree(
+        { fastId: null, id: 'nous/hermes-3-llama-3.1-8b' },
+        { name: 'Nous Portal', slug: 'nous', free_tier: true }
+      )
+    ).toBe(true)
+
+    // Locked model on free tier account is not free
+    expect(
+      isModelFree(
+        { fastId: null, id: 'nous/hermes-3-llama-3.1-405b' },
+        { name: 'Nous Portal', slug: 'nous', free_tier: true, unavailable_models: ['nous/hermes-3-llama-3.1-405b'] }
+      )
+    ).toBe(false)
+  })
+
+  it('correctly categorizes paid models with isModelPaid', () => {
+    expect(
+      isModelPaid(
+        { fastId: null, id: 'gpt-4o' },
+        { name: 'OpenAI', slug: 'openai' }
+      )
+    ).toBe(true)
+
+    expect(
+      isModelPaid(
+        { fastId: null, id: 'ollama-model' },
+        { name: 'Ollama', slug: 'ollama' }
+      )
+    ).toBe(false)
   })
 })
 

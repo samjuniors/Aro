@@ -109,7 +109,7 @@ describe('AroModelMenuPanel component', () => {
     renderPanel()
 
     // Top head button displays model monogram and name
-    const headButton = screen.getByRole('button', { name: /Claude|A/i })
+    const headButton = screen.getByTestId('aro-model-head-button')
     expect(headButton).not.toBeNull()
 
     // Slider range input is rendered
@@ -129,6 +129,26 @@ describe('AroModelMenuPanel component', () => {
     fireEvent.click(toggle)
   })
 
+  it('renders direct response notice for non-reasoning models like gpt-4o', async () => {
+    $currentModel.set('gpt-4o')
+    $currentProvider.set('openai')
+    renderPanel({ model: 'gpt-4o', provider: 'openai' })
+
+    // Non-reasoning model does NOT render a broken reasoning slider
+    expect(screen.queryByRole('slider', { name: /Reasoning effort/i })).toBeNull()
+    // It renders the direct response model explanation card
+    expect(screen.getByText(/Direct Response Model/i)).not.toBeNull()
+    expect(screen.getByText(/Browse reasoning models/i)).not.toBeNull()
+  })
+
+  it('allows clicking discrete effort buttons to select reasoning level', async () => {
+    renderPanel()
+
+    const highBtn = screen.getByRole('radio', { name: /Set effort to High/i })
+    expect(highBtn).not.toBeNull()
+    fireEvent.click(highBtn)
+  })
+
   it('expands catalog and collapses back when child model is selected', async () => {
     renderPanel()
 
@@ -136,7 +156,7 @@ describe('AroModelMenuPanel component', () => {
     expect(screen.queryByTestId('catalog-children')).toBeNull()
 
     // Click head to expand
-    const head = screen.getByRole('button', { name: /Claude|A/i })
+    const head = screen.getByTestId('aro-model-head-button')
     fireEvent.click(head)
 
     // Now catalog is visible
