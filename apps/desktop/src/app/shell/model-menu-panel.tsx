@@ -18,6 +18,8 @@ export { ModelMenuCloseContext } from './model-catalog-menu'
 export type { ModelSelection } from './use-model-menu-controller'
 
 interface ModelMenuPanelProps extends ModelMenuHostProps {
+  /** When true, suppresses the per-row submenu and right arrow (chevron), clicking selects immediately. */
+  hideSubmenu?: boolean
   /** Drop the sticky composer pick so new chats follow Settings → Model. */
   onFollowDefaultModel?: () => void
 }
@@ -26,7 +28,7 @@ interface ModelMenuPanelProps extends ModelMenuHostProps {
  * The composer's model menu: `ModelCatalogMenu` (the shared renderer) plus the
  * controller that gives a selection its meaning HERE (`useModelMenuController`).
  */
-export function ModelMenuPanel({ onFollowDefaultModel, ...props }: ModelMenuPanelProps) {
+export function ModelMenuPanel({ hideSubmenu, onFollowDefaultModel, ...props }: ModelMenuPanelProps) {
   const { gateway, ownerConnectionId, profile = 'default', requestGateway } = props
   const { t } = useI18n()
   const copy = t.shell.modelMenu
@@ -101,6 +103,7 @@ export function ModelMenuPanel({ onFollowDefaultModel, ...props }: ModelMenuPane
         </>
       }
       gateway={gateway}
+      hideSubmenu={hideSubmenu}
       includeMoa
       ownerConnectionId={ownerConnectionId}
       profile={profile}

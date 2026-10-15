@@ -444,7 +444,21 @@ export function Select({
   )
 }
 
-export function Toggle({ checked, onChange, size = 'md' }: { checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }) {
+export function Toggle({
+  checked,
+  onChange,
+  size = 'md',
+  disabled,
+  className,
+  'aria-label': ariaLabel
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  size?: 'sm' | 'md'
+  disabled?: boolean
+  className?: string
+  'aria-label'?: string
+}) {
   const w = size === 'sm' ? 30 : 36
   const h = size === 'sm' ? 17 : 20
   const k = h - 4
@@ -452,12 +466,20 @@ export function Toggle({ checked, onChange, size = 'md' }: { checked: boolean; o
   return (
     <button
       aria-checked={checked}
-      className={cn('relative shrink-0 cursor-pointer rounded-full transition-colors duration-200', checked ? 'bg-aro-iris' : 'bg-aro-line-strong')}
+      aria-label={ariaLabel}
+      className={cn(
+        'relative shrink-0 cursor-pointer rounded-full transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40',
+        checked ? 'bg-aro-iris' : 'bg-aro-line-strong',
+        className
+      )}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
       role="switch"
       style={{ width: w, height: h }}
+      type="button"
     >
       <span
+        aria-hidden
         className="absolute top-[2px] left-0 rounded-full bg-white shadow-aro-e1 transition-transform duration-200"
         style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 2 : 2}px)` }}
       />

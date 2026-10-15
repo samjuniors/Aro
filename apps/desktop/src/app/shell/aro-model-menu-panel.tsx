@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router'
 
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { IconBrain, IconChevronDown, IconPlus } from '@/aro/Icons'
+import { Toggle } from '@/aro/ui'
 import { useI18n } from '@/i18n'
+import type { ModelCapabilities } from '@hermes/shared'
 import { catalogProviderMatches, currentModelCapabilities } from '@/lib/model-options'
 import { providerDisplayName } from '@/lib/model-status-label'
 import { isThinkingEnabled, reasoningEffortClamp, resolveReasoningEffort } from '@/lib/reasoning-effort'
@@ -43,6 +45,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
   const effortValue = resolveReasoningEffort(effort, defaultEffort)
   const thinkingOn = isThinkingEnabled(effort, defaultEffort)
   const showThinkingToggle = supportsReasoning && canDisableReasoning !== false
+  const maxEffortIdx = resolveMaxReasoningEffortIndex(provider, model, supportsReasoning, effortWire, caps)
 
   const fastControl = useMemo(
     () =>
@@ -89,17 +92,22 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
       </button>
 
       {expanded ? (
-        <div className="model-menu-list max-h-[340px] overflow-y-auto overflow-x-visible px-0.5 pb-1 pt-0.5">{children}</div>
+        <div className="model-menu-list max-h-[340px] overflow-y-auto overflow-x-visible px-0.5 pb-1 pt-0.5">
+          <ModelMenuCloseContext.Provider value={() => setExpanded(false)}>
+            {children}
+          </ModelMenuCloseContext.Provider>
+        </div>
       ) : (
         <div className="model-menu-compact px-0.5 pb-1 pt-0.5">
-          {supportsReasoning ? (
-            <EffortSliderRow
-              disabled={Boolean(effortPending)}
-              effort={effortValue}
-              effortWire={effortWire}
-              onSetEffort={value => controller.setOptions({ effort: value }, row)}
-            />
-          ) : null}
+          <EffortSliderRow
+            disabled={Boolean(effortPending) || !supportsReasoning}
+            effort={effortValue}
+            effortWire={effortWire}
+            maxEffortIdx={maxEffortIdx}
+            model={model}
+            onSetEffort={value => controller.setOptions({ effort: value }, row)}
+            supportsReasoning={supportsReasoning}
+          />
 
           {showThinkingToggle ? (
             <div className="model-thinking-row">
@@ -110,31 +118,15 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
                   Show the model's reasoning before it replies
                 </span>
               </span>
-              {/* The prototype's PLAIN toggle button (ui.tsx Toggle), not a Radix
-                  Switch: a Radix Switch inside DropdownMenuContent never receives
-                  its click handler in the real renderer (diagnosed live
-                  2026-10-13 — this row was dead since the Phase-3 port), while
-                  plain buttons dispatch reliably. */}
-              <button
-                aria-checked={thinkingOn}
+              <Toggle
                 aria-label="Toggle thinking"
-                className={cn(
-                  'relative h-[17px] w-[30px] shrink-0 cursor-pointer rounded-full transition-colors duration-200',
-                  thinkingOn ? 'bg-aro-iris' : 'bg-aro-line-strong'
-                )}
-                disabled={Boolean(effortPending)}
-                onClick={() =>
+                checked={thinkingOn}
+                disabled={Boolean(effortPending) || !supportsReasoning}
+                onChange={() =>
                   controller.setOptions({ effort: thinkingOn ? 'none' : effortValue || defaultEffort }, row)
                 }
-                role="switch"
-                type="button"
-              >
-                <span
-                  aria-hidden
-                  className="absolute top-[2px] left-0 block size-[13px] rounded-full bg-white shadow-e1 transition-transform duration-200"
-                  style={{ transform: `translateX(${thinkingOn ? 15 : 2}px)` }}
-                />
-              </button>
+                size="sm"
+              />
             </div>
           ) : null}
 
@@ -177,7 +169,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
 
 /* Reasoning-effort levels — Codex-style strength ramp: the further right,
    the hotter the accent color (neutral → cyan → iris → amber → rose). */
-const EFFORTS = [
+export const EFFORTS = [
   { id: 'minimal', label: 'Minimal', color: 'var(--aro-ink-3)', desc: 'Straight to the point — no visible reasoning. Fastest and cheapest for lookups.' },
   { id: 'low', label: 'Low', color: 'var(--aro-cyan)', desc: 'Light reasoning for small edits, renames and quick fixes.' },
   { id: 'medium', label: 'Medium', color: 'var(--aro-iris-soft)', desc: 'Balanced thinking for everyday coding — the sensible default.' },
@@ -186,20 +178,82 @@ const EFFORTS = [
 ] as const
 
 /**
+ * Resolves the maximum reasoning-effort index (0..4) supported by a given model.
+ * Clamps to 0 if the model does not support reasoning.
+ * Models with bounded thinking (e.g. Claude 3.7 Sonnet, legacy Grok, Solar, Kimi K2)
+ * top out at High (index 3). Models with unrestricted reasoning reach Ultra (index 4).
+ */
+export function resolveMaxReasoningEffortIndex(
+  provider: string,
+  model: string,
+  supportsReasoning: boolean,
+  effortWire?: string,
+  caps?: ModelCapabilities
+): number {
+  if (!supportsReasoning) {
+    return 0
+  }
+
+  // Explicit supported max from caps if provided
+  const explicitMax = (caps as { max_effort?: string } | undefined)?.max_effort
+  if (typeof explicitMax === 'string') {
+    const idx = EFFORTS.findIndex(e => e.id === explicitMax.toLowerCase())
+    if (idx !== -1) return idx
+  }
+
+  const normModel = (model || '').toLowerCase()
+  const normProv = (provider || '').toLowerCase()
+
+  // Wire clamping returned by the gateway
+  if (effortWire) {
+    const normWire = effortWire.toLowerCase()
+    if (normWire === 'minimal') return 0
+    if (normWire === 'low') return 1
+    if (normWire === 'medium') return 2
+    if (normWire === 'high' || normWire === 'xhigh') return 3
+    if (normWire === 'max' || normWire === 'ultra') return 4
+  }
+
+  // Known bounded-ladder models that top out at High (index 3)
+  if (
+    normModel.includes('claude') ||
+    normModel.includes('grok') ||
+    normModel.includes('kimi-k2') ||
+    normModel.includes('solar') ||
+    normModel.includes('nebius') ||
+    normModel.includes('tokenhub') ||
+    normProv.includes('xai') ||
+    normProv.includes('anthropic')
+  ) {
+    return 3
+  }
+
+  return 4
+}
+
+/**
  * The effort slider: a compact UI over Hermes' REAL reasoning levels
  * (`REASONING_EFFORTS` — minimal…ultra). Moving it calls the same controller
  * action the reasoning menu's radio rows perform; nothing is faked.
+ * Respects max reasoning supported by the model: tracks beyond max are grayed out
+ * and dragging is capped so reasoning cannot be increased beyond what is supported.
  */
 function EffortSliderRow({
   disabled,
   effort,
   effortWire,
-  onSetEffort
+  maxEffortIdx,
+  model,
+  onSetEffort,
+  supportsReasoning
 }: {
   disabled: boolean
   effort: string
   effortWire?: string
+  maxEffortIdx: number
+  model: string
   onSetEffort: (value: string) => void
+  supportsReasoning: boolean
 }) {
   const { t } = useI18n()
   const copy = t.shell.modelOptions
@@ -216,12 +270,10 @@ function EffortSliderRow({
         return 2
 
       case 'high':
-
       case 'xhigh':
         return 3
 
       case 'max':
-
       case 'ultra':
         return 4
 
@@ -230,7 +282,11 @@ function EffortSliderRow({
     }
   }, [effort])
 
-  const effortLevel = EFFORTS[activeIdx] ?? EFFORTS[2]
+  const effectiveMaxIdx = supportsReasoning ? maxEffortIdx : 0
+  const clampedActiveIdx = supportsReasoning ? Math.min(activeIdx, effectiveMaxIdx) : 0
+  const effortLevel = supportsReasoning
+    ? (EFFORTS[clampedActiveIdx] ?? EFFORTS[2])
+    : { id: 'none', label: 'Disabled', color: 'var(--aro-ink-4)', desc: 'Reasoning is not supported by this model.' }
 
   const levelLabel = (value: string) => {
     const entry = copy[value as keyof typeof copy]
@@ -239,44 +295,81 @@ function EffortSliderRow({
   }
 
   const clamp = reasoningEffortClamp(effort, effortWire)
+  const fillPct = supportsReasoning ? (clampedActiveIdx / (EFFORTS.length - 1)) * 100 : 0
+  const maxPct = supportsReasoning ? (effectiveMaxIdx / (EFFORTS.length - 1)) * 100 : 0
 
   return (
-    <div className="effort-slider" style={{ ['--effort-color' as string]: effortLevel.color }}>
+    <div
+      className="effort-slider"
+      style={{
+        ['--effort-color' as string]: effortLevel.color,
+        ['--effort-fill' as string]: `${fillPct}%`,
+        ['--effort-max-pct' as string]: `${maxPct}%`
+      }}
+    >
       <div className="effort-slider-head">
         <span className="effort-level-name">
           <i aria-hidden className="effort-level-dot" />
           {effortLevel.label}
         </span>
         <span aria-hidden className="effort-bars">
-          {EFFORTS.map((_, i) => (
-            <i className={cn(i <= activeIdx && 'is-on')} key={i} style={{ height: `${4 + i * 2}px` }} />
-          ))}
+          {EFFORTS.map((eff, i) => {
+            const isSupported = supportsReasoning && i <= effectiveMaxIdx
+            const isOn = supportsReasoning && i <= clampedActiveIdx
+
+            return (
+              <i
+                className={cn(isOn && 'is-on', !isSupported && 'is-unsupported')}
+                key={i}
+                style={{ height: `${4 + i * 2}px` }}
+                title={
+                  isSupported
+                    ? eff.label
+                    : `${eff.label} (${supportsReasoning ? `Max supported by ${model} is ${EFFORTS[effectiveMaxIdx].label}` : 'Reasoning not supported'})`
+                }
+              />
+            )
+          })}
         </span>
       </div>
       <input
         aria-label={`Reasoning effort — ${effortLevel.label}`}
         aria-valuetext={effortLevel.label}
         className="effort-range"
-        disabled={disabled}
+        disabled={disabled || !supportsReasoning}
         max={EFFORTS.length - 1}
         min={0}
         onChange={event => {
-          const next = EFFORTS[Number(event.target.value)]
+          if (!supportsReasoning || effectiveMaxIdx === 0) {
+            return
+          }
+
+          const raw = Number(event.target.value)
+          const clamped = Math.min(Math.max(0, raw), effectiveMaxIdx)
+          const next = EFFORTS[clamped]
 
           if (next) {
             onSetEffort(next.id)
           }
         }}
         step={1}
-        style={{ ['--effort-fill' as string]: `${(activeIdx / (EFFORTS.length - 1)) * 100}%` }}
         type="range"
-        value={activeIdx}
+        value={clampedActiveIdx}
       />
       <div className="effort-slider-scale">
         <span>Minimal</span>
-        <span>Ultra</span>
+        <span>
+          {supportsReasoning && effectiveMaxIdx < EFFORTS.length - 1
+            ? `Max: ${EFFORTS[effectiveMaxIdx].label}`
+            : 'Ultra'}
+        </span>
       </div>
       <p className="effort-slider-desc">{effortLevel.desc}</p>
+      {supportsReasoning && effectiveMaxIdx < EFFORTS.length - 1 ? (
+        <p className="mt-1 font-aro-mono text-[9.5px] text-aro-amber">
+          Max reasoning supported: {EFFORTS[effectiveMaxIdx].label}
+        </p>
+      ) : null}
       {clamp ? <p className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-4">{copy.sendsOnRoute(levelLabel(clamp.wire))}</p> : null}
     </div>
   )
