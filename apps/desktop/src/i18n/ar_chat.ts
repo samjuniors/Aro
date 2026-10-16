@@ -2,6 +2,8 @@ import type { TranslationOverrides } from './define-locale'
 
 export const arChat = {
   composer: {
+    chooseProject: 'اختر مشروعًا',
+    projectAttachHint: 'اختر مشروعًا فوق مربع الكتابة أو ابدأ بالكتابة؛ يمكنك إضافته لاحقًا.',
     message: 'الرسالة',
     wakingProfile: profile => `جار إيقاظ ${profile}`,
     placeholderStarting: 'جار بدء Hermes...',

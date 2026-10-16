@@ -245,7 +245,7 @@ export function Intro({ personality, seed }: IntroProps) {
             </h1>
             {!activeProject && (
               <p className="mt-2 text-center text-xs text-aro-ink-3 max-w-md mx-auto leading-relaxed">
-                Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.
+                {t.composer.projectAttachHint}
               </p>
             )}
           </>

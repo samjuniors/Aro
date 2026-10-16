@@ -2640,6 +2640,8 @@ export const ja = defineLocale({
   },
 
   composer: {
+    chooseProject: 'プロジェクトを選択',
+    projectAttachHint: '入力欄の上でプロジェクトを選ぶか、そのまま入力してください。後から追加することもできます。',
     message: 'メッセージ',
     wakingProfile: profile => `${profile} を起動中…`,
     placeholderStarting: 'Hermes を起動中...',
@@ -3675,6 +3677,7 @@ export const ja = defineLocale({
     closeAll: 'すべて閉じる',
     newSessionTab: '新しいセッションタブ',
     newTab: '新しいタブ',
+    newTabInFullView: '全画面表示で新しいタブ',
     pluginDisabled: pluginId => `プラグイン「${pluginId}」を無効化しました`,
     pluginDisabledBody: 'スキルとツール → プラグイン で再有効化するとペインが戻ります。',
     missingPane: paneId => `ペインが見つかりません: ${paneId}`,

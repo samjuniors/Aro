@@ -506,6 +506,8 @@ export const arChrome = {
     closeOthers: 'إغلاق الأخرى',
     closeToRight: 'إغلاق ما على اليمين',
     closeAll: 'إغلاق الكل',
+    newTab: 'علامة تبويب جديدة',
+    newTabInFullView: 'علامة تبويب جديدة في العرض الكامل',
     pluginDisabled: pluginId => `الإضافة "${pluginId}" معطلة`,
     pluginDisabledBody: 'أعد تفعيلها من القدرات ← الإضافات لإرجاع اللوحة.',
     missingPane: paneId => `لوحة مفقودة: ${paneId}`,

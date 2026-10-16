@@ -59,7 +59,7 @@ import {
   profileLabel,
   selectProfile
 } from '@/store/profile'
-import { exitProjectScope } from '@/store/project-scope'
+import { $projectScope, exitProjectScope } from '@/store/project-scope'
 import {
   $activeProjectId,
   $projectOwnerBySessionId,
@@ -91,6 +91,8 @@ import {
 import { $sessionDotStateById, showsRunningArc } from '@/store/session-dot-state'
 import { $botChatScopes } from '@/store/session-states'
 import { $archivedSessions, loadArchivedSessions } from '@/store/sidebar-archive'
+import { $dismissedAutoProjectIds, dismissAutoProject, filterVisibleProjects } from '@/store/layout'
+import { useI18n } from '@/i18n'
 import type { SessionInfo } from '@/types/hermes'
 
 import { AroProjectDialog } from './AroProjectDialog'
@@ -179,6 +181,7 @@ export function AroSidebar({
   onArchiveSession
 }: AroSidebarProps) {
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   // Real Hermes stores
   const sessions = useStore($sessions)
@@ -187,6 +190,7 @@ export function AroSidebar({
   const pinnedIds = useStore($pinnedSessionIds)
   const projects = useStore($projects)
   const projectTree = useStore($projectTree)
+  const dismissedAutoProjectIds = useStore($dismissedAutoProjectIds)
   const projectOwners = useStore($projectOwnerBySessionId)
   const dotStates = useStore($sessionDotStateById)
   const archivedSessions = useStore($archivedSessions)
@@ -241,6 +245,27 @@ export function AroSidebar({
       return {}
     }
   })
+
+  // Pinned projects list (locally preserved)
+  const [pinnedProjectIds, setPinnedProjectIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('aro.sidebar.pinnedProjects') || '[]')
+    } catch {
+      return []
+    }
+  })
+
+  const togglePinProject = useCallback((projectId: string) => {
+    setPinnedProjectIds(prev => {
+      const next = prev.includes(projectId) ? prev.filter(id => id !== projectId) : [...prev, projectId]
+      try {
+        localStorage.setItem('aro.sidebar.pinnedProjects', JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }, [])
 
   // Modals state
   const [renamingSession, setRenamingSession] = useState<SessionInfo | null>(null)
@@ -362,7 +387,25 @@ export function AroSidebar({
     return list
   }, [projects, projectTree])
 
+  const discoveredRepositories = useMemo(
+    () =>
+      filterVisibleProjects(projectTree, dismissedAutoProjectIds).filter(
+        project => project.isAuto && project.path
+      ),
+    [projectTree, dismissedAutoProjectIds]
+  )
+
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+
+  const pinnedProjectsList = useMemo(() => {
+    if (archiveMode) {return []}
+
+    return effectiveProjects.filter(p => pinnedProjectIds.includes(p.id))
+  }, [effectiveProjects, pinnedProjectIds, archiveMode])
+
+  const isPinnedFolded = Boolean(folds['__section_pinned__'])
+  const isProjectsFolded = Boolean(folds['__section_projects__'])
+  const totalPinnedCount = pinnedSessions.length + pinnedProjectsList.length
 
   // Grouped sessions by project using Aro + Hermes authoritative ownership
   const projectSessionsMap = useMemo(() => {
@@ -809,6 +852,203 @@ export function AroSidebar({
     )
   }
 
+  // Render a Single Project Group
+  const renderProjectGroup = (project: (typeof effectiveProjects)[0]) => {
+    const items = projectSessionsMap[project.id] || []
+    const color = projectColors[project.id] || project.color || '#818cf8'
+    const isFolded = Boolean(folds[project.id])
+    const isPinned = pinnedProjectIds.includes(project.id)
+
+    return (
+      <section
+        className={cn(
+          'sidebar-project-group overflow-x-hidden',
+          dropProjectId === project.id && 'drop-target'
+        )}
+        key={project.id}
+        onDragLeave={e => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setDropProjectId(null)
+          }
+        }}
+        onDragOver={e => {
+          e.preventDefault()
+          e.dataTransfer.dropEffect = 'move'
+
+          if (dropProjectId !== project.id) {
+            setDropProjectId(project.id)
+          }
+        }}
+        onDrop={async e => {
+          e.preventDefault()
+          const targetProjectId = project.id
+          const sessionId = e.dataTransfer.getData('text/plain') || dragId
+          setDropProjectId(null)
+          setDragId(null)
+
+          if (sessionId && targetProjectId) {
+            await handleMoveSessionToProject(sessionId, targetProjectId)
+          }
+        }}
+      >
+        <div
+          className="group flex items-center gap-1 py-1 cursor-grab active:cursor-grabbing select-none"
+          draggable
+          onDragStart={e => {
+            e.dataTransfer.setData('application/aro-project', project.id)
+            e.dataTransfer.setData('text/plain', project.name)
+            e.dataTransfer.effectAllowed = 'copyMove'
+          }}
+          title={`Drag ${project.name} to composer to attach`}
+        >
+          <button
+            aria-label={`${isFolded ? 'Expand' : 'Collapse'} ${project.name}`}
+            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1 py-0.5 text-left transition-colors hover:bg-aro-hover/60"
+            onClick={() =>
+              setFolds(prev => ({ ...prev, [project.id]: !prev[project.id] }))
+            }
+            type="button"
+          >
+            <IconChevronDown
+              className={cn(
+                'shrink-0 text-aro-ink-4 transition-transform duration-200',
+                isFolded && '-rotate-90'
+              )}
+              size={12}
+            />
+            <IconFolder
+              className="shrink-0"
+              size={14}
+              style={{ color, fill: `${color}25` }}
+            />
+            <span className="rail-label truncate text-[13px] font-medium text-aro-ink-2">
+              {project.name}
+            </span>
+            {isPinned && (
+              <IconPin className="text-aro-amber-soft shrink-0" size={10} />
+            )}
+            <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100">
+              {items.length || ''}
+            </span>
+          </button>
+
+          <Tip label={`New session in ${project.name}`}>
+            <button
+              aria-label={`New session in ${project.name}`}
+              className="flex size-[20px] items-center justify-center rounded text-aro-ink-4 opacity-0 transition-all hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
+              onClick={() => handleNewSession(project.id)}
+              type="button"
+            >
+              <IconPlus size={12} />
+            </button>
+          </Tip>
+
+          <Menu
+            align="right"
+            trigger={open => (
+              <button
+                aria-label={`Project actions for ${project.name}`}
+                className={cn('session-row-more', open && 'opacity-100 bg-aro-hover text-aro-ink')}
+                type="button"
+              >
+                <IconMore size={12} />
+              </button>
+            )}
+            width={210}
+          >
+            {close => (
+              <>
+                <MenuItem
+                  icon={<IconPencil size={12} />}
+                  label="Rename project"
+                  onClick={() => {
+                    setRenamingProject(project)
+                    setNewProjectName(project.name)
+                    close()
+                  }}
+                />
+                <MenuItem
+                  icon={<IconPin size={12} />}
+                  label={isPinned ? 'Unpin project' : 'Pin project'}
+                  onClick={() => {
+                    togglePinProject(project.id)
+                    close()
+                  }}
+                />
+                <MenuItem
+                  icon={<IconPlus size={12} />}
+                  label="New session here"
+                  onClick={() => {
+                    handleNewSession(project.id)
+                    close()
+                  }}
+                />
+                <MenuSep />
+                <MenuLabel>Project Color</MenuLabel>
+                <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5">
+                  {PROJECT_COLORS.map(c => (
+                    <button
+                      className={cn(
+                        'relative flex size-[18px] cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
+                        color === c.value && 'ring-2 ring-aro-ink ring-offset-1'
+                      )}
+                      key={c.value}
+                      onClick={async () => {
+                        const updated = { ...projectColors, [project.id]: c.value }
+                        setProjectColors(updated)
+
+                        try {
+                          localStorage.setItem('aro.project.colors', JSON.stringify(updated))
+                          await updateProject(project.id, { color: c.value })
+                        } catch {
+                          // ignore
+                        }
+
+                        close()
+                      }}
+                      style={{ backgroundColor: c.value }}
+                      aria-label={`Select ${c.label} color`}
+                      type="button"
+                    >
+                      {color === c.value && (
+                        <IconCheck className="text-white drop-shadow-sm" size={9} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <MenuSep />
+                <MenuItem
+                  danger
+                  icon={<IconTrash size={12} />}
+                  label="Delete project"
+                  onClick={() => {
+                    setDeletingProject(project)
+                    close()
+                  }}
+                />
+              </>
+            )}
+          </Menu>
+        </div>
+
+        {!isFolded && (
+          <div className="pl-3.5">
+            {items.map(renderSessionRow)}
+            {!items.length && (
+              <button
+                className="w-full py-1 pl-2 text-left text-[11.5px] text-aro-ink-4 hover:text-aro-ink-2"
+                onClick={() => handleNewSession(project.id)}
+                type="button"
+              >
+                Start a session
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+    )
+  }
+
   // Audit drawer component helper to preserve Hermes surfaces cleanly
   const renderAuditDrawer = () => (
     <div className="sidebar-audit-section">
@@ -928,6 +1168,7 @@ export function AroSidebar({
                       navigateToWorkspacePage(navigate, `${CAPABILITIES_ROUTE}?tab=connectors`)
                     } else {
                       setActiveNav(prev => (prev === it.id ? null : it.id))
+                      setFolds(prev => ({ ...prev, __section_projects__: false }))
                     }
                   }}
                   type="button"
@@ -939,46 +1180,37 @@ export function AroSidebar({
             })}
           </nav>
 
-          {/* Projects / Archive Section Header (No Demo Toggle) */}
-          <div className="sidebar-projects-heading">
-            <span className="rail-label">{archiveMode ? 'Archive' : 'Projects'}</span>
+          {/* Archive Mode Banner (only shown in archiveMode) */}
+          {archiveMode && (
+            <div className="sidebar-projects-heading">
+              <span className="rail-label">Archive</span>
 
-            <Tip label="Create project">
-              <button
-                aria-label="Create project"
-                className="ml-auto text-aro-ink-4 hover:text-aro-ink cursor-pointer"
-                onClick={() => openProjectCreate()}
-                type="button"
+              <Menu
+                align="right"
+                trigger={open => (
+                  <button
+                    aria-label="Session list options"
+                    className={cn('ml-auto text-aro-ink-4 hover:text-aro-ink cursor-pointer', open && 'text-aro-ink')}
+                    type="button"
+                  >
+                    <IconMore size={14} />
+                  </button>
+                )}
+                width={175}
               >
-                <IconPlus size={14} />
-              </button>
-            </Tip>
-
-            <Menu
-              align="right"
-              trigger={open => (
-                <button
-                  aria-label="Session list options"
-                  className={cn('text-aro-ink-4 hover:text-aro-ink cursor-pointer', open && 'text-aro-ink')}
-                  type="button"
-                >
-                  <IconMore size={14} />
-                </button>
-              )}
-              width={175}
-            >
-              {close => (
-                <MenuItem
-                  icon={<IconArchive size={12} />}
-                  label={archiveMode ? 'Active sessions' : 'Archived sessions'}
-                  onClick={() => {
-                    setArchiveMode(!archiveMode)
-                    close()
-                  }}
-                />
-              )}
-            </Menu>
-          </div>
+                {close => (
+                  <MenuItem
+                    icon={<IconArchive size={12} />}
+                    label="Active sessions"
+                    onClick={() => {
+                      setArchiveMode(false)
+                      close()
+                    }}
+                  />
+                )}
+              </Menu>
+            </div>
+          )}
 
           {/* Session & Project Hierarchical List */}
           <div
@@ -999,214 +1231,193 @@ export function AroSidebar({
             ) : (
               /* Active Sessions & Projects Hierarchy */
               <>
-                {/* Pinned Sessions */}
-                {pinnedSessions.length > 0 && (
-                  <div className="mb-2">
-                    <p className="sidebar-section-label">Pinned</p>
-                    {pinnedSessions.map(renderSessionRow)}
-                  </div>
-                )}
-
-                {/* Project Folders */}
-                {effectiveProjects.map(project => {
-                  const items = projectSessionsMap[project.id] || []
-                  const color = projectColors[project.id] || project.color || '#818cf8'
-                  const isFolded = Boolean(folds[project.id])
-
-                  return (
-                    <section
+                {/* ── 1. PINNED SECTION (Collapsible with Down Arrow) ── */}
+                <div className="mb-2">
+                  <button
+                    aria-label={`${isPinnedFolded ? 'Expand' : 'Collapse'} Pinned`}
+                    className="flex w-full min-w-0 items-center gap-1.5 rounded-[5px] px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
+                    onClick={() =>
+                      setFolds(prev => ({
+                        ...prev,
+                        __section_pinned__: !prev.__section_pinned__
+                      }))
+                    }
+                    type="button"
+                  >
+                    <IconChevronDown
                       className={cn(
-                        'sidebar-project-group overflow-x-hidden',
-                        dropProjectId === project.id && 'drop-target'
+                        'shrink-0 text-aro-ink-4 transition-transform duration-200',
+                        isPinnedFolded && '-rotate-90'
                       )}
-                      key={project.id}
-                      onDragLeave={e => {
-                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                          setDropProjectId(null)
-                        }
-                      }}
-                      onDragOver={e => {
-                        e.preventDefault()
-                        e.dataTransfer.dropEffect = 'move'
+                      size={12}
+                    />
+                    <IconPin className="shrink-0 text-aro-amber-soft" size={12} />
+                    <span className="text-[10.5px] font-semibold uppercase tracking-wider text-aro-ink-4 group-hover/section:text-aro-ink-2 transition-colors">
+                      Pinned
+                    </span>
+                    {totalPinnedCount > 0 && (
+                      <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4">
+                        {totalPinnedCount}
+                      </span>
+                    )}
+                  </button>
 
-                        if (dropProjectId !== project.id) {
-                          setDropProjectId(project.id)
-                        }
-                      }}
-                      onDrop={async e => {
-                        e.preventDefault()
-                        const targetProjectId = project.id
-                        const sessionId = e.dataTransfer.getData('text/plain') || dragId
-                        setDropProjectId(null)
-                        setDragId(null)
+                  {!isPinnedFolded && (
+                    <div className="mt-0.5 space-y-0.5">
+                      {/* Pinned Projects */}
+                      {pinnedProjectsList.map(renderProjectGroup)}
 
-                        if (sessionId && targetProjectId) {
-                          await handleMoveSessionToProject(sessionId, targetProjectId)
-                        }
-                      }}
+                      {/* Pinned Sessions */}
+                      {pinnedSessions.map(renderSessionRow)}
+
+                      {totalPinnedCount === 0 && (
+                        <p className="py-1 px-3 text-[11px] text-aro-ink-4 italic">
+                          No pinned items yet.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── 2. PROJECTS SECTION (Collapsible with Down Arrow) ── */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between">
+                    <button
+                      aria-label={`${isProjectsFolded ? 'Expand' : 'Collapse'} Projects`}
+                      className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
+                      onClick={() =>
+                        setFolds(prev => ({
+                          ...prev,
+                          __section_projects__: !prev.__section_projects__
+                        }))
+                      }
+                      type="button"
                     >
-                      <div
-                        className="group flex items-center gap-1 py-1 cursor-grab active:cursor-grabbing select-none"
-                        draggable
-                        onDragStart={e => {
-                          e.dataTransfer.setData('application/aro-project', project.id)
-                          e.dataTransfer.setData('text/plain', project.name)
-                          e.dataTransfer.effectAllowed = 'copyMove'
-                        }}
-                        title={`Drag ${project.name} to composer to attach`}
-                      >
+                      <IconChevronDown
+                        className={cn(
+                          'shrink-0 text-aro-ink-4 transition-transform duration-200',
+                          isProjectsFolded && '-rotate-90'
+                        )}
+                        size={12}
+                      />
+                      <IconFolder className="shrink-0 text-aro-iris-soft" size={12} />
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-aro-ink-4 group-hover/section:text-aro-ink-2 transition-colors">
+                        Projects
+                      </span>
+                      <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4">
+                        {effectiveProjects.length}
+                      </span>
+                    </button>
+
+                    <div className="flex items-center gap-0.5 mr-1">
+                      <Tip label="New project">
                         <button
-                          aria-label={`${isFolded ? 'Expand' : 'Collapse'} ${project.name}`}
-                          className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1 py-0.5 text-left transition-colors hover:bg-aro-hover/60"
-                          onClick={() =>
-                            setFolds(prev => ({ ...prev, [project.id]: !prev[project.id] }))
-                          }
+                          aria-label="New project"
+                          className="flex size-[20px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors"
+                          onClick={() => openProjectCreate()}
                           type="button"
                         >
-                          <IconChevronDown
-                            className={cn(
-                              'shrink-0 text-aro-ink-4 transition-transform duration-200',
-                              isFolded && '-rotate-90'
-                            )}
-                            size={12}
-                          />
-                          <IconFolder
-                            className="shrink-0"
-                            size={14}
-                            style={{ color, fill: `${color}25` }}
-                          />
-                          <span className="rail-label truncate text-[13px] font-medium text-aro-ink-2">
-                            {project.name}
-                          </span>
-                          <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100">
-                            {items.length || ''}
-                          </span>
+                          <IconPlus size={12} />
                         </button>
+                      </Tip>
 
-                        <Tip label={`New session in ${project.name}`}>
+                      <Menu
+                        align="right"
+                        trigger={open => (
                           <button
-                            aria-label={`New session in ${project.name}`}
-                            className="flex size-[20px] items-center justify-center rounded text-aro-ink-4 opacity-0 transition-all hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
-                            onClick={() => handleNewSession(project.id)}
+                            aria-label="Session list options"
+                            className={cn(
+                              'flex size-[20px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors',
+                              open && 'text-aro-ink'
+                            )}
+                            type="button"
+                          >
+                            <IconMore size={12} />
+                          </button>
+                        )}
+                        width={175}
+                      >
+                        {close => (
+                          <MenuItem
+                            icon={<IconArchive size={12} />}
+                            label={archiveMode ? 'Active sessions' : 'Archived sessions'}
+                            onClick={() => {
+                              setArchiveMode(!archiveMode)
+                              close()
+                            }}
+                          />
+                        )}
+                      </Menu>
+                    </div>
+                  </div>
+
+                  {!isProjectsFolded && (
+                    <div className="mt-0.5 space-y-0.5">
+                      {/* All Project Folders */}
+                      {effectiveProjects.map(renderProjectGroup)}
+
+                      {!effectiveProjects.length && !search && (
+                        <div className="px-2 py-3">
+                          <p className="text-[11.5px] leading-relaxed text-aro-ink-4">
+                            Projects keep your sources and sessions together.
+                          </p>
+                          <button
+                            className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-aro-ink-3 hover:text-aro-ink cursor-pointer"
+                            onClick={() => openProjectCreate()}
                             type="button"
                           >
                             <IconPlus size={12} />
+                            <span>Create project</span>
                           </button>
-                        </Tip>
-
-                        <Menu
-                          align="right"
-                          trigger={open => (
-                            <button
-                              aria-label={`Project actions for ${project.name}`}
-                              className={cn('session-row-more', open && 'opacity-100 bg-aro-hover text-aro-ink')}
-                              type="button"
-                            >
-                              <IconMore size={12} />
-                            </button>
-                          )}
-                          width={210}
-                        >
-                          {close => (
-                            <>
-                              <MenuItem
-                                icon={<IconPencil size={12} />}
-                                label="Rename project"
-                                onClick={() => {
-                                  setRenamingProject(project)
-                                  setNewProjectName(project.name)
-                                  close()
-                                }}
-                              />
-                              <MenuItem
-                                icon={<IconPlus size={12} />}
-                                label="New session here"
-                                onClick={() => {
-                                  handleNewSession(project.id)
-                                  close()
-                                }}
-                              />
-                              <MenuSep />
-                              <MenuLabel>Project Color</MenuLabel>
-                              <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5">
-                                {PROJECT_COLORS.map(c => (
-                                  <button
-                                    className={cn(
-                                      'relative flex size-[18px] cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110',
-                                      color === c.value && 'ring-2 ring-aro-ink ring-offset-1'
-                                    )}
-                                    key={c.value}
-                                    onClick={async () => {
-                                      const updated = { ...projectColors, [project.id]: c.value }
-                                      setProjectColors(updated)
-
-                                      try {
-                                        localStorage.setItem('aro.project.colors', JSON.stringify(updated))
-                                        await updateProject(project.id, { color: c.value })
-                                      } catch {
-                                        // ignore
-                                      }
-
-                                      close()
-                                    }}
-                                    style={{ backgroundColor: c.value }}
-                                    aria-label={`Select ${c.label} color`}
-                                    type="button"
-                                  >
-                                    {color === c.value && (
-                                      <IconCheck className="text-white drop-shadow-sm" size={9} />
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                              <MenuSep />
-                              <MenuItem
-                                danger
-                                icon={<IconTrash size={12} />}
-                                label="Delete project"
-                                onClick={() => {
-                                  setDeletingProject(project)
-                                  close()
-                                }}
-                              />
-                            </>
-                          )}
-                        </Menu>
-                      </div>
-
-                      {!isFolded && (
-                        <div className="pl-3.5">
-                          {items.map(renderSessionRow)}
-                          {!items.length && (
-                            <button
-                              className="w-full py-1 pl-2 text-left text-[11.5px] text-aro-ink-4 hover:text-aro-ink-2"
-                              onClick={() => handleNewSession(project.id)}
-                              type="button"
-                            >
-                              Start a session
-                            </button>
-                          )}
                         </div>
                       )}
-                    </section>
-                  )
-                })}
 
-                {!effectiveProjects.length && !search && (
-                  <div className="px-2 py-3">
-                    <p className="text-[11.5px] leading-relaxed text-aro-ink-4">
-                      Projects keep your sources and sessions together.
-                    </p>
-                    <button
-                      className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] text-aro-ink-3 hover:text-aro-ink cursor-pointer"
-                      onClick={() => openProjectCreate()}
-                      type="button"
-                    >
-                      <IconPlus size={12} />
-                      <span>Create project</span>
-                    </button>
-                  </div>
-                )}
+                      {discoveredRepositories.length > 0 && !search && (
+                        <section className="mt-3 border-t border-aro-line-soft pt-2">
+                          <p className="sidebar-section-label">{t.sidebar.projects.autoDiscovered}</p>
+                          {discoveredRepositories.map(project => (
+                            <div className="group flex min-w-0 items-center gap-1 rounded-[5px] px-1 py-1" key={project.id}>
+                              <IconFolder className="shrink-0 text-aro-ink-4" size={13} />
+                              <div className="min-w-0 flex-1">
+                                <span className="block truncate text-[12px] text-aro-ink-2">{project.label}</span>
+                                <span className="block truncate font-aro-mono text-[9.5px] text-aro-ink-4">
+                                  {project.path}
+                                </span>
+                              </div>
+                              <Tip label={`${t.sidebar.projects.newButton}: ${project.label}`}>
+                                <button
+                                  aria-label={`${t.sidebar.projects.newButton}: ${project.label}`}
+                                  className="flex size-[22px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+                                  onClick={() => openProjectCreate({ folder: project.path!, name: project.label })}
+                                  type="button"
+                                >
+                                  <IconPlus size={12} />
+                                  <span className="text-[10px] font-medium">{t.sidebar.projects.newButton}</span>
+                                </button>
+                              </Tip>
+                              <Tip label={`${t.sidebar.projects.removeFromSidebar}: ${project.label}`}>
+                                <button
+                                  aria-label={`${t.sidebar.projects.removeFromSidebar}: ${project.label}`}
+                                  className="flex size-[22px] shrink-0 items-center justify-center rounded text-aro-ink-4 opacity-60 hover:bg-aro-hover hover:text-aro-rose hover:opacity-100 focus:opacity-100"
+                                  onClick={() => {
+                                    dismissAutoProject(project.id)
+
+                                    if ($projectScope.get() === project.id) {
+                                      exitProjectScope()
+                                    }
+                                  }}
+                                  type="button"
+                                >
+                                  <IconX size={12} />
+                                </button>
+                              </Tip>
+                            </div>
+                          ))}
+                        </section>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Unassigned sessions */}
                 {unassignedSessions.length > 0 && (

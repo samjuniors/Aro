@@ -4156,6 +4156,9 @@ export const esOverrides = {
   },
   composer: {
     message: 'Mensaje',
+    chooseProject: 'Elegir proyecto',
+    projectAttachHint:
+      'Elige un proyecto encima del cuadro de mensaje o empieza a escribir; puedes añadirlo más tarde.',
     wakingProfile: profile => `Despertando ${profile}…`,
     placeholderStarting: 'Iniciando Hermes...',
     placeholderReconnecting: 'Reconectando con Hermes…',
@@ -5389,6 +5392,7 @@ export const esOverrides = {
     closeAll: 'Cerrar todo',
     newSessionTab: 'Nueva pestaña de sesión',
     newTab: 'Nueva pestaña',
+    newTabInFullView: 'Nueva pestaña en vista completa',
     pluginDisabled: pluginId => `Plugin "${pluginId}" desactivado`,
     pluginDisabledBody: 'Vuelve a activarlo en Capacidades → Plugins para recuperar el panel.',
     missingPane: paneId => `Falta el panel: ${paneId}`,

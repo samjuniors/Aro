@@ -16,11 +16,14 @@ import { useTourMarker } from '@/app/chat/tour-marker'
 import { VoiceAgentOrb } from '@/app/chat/voice-agent-orb'
 import { useHudComposerDrag } from '@/app/hud/composer-drag'
 import { AroRepoBar } from '@/aro/AroRepoBar'
-import { IconBranch, IconCheck, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
+import { IconBranch, IconCheck, IconChevronDown, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
 import {
   $aroDraftProjectId,
   $aroSessionProjectMap,
   assignSessionToProject,
+  clearAroProjectAndRevertToDefault,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId,
   setAroDraftProject,
   unassignSessionFromProject
 } from '@/aro/project-session-map'
@@ -28,17 +31,14 @@ import { composerFloatingStrip, composerInputBacking } from '@/components/chat/c
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
 import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
-import { isDesktopFsRemoteMode } from '@/lib/desktop-fs'
 import { desktopGit } from '@/lib/desktop-git'
 import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { triggerHaptic } from '@/lib/haptics'
-import { FolderOpen } from '@/lib/icons'
 import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
@@ -54,14 +54,14 @@ import { notifyError } from '@/store/notifications'
 import { $projectScope, exitProjectScope } from '@/store/project-scope'
 import {
   $activeProjectId,
+  $projectOwnerBySessionId,
   $projects,
   $projectTree,
   $projectTreeLoading,
+  chooseAndSetDefaultWorkspaceDir,
   enterProject,
-  openFolderAsProject,
+  followEnteredProjectCwd,
   openProjectCreate,
-  projectIdForCwd,
-  projectRootCwd,
   refreshProjects,
   refreshProjectTree,
   requestStartWorkSession,
@@ -69,7 +69,18 @@ import {
 } from '@/store/projects'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
-import { $gatewayState, setNewChatWorkspaceTarget } from '@/store/session'
+import {
+  $configuredDefaultProjectDir,
+  $gatewayState,
+  $selectedStoredSessionId,
+  $sessions,
+  commitWorkspaceCwdForSelectedSession,
+  getConfiguredDefaultProjectDir,
+  setCurrentCwd,
+  setCurrentCwdTransient,
+  setNewChatWorkspaceTarget,
+  setSessions
+} from '@/store/session'
 import { $botChatSessionIds, $sessionStates, $sessionTiles, isBotChatSession } from '@/store/session-states'
 import { useForcedTextDirection } from '@/store/text-direction'
 import { $threadScrolledUpBySession } from '@/store/thread-scroll'
@@ -1182,17 +1193,29 @@ export function ChatBar({
   const aroDraftProjectId = useStore($aroDraftProjectId)
 
   const chatBarSessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const chatBarCurrentProjectId = sessionId ? chatBarSessionProjectFromMap : (aroDraftProjectId || projectScope)
-  const chatBarCurrentProject = chatBarCurrentProjectId ? explicitProjects.find(p => p.id === chatBarCurrentProjectId && !p.archived) : null
+  const chatBarCurrentProjectId = sessionId ? chatBarSessionProjectFromMap : aroDraftProjectId || projectScope
 
-  const chatBarCurrentRoot = (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null)
-    || (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null)
-    || null
+  const chatBarCurrentProject = chatBarCurrentProjectId
+    ? explicitProjects.find(p => p.id === chatBarCurrentProjectId && !p.archived)
+    : null
+
+  const chatBarCurrentRoot =
+    (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null) ||
+    (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null) ||
+    null
 
   const leadingCluster = (
     <div className="flex min-w-0 items-center gap-1" data-aro-composer-leading="">
       {contextMenu}
-      <ProjectPickerControl cwd={cwd} disabled={inputDisabled} profile={profile} sessionId={sessionId} />
+      {!isAro && (
+        <ProjectPickerControl
+          cwd={cwd}
+          disabled={inputDisabled}
+          placement="toolbar"
+          profile={profile}
+          sessionId={sessionId}
+        />
+      )}
       {!isAro && (
         <>
           <Button
@@ -1204,7 +1227,9 @@ export function ChatBar({
             type="button"
             variant="ghost"
           >
-            <span aria-hidden className="font-mono text-xs font-semibold">/</span>
+            <span aria-hidden className="font-mono text-xs font-semibold">
+              /
+            </span>
           </Button>
           <Button
             aria-label="Path and context references"
@@ -1215,7 +1240,9 @@ export function ChatBar({
             type="button"
             variant="ghost"
           >
-            <span aria-hidden className="font-mono text-xs font-semibold">@</span>
+            <span aria-hidden className="font-mono text-xs font-semibold">
+              @
+            </span>
           </Button>
         </>
       )}
@@ -1229,19 +1256,13 @@ export function ChatBar({
       cwd={cwd}
       disabled={disabled}
       onBranchOff={() => void openWorktreeDialog({ repoPath: cwd ?? undefined })}
-      onOpenWorktree={(path) => {
+      onOpenWorktree={path => {
         requestStartWorkSession(path)
       }}
     />
   )
 
-  const contextControl = (
-    <ContextPill
-      busy={busy}
-      gateway={gateway}
-      sessionId={sessionId}
-    />
-  )
+  const contextControl = <ContextPill busy={busy} gateway={gateway} sessionId={sessionId} />
 
   const controls = (
     <ComposerControls
@@ -1498,7 +1519,8 @@ export function ChatBar({
             data-aro-composer=""
             data-drag-active={dragActive ? '' : undefined}
             data-hud-grabbing={hudGrabbing ? '' : undefined}
-            data-popped-out={poppedOut ? '' : undefined} data-slot="composer-root"
+            data-popped-out={poppedOut ? '' : undefined}
+            data-slot="composer-root"
             data-status-stack={statusStackVisible && !statusDrawerCollapsed ? '' : undefined}
             data-thread-scrolled-up={scrolledUp ? '' : undefined}
             data-tip-region=""
@@ -1629,6 +1651,15 @@ export function ChatBar({
                     additions beside the "+" menu and before the controls.
                     All four render nothing until something contributes. */}
                   <ContribSlot area={COMPOSER_AREAS.top} />
+                  {isAro && (
+                    <ProjectPickerControl
+                      cwd={cwd}
+                      disabled={inputDisabled}
+                      placement="header"
+                      profile={profile}
+                      sessionId={sessionId}
+                    />
+                  )}
                   <RestoredDraftNotice
                     freshDraft={activeQueueSessionKey === null}
                     onUndone={clearDraft}
@@ -1661,10 +1692,7 @@ export function ChatBar({
                     </div>
                   )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
-                  <div
-                    className="min-h-[4.25rem] min-w-0 w-full"
-                    data-slot="input"
-                  >
+                  <div className="min-h-[4.25rem] min-w-0 w-full" data-slot="input">
                     {input}
                   </div>
                   <div
@@ -1703,21 +1731,24 @@ export function ChatBar({
           {/* The floating voice orb, driven by THIS composer's real voice
               engine (dictation pipeline + VAD conversation). Fixed-position,
               so the dock column is just its React home. */}
-          {typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true' && !hudMode && !poppedOut && (
-            <VoiceAgentOrb
-              busy={busy}
-              conversationActive={voiceConversationActive}
-              conversationStatus={conversation.status}
-              dictate={dictate}
-              onEndConversation={endConversation}
-              onStartConversation={startConversation}
-              onSubmit={text => {
-                void onSubmit(text)
-              }}
-              voiceActivity={voiceActivityState}
-              voiceStatus={voiceStatus}
-            />
-          )}
+          {typeof document !== 'undefined' &&
+            document.documentElement.dataset.aroUi === 'true' &&
+            !hudMode &&
+            !poppedOut && (
+              <VoiceAgentOrb
+                busy={busy}
+                conversationActive={voiceConversationActive}
+                conversationStatus={conversation.status}
+                dictate={dictate}
+                onEndConversation={endConversation}
+                onStartConversation={startConversation}
+                onSubmit={text => {
+                  void onSubmit(text)
+                }}
+                voiceActivity={voiceActivityState}
+                voiceStatus={voiceStatus}
+              />
+            )}
         </div>
       </ComposerPrimitive.Unstable_TriggerPopoverRoot>
 
@@ -1749,45 +1780,67 @@ export function ChatBarFallback() {
   )
 }
 
-
 /** Project selector matching the prototype's "attach/switch project" control.
  * Existing sessions move through Hermes' workspace RPC; a fresh draft enters
  * the project scope so the next session is created in that workspace. */
 function ProjectPickerControl({
   cwd,
   disabled,
+  placement,
   profile,
   sessionId
 }: {
   cwd?: null | string
   disabled: boolean
+  placement: 'header' | 'toolbar'
   profile?: null | string
   sessionId?: null | string
 }) {
+  const { t } = useI18n()
   const projects = useStore($projectTree)
   const explicitProjects = useStore($projects)
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
   const aroDraftProjectId = useStore($aroDraftProjectId)
+  const sessions = useStore($sessions)
+  const projectOwners = useStore($projectOwnerBySessionId)
   const [open, setOpen] = useState(false)
-  const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
+
+  const [gitStatus, setGitStatus] = useState<Awaited<
+    ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>
+  > | null>(null)
+
   const [search, setSearch] = useState('')
-  const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? sessionProjectFromMap : (aroDraftProjectId || projectScope)
+  const session = sessionId ? sessions.find(item => item.id === sessionId) : null
+
+  const currentProjectId = session
+    ? session.id.startsWith('draft_')
+      ? aroSessionProjectMap[session.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+      : resolveAroSessionProjectId(session, explicitProjects, projectOwners, aroSessionProjectMap)
+    : sessionId
+      ? aroSessionProjectMap[sessionId] ||
+        (sessionId.startsWith('draft_') ? resolveAroDraftProjectId(aroDraftProjectId, projectScope) : null)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+
   const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
 
-  const currentRoot = (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
-    || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
-    || null
+  const currentRoot =
+    (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null) ||
+    (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null) ||
+    null
 
   const currentLabel = currentProject?.name
 
   const $repoStatus = repoStatusForCwd(currentRoot)
   const liveRepoStatus = useStore($repoStatus)
+  const configuredDefault = useStore($configuredDefaultProjectDir)
 
   useEffect(() => {
-    if (!currentRoot) {return}
+    if (!currentRoot) {
+      return
+    }
+
     const unregister = registerRepoStatusCwd(currentRoot)
 
     return () => {
@@ -1812,15 +1865,18 @@ function ProjectPickerControl({
       return
     }
 
-    void git.repoStatus(currentRoot).then(status => {
-      if (!cancelled) {
-        setGitStatus(status)
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setGitStatus(null)
-      }
-    })
+    void git
+      .repoStatus(currentRoot)
+      .then(status => {
+        if (!cancelled) {
+          setGitStatus(status)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGitStatus(null)
+        }
+      })
 
     return () => {
       cancelled = true
@@ -1852,55 +1908,85 @@ function ProjectPickerControl({
   }, [explicitProjects])
 
   const filteredProjects = useMemo(() => {
-    if (!search.trim()) {return availableProjects}
+    if (!search.trim()) {
+      return availableProjects
+    }
+
     const query = search.toLowerCase()
 
-    return availableProjects.filter(p =>
-      p.label.toLowerCase().includes(query) ||
-      (p.path || '').toLowerCase().includes(query)
+    return availableProjects.filter(
+      p => p.label.toLowerCase().includes(query) || (p.path || '').toLowerCase().includes(query)
     )
   }, [availableProjects, search])
 
   const chooseProject = async (projectId?: string) => {
+    const isDraftSession = Boolean(sessionId?.startsWith('draft_'))
+    const isFreshDraft = !sessionId || isDraftSession
+
     if (!projectId) {
-      exitProjectScope()
-      setAroDraftProject(null)
-      $activeProjectId.set(null)
-      void setActiveProject(null).catch(() => {})
-      setNewChatWorkspaceTarget(null)
-      if (sessionId) {
-        unassignSessionFromProject(sessionId)
-      }
+      await clearAroProjectAndRevertToDefault(sessionId)
       setOpen(false)
-      void Promise.all([
-        refreshProjects().catch(() => {}),
-        refreshProjectTree().catch(() => {})
-      ])
 
       return
     }
 
     const project = availableProjects.find(item => item.id === projectId)
 
-    if (!project || project.id === currentProjectId) {
+    if (!project) {
+      setOpen(false)
+
+      return
+    }
+
+    const projectRoot = project.path.trim()
+
+    if (project.id === currentProjectId) {
+      if (isFreshDraft) {
+        setAroDraftProject(projectId)
+        setNewChatWorkspaceTarget(projectRoot || null)
+        if (projectRoot) {
+          setCurrentCwd(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+        }
+
+        if (isDraftSession && sessionId) {
+          void assignSessionToProject(sessionId, projectId)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
+      }
+
       setOpen(false)
 
       return
     }
 
     try {
-      if (sessionId) {
+      if (sessionId && !isDraftSession) {
         await assignSessionToProject(sessionId, projectId)
+
+        if (sessionId === $selectedStoredSessionId.get() && projectRoot) {
+          setCurrentCwd(projectRoot)
+          commitWorkspaceCwdForSelectedSession(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
       } else {
         setAroDraftProject(projectId)
+        setNewChatWorkspaceTarget(projectRoot || null)
+        if (projectRoot) {
+          setCurrentCwd(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+        }
+
+        if (isDraftSession && sessionId) {
+          await assignSessionToProject(sessionId, projectId)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
       }
 
       enterProject(projectId)
       setOpen(false)
-      void Promise.all([
-        refreshProjects().catch(() => {}),
-        refreshProjectTree().catch(() => {})
-      ])
+      void Promise.all([refreshProjects().catch(() => {}), refreshProjectTree().catch(() => {})])
     } catch (error) {
       notifyError(error, 'Could not switch project')
     }
@@ -1914,35 +2000,86 @@ function ProjectPickerControl({
         if (!next) {
           setSearch('')
         } else {
-          void Promise.all([
-            refreshProjects().catch(() => {}),
-            refreshProjectTree().catch(() => {})
-          ])
+          void Promise.all([refreshProjects().catch(() => {}), refreshProjectTree().catch(() => {})])
         }
       }}
       open={open}
     >
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label={
-            currentLabel
-              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
-              : 'Default (Attach a project)'
-          }
+      {placement === 'header' && currentLabel ? (
+        <div
           className={cn(
-            'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
-            currentLabel && 'text-aro-iris-soft'
+            'group/project-pill flex h-7 w-auto max-w-[min(100%,18rem)] min-w-0 self-start items-center rounded-full border border-aro-line-soft bg-aro-raise/60 pl-2.5 pr-1 text-left text-[11px] text-aro-ink hover:bg-aro-hover hover:border-aro-line transition-colors',
+            disabled && 'opacity-60 pointer-events-none'
           )}
           data-aro-project-control=""
-          data-aro-project-selected={currentLabel ? '' : undefined}
-          disabled={disabled}
-          size="icon"
-          type="button"
-          variant="ghost"
+          data-aro-project-placement={placement}
+          data-aro-project-selected=""
         >
-          <IconFolder size={15} />
-        </Button>
-      </DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label={`${t.sidebar.projects.worktreeProjectLabel}: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`}
+              className="flex h-full min-w-0 flex-1 items-center gap-1.5 text-left text-[11px] text-aro-ink hover:text-aro-ink focus:outline-none"
+              disabled={disabled}
+              type="button"
+            >
+              <IconFolder className="shrink-0 text-aro-iris-soft" size={14} />
+              <span className="max-w-[11rem] min-w-0 truncate font-medium">{currentLabel}</span>
+              <IconChevronDown
+                className="shrink-0 text-aro-ink-4 transition-transform group-data-[state=open]:rotate-180"
+                size={11}
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <button
+            aria-label="Clear project"
+            className="ml-1 flex size-4 shrink-0 items-center justify-center rounded-full text-aro-ink-4 hover:bg-aro-raise hover:text-aro-ink transition-colors"
+            disabled={disabled}
+            onClick={e => {
+              e.stopPropagation()
+              e.preventDefault()
+              void chooseProject(undefined)
+            }}
+            title="Clear project (revert to default workspace)"
+            type="button"
+          >
+            <IconX size={10} />
+          </button>
+        </div>
+      ) : (
+        <DropdownMenuTrigger asChild>
+          <Button
+            aria-label={
+              currentLabel
+                ? `${t.sidebar.projects.worktreeProjectLabel}: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
+                : t.composer.chooseProject
+            }
+            className={cn(
+              placement === 'header'
+                ? 'group flex h-7 w-auto max-w-[min(100%,16rem)] min-w-0 self-start items-center justify-start gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise/60 px-2.5 text-left text-[11px] text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink'
+                : 'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
+              currentLabel && placement === 'header' && 'text-aro-ink'
+            )}
+            data-aro-project-control=""
+            data-aro-project-placement={placement}
+            data-aro-project-selected={currentLabel ? '' : undefined}
+            disabled={disabled}
+            size={placement === 'header' ? 'sm' : 'icon'}
+            type="button"
+            variant="ghost"
+          >
+            <IconFolder size={15} />
+            {placement === 'header' && (
+              <>
+                <span className="max-w-[12rem] min-w-0 truncate">{currentLabel || t.composer.chooseProject}</span>
+                <IconChevronDown
+                  className="shrink-0 text-aro-ink-4 transition-transform group-data-[state=open]:rotate-180"
+                  size={12}
+                />
+              </>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+      )}
       <DropdownMenuContent align="start" className="w-[340px] p-0" side="top" sideOffset={8}>
         <div className="repo-chooser">
           {currentRoot && effectiveStatus ? (
@@ -1950,7 +2087,9 @@ function ProjectPickerControl({
               <IconBranch className="text-aro-iris-soft shrink-0" size={12} />
               <span className="min-w-0 flex-1 truncate font-mono">{effectiveStatus.branch || 'Detached HEAD'}</span>
               {effectiveStatus.changed > 0 ? (
-                <span className="shrink-0 text-amber-500 font-medium font-mono">+{effectiveStatus.changed} changed</span>
+                <span className="shrink-0 text-amber-500 font-medium font-mono">
+                  +{effectiveStatus.changed} changed
+                </span>
               ) : (
                 <span className="shrink-0 text-emerald-500 font-medium font-mono">Clean</span>
               )}
@@ -1977,7 +2116,9 @@ function ProjectPickerControl({
                     <span className="size-2 rounded-full shrink-0 bg-aro-ink-4" />
                     <span>Default</span>
                   </span>
-                  <span className="repo-chooser-sub">No project (standalone chat)</span>
+                  <span className="repo-chooser-sub">
+                    {configuredDefault ? `Default: ${configuredDefault}` : 'No project (standalone chat)'}
+                  </span>
                 </span>
                 {!currentProjectId ? <IconCheck className="repo-chooser-check" size={13} /> : null}
               </button>
@@ -1985,9 +2126,7 @@ function ProjectPickerControl({
             {loading && explicitProjects.length === 0 ? (
               <div className="p-3 text-center text-xs text-aro-ink-3">Loading projects…</div>
             ) : filteredProjects.length === 0 && search.trim() && !'default'.includes(search.toLowerCase()) ? (
-              <p className="repo-chooser-empty">
-                {`No repositories match “${search}”.`}
-              </p>
+              <p className="repo-chooser-empty">{`No repositories match “${search}”.`}</p>
             ) : (
               filteredProjects.map(project => {
                 const isSelected = project.id === currentProjectId
@@ -2009,9 +2148,7 @@ function ProjectPickerControl({
                         />
                         <span>{project.label}</span>
                       </span>
-                      {root ? (
-                        <span className="repo-chooser-sub">{root}</span>
-                      ) : null}
+                      {root ? <span className="repo-chooser-sub">{root}</span> : null}
                     </span>
                     {isDemo ? <span className="repo-chooser-demo">DEMO</span> : null}
                     {isSelected ? <IconCheck className="repo-chooser-check" size={13} /> : null}
@@ -2020,16 +2157,29 @@ function ProjectPickerControl({
               })
             )}
           </div>
-          <button
-            className="repo-chooser-add"
-            onClick={() => {
-              setOpen(false)
-              openProjectCreate()
-            }}
-            type="button"
-          >
-            <IconPlus size={12} /> New project…
-          </button>
+          <div className="flex items-center justify-between border-t border-aro-line-soft/60 px-2.5 py-1.5">
+            <button
+              className="repo-chooser-add"
+              onClick={() => {
+                setOpen(false)
+                openProjectCreate()
+              }}
+              type="button"
+            >
+              <IconPlus size={12} /> New project…
+            </button>
+            <button
+              className="text-[11px] text-aro-ink-3 hover:text-aro-ink flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-aro-hover"
+              onClick={() => {
+                setOpen(false)
+                void chooseAndSetDefaultWorkspaceDir()
+              }}
+              title="Set default workspace directory for chats without a project"
+              type="button"
+            >
+              <IconFolder size={12} /> Default workspace…
+            </button>
+          </div>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

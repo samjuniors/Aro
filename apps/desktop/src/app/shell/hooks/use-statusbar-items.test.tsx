@@ -7,7 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { group } from '@/components/pane-shell/tree/model'
 import { $layoutTree, noteActiveTreeGroup } from '@/components/pane-shell/tree/store'
 import { createClientSessionState } from '@/lib/chat-runtime'
+import { $aroDraftProjectId, $aroSessionProjectMap } from '@/aro/project-session-map'
+import { $projects } from '@/store/projects'
 import {
+  $configuredDefaultProjectDir,
   $connection,
   $currentCwd,
   $selectedStoredSessionId,
@@ -103,6 +106,10 @@ afterEach(() => {
   $sessions.set([])
   $sessionStartedAt.set(null)
   $tileSessionFocusStartedAt.set(null)
+  $aroDraftProjectId.set(null)
+  $aroSessionProjectMap.set({})
+  $projects.set([])
+  $configuredDefaultProjectDir.set('')
 })
 
 describe('statusbar workspace menu — "Open containing folder"', () => {
@@ -133,6 +140,36 @@ describe('statusbar workspace menu — "Open containing folder"', () => {
 
     expect(workspaceMenuIds()).toContain('copy-workspace-path')
     expect(workspaceMenuIds()).not.toContain('reveal-workspace-finder')
+  })
+
+  it('remains visible and offers default workspace directory selection when no project is selected', () => {
+    $currentCwd.set('')
+    const { result } = renderHook(() => useStatusbarItems(statusbarOptions), { wrapper })
+    const workspace = result.current.leftStatusbarItems.find(item => item.id === 'workspace-cwd')
+
+    expect(workspace).toBeDefined()
+    expect(workspace?.hidden).toBeFalsy()
+    expect(workspaceMenuIds()).toContain('select-default-workspace-dir')
+    expect(workspaceMenuIds()).not.toContain('copy-workspace-path')
+  })
+
+  it('synchronizes workspace label with the active Aro project and offers clear-selected-project', () => {
+    $projects.set([
+      {
+        id: 'p_custom',
+        name: 'Custom Project',
+        primary_path: '/projects/custom',
+        archived: false
+      } as any
+    ])
+    $aroDraftProjectId.set('p_custom')
+
+    const { result } = renderHook(() => useStatusbarItems(statusbarOptions), { wrapper })
+    const workspace = result.current.leftStatusbarItems.find(item => item.id === 'workspace-cwd')
+
+    expect(workspace?.label).toBe('Custom Project')
+    expect(workspace?.title).toContain('custom')
+    expect(workspaceMenuIds()).toContain('clear-selected-project')
   })
 })
 

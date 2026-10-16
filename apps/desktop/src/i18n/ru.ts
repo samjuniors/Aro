@@ -2841,6 +2841,8 @@ export const ru = defineLocale({
     markAllRead: 'Отметить все как прочитанные'
   },
   composer: {
+    chooseProject: 'Выбрать проект',
+    projectAttachHint: 'Выберите проект над полем ввода или начните печатать — его можно добавить позже.',
     message: 'Сообщение',
     wakingProfile: profile => `Пробуждаем ${profile}…`,
     placeholderStarting: 'Запуск Hermes...',
@@ -3897,6 +3899,8 @@ export const ru = defineLocale({
     closeToRight: 'Закрыть справа',
     closeAll: 'Закрыть все',
     newSessionTab: 'Вкладка нового сеанса',
+    newTab: 'Новая вкладка',
+    newTabInFullView: 'Новая вкладка в полном режиме',
     pluginDisabled: pluginId => `Плагин «${pluginId}» отключён`,
     pluginDisabledBody: 'Включите его снова в Возможности → Плагины, чтобы вернуть панель.',
     missingPane: paneId => `нет панели: ${paneId}`,

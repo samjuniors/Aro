@@ -9,9 +9,11 @@ import {
   IconGlobe,
   IconList,
   IconSearch,
+  IconSpark,
   IconTerminal,
   IconX
 } from '@/aro/Icons'
+import { $newSideChatAction } from '@/components/pane-shell/tree/store'
 import { cn } from '@/lib/utils'
 
 import { type ContextSectionId, openWorkspaceTab } from './store'
@@ -52,6 +54,20 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
         detail: 'Browse workspace project files and directories',
         icon: IconFolder,
         action: () => handleOpenSection('files')
+      },
+      {
+        id: 'side-chat',
+        label: 'Side Chat',
+        detail: 'Open a secondary conversation side-by-side with your active chat',
+        icon: IconSpark,
+        action: () => {
+          const sideChat = $newSideChatAction.get()
+          if (sideChat) {
+            sideChat()
+          } else {
+            handleOpenSection('files')
+          }
+        }
       },
       {
         id: 'terminal',

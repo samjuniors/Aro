@@ -17,10 +17,13 @@ import {
   $projectTree,
   addProjectFolder,
   applyRenamedSessionTitle,
+  chooseAndSetDefaultWorkspaceDir,
+  clearConfiguredDefaultWorkspaceDir,
   createProject,
   deleteProject,
   enterProject,
   fetchProjectSessions,
+  followEnteredProjectCwd,
   openFolderAsProject,
   openProjectCreate,
   pickProjectFolder,
@@ -119,6 +122,19 @@ describe('project scope', () => {
   it('persists the scope to localStorage', () => {
     enterProject('p_abc')
     expect(window.localStorage.getItem('hermes.desktop.projectScope')).toBe('p_abc')
+  })
+
+  it('attaches an entered project to a fresh draft workspace without moving a stored chat', () => {
+    $selectedStoredSessionId.set('draft_new')
+    followEnteredProjectCwd('/work/repo')
+    expect($currentCwd.get()).toBe('/work/repo')
+
+    $currentCwd.set('')
+    $selectedStoredSessionId.set('stored_chat')
+    followEnteredProjectCwd('/work/other')
+    expect($currentCwd.get()).toBe('')
+
+    $selectedStoredSessionId.set(null)
   })
 })
 
@@ -453,6 +469,56 @@ describe('pickProjectFolder', () => {
     selectDesktopPaths.mockResolvedValue([])
 
     await expect(pickProjectFolder()).resolves.toBeNull()
+  })
+})
+
+describe('chooseAndSetDefaultWorkspaceDir and clearConfiguredDefaultWorkspaceDir', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    $currentCwd.set('')
+    $selectedStoredSessionId.set(null)
+    $sessions.set([])
+  })
+
+  it('picks and sets default workspace directory and updates live cwd and active session', async () => {
+    const origHermesDesktop = window.hermesDesktop
+    window.hermesDesktop = {
+      ...window.hermesDesktop,
+      settings: {
+        getDefaultProjectDir: vi.fn(),
+        pickDefaultProjectDir: vi.fn().mockResolvedValue({ canceled: false, dir: '/home/user/default-folder' }),
+        setDefaultProjectDir: vi.fn().mockResolvedValue({ dir: '/home/user/default-folder' })
+      }
+    } as never
+
+    $selectedStoredSessionId.set('session-1')
+    $sessions.set([{ id: 'session-1', cwd: null }] as never)
+
+    const result = await chooseAndSetDefaultWorkspaceDir()
+    expect(result).toBe('/home/user/default-folder')
+    expect($currentCwd.get()).toBe('/home/user/default-folder')
+    expect($sessions.get().find(s => s.id === 'session-1')?.cwd).toBe('/home/user/default-folder')
+
+    window.hermesDesktop = origHermesDesktop
+  })
+
+  it('clears default workspace directory when requested', async () => {
+    const origHermesDesktop = window.hermesDesktop
+    const setDefaultProjectDir = vi.fn().mockResolvedValue({ dir: null })
+    window.hermesDesktop = {
+      ...window.hermesDesktop,
+      settings: {
+        getDefaultProjectDir: vi.fn(),
+        pickDefaultProjectDir: vi.fn(),
+        setDefaultProjectDir
+      }
+    } as never
+
+    applyConfiguredDefaultProjectDir('/home/user/default-folder')
+    await clearConfiguredDefaultWorkspaceDir()
+    expect(setDefaultProjectDir).toHaveBeenCalledWith(null)
+
+    window.hermesDesktop = origHermesDesktop
   })
 })
 

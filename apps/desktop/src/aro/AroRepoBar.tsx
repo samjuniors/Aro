@@ -1,16 +1,13 @@
 import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { IconBranch, IconCheck, IconChevronDown, IconGit, IconPlus, IconSearch, IconSettings } from '@/aro/Icons'
 import {
-  IconBranch,
-  IconCheck,
-  IconChevronDown,
-  IconGit,
-  IconPlus,
-  IconSearch,
-  IconSettings
-} from '@/aro/Icons'
-import { $aroDraftProjectId, $aroSessionProjectMap } from '@/aro/project-session-map'
+  $aroDraftProjectId,
+  $aroSessionProjectMap,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId
+} from '@/aro/project-session-map'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,23 +18,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { HermesGitBranch } from '@/global'
 import { cn } from '@/lib/utils'
-import {
-  openWorktreeDialog,
-  refreshRepoStatus,
-  registerRepoStatusCwd,
-  repoStatusForCwd
-} from '@/store/coding-status'
+import { openWorktreeDialog, refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
 import { notify, notifyError } from '@/store/notifications'
 import { $projectScope } from '@/store/project-scope'
 import {
+  $projectOwnerBySessionId,
   $projects,
   $projectTree,
   listRepoBranches,
-  projectIdForCwd,
   projectRootCwd,
   switchBranchInRepo
 } from '@/store/projects'
 import { $pullRequestsByBranch, branchPrKey, refreshPullRequests } from '@/store/pull-requests'
+import { $sessions } from '@/store/session'
 
 function formatCount(n: number): string {
   return n.toLocaleString('en-US')
@@ -58,33 +51,46 @@ export function AroRepoBar({
   const explicitProjects = useStore($projects)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
+  const sessions = useStore($sessions)
+  const projectOwners = useStore($projectOwnerBySessionId)
 
-  const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? sessionProjectFromMap : ($aroDraftProjectId.get() || projectScope)
+  const session = sessionId ? sessions.find(item => item.id === sessionId) : null
+
+  const currentProjectId = session
+    ? session.id.startsWith('draft_')
+      ? aroSessionProjectMap[session.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+      : resolveAroSessionProjectId(session, explicitProjects, projectOwners, aroSessionProjectMap)
+    : sessionId
+      ? aroSessionProjectMap[sessionId] ||
+        (sessionId.startsWith('draft_') ? resolveAroDraftProjectId(aroDraftProjectId, projectScope) : null)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+
   const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
 
-  if (!currentProject) {
-    return null
-  }
+  const currentRoot = currentProject
+    ? currentProject.primary_path ||
+      currentProject.folders?.[0]?.path ||
+      projectRootCwd(projects.find(item => item.id === currentProjectId))
+    : ''
 
-  const currentRoot = currentProject.primary_path
-    || currentProject.folders?.[0]?.path
-    || null
+  const folderName = currentRoot
+    .replace(/[/\\]+$/, '')
+    .split(/[/\\]/)
+    .pop()
 
-  if (!currentRoot) {
-    return null
-  }
-
-  const folderName = currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop()
-  const repoName = currentProject.name || folderName || 'Repository'
-  const isDemo = Boolean(currentProject.id?.includes('demo') || repoName.toLowerCase().includes('demo'))
+  const repoName = currentProject?.name || folderName || 'Repository'
+  const isDemo = Boolean(currentProject?.id?.includes('demo') || repoName.toLowerCase().includes('demo'))
 
   // Live status
   const $status = repoStatusForCwd(currentRoot)
   const status = useStore($status)
 
   useEffect(() => {
-    if (!currentRoot) {return}
+    if (!currentRoot) {
+      return
+    }
+
     const unregister = registerRepoStatusCwd(currentRoot)
 
     return () => {
@@ -103,7 +109,9 @@ export function AroRepoBar({
   const [switching, setSwitching] = useState(false)
 
   const loadBranches = useCallback(async () => {
-    if (!currentRoot) {return}
+    if (!currentRoot) {
+      return
+    }
 
     try {
       const list = await listRepoBranches(currentRoot)
@@ -154,7 +162,10 @@ export function AroRepoBar({
   }
 
   const handleCreateBranch = async (targetBranch: string) => {
-    if (!currentRoot || !targetBranch.trim()) {return}
+    if (!currentRoot || !targetBranch.trim()) {
+      return
+    }
+
     const branchToCreate = targetBranch.trim()
     setSwitching(true)
 
@@ -173,23 +184,22 @@ export function AroRepoBar({
     }
   }
 
-  const filteredBranches = branches.filter(b =>
-    !branchSearch.trim() || b.name.toLowerCase().includes(branchSearch.toLowerCase())
+  const filteredBranches = branches.filter(
+    b => !branchSearch.trim() || b.name.toLowerCase().includes(branchSearch.toLowerCase())
   )
 
   const adds = status?.added ?? 0
   const dels = status?.removed ?? 0
   const hasChanges = adds > 0 || dels > 0 || (status?.changed ?? 0) > 0
 
+  if (!currentProject || !currentRoot) {
+    return null
+  }
+
   return (
     <div className="repo-dock" data-aro-repo-bar="" data-demo={isDemo ? 'true' : undefined}>
       {/* Repo / Project Name button */}
-      <button
-        className="repo-dock-repo"
-        onClick={onOpenDiff}
-        aria-label="Open changes panel"
-        type="button"
-      >
+      <button aria-label="Open changes panel" className="repo-dock-repo" onClick={onOpenDiff} type="button">
         <IconGit className="repo-dock-repo-icon" size={13} />
         <span className="repo-dock-repo-name">{repoName}</span>
         {isDemo && <span className="repo-dock-demo">DEMO</span>}
@@ -201,9 +211,9 @@ export function AroRepoBar({
       <DropdownMenu onOpenChange={setBranchMenuOpen} open={branchMenuOpen}>
         <DropdownMenuTrigger asChild>
           <button
+            aria-label={`Branch: ${currentBranch} (Click to switch or create)`}
             className="repo-dock-branch"
             disabled={switching}
-            aria-label={`Branch: ${currentBranch} (Click to switch or create)`}
             type="button"
           >
             <IconBranch className="shrink-0" size={11} />
@@ -214,9 +224,7 @@ export function AroRepoBar({
         <DropdownMenuContent align="start" className="w-[280px] p-1.5" side="top" sideOffset={8}>
           {creatingBranch ? (
             <div className="p-2 space-y-2">
-              <div className="text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">
-                Create new branch
-              </div>
+              <div className="text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">Create new branch</div>
               <form
                 className="space-y-2"
                 onSubmit={e => {
@@ -243,12 +251,7 @@ export function AroRepoBar({
                   >
                     Cancel
                   </Button>
-                  <Button
-                    disabled={!newBranchName.trim() || switching}
-                    size="xs"
-                    type="submit"
-                    variant="default"
-                  >
+                  <Button disabled={!newBranchName.trim() || switching} size="xs" type="submit" variant="default">
                     Create branch
                   </Button>
                 </div>
@@ -275,9 +278,7 @@ export function AroRepoBar({
 
               <div className="max-h-[200px] overflow-y-auto space-y-0.5">
                 {filteredBranches.length === 0 && branches.length > 0 ? (
-                  <div className="px-2 py-2 text-center text-[11px] text-aro-ink-4">
-                    No matching branches
-                  </div>
+                  <div className="px-2 py-2 text-center text-[11px] text-aro-ink-4">No matching branches</div>
                 ) : filteredBranches.length === 0 ? (
                   <DropdownMenuItem
                     className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] font-mono bg-aro-hover text-aro-ink"
@@ -342,9 +343,9 @@ export function AroRepoBar({
 
       {/* Changes Diff Counts */}
       <button
+        aria-label={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
         className={cn('repo-dock-diff', !hasChanges && 'repo-dock-diff-empty')}
         onClick={onOpenDiff}
-        aria-label={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
         type="button"
       >
         {hasChanges ? (
@@ -362,6 +363,7 @@ export function AroRepoBar({
       <div className="repo-dock-right">
         {pr ? (
           <button
+            aria-label={`View PR #${pr.number}: ${pr.title}`}
             className="repo-dock-merge"
             onClick={() => {
               if (pr.url) {
@@ -370,29 +372,23 @@ export function AroRepoBar({
                 notify({ kind: 'info', message: `PR #${pr.number}: ${pr.title}` })
               }
             }}
-            aria-label={`View PR #${pr.number}: ${pr.title}`}
             type="button"
           >
             <IconGit size={12} /> Merge PR #{pr.number}
           </button>
         ) : (
           <button
+            aria-label="Merge PR (No open PR)"
             className="repo-dock-merge repo-dock-merge-disabled"
             onClick={() => {
               notify({ kind: 'info', message: 'No open pull request on this branch.' })
             }}
-            aria-label="Merge PR (No open PR)"
             type="button"
           >
             <IconGit size={12} /> Merge PR
           </button>
         )}
-        <button
-          aria-label="Project settings"
-          className="repo-dock-gear"
-          onClick={onOpenSettings}
-          type="button"
-        >
+        <button aria-label="Project settings" className="repo-dock-gear" onClick={onOpenSettings} type="button">
           <IconSettings size={13} />
         </button>
       </div>

@@ -24,7 +24,7 @@ import { GatewayConnectingOverlay } from '@/components/gateway-connecting-overla
 import { NotificationStack } from '@/components/notifications'
 import { DesktopOnboardingOverlay } from '@/components/onboarding'
 import { OnboardingChatGate } from '@/components/onboarding-chat/gate'
-import { $newSessionTabAction, registerPaneCloser } from '@/components/pane-shell/tree/store'
+import { $newSessionTabAction, $newSideChatAction, registerPaneCloser } from '@/components/pane-shell/tree/store'
 import {
   $workspaceMode,
   $workspaceNewSessionTarget,
@@ -1079,6 +1079,10 @@ export function ContribWiring({ children }: { children: ReactNode }) {
     void openNewSessionTile('center', { listed: false })
   }, [openNewSessionTile])
 
+  const openSideChat = useCallback(() => {
+    void openNewSessionTile('right', { listed: false })
+  }, [openNewSessionTile])
+
   // Archive the selected session (rebindable `session.archive` hotkey).
   const archiveSelectedSession = useCallback(() => {
     const sessionId = $selectedStoredSessionId.get()
@@ -1108,6 +1112,12 @@ export function ContribWiring({ children }: { children: ReactNode }) {
 
     return () => $newSessionTabAction.set(null)
   }, [openNewSessionTab])
+
+  useEffect(() => {
+    $newSideChatAction.set(openSideChat)
+
+    return () => $newSideChatAction.set(null)
+  }, [openSideChat])
 
   // The MAIN tab's Close. The workspace pane can't leave the tree, so its
   // closer empties it instead: the next stacked session shifts in, else main

@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react'
 import { useState } from 'react'
 
 import { IconBolt, IconCheck, IconEye, IconShield, IconZap } from '@/aro/Icons'
+import { Toggle } from '@/aro/ui'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tip } from '@/components/ui/tooltip'
 import type { HermesGateway } from '@/hermes'
@@ -136,7 +137,7 @@ export function ApprovalModePill({
           <button
             aria-label={`Approval mode: ${activeMeta.label}${yoloActive ? ' (YOLO bypass on)' : ''}`}
             className={cn(
-              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-[6px] border-none bg-transparent px-[5px] text-[11.5px] font-normal transition-colors text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink-2',
+              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal shadow-sm transition-all text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink-2',
               activeMeta.id === 'off' && 'text-aro-amber font-medium',
               disabled && 'pointer-events-none opacity-50'
             )}
@@ -202,24 +203,13 @@ export function ApprovalModePill({
               Skip approval prompts for this session
             </span>
           </span>
-          <button
-            aria-checked={yoloActive}
+          <Toggle
             aria-label="Toggle YOLO bypass"
-            className={cn(
-              'relative h-[17px] w-[30px] shrink-0 cursor-pointer rounded-full transition-colors duration-200',
-              yoloActive ? 'bg-aro-iris' : 'bg-aro-line-strong'
-            )}
+            checked={yoloActive}
             disabled={disabled || yoloPending || (sessionId != null && !gateway) || (!sessionId && activeSessionId != null)}
-            onClick={() => void toggleYolo()}
-            role="switch"
-            type="button"
-          >
-            <span
-              aria-hidden
-              className="absolute top-[2px] left-0 block size-[13px] rounded-full bg-white shadow-e1 transition-transform duration-200"
-              style={{ transform: `translateX(${yoloActive ? 15 : 2}px)` }}
-            />
-          </button>
+            onChange={() => void toggleYolo()}
+            size="sm"
+          />
         </div>
 
         {/* Hardline floor — the backend's actual safety contract

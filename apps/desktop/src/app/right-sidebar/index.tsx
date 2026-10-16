@@ -80,7 +80,7 @@ const SECTION_CONFIG: Record<
   ContextSectionId,
   { id: ContextSectionId; label: string; icon: ComponentType<{ size?: number; className?: string }> }
 > = {
-  changes: { id: 'changes', label: 'Review', icon: IconGit },
+  changes: { id: 'changes', label: 'Changes', icon: IconGit },
   terminal: { id: 'terminal', label: isWin ? 'powershell.exe' : 'Terminal', icon: IconTerminal },
   files: { id: 'files', label: 'Files', icon: IconFolder },
   search: { id: 'search', label: 'Search', icon: IconSearch },
@@ -279,7 +279,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
     <aside
       aria-label={r.aria}
       className={cn(
-        'aro-workspace-sidebar before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) pt-(--titlebar-height) text-(--ui-text-tertiary)',
+        'aro-workspace-sidebar before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) text-(--ui-text-tertiary)',
         panesFlipped
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]',

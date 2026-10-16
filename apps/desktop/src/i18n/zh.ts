@@ -3501,6 +3501,8 @@ export const zh = defineLocale({
   },
 
   composer: {
+    chooseProject: '选择项目',
+    projectAttachHint: '在输入框上方选择一个项目，或直接开始输入；之后也可以添加项目。',
     message: '消息',
     wakingProfile: profile => `正在唤醒 ${profile}…`,
     placeholderStarting: '正在启动 Hermes…',
@@ -4655,6 +4657,7 @@ export const zh = defineLocale({
     closeAll: '全部关闭',
     newSessionTab: '新建会话标签',
     newTab: '新建标签页',
+    newTabInFullView: '在完整视图中新建标签页',
     pluginDisabled: pluginId => `插件“${pluginId}”已禁用`,
     pluginDisabledBody: '在 技能与工具 → 插件 中重新启用即可恢复面板。',
     missingPane: paneId => `缺少面板：${paneId}`,

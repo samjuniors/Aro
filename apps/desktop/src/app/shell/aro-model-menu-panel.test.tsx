@@ -1,7 +1,7 @@
 import type * as ProfileStore from '@/store/profile'
 import type * as SessionStore from '@/store/session'
 
-vi.mock('@/store/profile', async (importOriginal) => {
+vi.mock('@/store/profile', async importOriginal => {
   const actual = await importOriginal<typeof ProfileStore>()
   const { atom } = await import('nanostores')
 
@@ -10,7 +10,7 @@ vi.mock('@/store/profile', async (importOriginal) => {
     $activeGatewayProfile: atom<string>('default')
   }
 })
-vi.mock('@/store/session', async (importOriginal) => {
+vi.mock('@/store/session', async importOriginal => {
   const actual = await importOriginal<typeof SessionStore>()
   const { atom } = await import('nanostores')
 
@@ -82,21 +82,19 @@ describe('AroModelMenuPanel component', () => {
     queryClient.clear()
   })
 
-  function renderPanel(props: {
-    model?: string
-    provider?: string
-    effort?: string
-    supportsReasoning?: boolean
-  } = {}) {
+  function renderPanel(
+    props: {
+      model?: string
+      provider?: string
+      effort?: string
+      supportsReasoning?: boolean
+    } = {}
+  ) {
     const client: QueryClient = queryClient
 
     return render(
       <QueryClientProvider client={client}>
-        <AroModelMenuPanel
-          onSelectModel={selectModelMock}
-          profile="default"
-          requestGateway={requestGatewayMock}
-        >
+        <AroModelMenuPanel onSelectModel={selectModelMock} profile="default" requestGateway={requestGatewayMock}>
           <div data-testid="catalog-children">
             <ModelMenuCloseContext.Consumer>
               {close => (
@@ -111,25 +109,28 @@ describe('AroModelMenuPanel component', () => {
     )
   }
 
-  it('keeps the five-step scale while disabling levels above model support', async () => {
+  it('keeps reasoning controls collapsed until asked for', async () => {
     renderPanel()
 
     // Top head button displays model monogram and name
     const headButton = screen.getByTestId('aro-model-head-button')
     expect(headButton).not.toBeNull()
 
-    // Slider range input is rendered
+    expect(screen.queryByRole('slider', { name: /Reasoning effort/i })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Reasoning controls/i }))
+
+    // Expanding the compact row reveals the five-step range.
     const slider = screen.getByRole('slider', { name: /Reasoning effort/i })
     expect(slider.getAttribute('max')).toBe('4')
     expect(slider.getAttribute('min')).toBe('0')
     expect(slider.getAttribute('value')).toBe('2')
-    expect(screen.getByRole('button', { name: 'Set effort to High' }).hasAttribute('disabled')).toBe(false)
-    expect(screen.getByRole('button', { name: 'Set effort to Ultra' }).hasAttribute('disabled')).toBe(true)
+    expect(slider.hasAttribute('disabled')).toBe(false)
   })
 
   it('renders the prototype Toggle component for Thinking and toggles effort', async () => {
     renderPanel()
 
+    fireEvent.click(screen.getByRole('button', { name: /Reasoning controls/i }))
     const toggle = screen.getByRole('switch', { name: /Toggle thinking/i })
     expect(toggle).not.toBeNull()
 
@@ -144,18 +145,17 @@ describe('AroModelMenuPanel component', () => {
 
     // Non-reasoning model does NOT render a broken reasoning slider
     expect(screen.queryByRole('slider', { name: /Reasoning effort/i })).toBeNull()
-    // It renders the direct response model explanation card
-    expect(screen.getByText(/Direct Response Model/i)).not.toBeNull()
-    expect(screen.getByText(/Browse reasoning models/i)).not.toBeNull()
+    expect(screen.getByText(/Direct response model/i)).not.toBeNull()
+    expect(screen.getByRole('button', { name: /Browse models/i })).not.toBeNull()
   })
 
-  it('allows clicking discrete effort buttons to select reasoning level', async () => {
+  it('allows selecting a reasoning level from the expanded slider', async () => {
     renderPanel()
 
-    const highBtn = screen.getByRole('button', { name: /Set effort to High/i })
-    fireEvent.click(highBtn)
+    fireEvent.click(screen.getByRole('button', { name: /Reasoning controls/i }))
+    const slider = screen.getByRole('slider', { name: /Reasoning effort/i })
+    fireEvent.change(slider, { target: { value: '3' } })
 
-    expect(highBtn.getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByRole('slider', { name: /Reasoning effort — High/i }).getAttribute('value')).toBe('3')
   })
 
@@ -178,7 +178,7 @@ describe('AroModelMenuPanel component', () => {
 
     // Now catalog is collapsed again
     expect(screen.queryByTestId('catalog-children')).toBeNull()
-    // And compact slider is visible again
-    expect(screen.getByRole('slider', { name: /Reasoning effort/i })).not.toBeNull()
+    // Reasoning controls stay collapsed after returning from the catalog.
+    expect(screen.queryByRole('slider', { name: /Reasoning effort/i })).toBeNull()
   })
 })

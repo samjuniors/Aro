@@ -36,6 +36,7 @@ import { $repoStatus, repoStatusForCwd } from '@/store/coding-status'
 import { openCommandPalette } from '@/store/command-palette'
 import { $fileBrowserOpen, $leftSideOpen, toggleLeftSide, toggleRightSide } from '@/store/layout'
 import { $activeGatewayProfile, $profiles, profileLabel, selectProfile } from '@/store/profile'
+import { $projectScope } from '@/store/project-scope'
 import { $projectOwnerBySessionId, $projects, openFolderAsProject } from '@/store/projects'
 import { $connection, $currentCwd, $selectedStoredSessionId, $sessions } from '@/store/session'
 import { $botChatScopes } from '@/store/session-states'
@@ -55,7 +56,12 @@ import {
   LogoMark
 } from './Icons'
 import { $aroProductMode, setAroProductMode } from './mode'
-import { $aroSessionProjectMap, resolveAroSessionProjectId } from './project-session-map'
+import {
+  $aroDraftProjectId,
+  $aroSessionProjectMap,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId
+} from './project-session-map'
 import { IconButton, Kbd } from './ui'
 
 export interface AroThemeOption {
@@ -120,7 +126,11 @@ export function AroTitlebar() {
 
   // Active theme
   const [activeTheme, setActiveTheme] = useState<string>(() => {
-    return (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) || document.documentElement.dataset.theme || 'obsidian'
+    return (
+      (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) ||
+      document.documentElement.dataset.theme ||
+      'obsidian'
+    )
   })
 
   const handleSetTheme = (themeId: string) => {
@@ -143,6 +153,7 @@ export function AroTitlebar() {
       const current = localStorage.getItem('aro.theme') || document.documentElement.dataset.theme || 'obsidian'
       setActiveTheme(current)
     }
+
     window.addEventListener('aro:theme', onThemeChange)
     window.addEventListener('storage', onThemeChange)
 
@@ -175,13 +186,19 @@ export function AroTitlebar() {
 
   // Active session and bot recognition (Session + Agent = Bot)
   const activeSession = sessions.find(s => s.id === selectedSessionId)
-  const sessionName = activeSession ? sessionTitle(activeSession) : 'Aro Workspace'
+  const isDraftSession = !activeSession || activeSession.id.startsWith('draft_')
+  const sessionName = activeSession ? sessionTitle(activeSession) : ''
   const botScope = selectedSessionId ? botChatScopes[selectedSessionId] : undefined
 
   // Determine current active Bot identity:
   const currentProfileName = activeSession?.profile || activeGatewayProfile || selectedBot || 'default'
   const matchedProfile = profiles.find(p => p.name === currentProfileName || p.name === selectedBot)
-  const profileDisplayName = matchedProfile ? profileLabel(matchedProfile) : (currentProfileName !== 'default' ? currentProfileName : '')
+
+  const profileDisplayName = matchedProfile
+    ? profileLabel(matchedProfile)
+    : currentProfileName !== 'default'
+      ? currentProfileName
+      : ''
 
   const activeBotKey = openBotChat?.key || selectedBot || 'default'
 
@@ -201,21 +218,35 @@ export function AroTitlebar() {
   const projects = useStore($projects)
   const projectOwners = useStore($projectOwnerBySessionId)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
+  const projectScope = useStore($projectScope)
 
   const activeProject = useMemo(() => {
-    if (!activeSession) {return null}
-    const pId = resolveAroSessionProjectId(activeSession, projects, projectOwners, aroSessionProjectMap)
+    const pId = activeSession
+      ? activeSession.id.startsWith('draft_')
+        ? aroSessionProjectMap[activeSession.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+        : resolveAroSessionProjectId(activeSession, projects, projectOwners, aroSessionProjectMap)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
 
     return pId ? projects.find(p => p.id === pId) : null
-  }, [activeSession, projects, projectOwners, aroSessionProjectMap])
+  }, [activeSession, aroDraftProjectId, aroSessionProjectMap, projectOwners, projectScope, projects])
 
   const projectRepoStatus = useStore(repoStatusForCwd(activeProject?.primary_path))
   const branchName = repoStatus?.branch || projectRepoStatus?.branch || activeSession?.git_branch || ''
 
   // Project directory name from cwd if available
-  const projectName = activeProject?.name || (currentCwd
-    ? currentCwd.replace(/\\/g, '/').split('/').filter(Boolean).pop() || 'Aro'
-    : 'Aro')
+  const projectName =
+    activeProject?.name ||
+    (currentCwd ? currentCwd.replace(/\\/g, '/').split('/').filter(Boolean).pop() || 'Aro' : 'Aro')
+
+  const titleContext =
+    product === 'bots'
+      ? botName
+      : isDraftSession
+        ? activeProject?.name || ''
+        : activeProject
+          ? `${activeProject.name} · ${sessionName}`
+          : sessionName
 
   // Platform Window Controls clearance
   const controlsPos = titlebarControlsPosition(connection?.windowButtonPosition, Boolean(connection?.isFullscreen))
@@ -253,12 +284,7 @@ export function AroTitlebar() {
       <div className="flex items-center gap-1.5 shrink-0" data-no-drag>
         {!leftSideOpen && (
           <Tip label="Show sidebar · ⇧⌘B" side="bottom">
-            <IconButton
-              icon={IconPanelLeft}
-              label="Show sidebar"
-              onClick={() => toggleLeftSide()}
-              size={28}
-            />
+            <IconButton icon={IconPanelLeft} label="Show sidebar" onClick={() => toggleLeftSide()} size={28} />
           </Tip>
         )}
 
@@ -285,75 +311,55 @@ export function AroTitlebar() {
         </div>
 
         {/* Project & Active Session / Bot Name */}
-        <div className="selected-project-title flex items-center gap-2">
-          <span
-            className="size-2 rounded-full shrink-0 shadow-sm"
-            style={{
-              backgroundColor:
-                product === 'bots'
-                  ? '#35d6c4'
-                  : activeProject?.color || '#10b981'
-            }}
-            title={
-              product === 'bots'
-                ? `Bot: ${botName}`
-                : activeProject
-                  ? `Project: ${activeProject.name}`
-                  : `Project: ${projectName}`
-            }
-          />
-          <span
-            className="truncate max-w-[200px] font-medium text-aro-ink"
-            title={
-              product === 'bots'
-                ? botName
-                : activeProject
-                  ? `${activeProject.name} · ${sessionName}`
-                  : sessionName
-            }
-          >
-            {product === 'bots'
-              ? botName
-              : activeProject
-                ? `${activeProject.name} · ${sessionName}`
-                : sessionName}
-          </span>
-
-          {/* Bot / Agent Badge */}
-          {botName && (
+        {(titleContext || (!isDraftSession && product === 'code')) && (
+          <div className="selected-project-title flex items-center gap-2">
             <span
-              className="titlebar-bot-pill cursor-pointer"
-              onClick={() => setProfilePopoverOpen(true)}
-              title={product === 'bots' ? `Active Bot: ${botName} (Click to switch)` : `Active Agent: ${botName}`}
-            >
-              {botName.toUpperCase()}
+              className="size-2 rounded-full shrink-0 shadow-sm"
+              style={{
+                backgroundColor: product === 'bots' ? '#35d6c4' : activeProject?.color || '#10b981'
+              }}
+              title={product === 'bots' ? `Bot: ${botName}` : `Project: ${activeProject?.name || projectName}`}
+            />
+            <span className="truncate max-w-[200px] font-medium text-aro-ink" title={titleContext}>
+              {titleContext}
             </span>
-          )}
 
-          {/* Git Branch Badge */}
-          {branchName && (
-            <span
-              className="hidden items-center gap-1 font-mono text-[10.5px] text-aro-ink-3 md:flex"
-              title={`Git branch: ${branchName}`}
-            >
-              <IconBranch size={11} />
-              <span className="max-w-[100px] truncate">{branchName}</span>
-            </span>
-          )}
+            {/* Bot / Agent Badge */}
+            {product === 'bots' && botName && (
+              <span
+                className="titlebar-bot-pill cursor-pointer"
+                onClick={() => setProfilePopoverOpen(true)}
+                title={`Active Bot: ${botName} (Click to switch)`}
+              >
+                {botName.toUpperCase()}
+              </span>
+            )}
 
-          {/* Open Project Folder button */}
-          <Tip label="Open folder as project · ⌘O" side="bottom">
-            <button
-              aria-label="Open project folder"
-              className="hidden items-center gap-1.5 rounded-[7px] border border-aro-line bg-aro-raise px-2 py-[2.5px] text-aro-ink-2 hover:border-aro-line-strong hover:bg-aro-hover transition-colors cursor-pointer text-[11px] sm:flex"
-              onClick={() => void openFolderAsProject()}
-              type="button"
-            >
-              <IconFolder className="shrink-0 text-aro-ink-4" size={12} />
-              <span className="hidden md:inline font-medium text-aro-ink-3">Open folder</span>
-            </button>
-          </Tip>
-        </div>
+            {/* Git Branch Badge */}
+            {!isDraftSession && branchName && (
+              <span
+                className="hidden items-center gap-1 font-mono text-[10.5px] text-aro-ink-3 md:flex"
+                title={`Git branch: ${branchName}`}
+              >
+                <IconBranch size={11} />
+                <span className="max-w-[100px] truncate">{branchName}</span>
+              </span>
+            )}
+
+            {/* Open Project Folder button */}
+            <Tip label="Open folder as project · ⌘O" side="bottom">
+              <button
+                aria-label="Open project folder"
+                className="hidden items-center gap-1.5 rounded-[7px] border border-aro-line bg-aro-raise px-2 py-[2.5px] text-aro-ink-2 hover:border-aro-line-strong hover:bg-aro-hover transition-colors cursor-pointer text-[11px] sm:flex"
+                onClick={() => void openFolderAsProject()}
+                type="button"
+              >
+                <IconFolder className="shrink-0 text-aro-ink-4" size={12} />
+                <span className="hidden md:inline font-medium text-aro-ink-3">Open folder</span>
+              </button>
+            </Tip>
+          </div>
+        )}
       </div>
 
       <div className="titlebar-spacer" />
@@ -380,12 +386,7 @@ export function AroTitlebar() {
       <div className="flex items-center gap-1.5 shrink-0" data-no-drag>
         {/* Keyboard shortcuts */}
         <Tip label="Keyboard shortcuts · ⌘/" side="bottom">
-          <IconButton
-            icon={IconKeyboard}
-            label="Keyboard shortcuts"
-            onClick={() => openCommandPalette()}
-            size={28}
-          />
+          <IconButton icon={IconKeyboard} label="Keyboard shortcuts" onClick={() => openCommandPalette()} size={28} />
         </Tip>
 
         {/* Active Profile / Agent Bot Switcher */}
@@ -397,10 +398,7 @@ export function AroTitlebar() {
                 className="titlebar-profile-btn"
                 type="button"
               >
-                <span
-                  className="titlebar-profile-avatar"
-                  style={{ backgroundColor: botAvatarColor }}
-                >
+                <span className="titlebar-profile-avatar" style={{ backgroundColor: botAvatarColor }}>
                   {botInitials}
                   <span className="titlebar-profile-status" />
                 </span>
@@ -494,12 +492,7 @@ export function AroTitlebar() {
         {/* Quick Settings Popover Menu */}
         <Popover onOpenChange={setQuickSettingsOpen} open={quickSettingsOpen}>
           <PopoverTrigger asChild>
-            <IconButton
-              active={quickSettingsOpen}
-              icon={IconSettings}
-              label="Quick settings"
-              size={28}
-            />
+            <IconButton active={quickSettingsOpen} icon={IconSettings} label="Quick settings" size={28} />
           </PopoverTrigger>
           <PopoverContent
             align="end"
@@ -530,23 +523,13 @@ export function AroTitlebar() {
             <div className="my-1 h-px bg-aro-line-soft" />
 
             {/* Toggles */}
-            <button
-              className="quick-toggle-row"
-              onClick={() => toggleRightSide()}
-              type="button"
-            >
-              <span className="quick-toggle-box">
-                {fileBrowserOpen && <IconCheck size={9} />}
-              </span>
+            <button className="quick-toggle-row" onClick={() => toggleRightSide()} type="button">
+              <span className="quick-toggle-box">{fileBrowserOpen && <IconCheck size={9} />}</span>
               <span className="flex-1">Workspace panel</span>
               <span className="font-mono text-[10px] text-aro-ink-4">⌘L</span>
             </button>
 
-            <button
-              className="quick-toggle-row"
-              onClick={handleToggleTerminal}
-              type="button"
-            >
+            <button className="quick-toggle-row" onClick={handleToggleTerminal} type="button">
               <span className="quick-toggle-box">
                 <IconTerminal size={9} />
               </span>
@@ -554,25 +537,13 @@ export function AroTitlebar() {
               <span className="font-mono text-[10px] text-aro-ink-4">⌘J</span>
             </button>
 
-            <button
-              className="quick-toggle-row"
-              onClick={handleToggleStatusbar}
-              type="button"
-            >
-              <span className="quick-toggle-box">
-                {statusbarVisible && <IconCheck size={9} />}
-              </span>
+            <button className="quick-toggle-row" onClick={handleToggleStatusbar} type="button">
+              <span className="quick-toggle-box">{statusbarVisible && <IconCheck size={9} />}</span>
               <span className="flex-1">Status bar</span>
             </button>
 
-            <button
-              className="quick-toggle-row"
-              onClick={toggleVoiceOrb}
-              type="button"
-            >
-              <span className="quick-toggle-box">
-                {voiceOrbOn && <IconCheck size={9} />}
-              </span>
+            <button className="quick-toggle-row" onClick={toggleVoiceOrb} type="button">
+              <span className="quick-toggle-box">{voiceOrbOn && <IconCheck size={9} />}</span>
               <span className="flex-1">Voice orb</span>
               <IconMic className="text-aro-ink-4" size={12} />
             </button>

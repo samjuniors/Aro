@@ -11,14 +11,29 @@
 import { atom } from 'nanostores'
 
 import { liveSessionProjectId } from '@/app/chat/sidebar/projects/workspace-groups'
+import { ALL_PROJECTS, exitProjectScope } from '@/store/project-scope'
 import {
+  $activeProjectId,
   $projects,
   $projectTree,
   addProjectFolder,
+  followEnteredProjectCwd,
   moveSessionToProject,
-  projectRootCwd
+  projectRootCwd,
+  refreshProjects,
+  refreshProjectTree,
+  setActiveProject
 } from '@/store/projects'
-import { $selectedStoredSessionId, $sessions, setSessions } from '@/store/session'
+import {
+  $configuredDefaultProjectDir,
+  $selectedStoredSessionId,
+  $sessions,
+  commitWorkspaceCwdForSelectedSession,
+  getConfiguredDefaultProjectDir,
+  setCurrentCwd,
+  setNewChatWorkspaceTarget,
+  setSessions
+} from '@/store/session'
 import type { SessionInfo } from '@/types/hermes'
 
 const STORAGE_KEY = 'aro.session.projectMap'
@@ -60,6 +75,15 @@ export function setAroDraftProject(projectId: string | null): void {
   $aroDraftProjectId.set(projectId)
 }
 
+/** Resolve a draft's visible project from its explicit target or sidebar scope. */
+export function resolveAroDraftProjectId(draftProjectId: null | string, projectScope: string): null | string {
+  if (draftProjectId) {
+    return draftProjectId
+  }
+
+  return projectScope === ALL_PROJECTS ? null : projectScope
+}
+
 /**
  * Assign a session to a project.
  * Immediately persists in Aro store, then coordinates with Hermes backend.
@@ -88,6 +112,11 @@ export async function assignSessionToProject(
 
   const session = $sessions.get().find((s: SessionInfo) => s.id === sessionId)
 
+  // `draft_*` rows are renderer-only; there is no backend session to move yet.
+  if (sessionId.startsWith('draft_')) {
+    return
+  }
+
   try {
     if (projectCwd) {
       // Backend has a root folder for this project: move the session's workspace
@@ -110,6 +139,39 @@ export function unassignSessionFromProject(sessionId: string): void {
   delete current[sessionId]
   $aroSessionProjectMap.set(current)
   persistMap(current)
+}
+
+/**
+ * Clear the selected project, unassign session, exit project scope,
+ * and revert the session and workspace location to the configured default directory (or empty).
+ */
+export async function clearAroProjectAndRevertToDefault(sessionId?: string | null): Promise<void> {
+  exitProjectScope()
+  setAroDraftProject(null)
+  $activeProjectId.set(null)
+  void setActiveProject(null).catch(() => {})
+
+  if (sessionId) {
+    unassignSessionFromProject(sessionId)
+  }
+
+  const configured = getConfiguredDefaultProjectDir() || $configuredDefaultProjectDir.get() || ''
+  setNewChatWorkspaceTarget(configured || null)
+  setCurrentCwd(configured)
+  followEnteredProjectCwd(configured)
+
+  if (sessionId) {
+    commitWorkspaceCwdForSelectedSession(configured)
+    setSessions((prev: SessionInfo[]) =>
+      prev.map(item => (item.id === sessionId ? { ...item, cwd: configured || null } : item))
+    )
+  } else {
+    setSessions((prev: SessionInfo[]) =>
+      prev.map(item => (item.id.startsWith('draft_') ? { ...item, cwd: configured || null } : item))
+    )
+  }
+
+  void Promise.all([refreshProjects().catch(() => {}), refreshProjectTree().catch(() => {})])
 }
 
 /** Clean up mappings when a project is deleted */

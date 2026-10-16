@@ -161,3 +161,43 @@ describe('AroSidebar main navigation (D-0031 closure)', () => {
     expect(settings.className).toContain('active')
   })
 })
+
+describe('AroSidebar Pinned & Projects collapsible sections', () => {
+  it('renders Pinned section header with down arrow toggle and handles expand/collapse', () => {
+    renderSidebarAt('/')
+
+    // Pinned section button defaults to expanded ("Collapse Pinned")
+    const pinnedHeader = screen.getByRole('button', { name: 'Collapse Pinned' })
+    expect(pinnedHeader).toBeDefined()
+    expect(pinnedHeader.textContent).toContain('Pinned')
+
+    // Clicking collapses the section
+    fireEvent.click(pinnedHeader)
+    expect(screen.getByRole('button', { name: 'Expand Pinned' })).toBeDefined()
+
+    // Clicking again expands it
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Pinned' }))
+    expect(screen.getByRole('button', { name: 'Collapse Pinned' })).toBeDefined()
+  })
+
+  it('renders Projects section header with down arrow toggle and handles expand/collapse', () => {
+    renderSidebarAt('/')
+
+    // Projects section button defaults to expanded ("Collapse Projects")
+    const projectsHeader = screen.getByRole('button', { name: 'Collapse Projects' })
+    expect(projectsHeader).toBeDefined()
+    expect(projectsHeader.textContent).toContain('Projects')
+
+    // Also renders the New project quick action button
+    expect(screen.getByRole('button', { name: 'New project' })).toBeDefined()
+
+    // Clicking collapses the section
+    fireEvent.click(projectsHeader)
+    expect(screen.getByRole('button', { name: 'Expand Projects' })).toBeDefined()
+
+    // Clicking again expands it
+    fireEvent.click(screen.getByRole('button', { name: 'Expand Projects' }))
+    expect(screen.getByRole('button', { name: 'Collapse Projects' })).toBeDefined()
+  })
+})
+

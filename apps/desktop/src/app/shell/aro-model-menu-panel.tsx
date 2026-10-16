@@ -1,17 +1,14 @@
 import type { ModelCapabilities } from '@hermes/shared'
 import { type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
-
-import { SETTINGS_ROUTE } from '@/app/routes'
-import { IconBrain, IconChevronDown, IconPlus } from '@/aro/Icons'
+import { IconBrain, IconChevronDown } from '@/aro/Icons'
 import { Toggle } from '@/aro/ui'
 import { useI18n } from '@/i18n'
 import { catalogProviderMatches, currentModelCapabilities } from '@/lib/model-options'
 import { providerDisplayName } from '@/lib/model-status-label'
-import { isThinkingEnabled, reasoningEffortClamp, resolveReasoningEffort } from '@/lib/reasoning-effort'
+import { isThinkingEnabled, resolveReasoningEffort } from '@/lib/reasoning-effort'
 import { cn } from '@/lib/utils'
 
-import { ModelOptionsContent, resolveFastControl } from './model-edit-submenu'
+import { resolveFastControl } from './model-edit-submenu'
 import { ModelMenuCloseContext } from './model-menu-panel'
 import { type ModelMenuHostProps, useModelMenuController } from './use-model-menu-controller'
 
@@ -20,21 +17,48 @@ import { type ModelMenuHostProps, useModelMenuController } from './use-model-men
  * the hotter the accent color (neutral → cyan → iris → amber → rose).
  */
 export const EFFORTS = [
-  { id: 'minimal', label: 'Minimal', short: 'Min', color: 'var(--aro-ink-3)', desc: 'Direct response with minimal or zero hidden reasoning tokens. Fastest and most economical.' },
-  { id: 'low', label: 'Low', short: 'Low', color: 'var(--aro-cyan)', desc: 'Light reasoning for quick edits, renames, syntax adjustments and single-file fixes.' },
-  { id: 'medium', label: 'Medium', short: 'Med', color: 'var(--aro-iris-soft)', desc: 'Balanced thinking for day-to-day coding, feature logic, and debugging — the ideal default.' },
-  { id: 'high', label: 'High', short: 'High', color: 'var(--aro-amber)', desc: 'Deep multi-step reasoning for intricate bugs, complex refactors, and architectural choices.' },
-  { id: 'ultra', label: 'Ultra', short: 'Ultra', color: 'var(--aro-rose)', desc: 'Maximum reasoning power — formal proofs, wide migrations, and challenging systems problems.' },
+  {
+    id: 'minimal',
+    label: 'Minimal',
+    short: 'Min',
+    color: 'var(--aro-ink-3)',
+    desc: 'Direct response with minimal or zero hidden reasoning tokens. Fastest and most economical.'
+  },
+  {
+    id: 'low',
+    label: 'Low',
+    short: 'Low',
+    color: 'var(--aro-cyan)',
+    desc: 'Light reasoning for quick edits, renames, syntax adjustments and single-file fixes.'
+  },
+  {
+    id: 'medium',
+    label: 'Medium',
+    short: 'Med',
+    color: 'var(--aro-iris-soft)',
+    desc: 'Balanced thinking for day-to-day coding, feature logic, and debugging — the ideal default.'
+  },
+  {
+    id: 'high',
+    label: 'High',
+    short: 'High',
+    color: 'var(--aro-amber)',
+    desc: 'Deep multi-step reasoning for intricate bugs, complex refactors, and architectural choices.'
+  },
+  {
+    id: 'ultra',
+    label: 'Ultra',
+    short: 'Ultra',
+    color: 'var(--aro-rose)',
+    desc: 'Maximum reasoning power — formal proofs, wide migrations, and challenging systems problems.'
+  }
 ] as const
 
 /**
  * Determines whether a model supports reasoning effort / extended thinking.
  * Prioritizes backend capabilities when reported, and falls back to authoritative family heuristics.
  */
-export function checkModelSupportsReasoning(
-  model: string,
-  caps?: ModelCapabilities
-): boolean {
+export function checkModelSupportsReasoning(model: string, caps?: ModelCapabilities): boolean {
   if (typeof caps?.reasoning === 'boolean') {
     return caps.reasoning
   }
@@ -99,7 +123,9 @@ export function resolveMaxReasoningEffortIndex(
   if (typeof explicitMax === 'string') {
     const idx = EFFORTS.findIndex(e => e.id === explicitMax.toLowerCase())
 
-    if (idx !== -1) {return idx}
+    if (idx !== -1) {
+      return idx
+    }
   }
 
   const normModel = (model || '').toLowerCase()
@@ -109,15 +135,25 @@ export function resolveMaxReasoningEffortIndex(
   if (effortWire) {
     const normWire = effortWire.toLowerCase()
 
-    if (normWire === 'minimal') {return 0}
+    if (normWire === 'minimal') {
+      return 0
+    }
 
-    if (normWire === 'low') {return 1}
+    if (normWire === 'low') {
+      return 1
+    }
 
-    if (normWire === 'medium') {return 2}
+    if (normWire === 'medium') {
+      return 2
+    }
 
-    if (normWire === 'high' || normWire === 'xhigh') {return 3}
+    if (normWire === 'high' || normWire === 'xhigh') {
+      return 3
+    }
 
-    if (normWire === 'max' || normWire === 'ultra') {return 4}
+    if (normWire === 'max' || normWire === 'ultra') {
+      return 4
+    }
   }
 
   // Known bounded thinking models that top out at High (index 3)
@@ -145,24 +181,17 @@ export function resolveMaxReasoningEffortIndex(
  */
 function EffortSliderRow({
   effort,
-  effortWire,
   maxEffortIdx,
-  model,
   onSetEffort,
   supportsReasoning,
   thinkingOn
 }: {
   effort: string
-  effortWire?: string
   maxEffortIdx: number
-  model: string
   onSetEffort: (value: string) => void
   supportsReasoning: boolean
   thinkingOn: boolean
 }) {
-  const { t } = useI18n()
-  const copy = t.shell.modelOptions
-
   const targetIdx =
     effort === 'minimal'
       ? 0
@@ -189,27 +218,44 @@ function EffortSliderRow({
 
   const currentDisplayIdx = isDraggingRef.current ? localIdx : clampedActiveIdx
 
-  const effortLevel = supportsReasoning && thinkingOn
-    ? (EFFORTS[currentDisplayIdx] ?? EFFORTS[2])
-    : !thinkingOn && supportsReasoning
-      ? { id: 'off', label: 'Thinking Off', short: 'Off', color: 'var(--aro-ink-4)', desc: 'Reasoning is turned off. Click any level below or toggle thinking to enable.' }
-      : { id: 'none', label: 'Disabled', short: 'Off', color: 'var(--aro-ink-4)', desc: 'Reasoning is not supported by this model.' }
+  const effortLevel =
+    supportsReasoning && thinkingOn
+      ? (EFFORTS[currentDisplayIdx] ?? EFFORTS[2])
+      : !thinkingOn && supportsReasoning
+        ? {
+            id: 'off',
+            label: 'Thinking Off',
+            short: 'Off',
+            color: 'var(--aro-ink-4)',
+            desc: 'Reasoning is turned off. Click any level below or toggle thinking to enable.'
+          }
+        : {
+            id: 'none',
+            label: 'Disabled',
+            short: 'Off',
+            color: 'var(--aro-ink-4)',
+            desc: 'Reasoning is not supported by this model.'
+          }
 
-  const clamp = reasoningEffortClamp(effort, effortWire)
   const lastEffortIndex = EFFORTS.length - 1
   const fillPct = supportsReasoning && thinkingOn ? (currentDisplayIdx / lastEffortIndex) * 100 : 0
   const maxPct = supportsReasoning ? (effectiveMaxIdx / lastEffortIndex) * 100 : 0
 
-  const handleSelectIdx = useCallback((idx: number) => {
-    if (!supportsReasoning) {return}
-    const clamped = Math.min(Math.max(0, idx), effectiveMaxIdx)
-    setLocalIdx(clamped)
-    const next = EFFORTS[clamped]
+  const handleSelectIdx = useCallback(
+    (idx: number) => {
+      if (!supportsReasoning) {
+        return
+      }
+      const clamped = Math.min(Math.max(0, idx), effectiveMaxIdx)
+      setLocalIdx(clamped)
+      const next = EFFORTS[clamped]
 
-    if (next) {
-      onSetEffort(next.id)
-    }
-  }, [supportsReasoning, effectiveMaxIdx, onSetEffort])
+      if (next) {
+        onSetEffort(next.id)
+      }
+    },
+    [supportsReasoning, effectiveMaxIdx, onSetEffort]
+  )
 
   return (
     <div
@@ -228,60 +274,9 @@ function EffortSliderRow({
             <span className="ml-1 text-[10px] font-normal text-aro-ink-4 italic">(Paused)</span>
           )}
         </span>
-
-        {/* Clickable bars badge */}
-        <div aria-hidden className="effort-bars">
-          {EFFORTS.map((eff, i) => {
-            const isSupported = supportsReasoning && i <= effectiveMaxIdx
-            const isOn = supportsReasoning && thinkingOn && i <= currentDisplayIdx
-
-            return (
-              <i
-                className={cn(isOn && 'is-on', !isSupported && 'is-unsupported')}
-                key={i}
-                style={{ height: `${4 + i * 2}px` }}
-                title={
-                  isSupported
-                    ? eff.label
-                    : `${eff.label} (${supportsReasoning ? `Max supported by ${model} is ${EFFORTS[effectiveMaxIdx].label}` : 'Not supported'})`
-                }
-              />
-            )
-          })}
-        </div>
       </div>
 
-      {/* Discrete Segmented Quick-Pick Buttons */}
-      <div aria-label={copy.effort} className="grid grid-cols-5 gap-1 my-1" role="group">
-        {EFFORTS.map((eff, i) => {
-          const isSupported = supportsReasoning && i <= effectiveMaxIdx
-          const isActive = supportsReasoning && thinkingOn && i === currentDisplayIdx
-
-          return (
-            <button
-              aria-label={`Set effort to ${eff.label}`}
-              aria-pressed={isActive}
-              className={cn(
-                'flex flex-col items-center justify-center rounded-[5px] py-1 px-0.5 text-center transition-all cursor-pointer select-none',
-                isActive
-                  ? 'bg-aro-raise text-aro-ink font-semibold shadow-2xs border border-(--effort-color)'
-                  : isSupported
-                    ? 'text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink border border-transparent'
-                    : 'text-aro-ink-4 opacity-40 cursor-not-allowed border border-transparent'
-              )}
-              disabled={!isSupported}
-              key={eff.id}
-              onClick={() => handleSelectIdx(i)}
-              type="button"
-            >
-              <span className="text-[10.5px] tracking-tight">{eff.short}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Smooth Range Slider */}
-      <div className="relative mt-1 mb-0.5 px-0.5">
+      <div className="relative mt-1.5 mb-0.5 px-0.5">
         <input
           aria-label={`Reasoning effort — ${effortLevel.label}`}
           aria-valuetext={effortLevel.label}
@@ -316,20 +311,6 @@ function EffortSliderRow({
             : 'Ultra'}
         </span>
       </div>
-
-      <p className="effort-slider-desc">{effortLevel.desc}</p>
-
-      {supportsReasoning && effectiveMaxIdx < EFFORTS.length - 1 ? (
-        <p className="mt-1 font-aro-mono text-[9.5px] text-aro-amber">
-          Max reasoning supported by {model}: {EFFORTS[effectiveMaxIdx].label}
-        </p>
-      ) : null}
-
-      {clamp ? (
-        <p className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-4">
-          {copy.sendsOnRoute(typeof copy[clamp.wire as keyof typeof copy] === 'string' ? (copy[clamp.wire as keyof typeof copy] as string) : clamp.wire)}
-        </p>
-      ) : null}
     </div>
   )
 }
@@ -344,11 +325,11 @@ function EffortSliderRow({
 export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & { children?: ReactNode }) {
   const { t } = useI18n()
   const copy = t.shell.modelOptions
-  const navigate = useNavigate()
   const { controller, defaultEffort, modelOptions } = useModelMenuController(props)
   const closeParentMenu = useContext(ModelMenuCloseContext)
   const { effort, effortWire, fast, model, provider } = controller.current
   const [expanded, setExpanded] = useState(false)
+  const [controlsOpen, setControlsOpen] = useState(false)
 
   const caps = currentModelCapabilities(modelOptions.data, provider, model)
   const supportsReasoning = checkModelSupportsReasoning(model, caps)
@@ -371,19 +352,33 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
         : null,
     [model, modelOptions.data, provider, caps?.fast, fast]
   )
+  const effectiveFastControl = fastControl ?? { kind: 'none' as const }
 
   const row = { isActive: true, model, provider }
+
+  const setFast = (enabled: boolean) => {
+    if (effectiveFastControl.kind === 'variant') {
+      controller.setOptions({ fast: enabled }, row)
+      void controller.select(enabled ? effectiveFastControl.fastId : effectiveFastControl.baseId, provider)
+    } else if (effectiveFastControl.kind === 'param') {
+      controller.setOptions({ fast: enabled }, row)
+    }
+  }
 
   if (!model) {
     return <div className="px-3 py-3 text-xs text-aro-ink-3">{copy.noOptions}</div>
   }
 
-  const monogram = providerDisplayName(provider || '').trim().charAt(0).toUpperCase() || 'A'
+  const monogram =
+    providerDisplayName(provider || '')
+      .trim()
+      .charAt(0)
+      .toUpperCase() || 'A'
   const isLocalProvider = provider?.toLowerCase().includes('local') || provider?.toLowerCase().includes('ollama')
 
   return (
     <div data-aro-model-menu="" data-expanded={expanded ? '' : undefined}>
-      {/* Head: Monogram + Model Name + Provider line; clicking toggles catalog. */}
+      {/* Head: the selected model is the primary control; click to browse. */}
       <button
         className="model-menu-head"
         data-testid="aro-model-head-button"
@@ -427,106 +422,69 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
         <div className="model-menu-compact px-0.5 pb-1 pt-0.5">
           {supportsReasoning ? (
             <>
-              <EffortSliderRow
-                effort={effortValue}
-                effortWire={effortWire}
-                maxEffortIdx={maxEffortIdx}
-                model={model}
-                onSetEffort={value => {
-                  controller.setOptions({ effort: value }, row)
-                }}
-                supportsReasoning={supportsReasoning}
-                thinkingOn={thinkingOn}
-              />
+              <button
+                aria-expanded={controlsOpen}
+                aria-label={`Reasoning controls: ${thinkingOn ? (EFFORTS.find(item => item.id === effortValue)?.label ?? 'Medium') : 'Off'}`}
+                className="flex h-7 w-full items-center gap-2 rounded-[6px] px-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+                onClick={() => setControlsOpen(value => !value)}
+                type="button"
+              >
+                <IconBrain className="size-[13px] shrink-0 text-aro-plum" size={13} />
+                <span className="min-w-0 flex-1 text-left">{copy.thinking}</span>
+                <span className="text-[10px] text-aro-ink-4">
+                  {thinkingOn ? (EFFORTS.find(item => item.id === effortValue)?.label ?? 'Medium') : 'Off'}
+                </span>
+                <IconChevronDown
+                  className={cn('size-3 text-aro-ink-4 transition-transform', controlsOpen && 'rotate-180')}
+                  size={12}
+                />
+              </button>
 
-              {showThinkingToggle ? (
-                <div className="model-thinking-row">
-                  <IconBrain className="size-[13px] shrink-0 text-aro-plum" size={13} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-medium text-aro-ink-2">Thinking</span>
-                    <span className="block text-[10px] leading-tight text-aro-ink-4">
-                      {thinkingOn
-                        ? "Show the model's reasoning before it replies"
-                        : 'Thinking is disabled — replies without reasoning chain'}
-                    </span>
-                  </span>
-                  <Toggle
-                    aria-label="Toggle thinking"
-                    checked={thinkingOn}
-                    onChange={() =>
-                      controller.setOptions(
-                        { effort: thinkingOn ? 'none' : effortValue || defaultEffort },
-                        row
-                      )
-                    }
-                    size="sm"
+              {controlsOpen && (
+                <div className="mt-1 border-t border-aro-line-soft px-1 pt-1">
+                  <EffortSliderRow
+                    effort={effortValue}
+                    maxEffortIdx={maxEffortIdx}
+                    onSetEffort={value => controller.setOptions({ effort: value }, row)}
+                    supportsReasoning={supportsReasoning}
+                    thinkingOn={thinkingOn}
                   />
+
+                  {showThinkingToggle ? (
+                    <div className="flex items-center gap-2 border-t border-aro-line-soft px-0.5 py-1.5">
+                      <span className="min-w-0 flex-1 text-[10.5px] text-aro-ink-3">{copy.thinking}</span>
+                      <Toggle
+                        aria-label="Toggle thinking"
+                        checked={thinkingOn}
+                        onChange={() =>
+                          controller.setOptions({ effort: thinkingOn ? 'none' : effortValue || defaultEffort }, row)
+                        }
+                        size="sm"
+                      />
+                    </div>
+                  ) : null}
+
+                  {effectiveFastControl.kind !== 'none' && (
+                    <div className="flex items-center gap-2 border-t border-aro-line-soft px-0.5 py-1.5">
+                      <span className="min-w-0 flex-1 text-[10.5px] text-aro-ink-3">{copy.fast}</span>
+                      <Toggle aria-label={copy.fast} checked={effectiveFastControl.on} onChange={setFast} size="sm" />
+                    </div>
+                  )}
                 </div>
-              ) : null}
+              )}
             </>
           ) : (
-            <div className="mx-0.5 my-1.5 rounded-[8px] border border-aro-line-soft bg-aro-raise/40 p-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-aro-cyan shrink-0" />
-                <span className="text-[12px] font-semibold text-aro-ink">Direct Response Model</span>
-                <span className="ml-auto font-aro-mono text-[9px] uppercase tracking-wide text-aro-ink-4">
-                  Standard
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] leading-relaxed text-aro-ink-3">
-                {model} generates responses directly without an adjustable reasoning ladder.
-              </p>
+            <div className="flex items-center justify-between gap-2 px-1 py-1 text-[10px] text-aro-ink-4">
+              <span>Direct response model</span>
               <button
-                className="mt-2 flex w-full items-center justify-between rounded-[5px] bg-aro-hover/60 px-2 py-1 text-[11px] font-medium text-aro-iris hover:bg-aro-hover hover:text-aro-iris-soft transition-colors cursor-pointer"
+                className="shrink-0 text-aro-iris hover:text-aro-iris-soft"
                 onClick={() => setExpanded(true)}
                 type="button"
               >
-                <span>Browse reasoning models (o3, Claude 3.7, R1)</span>
-                <span>→</span>
+                Browse models
               </button>
             </div>
           )}
-
-          {fastControl && fastControl.kind !== 'none' ? (
-            <ModelOptionsContent
-              canDisableReasoning={canDisableReasoning}
-              defaultEffort={defaultEffort}
-              effort={effort}
-              effortWire={effortWire}
-              fastControl={fastControl}
-              isActive
-              model={model}
-              onSelectModel={nextModel => controller.select(nextModel, provider)}
-              onSetOptions={patch => controller.setOptions(patch, row)}
-              provider={provider}
-              reasoning={supportsReasoning}
-            />
-          ) : null}
-
-          <div className="flex items-center gap-1 mt-1 pt-1 border-t border-aro-line-soft">
-            <button
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-[6px] py-1.5 text-[11.5px] font-medium text-aro-ink-2 bg-aro-raise/60 hover:bg-aro-raise hover:text-aro-ink transition-colors cursor-pointer"
-              onClick={() => setExpanded(true)}
-              type="button"
-            >
-              Change model…
-            </button>
-            <ModelMenuCloseContext.Consumer>
-              {close => (
-                <button
-                  className="flex items-center justify-center gap-1.5 rounded-[6px] px-2.5 py-1.5 text-[11.5px] text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink-2 transition-colors cursor-pointer"
-                  onClick={() => {
-                    close?.()
-                    void navigate(`${SETTINGS_ROUTE}?tab=providers`)
-                  }}
-                  type="button"
-                >
-                  <IconPlus size={11} />
-                  Providers
-                </button>
-              )}
-            </ModelMenuCloseContext.Consumer>
-          </div>
         </div>
       )}
     </div>

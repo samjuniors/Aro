@@ -642,11 +642,11 @@
 
 :root[data-aro-ui='true'] [data-slot='composer-surface'] .model-control {
   display: inline-flex;
-  height: 30px;
+  height: 28px;
   align-items: center;
   gap: 4px;
-  border-radius: 6px;
-  padding: 0 5px;
+  border-radius: 9999px;
+  padding: 0 8px;
   font-size: 11.5px;
   color: var(--aro-ink-2);
   white-space: nowrap;
@@ -2636,27 +2636,29 @@
 }
 
 :root[data-aro-ui='true'] .codex-changes-split-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 250px;
+  display: flex;
+  flex-direction: row;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 @media (max-width: 580px) {
   :root[data-aro-ui='true'] .codex-changes-split-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) auto;
+    flex-direction: column;
   }
 }
 
 :root[data-aro-ui='true'] .codex-changes-diff-viewport {
+  flex: 1 1 0%;
+  min-width: 0;
   overflow-y: auto;
   background: var(--aro-base);
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid var(--aro-line-soft);
+  transition: flex 0.28s cubic-bezier(0.16, 1, 0.3, 1), width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root[data-aro-ui='true'] .codex-changes-empty-stage {
@@ -2697,10 +2699,32 @@
 }
 
 :root[data-aro-ui='true'] .codex-changes-files-sidebar {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--aro-raise);
   overflow: hidden;
+  border-left: 1px solid var(--aro-line-soft);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              min-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s ease,
+              border-color 0.2s ease;
+  will-change: transform, width;
+}
+
+:root[data-aro-ui='true'] .codex-changes-files-sidebar.is-hidden {
+  transform: translateX(100%);
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0;
+  border-left: 1px solid transparent;
+  pointer-events: none;
 }
 
 :root[data-aro-ui='true'] .codex-changes-filter-box {

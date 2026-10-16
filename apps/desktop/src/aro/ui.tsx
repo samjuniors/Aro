@@ -468,17 +468,20 @@ export function Toggle({
   className?: string
   'aria-label'?: string
 }) {
-  const w = size === 'sm' ? 30 : 36
-  const h = size === 'sm' ? 17 : 20
+  const w = size === 'sm' ? 30 : 38
+  const h = size === 'sm' ? 18 : 22
   const k = h - 4
+  const travel = w - k - 4
 
   return (
     <button
       aria-checked={checked}
       aria-label={ariaLabel}
       className={cn(
-        'relative shrink-0 cursor-pointer rounded-full transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40',
-        checked ? 'bg-aro-iris' : 'bg-aro-line-strong',
+        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aro-iris/40 disabled:pointer-events-none disabled:opacity-40',
+        checked
+          ? 'bg-aro-iris shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]'
+          : 'bg-black/15 dark:bg-white/15 border border-black/5 dark:border-white/10',
         className
       )}
       disabled={disabled}
@@ -489,8 +492,12 @@ export function Toggle({
     >
       <span
         aria-hidden
-        className="absolute top-[2px] left-0 rounded-full bg-white shadow-aro-e1 transition-transform duration-200"
-        style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 2 : 2}px)` }}
+        className="pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{
+          width: k,
+          height: k,
+          transform: `translateX(${checked ? travel : 0}px)`
+        }}
       />
     </button>
   )

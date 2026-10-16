@@ -4164,6 +4164,9 @@ export const deOverrides = {
   },
   composer: {
     message: 'Nachricht',
+    chooseProject: 'Projekt auswählen',
+    projectAttachHint:
+      'Wählen Sie oben im Eingabefeld ein Projekt aus oder tippen Sie einfach los — Sie können später noch eins hinzufügen.',
     wakingProfile: profile => `Wecke ${profile}…`,
     placeholderStarting: 'Hermes wird gestartet…',
     placeholderReconnecting: 'Verbindung zu Hermes wird wiederhergestellt…',
@@ -5395,6 +5398,7 @@ export const deOverrides = {
     closeAll: 'Alle schließen',
     newSessionTab: 'Neuer Session-Tab',
     newTab: 'Neuer Tab',
+    newTabInFullView: 'Neuer Tab in der Vollansicht',
     pluginDisabled: pluginId => `Plugin "${pluginId}" deaktiviert`,
     pluginDisabledBody: 'Aktivieren Sie es wieder unter Einstellungen → Plugins, um das Panel zurückzuholen.',
     missingPane: paneId => `fehlendes Panel: ${paneId}`,

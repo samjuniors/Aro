@@ -5,12 +5,12 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 const switchVariants = cva(
-  'peer inline-flex shrink-0 items-center rounded-full border border-[color-mix(in_srgb,var(--dt-foreground)_18%,transparent)] bg-[color-mix(in_srgb,var(--dt-background)_58%,var(--dt-input))] shadow-[inset_0_0_0_0.0625rem_color-mix(in_srgb,var(--dt-foreground)_8%,transparent)] transition-colors outline-none focus-visible:border-ring focus-visible:ring-[0.1875rem] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-transparent data-[state=checked]:bg-primary disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
+  'peer inline-flex shrink-0 items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 data-[state=unchecked]:bg-black/15 dark:data-[state=unchecked]:bg-white/15 data-[state=unchecked]:border data-[state=unchecked]:border-black/5 dark:data-[state=unchecked]:border-white/10 data-[state=checked]:border-transparent data-[state=checked]:bg-primary disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
   {
     variants: {
       size: {
-        default: 'h-5 w-9',
-        xs: 'h-4 w-7'
+        default: 'h-[22px] w-[38px]',
+        xs: 'h-[18px] w-[30px]'
       }
     },
     defaultVariants: {
@@ -20,12 +20,12 @@ const switchVariants = cva(
 )
 
 const switchThumbVariants = cva(
-  'pointer-events-none block rounded-full bg-foreground shadow-[0_0.0625rem_0.1875rem_color-mix(in_srgb,var(--dt-background)_50%,transparent)] ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:bg-background',
+  'pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] ring-0 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] data-[state=unchecked]:translate-x-0',
   {
     variants: {
       size: {
-        default: 'size-4 data-[state=checked]:translate-x-4',
-        xs: 'size-3 data-[state=checked]:translate-x-3.5'
+        default: 'size-[18px] data-[state=checked]:translate-x-[16px]',
+        xs: 'size-[14px] data-[state=checked]:translate-x-[12px]'
       }
     },
     defaultVariants: {

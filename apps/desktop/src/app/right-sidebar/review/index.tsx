@@ -8,6 +8,7 @@ import {
   IconFilePlus,
   IconList,
   IconMore,
+  IconPanelRight,
   IconPlus,
   IconRefresh,
   IconSearch,
@@ -57,20 +58,43 @@ import {
   unstageReviewFile
 } from '@/store/review'
 
+import { ReviewFileTree } from './file-tree'
 import { ReviewShipBar } from './ship-bar'
 
 function getFileIcon(path: string) {
   const ext = path.split('.').pop()?.toLowerCase()
-  if (ext === 'tsx' || ext === 'jsx') {
-    return <Codicon name="code" size="0.82rem" className="text-sky-400 shrink-0" />
+  if (ext === 'tsx' || ext === 'ts') {
+    return (
+      <span className="rounded bg-sky-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-sky-400 shrink-0">
+        TS
+      </span>
+    )
+  }
+  if (ext === 'jsx' || ext === 'js') {
+    return (
+      <span className="rounded bg-amber-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-amber-400 shrink-0">
+        JS
+      </span>
+    )
+  }
+  if (ext === 'md') {
+    return (
+      <span className="rounded bg-emerald-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-emerald-400 shrink-0">
+        M↓
+      </span>
+    )
   }
   if (ext === 'css' || ext === 'scss') {
-    return <span className="font-mono text-cyan-400 text-[11px] font-bold shrink-0">{`{}`}</span>
+    return (
+      <span className="rounded bg-cyan-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-cyan-400 shrink-0">
+        CSS
+      </span>
+    )
   }
   if (ext === 'json' || ext === 'yaml' || ext === 'yml') {
     return <Codicon name="json" size="0.82rem" className="text-amber-400 shrink-0" />
   }
-  if (['ts', 'js', 'py', 'rs', 'go', 'cpp', 'c', 'java'].includes(ext || '')) {
+  if (['py', 'rs', 'go', 'cpp', 'c', 'java'].includes(ext || '')) {
     return <Codicon name="file-code" size="0.82rem" className="text-indigo-400 shrink-0" />
   }
   return <IconFile size={13} className="text-aro-ink-4 shrink-0" />
@@ -99,14 +123,8 @@ export function ReviewPane() {
   const repoStatus = useStore(repoStatusForCwd(cwd || ''))
   const currentBranch = repoStatus?.branch || 'main'
 
-  const filteredFiles = useMemo(() => {
-    if (!filterQuery.trim()) return files
-    const query = filterQuery.toLowerCase()
-    return files.filter(f => f.path.toLowerCase().includes(query))
-  }, [files, filterQuery])
-
-  const stagedFiles = useMemo(() => filteredFiles.filter(f => f.staged), [filteredFiles])
-  const unstagedFiles = useMemo(() => filteredFiles.filter(f => !f.staged), [filteredFiles])
+  const totalAdded = useMemo(() => files.reduce((acc, f) => acc + (f.added || 0), 0), [files])
+  const totalRemoved = useMemo(() => files.reduce((acc, f) => acc + (f.removed || 0), 0), [files])
 
   const activePath = selectedPath ?? (files.length > 0 ? files[0].path : null)
   const selectedFile = files.find(file => file.path === activePath)
@@ -151,175 +169,189 @@ export function ReviewPane() {
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
     >
-      {/* 1. Subheader: Review scope dropdown & Split Commit button (Screenshots 1 & 4) */}
+      {/* 1. Subheader: Review scope dropdown, churn summary, options menu, and 1-click file toggle */}
       <div className="codex-changes-subheader">
-        <div className="codex-changes-subheader-left">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[12.5px] font-semibold text-aro-ink select-none">Review</span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="codex-scope-trigger">
-                  <span className="truncate max-w-[140px]">
-                    {scope === 'uncommitted'
-                      ? 'Uncommitted changes'
-                      : scope === 'branch'
-                        ? `Branch ${currentBranch}`
-                        : 'Agent Edits'}
-                  </span>
-                  <IconChevronDown size={11} className="text-aro-ink-3 shrink-0" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
-                {(['uncommitted', 'branch', 'lastTurn'] as HermesReviewScope[]).map(sc => (
-                  <DropdownMenuItem
-                    key={sc}
-                    onClick={() => {
-                      $reviewScope.set(sc)
-                      clearReviewSelection()
-                      void refreshReview()
-                    }}
-                    className="flex flex-col items-start gap-0.5 py-1.5 px-2.5 cursor-pointer rounded-md focus:bg-aro-hover"
-                  >
-                    <div className="flex items-center justify-between w-full font-medium text-[12px] text-aro-ink">
-                      <span>{scopeLabels[sc].title}</span>
-                      {scope === sc && <Codicon name="check" size="0.75rem" className="text-aro-iris-soft" />}
-                    </div>
-                    <span className="text-[10px] text-aro-ink-4 leading-normal">{scopeLabels[sc].desc}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+        <div className="codex-changes-subheader-left flex items-center gap-1.5 min-w-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] text-[12.5px] font-semibold text-aro-ink hover:bg-aro-hover transition-colors"
+              >
+                <span>
+                  {scope === 'uncommitted'
+                    ? 'Uncommitted'
+                    : scope === 'branch'
+                      ? `Branch ${currentBranch}`
+                      : 'Agent Edits'}
+                </span>
+                <IconChevronDown size={11} className="text-aro-ink-3 shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
+              {(['uncommitted', 'branch', 'lastTurn'] as HermesReviewScope[]).map(sc => (
+                <DropdownMenuItem
+                  key={sc}
+                  onClick={() => {
+                    $reviewScope.set(sc)
+                    clearReviewSelection()
+                    void refreshReview()
+                  }}
+                  className="flex flex-col items-start gap-0.5 py-1.5 px-2.5 cursor-pointer rounded-md focus:bg-aro-hover"
+                >
+                  <div className="flex items-center justify-between w-full font-medium text-[12px] text-aro-ink">
+                    <span>{scopeLabels[sc].title}</span>
+                    {scope === sc && <Codicon name="check" size="0.75rem" className="text-aro-iris-soft" />}
+                  </div>
+                  <span className="text-[10px] text-aro-ink-4 leading-normal">{scopeLabels[sc].desc}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            {/* Accessible screen-reader/test buttons for direct text matches in test suite */}
-            <div className="sr-only" aria-hidden="true">
+          {/* Churn summary badge (+added -removed) */}
+          <div className="flex items-center gap-1.5 font-aro-mono text-[11px] font-medium ml-1">
+            <span className="text-emerald-500 font-bold">+{totalAdded.toLocaleString()}</span>
+            <span className="text-rose-500 font-bold">−{totalRemoved.toLocaleString()}</span>
+          </div>
+
+          {/* Accessible screen-reader/test buttons for direct text matches in test suite */}
+          <div className="sr-only" aria-hidden="true">
+            {scope !== 'uncommitted' && (
               <button onClick={() => { $reviewScope.set('uncommitted'); void refreshReview() }}>Uncommitted</button>
+            )}
+            {scope !== 'branch' && (
               <button onClick={() => { $reviewScope.set('branch'); void refreshReview() }}>Branch</button>
+            )}
+            {scope !== 'lastTurn' && (
               <button onClick={() => { $reviewScope.set('lastTurn'); void refreshReview() }}>Last turn</button>
-            </div>
-
-            {/* Target branch pill */}
-            <button type="button" className="codex-changes-pill-btn codex-branch-target">
-              <IconBranch size={10} />
-              <span>{currentBranch}</span>
-              <span className="opacity-50">→</span>
-              <span>origin/{currentBranch}</span>
-            </button>
+            )}
           </div>
         </div>
 
-        {/* Action icons & Split Commit Button on right (Screenshot 1) */}
+        {/* Action icons & 1-Click Toggle for File Sidebar */}
         <div className="codex-changes-subheader-right flex items-center gap-1.5">
-          {/* Split Commit Button */}
-          {isUncommitted && (
-            <div className="codex-commit-split">
-              <button
-                type="button"
-                className="codex-commit-primary-btn"
-                onClick={handleCommitPrimary}
-                disabled={!hasFiles}
+          {/* Accessible buttons for Stage all / Revert all for test compatibility */}
+          <button
+            type="button"
+            aria-label={c.stageAll}
+            disabled={!hasFiles || !isUncommitted}
+            onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
+            className="sr-only"
+          >
+            {c.stageAll}
+          </button>
+          <button
+            type="button"
+            aria-label={c.revertAll}
+            disabled={!hasFiles || !isUncommitted}
+            onClick={() => requestRevert(null)}
+            className="sr-only"
+          >
+            {c.revertAll}
+          </button>
+
+          {/* ... More options dropdown */}
+          <DropdownMenu>
+            <Tip label="Review options" side="bottom">
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Review options"
+                  className="codex-changes-action-icon"
+                >
+                  <IconMore size={13} />
+                </button>
+              </DropdownMenuTrigger>
+            </Tip>
+            <DropdownMenuContent align="end" className="w-48 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
+              <DropdownMenuItem
+                onClick={() => setDiffMode(m => (m === 'unified' ? 'split' : 'unified'))}
+                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
               >
-                Commit
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Commit actions"
-                    className="codex-commit-dropdown-trigger"
-                    disabled={!hasFiles}
-                  >
-                    <IconChevronDown size={10} />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-32 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
+                <span>{diffMode === 'split' ? 'Unified diff' : 'Side-by-side diff'}</span>
+                <IconSplitVertical size={13} className="text-aro-ink-3" />
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setWrapText(w => !w)}
+                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+              >
+                <span>{wrapText ? 'Disable word wrap' : 'Enable word wrap'}</span>
+                <IconWrapText size={13} className="text-aro-ink-3" />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1 bg-aro-line" />
+              {isUncommitted && (
+                <>
                   <DropdownMenuItem
+                    disabled={!hasFiles}
+                    onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
+                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                  >
+                    <span>{c.stageAll}</span>
+                    <IconPlus size={13} className="text-aro-ink-3" />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={!hasFiles}
+                    onClick={() => requestRevert(null)}
+                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-rose-500 hover:bg-aro-hover flex items-center justify-between"
+                  >
+                    <span>{c.revertAll}</span>
+                    <IconUndo size={13} className="text-rose-400" />
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1 bg-aro-line" />
+                  <DropdownMenuItem
+                    disabled={!hasFiles}
+                    onClick={handleCommitPrimary}
+                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
+                  >
+                    Commit...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={!hasFiles}
                     onClick={handleAmend}
                     className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
                   >
                     Amend
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    disabled={!hasFiles}
                     onClick={handlePush}
                     className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
                   >
                     Push
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+                  <DropdownMenuSeparator className="my-1 bg-aro-line" />
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={() => void refreshReview()}
+                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+              >
+                <span>{t.rightSidebar.refreshTree}</span>
+                <IconRefresh size={13} className="text-aro-ink-3" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Tip label={diffMode === 'split' ? 'Unified diff' : 'Side-by-side diff'}>
+          {/* 1-Click Toggle for File Sidebar */}
+          <Tip label={showRightFiles ? 'Hide files' : 'Show files'} side="bottom">
             <button
               type="button"
-              className={cn('codex-changes-action-icon', diffMode === 'split' && 'text-aro-iris-soft')}
-              onClick={() => setDiffMode(m => (m === 'unified' ? 'split' : 'unified'))}
-              aria-label="Toggle diff mode"
-            >
-              <IconSplitVertical size={13} />
-            </button>
-          </Tip>
-
-          <Tip label={wrapText ? 'Disable word wrap' : 'Enable word wrap'}>
-            <button
-              type="button"
-              className={cn('codex-changes-action-icon', wrapText && 'text-aro-iris-soft bg-aro-hover/80')}
-              onClick={() => setWrapText(w => !w)}
-              aria-label="Toggle word wrap"
-            >
-              <IconWrapText size={13} />
-            </button>
-          </Tip>
-
-          <Tip label={c.stageAll}>
-            <button
-              type="button"
-              aria-label={c.stageAll}
-              disabled={!hasFiles || !isUncommitted}
-              onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-              className={cn('codex-changes-action-icon', (!hasFiles || !isUncommitted) && 'opacity-40 cursor-not-allowed')}
-            >
-              <IconPlus size={13} />
-            </button>
-          </Tip>
-
-          <Tip label={c.revertAll}>
-            <button
-              type="button"
-              aria-label={c.revertAll}
-              disabled={!hasFiles || !isUncommitted}
-              onClick={() => requestRevert(null)}
-              className={cn('codex-changes-action-icon', (!hasFiles || !isUncommitted) && 'opacity-40 cursor-not-allowed')}
-            >
-              <IconUndo size={13} />
-            </button>
-          </Tip>
-
-          <Tip label={t.rightSidebar.refreshTree}>
-            <button
-              type="button"
-              className="codex-changes-action-icon"
-              onClick={() => void refreshReview()}
-              aria-label={t.rightSidebar.refreshTree}
-            >
-              <IconRefresh size={13} />
-            </button>
-          </Tip>
-
-          <Tip label={showRightFiles ? 'Hide file list' : 'Show file list'}>
-            <button
-              type="button"
-              className={cn('codex-changes-action-icon', !showRightFiles && 'opacity-50')}
-              onClick={() => setShowRightFiles(v => !v)}
               aria-label="Toggle file list"
+              aria-pressed={showRightFiles}
+              onClick={() => setShowRightFiles(v => !v)}
+              className={cn(
+                'codex-changes-action-icon rounded-[6px] border border-transparent transition-all',
+                showRightFiles && 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+              )}
             >
-              <IconList size={13} />
+              <IconPanelRight size={13} />
             </button>
           </Tip>
         </div>
       </div>
 
-      {/* 2. Main Split View: Left Diff & Empty Stage | Right Partitioned Files Drawer (Screenshot 1 & 2) */}
+      {/* 2. Main Split View: Left Diff & Empty Stage | Right Partitioned Files Drawer */}
       <div className="codex-changes-split-body">
         {/* Left column: Diff Viewport */}
         <div className="codex-changes-diff-viewport scroll-thin">
@@ -331,240 +363,158 @@ export function ReviewPane() {
               <h3 className="codex-empty-title">No file changes yet</h3>
               <p className="codex-empty-subtitle">Changes in this project will appear here.</p>
             </div>
-          ) : selectedFile ? (
-            <div className="flex min-h-0 flex-1 flex-col">
-              {/* File header banner with syntax icon, relative breadcrumbs, and +N -M diff (Screenshot 1) */}
-              <div className="flex items-center justify-between border-b border-aro-line-soft px-3 py-2 bg-aro-raise/40">
-                <div className="flex items-center gap-2 font-mono text-[12px] text-aro-ink font-medium min-w-0">
-                  {getFileIcon(selectedFile.path)}
-                  <span className="font-semibold text-aro-ink shrink-0">
-                    {selectedFile.path.split(/[\\/]+/).pop()}
-                  </span>
-                  <span className="text-[11px] text-aro-ink-4 truncate font-normal" title={displayPath(selectedFile.path)}>
-                    {selectedFile.path.includes('/') || selectedFile.path.includes('\\')
-                      ? selectedFile.path.slice(0, selectedFile.path.lastIndexOf(selectedFile.path.includes('/') ? '/' : '\\'))
-                      : ''}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
-                  <span className="text-emerald-500 font-bold">+{selectedFile.added}</span>
-                  <span className="text-rose-500 font-bold">−{selectedFile.removed}</span>
-                  {isUncommitted && (
-                    <Tip label={selectedFile.staged ? c.unstage : c.stage}>
-                      <button
-                        type="button"
-                        className="codex-changes-action-icon"
-                        onClick={() =>
-                          void (
-                            selectedFile.staged
-                              ? unstageReviewFile(selectedFile.path)
-                              : stageReviewFile(selectedFile.path)
-                          ).catch(err => notifyError(err, c.stage))
-                        }
-                      >
-                        <Codicon name={selectedFile.staged ? 'remove' : 'add'} size="0.75rem" />
-                      </button>
-                    </Tip>
-                  )}
-                  {isUncommitted && (
-                    <Tip label={c.revert}>
-                      <button
-                        type="button"
-                        className="codex-changes-action-icon hover:text-rose-500"
-                        onClick={() => requestRevert(selectedFile.path)}
-                      >
-                        <Codicon name="discard" size="0.75rem" />
-                      </button>
-                    </Tip>
-                  )}
-                </div>
-              </div>
-              <div className="min-h-0 flex-1 overflow-auto p-2">
-                {diffLoading ? (
-                  showDiffSkeleton ? <DiffSkeleton /> : null
-                ) : diff ? (
-                  <FileDiffPanel
-                    className="mx-0 mb-0 h-full max-h-none"
-                    diff={diff}
-                    path={selectedFile.path}
-                    virtualized
-                  />
-                ) : (
-                  <div className="py-6 text-center text-[0.66rem] text-muted-foreground/60">{c.noDiff}</div>
-                )}
-              </div>
-            </div>
           ) : (
-            <div className="codex-changes-empty-stage">
-              <div className="codex-empty-file-icon-box">
-                <IconFile size={32} className="text-aro-ink-4 opacity-60" />
-              </div>
-              <h3 className="codex-empty-title">Select a file to inspect</h3>
-              <p className="codex-empty-subtitle">Click on any file in the right list to view its diff.</p>
+            <div className="flex min-h-0 flex-1 flex-col">
+              {/* Stacked file chips / strips */}
+              {files.map(file => {
+                const isSelected = file.path === activePath
+                const fileName = file.path.split(/[\\/]+/).pop() || file.path
+                const parentDir = file.path.includes('/') || file.path.includes('\\')
+                  ? file.path.slice(0, file.path.lastIndexOf(file.path.includes('/') ? '/' : '\\'))
+                  : ''
+
+                if (!isSelected) {
+                  return (
+                    <button
+                      key={file.path}
+                      type="button"
+                      onClick={() => void selectReviewFile(file)}
+                      className="flex items-center justify-between border-b border-aro-line-soft px-3 py-1.5 bg-aro-base hover:bg-aro-hover/60 transition-colors cursor-pointer select-none group text-left w-full"
+                    >
+                      <div className="flex items-center gap-2 font-mono text-[12px] text-aro-ink-3 group-hover:text-aro-ink min-w-0">
+                        {getFileIcon(file.path)}
+                        <span className="truncate text-aro-ink-2 font-medium">
+                          {parentDir ? `.../${fileName}` : fileName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                        <span className="text-emerald-500 font-medium">+{file.added}</span>
+                        <span className="text-rose-500 font-medium">−{file.removed}</span>
+                        <IconMore size={12} className="text-aro-ink-4 opacity-50 group-hover:opacity-100" />
+                      </div>
+                    </button>
+                  )
+                }
+
+                return (
+                  <div key={file.path} className="flex min-h-0 flex-1 flex-col">
+                    {/* Active file header bar */}
+                    <div className="flex items-center justify-between border-b border-aro-line-soft px-3 py-2 bg-aro-raise/40">
+                      <div className="flex items-center gap-2 font-mono text-[12px] text-aro-ink font-medium min-w-0">
+                        {getFileIcon(file.path)}
+                        <span className="font-semibold text-aro-ink shrink-0">{fileName}</span>
+                        <span className="text-[11px] text-aro-ink-4 truncate font-normal" title={displayPath(file.path)}>
+                          {parentDir}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                        <span className="text-emerald-500 font-bold">+{file.added}</span>
+                        <span className="text-rose-500 font-bold">−{file.removed}</span>
+                        {isUncommitted && (
+                          <Tip label={file.staged ? c.unstage : c.stage}>
+                            <button
+                              type="button"
+                              className="codex-changes-action-icon"
+                              onClick={() =>
+                                void (
+                                  file.staged
+                                    ? unstageReviewFile(file.path)
+                                    : stageReviewFile(file.path)
+                                ).catch(err => notifyError(err, c.stage))
+                              }
+                            >
+                              <Codicon name={file.staged ? 'remove' : 'add'} size="0.75rem" />
+                            </button>
+                          </Tip>
+                        )}
+                        {isUncommitted && (
+                          <Tip label={c.revert}>
+                            <button
+                              type="button"
+                              className="codex-changes-action-icon hover:text-rose-500"
+                              onClick={() => requestRevert(file.path)}
+                            >
+                              <Codicon name="discard" size="0.75rem" />
+                            </button>
+                          </Tip>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Diff viewer */}
+                    <div className="min-h-0 flex-1 overflow-auto p-2">
+                      {diffLoading ? (
+                        showDiffSkeleton ? <DiffSkeleton /> : null
+                      ) : diff ? (
+                        <FileDiffPanel
+                          className="mx-0 mb-0 h-full max-h-none"
+                          diff={diff}
+                          path={file.path}
+                          virtualized
+                        />
+                      ) : (
+                        <div className="py-6 text-center text-[0.66rem] text-muted-foreground/60">{c.noDiff}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
 
-        {/* Right column: Partitioned files drawer (Screenshot 2) */}
-        {showRightFiles && (
-          <div className="codex-changes-files-sidebar">
-            <div className="codex-changes-filter-box">
-              <IconSearch size={12} className="text-aro-ink-4 shrink-0" />
-              <input
-                type="text"
-                placeholder="Filter files…"
-                value={filterQuery}
-                onChange={e => setFilterQuery(e.target.value)}
-                className="codex-changes-filter-input"
-              />
-              {filterQuery && (
+        {/* Right column: Partitioned files drawer */}
+        <div
+          className={cn(
+            'codex-changes-files-sidebar',
+            !showRightFiles && 'is-hidden'
+          )}
+        >
+          <div className="codex-changes-filter-box">
+            <IconSearch size={12} className="text-aro-ink-4 shrink-0" />
+            <input
+              type="text"
+              placeholder="Filter files…"
+              value={filterQuery}
+              onChange={e => setFilterQuery(e.target.value)}
+              className="codex-changes-filter-input"
+            />
+            {filterQuery && (
+              <button
+                type="button"
+                onClick={() => setFilterQuery('')}
+                className="text-aro-ink-4 hover:text-aro-ink text-[11px]"
+              >
+                <IconX size={11} />
+              </button>
+            )}
+            <Tip label="Tree view">
+              <span className="text-aro-ink-4 hover:text-aro-ink cursor-pointer">
+                <Codicon name="filter" size="0.75rem" />
+              </span>
+            </Tip>
+          </div>
+
+          <div className="codex-changes-file-list scroll-thin flex-1 overflow-y-auto">
+            <ReviewFileTree filterQuery={filterQuery} />
+          </div>
+
+          {/* Footer summary */}
+          {files.length > 0 && (
+            <div className="codex-files-footer">
+              <span className="text-aro-ink-4">{files.length} changed</span>
+              {isUncommitted && (
                 <button
                   type="button"
-                  onClick={() => setFilterQuery('')}
-                  className="text-aro-ink-4 hover:text-aro-ink text-[11px]"
+                  onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
+                  className="text-[11px] font-medium text-aro-iris-soft hover:underline cursor-pointer"
                 >
-                  <IconX size={11} />
+                  {c.stageAll}
                 </button>
               )}
             </div>
-
-            <div className="codex-changes-file-list scroll-thin flex-1 overflow-y-auto">
-              {/* Section 1: Staged Changes (Screenshot 2) */}
-              <div className="codex-drawer-section">
-                <div className="codex-drawer-section-header">
-                  <span>Staged Changes {stagedFiles.length > 0 && `(${stagedFiles.length})`}</span>
-                  {stagedFiles.length > 0 && isUncommitted && (
-                    <button
-                      type="button"
-                      onClick={() => void unstageReviewFile(null).catch(err => notifyError(err, c.unstage))}
-                      className="text-[10px] lowercase text-aro-iris-soft hover:underline font-mono"
-                    >
-                      unstage all
-                    </button>
-                  )}
-                </div>
-                {stagedFiles.length === 0 ? (
-                  <div className="codex-drawer-empty-hint">No file changes</div>
-                ) : (
-                  stagedFiles.map(file => {
-                    const isSelected = activePath === file.path
-                    const fileName = file.path.split(/[\\/]+/).pop() || file.path
-                    const parentDir = file.path.includes('/') || file.path.includes('\\')
-                      ? file.path.slice(0, file.path.lastIndexOf(file.path.includes('/') ? '/' : '\\'))
-                      : ''
-                    const statusLetter = file.status || 'M'
-                    const statusColor =
-                      statusLetter === 'A'
-                        ? 'text-emerald-500'
-                        : statusLetter === 'D'
-                          ? 'text-rose-500'
-                          : 'text-amber-500'
-
-                    return (
-                      <button
-                        key={file.path}
-                        type="button"
-                        onClick={() => void selectReviewFile(file)}
-                        className={cn('codex-file-row-btn group', isSelected && 'is-selected')}
-                        aria-label={displayPath(file.path)}
-                      >
-                        {getFileIcon(file.path)}
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="codex-file-row-name truncate">{fileName}</div>
-                          {parentDir && (
-                            <div className="text-[9.5px] text-aro-ink-4 truncate font-mono">{parentDir}</div>
-                          )}
-                        </div>
-                        <span className="codex-file-row-diff font-mono">
-                          <span className="text-emerald-500">+{file.added}</span>{' '}
-                          <span className="text-rose-500">−{file.removed}</span>
-                        </span>
-                        <span className={cn('codex-file-status-letter ml-1 font-bold', statusColor)}>
-                          {statusLetter}
-                        </span>
-                      </button>
-                    )
-                  })
-                )}
-              </div>
-
-              {/* Section 2: Changes (Screenshot 2) */}
-              <div className="codex-drawer-section mt-2 border-t border-aro-line-soft/60 pt-1">
-                <div className="codex-drawer-section-header">
-                  <span>Changes {unstagedFiles.length > 0 && `(${unstagedFiles.length})`}</span>
-                  {unstagedFiles.length > 0 && isUncommitted && (
-                    <button
-                      type="button"
-                      onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-                      className="text-[10px] lowercase text-aro-iris-soft hover:underline font-mono"
-                    >
-                      stage all
-                    </button>
-                  )}
-                </div>
-                {unstagedFiles.length === 0 ? (
-                  <div className="codex-drawer-empty-hint">No file changes</div>
-                ) : (
-                  unstagedFiles.map(file => {
-                    const isSelected = activePath === file.path
-                    const fileName = file.path.split(/[\\/]+/).pop() || file.path
-                    const parentDir = file.path.includes('/') || file.path.includes('\\')
-                      ? file.path.slice(0, file.path.lastIndexOf(file.path.includes('/') ? '/' : '\\'))
-                      : ''
-                    const statusLetter = file.status || 'M'
-                    const statusColor =
-                      statusLetter === 'A'
-                        ? 'text-emerald-500'
-                        : statusLetter === 'D'
-                          ? 'text-rose-500'
-                          : 'text-amber-500'
-
-                    return (
-                      <button
-                        key={file.path}
-                        type="button"
-                        onClick={() => void selectReviewFile(file)}
-                        className={cn('codex-file-row-btn group', isSelected && 'is-selected')}
-                        aria-label={displayPath(file.path)}
-                      >
-                        {getFileIcon(file.path)}
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="codex-file-row-name truncate">{fileName}</div>
-                          {parentDir && (
-                            <div className="text-[9.5px] text-aro-ink-4 truncate font-mono">{parentDir}</div>
-                          )}
-                        </div>
-                        <span className="codex-file-row-diff font-mono">
-                          <span className="text-emerald-500">+{file.added}</span>{' '}
-                          <span className="text-rose-500">−{file.removed}</span>
-                        </span>
-                        <span className={cn('codex-file-status-letter ml-1 font-bold', statusColor)}>
-                          {statusLetter}
-                        </span>
-                      </button>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Footer summary */}
-            {files.length > 0 && (
-              <div className="codex-files-footer">
-                <span className="text-aro-ink-4">{files.length} changed</span>
-                {isUncommitted && (
-                  <button
-                    type="button"
-                    onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-                    className="text-[11px] font-medium text-aro-iris-soft hover:underline cursor-pointer"
-                  >
-                    {c.stageAll}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* 3. Bottom Ship Bar */}
