@@ -207,6 +207,7 @@ export function isModelPaid(family: ModelFamily, provider: ModelOptionProvider):
   }
 
   const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
+
   if (pricing) {
     return !pricing.free
   }
@@ -418,9 +419,11 @@ export function ModelCatalogMenu({
   // nothing staged yet, so the catalog has no local provider row).
   // Downloads are local on-device models (free), so hide when filtering by paid.
   const shownDownloads = useMemo(() => {
-    if (tierFilter === 'paid') return []
+    if (tierFilter === 'paid') {return []}
+
     return q ? downloads.filter(job => foldIncludes(job.target || '', q)) : downloads
   }, [downloads, q, tierFilter])
+
   const hasLocalGroup = pickerProviders.some(provider => provider.slug === LOCAL_PROVIDER_SLUG)
 
   // Resolve visibility HERE, against the catalog we actually fetched: an empty
@@ -441,14 +444,17 @@ export function ModelCatalogMenu({
   // explicit "always show me this one". A search turns the section off — a
   // query means "show me every match", listed in their provider's place.
   const favoriteRows = useMemo(() => {
-    if (q) return []
+    if (q) {return []}
     const all = resolveFavoriteRows(pickerProviders, favoriteKeys)
+
     if (tierFilter === 'free') {
       return all.filter(r => isModelFree(r.family, r.provider))
     }
+
     if (tierFilter === 'paid') {
       return all.filter(r => isModelPaid(r.family, r.provider))
     }
+
     return all
   }, [pickerProviders, favoriteKeys, q, tierFilter])
 
@@ -478,7 +484,8 @@ export function ModelCatalogMenu({
   // sitting under zero model matches would otherwise become the "first match"
   // Enter commits.
   const shownMoaPresets = useMemo(() => {
-    if (tierFilter !== 'all') return []
+    if (tierFilter !== 'all') {return []}
+
     return q ? moaPresets.filter(preset => foldIncludes(`moa ${preset}`, q)) : moaPresets
   }, [moaPresets, q, tierFilter])
 
@@ -512,7 +519,7 @@ export function ModelCatalogMenu({
     [customSlug, pickerProviders, current.provider]
   )
 
-  const selectFamily = async (family: ModelFamily, provider: ModelOptionProvider): Promise<boolean> => {
+  const selectFamily = (family: ModelFamily, provider: ModelOptionProvider): boolean | Promise<boolean> => {
     const caps = provider.capabilities?.[family.id]
     const preset = controller.presetFor(provider.slug, family.id)
 
@@ -522,19 +529,25 @@ export function ModelCatalogMenu({
     const variantFast = !(caps?.fast ?? false) && !!family.fastId
     const targetId = variantFast && preset.fast === true ? family.fastId! : family.id
 
-    if ((await controller.select(targetId, provider.slug)) === false) {
-      return false
+    const applyPreset = () => {
+      controller.applyPreset(
+        {
+          effort: (caps?.reasoning ?? true) ? (preset.effort ?? defaultEffort) : undefined,
+          fast: (caps?.fast ?? false) ? (preset.fast ?? false) : undefined
+        },
+        { model: family.id, provider: provider.slug }
+      )
+
+      return true
     }
 
-    controller.applyPreset(
-      {
-        effort: (caps?.reasoning ?? true) ? (preset.effort ?? defaultEffort) : undefined,
-        fast: (caps?.fast ?? false) ? (preset.fast ?? false) : undefined
-      },
-      { model: family.id, provider: provider.slug }
-    )
+    const selected = controller.select(targetId, provider.slug)
 
-    return true
+    if (selected && typeof selected === 'object' && 'then' in selected) {
+      return Promise.resolve(selected).then(result => result === false ? false : applyPreset())
+    }
+
+    return applyPreset()
   }
 
   const selectMoaPreset = async (preset: string) => {
@@ -645,10 +658,20 @@ export function ModelCatalogMenu({
     }
 
     if (!rowIsCurrent(row)) {
-      void selectFamily(row.family, row.provider)
-    }
+      const selected = selectFamily(row.family, row.provider)
 
-    closeMenu()
+      if (selected && typeof selected === 'object' && 'then' in selected) {
+        void selected.then(success => {
+          if (success) {
+            closeMenu()
+          }
+        }).catch(() => {})
+      } else if (selected) {
+        closeMenu()
+      }
+    } else {
+      closeMenu()
+    }
   }
 
   // Shift+Enter stars the highlighted model — the keyboard twin of
@@ -1119,7 +1142,7 @@ interface ModelFamilyRowProps {
   kbProps: KbRowProps
   loadingModels: Record<string, LocalModelLoadProgress>
   /** Commit this family — what a click means belongs to the host that owns it. */
-  onSelect: (family: ModelFamily, provider: ModelOptionProvider) => Promise<boolean | void> | void
+  onSelect: (family: ModelFamily, provider: ModelOptionProvider) => boolean | Promise<boolean | void> | void
   /** Keyboard-focus round trip for the sub this row opens (#86966). */
   onSubOpenChange?: (open: boolean, key: string) => void
   provider: ModelOptionProvider
@@ -1212,11 +1235,27 @@ function ModelFamilyRow({
   // that submenu — without it the row's effort badge reads as a fixed
   // model+effort combo rather than an editable setting (#86966).
   const activate = () => {
-    if (!isCurrent) {
-      void onSelect(family, provider)
+    if (isCurrent) {
+      closeMenu()
+
+      return
     }
 
-    closeMenu()
+    const selected = onSelect(family, provider)
+
+    if (selected && typeof selected === 'object' && 'then' in selected) {
+      void Promise.resolve(selected).then(result => {
+        if (result !== false) {
+          closeMenu()
+        }
+      }).catch(() => {})
+
+      return
+    }
+
+    if (selected !== false) {
+      closeMenu()
+    }
   }
 
   const toggleFavorite = () => {
@@ -1233,16 +1272,11 @@ function ModelFamilyRow({
           if (event.shiftKey) {
             event.preventDefault()
             toggleFavorite()
-
-            return
           }
-
-          activate()
         }}
-        onKeyDown={event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            activate()
-          }
+        onSelect={event => {
+          event.preventDefault()
+          activate()
         }}
         {...kbProps}
         className={cn(kbProps.className, 'group/model')}
@@ -1562,12 +1596,15 @@ function groupModels(
         if (!((shown.has(family.id) || family.id === activeId) && !favorites?.has(favoriteModelKey(provider.slug, family.id)))) {
           return false
         }
+
         if (tierFilter === 'free') {
           return isModelFree(family, provider)
         }
+
         if (tierFilter === 'paid') {
           return isModelPaid(family, provider)
         }
+
         return true
       }
     )

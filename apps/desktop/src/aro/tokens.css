@@ -245,6 +245,18 @@
   --aro-dur-mid: 150ms;
   --aro-dur-slow: 220ms;
   --aro-dur-panel: 260ms;
+
+  /* Shared interaction + elevation contract. Keep these derived from the
+     active theme so every shell surface gets the same focus language and
+     depth without repeating shadows in feature CSS. */
+  --aro-radius-control: 7px;
+  --aro-radius-panel: 10px;
+  --aro-radius-overlay: 14px;
+  --aro-focus-ring: 0 0 0 1.5px color-mix(in srgb, var(--aro-iris) 76%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--aro-iris) 18%, transparent);
+  --aro-shadow-panel: 0 12px 30px -18px var(--aro-shadow-c), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
+  --aro-shadow-menu: 0 18px 44px -18px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 5%, transparent) inset;
+  --aro-shadow-composer: 0 18px 40px -24px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
 }
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */

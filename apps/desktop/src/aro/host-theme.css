@@ -2229,6 +2229,8 @@
   flex-direction: column;
   position: relative;
   isolation: isolate;
+  container-name: aro-workspace-rail;
+  container-type: inline-size;
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
@@ -2388,6 +2390,10 @@
   background: color-mix(in srgb, var(--aro-rose) 18%, transparent);
   color: var(--aro-rose);
   opacity: 1;
+}
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-close:focus-visible {
+  opacity: 1;
+  color: var(--aro-ink);
 }
 
 :root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-new,
@@ -2974,6 +2980,287 @@
 :root[data-aro-ui='true'] [data-tree-group] > [title="Restore"],
 :root[data-aro-ui='true'] [data-tree-group] [title="Restore"] {
   display: none !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Production polish pass                                                     */
+/* -------------------------------------------------------------------------- */
+
+/* One interaction language across native controls, contribution surfaces,
+   and Aro-owned views. The app already owns the palette; this layer makes
+   focus, disabled, hover, and scroll states feel like one product. */
+:root[data-aro-ui='true'] {
+  --aro-control-border: color-mix(in srgb, var(--aro-line) 82%, transparent);
+}
+
+:root[data-aro-ui='true'] body,
+:root[data-aro-ui='true'] button,
+:root[data-aro-ui='true'] input,
+:root[data-aro-ui='true'] textarea,
+:root[data-aro-ui='true'] select {
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-aro-ui='true'] button:not(:disabled),
+:root[data-aro-ui='true'] [role='button'],
+:root[data-aro-ui='true'] [role='tab'],
+:root[data-aro-ui='true'] [role='menuitem'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-aro-ui='true'] button:focus-visible,
+:root[data-aro-ui='true'] input:focus-visible,
+:root[data-aro-ui='true'] textarea:focus-visible,
+:root[data-aro-ui='true'] select:focus-visible,
+:root[data-aro-ui='true'] [role='button']:focus-visible,
+:root[data-aro-ui='true'] [role='tab']:focus-visible,
+:root[data-aro-ui='true'] [role='menuitem']:focus-visible {
+  outline: none;
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] :is(input, textarea, select)::selection {
+  background: color-mix(in srgb, var(--aro-iris) 28%, transparent);
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane]) {
+  scrollbar-color: var(--aro-line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--aro-line-strong) 70%, transparent);
+  background-clip: padding-box;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar-thumb:hover {
+  background: var(--aro-iris-soft);
+  background-clip: padding-box;
+}
+
+/* Shell chrome: quiet separators, clearer anchors, and consistent density. */
+:root[data-aro-ui='true'] .app-titlebar {
+  background: color-mix(in srgb, var(--aro-bg) 82%, var(--aro-void));
+  border-bottom-color: color-mix(in srgb, var(--aro-line) 72%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--aro-ink) 3%, transparent) inset;
+}
+
+:root[data-aro-ui='true'] .titlebar-search {
+  min-width: 178px;
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 78%, var(--aro-bg));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--aro-ink) 3%, transparent) inset;
+}
+
+:root[data-aro-ui='true'] .titlebar-search:focus-visible,
+:root[data-aro-ui='true'] .titlebar-search:active {
+  border-color: color-mix(in srgb, var(--aro-iris) 64%, var(--aro-line));
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] .product-switcher,
+:root[data-aro-ui='true'] .sidebar-mode-switcher {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 88%, var(--aro-void));
+}
+
+:root[data-aro-ui='true'] .product-option.selected,
+:root[data-aro-ui='true'] .sidebar-mode-tab.selected {
+  background: var(--aro-raise);
+  box-shadow: var(--aro-shadow-panel);
+}
+
+:root[data-aro-ui='true'] .titlebar-profile-btn {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 78%, var(--aro-bg));
+}
+
+:root[data-aro-ui='true'] .titlebar-profile-btn:focus-visible,
+:root[data-aro-ui='true'] .titlebar-profile-btn:active {
+  box-shadow: var(--aro-focus-ring);
+}
+
+/* Sidebar hierarchy: active state is a rail, not a bright tile. This keeps
+   the session list quiet while making the current location unambiguous. */
+:root[data-aro-ui='true'] .codex-sidebar {
+  background: color-mix(in srgb, var(--aro-sunken) 94%, var(--aro-void));
+  border-right-color: color-mix(in srgb, var(--aro-line) 72%, transparent);
+}
+
+:root[data-aro-ui='true'] .sidebar-brand {
+  background: color-mix(in srgb, var(--aro-bg) 30%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--aro-line) 48%, transparent);
+}
+
+:root[data-aro-ui='true'] .new-session-action {
+  border-color: color-mix(in srgb, var(--aro-iris) 34%, var(--aro-line));
+  background: color-mix(in srgb, var(--aro-iris) 8%, var(--aro-raise));
+  color: var(--aro-ink);
+  box-shadow: var(--aro-shadow-panel);
+}
+
+:root[data-aro-ui='true'] .new-session-action:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 58%, var(--aro-line));
+  background: color-mix(in srgb, var(--aro-iris) 14%, var(--aro-raise));
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--aro-iris) 58%, transparent);
+}
+
+:root[data-aro-ui='true'] .sidebar-search {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-bg) 70%, var(--aro-sunken));
+}
+
+:root[data-aro-ui='true'] .sidebar-search:focus {
+  border-color: color-mix(in srgb, var(--aro-iris) 66%, var(--aro-line));
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row,
+:root[data-aro-ui='true'] .session-list-row,
+:root[data-aro-ui='true'] .bot-roster-row {
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-inout), color var(--aro-dur-fast) var(--aro-ease-inout), box-shadow var(--aro-dur-fast) var(--aro-ease-inout);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row.active,
+:root[data-aro-ui='true'] .session-list-row.selected,
+:root[data-aro-ui='true'] .bot-roster-row.selected {
+  background: color-mix(in srgb, var(--aro-iris) 12%, var(--aro-sunken));
+  box-shadow: inset 2px 0 0 var(--aro-iris), 0 1px 0 color-mix(in srgb, var(--aro-iris) 8%, transparent) inset;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row.active svg,
+:root[data-aro-ui='true'] .session-list-row.selected svg {
+  color: var(--aro-iris-soft);
+}
+
+:root[data-aro-ui='true'] .sidebar-project-group {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Native-looking floating surfaces. Keep structure flat and let the token
+   shadow carry the hierarchy instead of stacking multiple dark borders. */
+:root[data-aro-ui='true'] [data-radix-popper-content-wrapper] > *,
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'],
+:root[data-aro-ui='true'] .menu,
+:root[data-aro-ui='true'] .popover-content {
+  border-radius: var(--aro-radius-overlay);
+  box-shadow: var(--aro-shadow-menu);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  border-color: color-mix(in srgb, var(--aro-line-strong) 64%, var(--aro-line));
+  border-radius: var(--aro-radius-panel);
+  box-shadow: var(--aro-shadow-composer);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
+  box-shadow: var(--aro-focus-ring), var(--aro-shadow-composer);
+}
+
+/* Keep the state beam, but make idle controls calmer and active controls more
+   legible. Streaming/listening still gets the existing expressive treatment. */
+:root[data-aro-ui='true'] [data-aro-composer-controls] button:focus-visible,
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button:focus-visible {
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-controls] [data-aro-model-pill][data-state='open'],
+:root[data-aro-ui='true'] [data-aro-composer-controls] [data-aro-reasoning-pill][data-state='open'] {
+  background: color-mix(in srgb, var(--aro-iris) 12%, var(--aro-overlay));
+  color: var(--aro-ink);
+}
+
+/* Context panes and file trees share the same row anatomy as sessions. */
+:root[data-aro-ui='true'] [data-aro-context-pane] :is(button, [role='treeitem']) {
+  border-radius: var(--aro-radius-control);
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-inout), color var(--aro-dur-fast) var(--aro-ease-inout);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] :is(button, [role='treeitem']):focus-visible {
+  box-shadow: var(--aro-focus-ring);
+}
+
+/* Reduce visual noise on very narrow windows without hiding core actions. */
+@media (max-width: 760px) {
+  :root[data-aro-ui='true'] .titlebar-search {
+    min-width: 0;
+    width: 36px;
+    padding-inline: 10px;
+  }
+
+  :root[data-aro-ui='true'] .titlebar-search-label,
+  :root[data-aro-ui='true'] .titlebar-search-kbd {
+    display: none;
+  }
+
+  :root[data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+    padding-inline: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-aro-ui='true'] :is(button, input, textarea, select, [role='button'], [role='tab'], [role='treeitem']) {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The rail can be resized independently of the window. Adapt its tabs to the
+   rail width so the fixed tool controls never sit on top of the selected tab. */
+@container aro-workspace-rail (max-width: 440px) {
+  .aro-workspace-sidebar .workspace-tabstrip {
+    gap: 2px;
+    padding-inline: 5px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-title {
+    display: none;
+  }
+
+  .aro-workspace-sidebar .workspace-tab {
+    max-width: 48px;
+    padding-inline: 1px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-main {
+    gap: 4px;
+    padding-inline: 4px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-close {
+    width: 16px;
+    margin-inline: 0;
+  }
+
+  .aro-workspace-sidebar .workspace-panel-external-ide {
+    display: none;
+  }
+}
+
+@container aro-workspace-rail (max-width: 340px) {
+  .aro-workspace-sidebar .workspace-tabstrip {
+    gap: 1px;
+    padding-inline: 3px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-new,
+  .aro-workspace-sidebar .workspace-tab-toolbar,
+  .aro-workspace-sidebar .workspace-panel-full {
+    width: 23px;
+    height: 23px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-close {
+    width: 14px;
+  }
 }
 
 

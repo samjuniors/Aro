@@ -1,11 +1,11 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ModelCapabilities } from '@hermes/shared'
+import { type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { SETTINGS_ROUTE } from '@/app/routes'
 import { IconBrain, IconChevronDown, IconPlus } from '@/aro/Icons'
 import { Toggle } from '@/aro/ui'
 import { useI18n } from '@/i18n'
-import type { ModelCapabilities } from '@hermes/shared'
 import { catalogProviderMatches, currentModelCapabilities } from '@/lib/model-options'
 import { providerDisplayName } from '@/lib/model-status-label'
 import { isThinkingEnabled, reasoningEffortClamp, resolveReasoningEffort } from '@/lib/reasoning-effort'
@@ -95,9 +95,11 @@ export function resolveMaxReasoningEffortIndex(
 
   // Explicit supported max from caps if provided
   const explicitMax = (caps as { max_effort?: string } | undefined)?.max_effort
+
   if (typeof explicitMax === 'string') {
     const idx = EFFORTS.findIndex(e => e.id === explicitMax.toLowerCase())
-    if (idx !== -1) return idx
+
+    if (idx !== -1) {return idx}
   }
 
   const normModel = (model || '').toLowerCase()
@@ -106,11 +108,16 @@ export function resolveMaxReasoningEffortIndex(
   // Wire clamping returned by the gateway route
   if (effortWire) {
     const normWire = effortWire.toLowerCase()
-    if (normWire === 'minimal') return 0
-    if (normWire === 'low') return 1
-    if (normWire === 'medium') return 2
-    if (normWire === 'high' || normWire === 'xhigh') return 3
-    if (normWire === 'max' || normWire === 'ultra') return 4
+
+    if (normWire === 'minimal') {return 0}
+
+    if (normWire === 'low') {return 1}
+
+    if (normWire === 'medium') {return 2}
+
+    if (normWire === 'high' || normWire === 'xhigh') {return 3}
+
+    if (normWire === 'max' || normWire === 'ultra') {return 4}
   }
 
   // Known bounded thinking models that top out at High (index 3)
@@ -156,24 +163,16 @@ function EffortSliderRow({
   const { t } = useI18n()
   const copy = t.shell.modelOptions
 
-  const targetIdx = useMemo(() => {
-    switch (effort) {
-      case 'minimal':
-        return 0
-      case 'low':
-        return 1
-      case 'medium':
-        return 2
-      case 'high':
-      case 'xhigh':
-        return 3
-      case 'max':
-      case 'ultra':
-        return 4
-      default:
-        return 2
-    }
-  }, [effort])
+  const targetIdx =
+    effort === 'minimal'
+      ? 0
+      : effort === 'low'
+        ? 1
+        : effort === 'high' || effort === 'xhigh'
+          ? 3
+          : effort === 'max' || effort === 'ultra'
+            ? 4
+            : 2
 
   const effectiveMaxIdx = supportsReasoning ? maxEffortIdx : 0
   const clampedActiveIdx = supportsReasoning ? Math.min(targetIdx, effectiveMaxIdx) : 0
@@ -189,6 +188,7 @@ function EffortSliderRow({
   }, [clampedActiveIdx])
 
   const currentDisplayIdx = isDraggingRef.current ? localIdx : clampedActiveIdx
+
   const effortLevel = supportsReasoning && thinkingOn
     ? (EFFORTS[currentDisplayIdx] ?? EFFORTS[2])
     : !thinkingOn && supportsReasoning
@@ -196,14 +196,16 @@ function EffortSliderRow({
       : { id: 'none', label: 'Disabled', short: 'Off', color: 'var(--aro-ink-4)', desc: 'Reasoning is not supported by this model.' }
 
   const clamp = reasoningEffortClamp(effort, effortWire)
-  const fillPct = supportsReasoning && thinkingOn ? (currentDisplayIdx / (EFFORTS.length - 1)) * 100 : 0
-  const maxPct = supportsReasoning ? (effectiveMaxIdx / (EFFORTS.length - 1)) * 100 : 0
+  const lastEffortIndex = EFFORTS.length - 1
+  const fillPct = supportsReasoning && thinkingOn ? (currentDisplayIdx / lastEffortIndex) * 100 : 0
+  const maxPct = supportsReasoning ? (effectiveMaxIdx / lastEffortIndex) * 100 : 0
 
   const handleSelectIdx = useCallback((idx: number) => {
-    if (!supportsReasoning) return
+    if (!supportsReasoning) {return}
     const clamped = Math.min(Math.max(0, idx), effectiveMaxIdx)
     setLocalIdx(clamped)
     const next = EFFORTS[clamped]
+
     if (next) {
       onSetEffort(next.id)
     }
@@ -250,15 +252,15 @@ function EffortSliderRow({
       </div>
 
       {/* Discrete Segmented Quick-Pick Buttons */}
-      <div className="grid grid-cols-5 gap-1 my-1" role="radiogroup">
+      <div aria-label={copy.effort} className="grid grid-cols-5 gap-1 my-1" role="group">
         {EFFORTS.map((eff, i) => {
           const isSupported = supportsReasoning && i <= effectiveMaxIdx
           const isActive = supportsReasoning && thinkingOn && i === currentDisplayIdx
 
           return (
             <button
-              aria-checked={isActive}
               aria-label={`Set effort to ${eff.label}`}
+              aria-pressed={isActive}
               className={cn(
                 'flex flex-col items-center justify-center rounded-[5px] py-1 px-0.5 text-center transition-all cursor-pointer select-none',
                 isActive
@@ -270,7 +272,6 @@ function EffortSliderRow({
               disabled={!isSupported}
               key={eff.id}
               onClick={() => handleSelectIdx(i)}
-              role="radio"
               type="button"
             >
               <span className="text-[10.5px] tracking-tight">{eff.short}</span>
@@ -286,17 +287,14 @@ function EffortSliderRow({
           aria-valuetext={effortLevel.label}
           className="effort-range"
           disabled={!supportsReasoning}
-          max={EFFORTS.length - 1}
+          max={lastEffortIndex}
           min={0}
-          onChange={event => {
-            if (!supportsReasoning) return
-            const raw = Number(event.target.value)
-            const clamped = Math.min(Math.max(0, raw), effectiveMaxIdx)
-            setLocalIdx(clamped)
-            const next = EFFORTS[clamped]
-            if (next) {
-              onSetEffort(next.id)
-            }
+          onBlur={() => {
+            isDraggingRef.current = false
+          }}
+          onChange={event => handleSelectIdx(Number(event.target.value))}
+          onPointerCancel={() => {
+            isDraggingRef.current = false
           }}
           onPointerDown={() => {
             isDraggingRef.current = true
@@ -348,6 +346,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
   const copy = t.shell.modelOptions
   const navigate = useNavigate()
   const { controller, defaultEffort, modelOptions } = useModelMenuController(props)
+  const closeParentMenu = useContext(ModelMenuCloseContext)
   const { effort, effortWire, fast, model, provider } = controller.current
   const [expanded, setExpanded] = useState(false)
 
@@ -415,7 +414,12 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
 
       {expanded ? (
         <div className="model-menu-list max-h-[380px] overflow-y-auto overflow-x-visible px-0.5 pb-1 pt-0.5">
-          <ModelMenuCloseContext.Provider value={() => setExpanded(false)}>
+          <ModelMenuCloseContext.Provider
+            value={() => {
+              setExpanded(false)
+              closeParentMenu()
+            }}
+          >
             {children}
           </ModelMenuCloseContext.Provider>
         </div>

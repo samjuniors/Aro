@@ -1,18 +1,24 @@
 import { useStore } from '@nanostores/react'
-import { type ComponentProps, type ComponentType, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  type ComponentProps,
+  type ComponentType,
+  type KeyboardEvent as ReactKeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState
+} from 'react'
 
 import {
   IconBrain,
   IconBranch,
-  IconChevronDown,
-  IconChevronRight,
   IconFolder,
   IconGit,
   IconGlobe,
   IconList,
   IconMaximize,
   IconMinimize,
-  IconMore,
   IconPanelRight,
   IconPlus,
   IconRefresh,
@@ -32,7 +38,7 @@ import { normalizeOrLocalPreviewTarget } from '@/lib/local-preview'
 import { cn } from '@/lib/utils'
 import { refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
 import { $backgroundStatusBySession } from '@/store/composer-status'
-import { $panesFlipped, toggleRightSide } from '@/store/layout'
+import { $fileBrowserOpen, $panesFlipped, toggleRightSide } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
 import { openPreview } from '@/store/preview'
 import { openFolderAsProject } from '@/store/projects'
@@ -59,7 +65,6 @@ import {
   $workspaceOpenTabs,
   closeWorkspaceTab,
   type ContextSectionId,
-  openWorkspaceTab,
   setRightSidebarSection
 } from './store'
 import { TerminalSection } from './terminal-section'
@@ -81,7 +86,7 @@ const SECTION_CONFIG: Record<
   search: { id: 'search', label: 'Search', icon: IconSearch },
   browser: { id: 'browser', label: 'Browser', icon: IconGlobe },
   plan: { id: 'plan', label: 'Plan', icon: IconList },
-  context: { id: 'context', label: 'Plugins', icon: IconBrain },
+  context: { id: 'context', label: 'Context', icon: IconBrain },
   git: { id: 'git', label: 'Git', icon: IconBranch },
   launchpad: { id: 'launchpad', label: 'New Tab', icon: IconPlus }
 }
@@ -89,7 +94,9 @@ const SECTION_CONFIG: Record<
 export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSidebarPaneProps) {
   const { t } = useI18n()
   const r = t.rightSidebar
+  const panelId = useId()
   const panesFlipped = useStore($panesFlipped)
+  const rightSideOpen = useStore($fileBrowserOpen)
   const targetCwd = useStore($focusedWorkspaceCwd)
   const hasWorkspace = Boolean(targetCwd)
   const section = useStore($rightSidebarSection)
@@ -97,10 +104,17 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
   const [fullscreen, setFullscreen] = useState(false)
 
   useEffect(() => {
+    if (!rightSideOpen) {
+      setFullscreen(false)
+    }
+  }, [rightSideOpen])
+
+  useEffect(() => {
     if (!fullscreen) {return}
 
     const esc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault()
         e.stopPropagation()
         setFullscreen(false)
       }
@@ -129,6 +143,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
   const backgroundTasksCount = useMemo(() => {
     let count = 0
+
     if (sessionId) {
       count += (bgStatus[sessionId] ?? []).filter(i => i.state === 'running').length
       count += (subagents[sessionId] ?? []).filter(i => i.status === 'running').length
@@ -136,10 +151,12 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       for (const items of Object.values(bgStatus)) {
         count += items.filter(i => i.state === 'running').length
       }
+
       for (const items of Object.values(subagents)) {
         count += items.filter(i => i.status === 'running').length
       }
     }
+
     return count
   }, [sessionId, bgStatus, subagents])
 
@@ -154,7 +171,51 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
   const handleCloseTab = (tabId: ContextSectionId, e: React.MouseEvent) => {
     e.stopPropagation()
+    const nextTabs = openTabs.filter(id => id !== tabId)
+    const nextSection = section === tabId ? (nextTabs.at(-1) ?? 'launchpad') : section
     closeWorkspaceTab(tabId)
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(panelTabId(nextSection))?.focus()
+    })
+  }
+
+  const panelTabId = (tabId: ContextSectionId) => panelId + '-tab-' + tabId
+  const workspacePanelId = panelId + '-panel'
+
+  const handleWorkspaceToolKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const currentTab = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-workspace-tab]')
+
+    if (!currentTab) {
+      return
+    }
+
+    const tabs: ContextSectionId[] = [...openTabs, 'launchpad']
+    const currentIndex = tabs.indexOf(currentTab.dataset.workspaceTab as ContextSectionId)
+
+    if (currentIndex < 0) {
+      return
+    }
+
+    const nextIndex =
+      event.key === 'ArrowRight'
+        ? (currentIndex + 1) % tabs.length
+        : event.key === 'ArrowLeft'
+          ? (currentIndex - 1 + tabs.length) % tabs.length
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? tabs.length - 1
+              : -1
+
+    if (nextIndex < 0) {
+      return
+    }
+
+    const nextTab = tabs[nextIndex]
+    event.preventDefault()
+    setRightSidebarSection(nextTab)
+    document.getElementById(panelTabId(nextTab))?.focus()
   }
 
   const {
@@ -226,11 +287,20 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       )}
     >
       {/* Workspace Tab Strip matching Antigravity UI */}
-      <div aria-label="Workspace tools" className="workspace-tabstrip" role="tablist">
-        <div className="workspace-tabs-scroll">
+      <div className="workspace-tabstrip">
+        <div
+          aria-label="Workspace tools"
+          className="workspace-tabs-scroll"
+          onKeyDown={handleWorkspaceToolKeyDown}
+          role="group"
+        >
           {openTabs.map(tabId => {
             const config = SECTION_CONFIG[tabId]
-            if (!config) return null
+
+            if (!config) {
+              return null
+            }
+
             const active = section === tabId
             const Icon = config.icon
 
@@ -244,16 +314,16 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                     : undefined
 
             return (
-              <div
-                aria-selected={active}
-                className={cn('workspace-tab', active && 'is-active')}
-                key={tabId}
-                role="tab"
-              >
+              <div className={cn('workspace-tab', active && 'is-active')} key={tabId} role="presentation">
                 <button
+                  aria-controls={workspacePanelId}
                   aria-label={config.label}
+                  aria-pressed={active}
                   className="workspace-tab-main"
+                  data-workspace-tab={tabId}
+                  id={panelTabId(tabId)}
                   onClick={() => setRightSidebarSection(tabId)}
+                  tabIndex={active ? 0 : -1}
                   type="button"
                 >
                   <Icon size={11} />
@@ -265,10 +335,10 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                   )}
                 </button>
                 <button
-                  type="button"
                   aria-label={`Close ${config.label}`}
                   className="workspace-tab-close"
                   onClick={e => handleCloseTab(tabId, e)}
+                  type="button"
                 >
                   <IconX size={10} />
                 </button>
@@ -278,10 +348,15 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
           {/* New Tab (+) Button leading to Launchpad */}
           <button
-            type="button"
-            className={cn('workspace-tab-new', section === 'launchpad' && 'is-on text-aro-iris-soft bg-aro-hover')}
+            aria-controls={workspacePanelId}
             aria-label="New tab · Open Launchpad"
+            aria-pressed={section === 'launchpad'}
+            className={cn('workspace-tab-new', section === 'launchpad' && 'is-on text-aro-iris-soft bg-aro-hover')}
+            data-workspace-tab="launchpad"
+            id={panelTabId('launchpad')}
             onClick={() => setRightSidebarSection('launchpad')}
+            tabIndex={section === 'launchpad' ? 0 : -1}
+            type="button"
           >
             <IconPlus size={11} />
           </button>
@@ -289,7 +364,9 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
 
         {/* Toolbar: Open IDE button (Screenshot 1 & 5) + Panel controls */}
         <div className="flex items-center gap-1 shrink-0 pr-1">
-          <ExternalIdeControl compact />
+          <div className="workspace-panel-external-ide">
+            <ExternalIdeControl compact />
+          </div>
           <Tip label={fullscreen ? 'Exit full screen · Esc' : 'Full screen workspace tool'} side="bottom">
             <button
               aria-label={fullscreen ? 'Exit full screen' : 'Full screen workspace tool'}
@@ -315,7 +392,10 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
             <button
               aria-label="Close workspace panel"
               className="workspace-tab-toolbar"
-              onClick={toggleRightSide}
+              onClick={() => {
+                setFullscreen(false)
+                toggleRightSide()
+              }}
               type="button"
             >
               <IconPanelRight size={13} />
@@ -325,8 +405,13 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       </div>
 
       {/* Workspace Body */}
-      <div className="workspace-body flex min-h-0 flex-1 flex-col overflow-hidden">
-        {section === 'launchpad' && <WorkspaceLaunchpad onSelectAction={setRightSidebarSection} />}
+      <div
+        aria-labelledby={panelTabId(section)}
+        className="workspace-body flex min-h-0 flex-1 flex-col overflow-hidden"
+        id={workspacePanelId}
+        role="region"
+        tabIndex={0}
+      >
         {section === 'files' && (
           <FilesystemTab
             canCollapse={canCollapse}
@@ -356,7 +441,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         {section === 'plan' && <PlanSection />}
         {section === 'context' && <ContextSection />}
         {section === 'git' && <GitSection />}
-        {section === 'launchpad' && <WorkspaceLaunchpad onSelectAction={openWorkspaceTab} />}
+        {section === 'launchpad' && <WorkspaceLaunchpad />}
       </div>
     </aside>
   )
@@ -402,6 +487,15 @@ function FilesystemTab({
   const { t } = useI18n()
   const r = t.rightSidebar
 
+  const [fileFilter, setFileFilter] = useState('')
+
+  const filteredTreeData = useMemo(() => {
+    if (!fileFilter.trim()) {return data}
+    const q = fileFilter.toLowerCase()
+
+    return data.filter(node => node.name.toLowerCase().includes(q) || node.id.toLowerCase().includes(q))
+  }, [data, fileFilter])
+
   // No working directory (a bare/detached chat) → no tree, but keep a way back
   // into a folder (#53004): the projects paradigm removed the old folder picker,
   // which stranded global sessions on a dead-end "No project open" pane. The
@@ -422,14 +516,6 @@ function FilesystemTab({
       </div>
     )
   }
-
-  const [fileFilter, setFileFilter] = useState('')
-
-  const filteredTreeData = useMemo(() => {
-    if (!fileFilter.trim()) return data
-    const q = fileFilter.toLowerCase()
-    return data.filter(node => node.name.toLowerCase().includes(q) || node.id.toLowerCase().includes(q))
-  }, [data, fileFilter])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -466,16 +552,16 @@ function FilesystemTab({
       </RightSidebarSectionHeader>
       <div className="px-2.5 py-1.5 border-b border-aro-line-soft bg-aro-well/30">
         <div className="flex items-center gap-1.5 rounded-md border border-aro-line/50 bg-aro-well px-2 py-1 text-aro-ink-4 focus-within:border-aro-iris focus-within:text-aro-ink">
-          <IconSearch size={11} className="shrink-0" />
+          <IconSearch className="shrink-0" size={11} />
           <input
-            type="text"
-            placeholder="Filter files in workspace…"
-            value={fileFilter}
-            onChange={e => setFileFilter(e.target.value)}
             className="w-full bg-transparent text-[11px] text-aro-ink outline-none placeholder:text-aro-ink-4"
+            onChange={e => setFileFilter(e.target.value)}
+            placeholder="Filter files in workspace…"
+            type="text"
+            value={fileFilter}
           />
           {fileFilter && (
-            <button type="button" onClick={() => setFileFilter('')} className="hover:text-aro-ink">
+            <button className="hover:text-aro-ink" onClick={() => setFileFilter('')} type="button">
               <IconX size={10} />
             </button>
           )}

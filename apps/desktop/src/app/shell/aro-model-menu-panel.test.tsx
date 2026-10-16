@@ -1,14 +1,19 @@
+import type * as ProfileStore from '@/store/profile'
+import type * as SessionStore from '@/store/session'
+
 vi.mock('@/store/profile', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store/profile')>()
+  const actual = await importOriginal<typeof ProfileStore>()
   const { atom } = await import('nanostores')
+
   return {
     ...actual,
     $activeGatewayProfile: atom<string>('default')
   }
 })
 vi.mock('@/store/session', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/store/session')>()
+  const actual = await importOriginal<typeof SessionStore>()
   const { atom } = await import('nanostores')
+
   return {
     ...actual,
     $connection: atom(null),
@@ -27,6 +32,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { queryClient } from '@/lib/query-client'
 import { $currentModel, $currentProvider, $currentReasoningEffort } from '@/store/session'
+
 import { AroModelMenuPanel, resolveMaxReasoningEffortIndex } from './aro-model-menu-panel'
 import { ModelMenuCloseContext } from './model-menu-panel'
 
@@ -105,7 +111,7 @@ describe('AroModelMenuPanel component', () => {
     )
   }
 
-  it('renders reasoning slider with max effort prefilled and clamped', async () => {
+  it('keeps the five-step scale while disabling levels above model support', async () => {
     renderPanel()
 
     // Top head button displays model monogram and name
@@ -114,9 +120,11 @@ describe('AroModelMenuPanel component', () => {
 
     // Slider range input is rendered
     const slider = screen.getByRole('slider', { name: /Reasoning effort/i })
-    expect(slider).not.toBeNull()
     expect(slider.getAttribute('max')).toBe('4')
     expect(slider.getAttribute('min')).toBe('0')
+    expect(slider.getAttribute('value')).toBe('2')
+    expect(screen.getByRole('button', { name: 'Set effort to High' }).hasAttribute('disabled')).toBe(false)
+    expect(screen.getByRole('button', { name: 'Set effort to Ultra' }).hasAttribute('disabled')).toBe(true)
   })
 
   it('renders the prototype Toggle component for Thinking and toggles effort', async () => {
@@ -144,9 +152,11 @@ describe('AroModelMenuPanel component', () => {
   it('allows clicking discrete effort buttons to select reasoning level', async () => {
     renderPanel()
 
-    const highBtn = screen.getByRole('radio', { name: /Set effort to High/i })
-    expect(highBtn).not.toBeNull()
+    const highBtn = screen.getByRole('button', { name: /Set effort to High/i })
     fireEvent.click(highBtn)
+
+    expect(highBtn.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('slider', { name: /Reasoning effort — High/i }).getAttribute('value')).toBe('3')
   })
 
   it('expands catalog and collapses back when child model is selected', async () => {

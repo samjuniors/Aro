@@ -57,11 +57,12 @@ export function Button({
     <button
       {...rest}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-all duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
         variantMap[variant],
         sizeMap[size],
         className,
       )}
+      type={rest.type ?? 'button'}
     >
       {Icon && <Icon size={size === 'xs' ? 12 : size === 'lg' ? 16 : 13} />}
       {children}
@@ -88,11 +89,12 @@ export function IconButton({
       {...rest}
       aria-label={label}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-all duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94]',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
       style={{ width: size, height: size }}
+      type={rest.type ?? 'button'}
     >
       <Icon size={Math.round(size * 0.5)} />
     </button>
@@ -322,6 +324,7 @@ export function Menu({
         typeof document !== 'undefined' &&
         createPortal(
           <div
+            aria-label="Menu"
             className={cn(
               'fixed z-[99999] overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
               coords.opensAbove
@@ -329,6 +332,7 @@ export function Menu({
                 : 'origin-top animate-aro-slide-down',
             )}
             ref={menuRef}
+            role="menu"
             style={{
               top: coords.top,
               left: coords.left,
@@ -373,6 +377,8 @@ export function MenuItem({
             : 'text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
       )}
       onClick={onClick}
+      role="menuitem"
+      type="button"
     >
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -414,11 +420,14 @@ export function Select({
       className={className}
       trigger={(open) => (
         <button
+          aria-expanded={open}
+          aria-haspopup="menu"
           className={cn(
             'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-[7px] text-aro-ink-2 transition-colors hover:text-aro-ink',
             !bare && 'border border-aro-line bg-aro-raise hover:border-aro-line-strong',
             size === 'xs' ? 'h-[24px] px-1.5 text-[11.5px]' : 'h-[30px] px-2 text-[12.5px]',
           )}
+          type="button"
         >
           <span className="truncate font-medium">{current?.label ?? value}</span>
           <IconChevronDown className={cn('shrink-0 opacity-60 transition-transform', open && 'rotate-180')} size={12} />
@@ -501,19 +510,21 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md'
 }) {
   return (
-    <div className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)}>
+    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
       {items.map((it) => {
         const on = it.value === value
 
         return (
           <button
+            aria-pressed={on}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-all duration-150',
+              'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-[background-color,color,box-shadow,transform] duration-150',
               size === 'md' ? 'px-3 py-[6px] text-[12.5px]' : 'px-2.5 py-[4px] text-[12px]',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
             onClick={() => onChange(it.value)}
+            type="button"
           >
             {it.icon && <it.icon size={12} />}
             {it.label}
@@ -536,18 +547,21 @@ export function Tabs<T extends string>({
   className?: string
 }) {
   return (
-    <div className={cn('flex items-center gap-0.5', className)}>
+    <div aria-label="Tabs" className={cn('flex items-center gap-0.5', className)} role="tablist">
       {items.map((it) => {
         const on = it.value === value
 
         return (
           <button
+            aria-selected={on}
             className={cn(
               'relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
             onClick={() => onChange(it.value)}
+            role="tab"
+            type="button"
           >
             <span className="flex items-center gap-1.5">
               {it.label}
@@ -675,7 +689,7 @@ export function Tip({ label, children, side = 'top' }: { label: string; children
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-all duration-150 group-hover/tip:scale-100 group-hover/tip:opacity-100',
+          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
           side === 'top' ? 'bottom-[calc(100%+7px)]' : 'top-[calc(100%+7px)]',
         )}
       >

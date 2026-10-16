@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react'
+import { type ComponentType, useCallback, useMemo, useState } from 'react'
 
 import {
   IconBrain,
   IconBranch,
   IconChevronRight,
-  IconFile,
   IconFolder,
   IconGit,
   IconGlobe,
@@ -26,17 +25,17 @@ interface ActionItem {
   id: string
   label: string
   detail?: string
-  icon: typeof IconFile
+  icon: ComponentType<{ size?: number; className?: string }>
   action: () => void
 }
 
 export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunchpadProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  const handleOpenSection = (section: ContextSectionId) => {
+  const handleOpenSection = useCallback((section: ContextSectionId) => {
     openWorkspaceTab(section)
     onSelectAction?.(section)
-  }
+  }, [onSelectAction])
 
   const allActions: ActionItem[] = useMemo(() => {
     return [
@@ -77,8 +76,8 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
       },
       {
         id: 'context',
-        label: 'Plugins & Artifacts',
-        detail: 'Skills, memory, and runtime artifacts',
+        label: 'Context',
+        detail: 'Context window, MCP connectors, and agent memory',
         icon: IconBrain,
         action: () => handleOpenSection('context')
       },
@@ -97,11 +96,15 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
         action: () => handleOpenSection('search')
       }
     ]
-  }, [])
+  }, [handleOpenSection])
 
   const filteredActions = useMemo(() => {
-    if (!searchQuery.trim()) return allActions
+    if (!searchQuery.trim()) {
+      return allActions
+    }
+
     const q = searchQuery.toLowerCase().trim()
+
     return allActions.filter(
       item => item.label.toLowerCase().includes(q) || (item.detail && item.detail.toLowerCase().includes(q))
     )
@@ -118,21 +121,22 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
       <div className="w-full max-w-sm flex flex-col gap-3">
         {/* Antigravity-style Centered Search Input */}
         <div className="relative flex items-center gap-2.5 rounded-lg border border-aro-line-soft bg-aro-well/70 px-3.5 py-2.5 shadow-sm transition-all focus-within:border-aro-iris focus-within:ring-2 focus-within:ring-aro-iris/20">
-          <IconSearch size={14} className="text-aro-ink-4 shrink-0" />
+          <IconSearch className="text-aro-ink-4 shrink-0" size={14} />
           <input
-            type="text"
+            aria-label="Search workspace tools"
+            autoFocus
             className="w-full min-w-0 bg-transparent text-[13px] text-aro-ink placeholder:text-aro-ink-4 outline-none"
-            placeholder="Search tabs, files, plugins, subagents, artifacts, tasks…"
-            value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            autoFocus
+            placeholder="Search workspace tools…"
+            type="text"
+            value={searchQuery}
           />
           {searchQuery && (
             <button
-              type="button"
-              onClick={() => setSearchQuery('')}
               className="text-aro-ink-4 hover:text-aro-ink text-xs transition-colors cursor-pointer"
+              onClick={() => setSearchQuery('')}
+              type="button"
             >
               <IconX size={13} />
             </button>
@@ -141,25 +145,31 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
 
         {/* Action list directly under search input, matching Google Antigravity screenshot */}
         <div className="flex flex-col gap-0.5">
-          {filteredActions.map(action => (
-            <button
-              key={action.id}
-              type="button"
-              onClick={action.action}
-              className="group flex items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-aro-hover cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <action.icon size={15} className="text-aro-ink-3 shrink-0 group-hover:text-aro-iris-soft transition-colors" />
-                <span className="text-[13px] font-medium text-aro-ink">
-                  {action.label}
-                </span>
-              </div>
-              <IconChevronRight
-                size={13}
-                className="text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100 shrink-0"
-              />
-            </button>
-          ))}
+          {filteredActions.length > 0 ? (
+            filteredActions.map(action => (
+              <button
+                className="group flex items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-aro-hover cursor-pointer"
+                key={action.id}
+                onClick={action.action}
+                type="button"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <action.icon className="text-aro-ink-3 shrink-0 group-hover:text-aro-iris-soft transition-colors" size={15} />
+                  <span className="text-[13px] font-medium text-aro-ink">
+                    {action.label}
+                  </span>
+                </div>
+                <IconChevronRight
+                  className="text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100 shrink-0"
+                  size={13}
+                />
+              </button>
+            ))
+          ) : (
+            <p aria-live="polite" className="px-3 py-2 text-center text-[11px] text-aro-ink-4" role="status">
+              No workspace tools match “{searchQuery.trim()}”.
+            </p>
+          )}
         </div>
       </div>
     </div>

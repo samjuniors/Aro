@@ -75,22 +75,36 @@ export const $rightSidebarSection = atom<ContextSectionId>(readInitialSection())
 
 export const WORKSPACE_OPEN_TABS_STORAGE_KEY = 'conductor.workspace.panel.openTabs'
 
+function includeActiveSection(tabs: ContextSectionId[]): ContextSectionId[] {
+  const activeSection = $rightSidebarSection.get()
+
+  if (activeSection === 'launchpad' || tabs.includes(activeSection)) {
+    return tabs
+  }
+
+  return [activeSection, ...tabs]
+}
+
 function readInitialOpenTabs(): ContextSectionId[] {
   const stored = readKey(WORKSPACE_OPEN_TABS_STORAGE_KEY)
+
   if (stored) {
     try {
       const parsed = JSON.parse(stored)
+
       if (Array.isArray(parsed) && parsed.length > 0) {
         const valid = parsed.filter(s => VALID_SECTIONS.has(s as ContextSectionId) && s !== 'launchpad') as ContextSectionId[]
+
         if (valid.length > 0) {
-          return valid
+          return includeActiveSection(valid)
         }
       }
     } catch {
       // fallback
     }
   }
-  return ['changes', 'terminal']
+
+  return includeActiveSection(['changes', 'terminal'])
 }
 
 export const $workspaceOpenTabs = atom<ContextSectionId[]>(readInitialOpenTabs())
@@ -98,12 +112,14 @@ export const $workspaceOpenTabs = atom<ContextSectionId[]>(readInitialOpenTabs()
 export const openWorkspaceTab = (section: ContextSectionId) => {
   if (section !== 'launchpad') {
     const current = $workspaceOpenTabs.get()
+
     if (!current.includes(section)) {
       const next = [...current, section]
       $workspaceOpenTabs.set(next)
       writeKey(WORKSPACE_OPEN_TABS_STORAGE_KEY, JSON.stringify(next))
     }
   }
+
   setRightSidebarSection(section)
 }
 
@@ -125,8 +141,10 @@ export const closeWorkspaceTab = (section: ContextSectionId) => {
 export const setRightSidebarSection = (section: ContextSectionId) => {
   writeKey(PANEL_SECTION_STORAGE_KEY, section)
   $rightSidebarSection.set(section)
+
   if (section !== 'launchpad') {
     const current = $workspaceOpenTabs.get()
+
     if (!current.includes(section)) {
       const next = [...current, section]
       $workspaceOpenTabs.set(next)

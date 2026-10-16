@@ -475,6 +475,22 @@ from their root base tokens; do not multiply the global tokens or nest CSS zoom.
   Name the properties, avoid backdrop-filter repaints during movement, and
   remove animation before masking a performance problem.
 
+### Aro shell polish tokens
+
+The Aro renderer layer (`src/aro/tokens.css` + `src/aro/host-theme.css`) adds a
+small shared contract on top of the desktop tokens: `--aro-radius-control`,
+`--aro-radius-panel`, `--aro-radius-overlay`, `--aro-focus-ring`,
+`--aro-shadow-panel`, `--aro-shadow-menu`, and `--aro-shadow-composer`.
+Shell, sidebar, context panes, popovers, and the composer use these derived
+tokens instead of inventing per-surface focus rings or elevations. The active
+theme remains the source of all color values.
+
+The Aro primitive kit in `src/aro/ui.tsx` is the single home for Aro-owned
+buttons, icon buttons, menus, segmented controls, tabs, toggles, and tooltips.
+Menus expose `role="menu"` / `role="menuitem"`, tabs expose tab semantics,
+and all trigger buttons are explicit `type="button"` controls so embedding a
+primitive in a form cannot submit it accidentally.
+
 ## Direct manipulation & performance
 
 The app should feel instant under real load — long transcripts, several panes,

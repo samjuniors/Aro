@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { adapters } from '@/adapters'
 import {
   $activeSessionId,
   $selectedStoredSessionId,
@@ -9,12 +10,25 @@ import {
 } from '@/store/session'
 import { $todosBySession } from '@/store/todos'
 
-import { $rightSidebarSection, setRightSidebarSection } from './store'
+import { $rightSidebarSection, $workspaceOpenTabs, setRightSidebarSection } from './store'
 
 import { RightSidebarPane } from './index'
 
+function getWorkspaceTab(section: string) {
+  const tab = screen.getByRole('group', { name: 'Workspace tools' }).querySelector<HTMLButtonElement>(
+    `[data-workspace-tab="${section}"]`
+  )
+
+  if (!tab) {
+    throw new Error(`Workspace tab "${section}" was not rendered`)
+  }
+
+  return tab
+}
+
 describe('Right Context Rail', () => {
   beforeEach(() => {
+    $workspaceOpenTabs.set(['files', 'changes', 'terminal', 'search', 'browser', 'plan', 'context', 'git'])
     setRightSidebarSection('files')
     $todosBySession.set({})
     $activeSessionId.set('test-session')
@@ -25,6 +39,8 @@ describe('Right Context Rail', () => {
 
   afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
+    $workspaceOpenTabs.set(['files', 'changes', 'terminal', 'search', 'browser', 'plan', 'context', 'git'])
     setRightSidebarSection('files')
     $todosBySession.set({})
     $activeSessionId.set(null)
@@ -36,13 +52,32 @@ describe('Right Context Rail', () => {
   it('switches to Plan section and shows empty state when no todos', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const planBtn = screen.getByRole('button', { name: 'Plan' })
+    const planBtn = getWorkspaceTab('plan')
     fireEvent.click(planBtn)
 
     expect(screen.getByText('No active plan')).toBeDefined()
     expect(
       screen.getByText('The agent will create and maintain steps as tasks are planned and executed.')
     ).toBeDefined()
+  })
+
+  it('keeps the active tab focusable and labels its workspace region', () => {
+    $workspaceOpenTabs.set(['files', 'terminal'])
+
+    render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
+
+    const filesTab = getWorkspaceTab('files')
+    const terminalTab = getWorkspaceTab('terminal')
+    const workspace = screen.getByRole('region')
+
+    expect(filesTab.tabIndex).toBe(0)
+    expect(workspace.getAttribute('aria-labelledby')).toBe(filesTab.id)
+
+    filesTab.focus()
+    fireEvent.keyDown(filesTab, { key: 'ArrowRight' })
+
+    expect(globalThis.document.activeElement).toBe(terminalTab)
+    expect(terminalTab.getAttribute('aria-pressed')).toBe('true')
   })
 
   it('renders live todos in Plan section when present', () => {
@@ -56,7 +91,7 @@ describe('Right Context Rail', () => {
 
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const planBtn = screen.getByRole('button', { name: 'Plan' })
+    const planBtn = getWorkspaceTab('plan')
     fireEvent.click(planBtn)
 
     expect(screen.getByText('Implementation plan')).toBeDefined()
@@ -69,7 +104,7 @@ describe('Right Context Rail', () => {
   it('switches to Git section and renders empty state without workspace git', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const gitBtn = screen.getByRole('button', { name: 'Git' })
+    const gitBtn = getWorkspaceTab('git')
     fireEvent.click(gitBtn)
 
     expect(screen.getByText('No Git Repository')).toBeDefined()
@@ -78,17 +113,17 @@ describe('Right Context Rail', () => {
   it('switches to Terminal section and mounts terminal slot', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const terminalBtn = screen.getByRole('button', { name: 'Terminal' })
+    const terminalBtn = getWorkspaceTab('terminal')
     fireEvent.click(terminalBtn)
 
     expect(screen.getByText('Embedded Terminal')).toBeDefined()
-    expect(document.querySelector('[data-terminal-slot]')).not.toBeNull()
+    expect(globalThis.document.querySelector('[data-terminal-slot]')).not.toBeNull()
   })
 
   it('switches to Context section and shows context window info', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const contextBtn = screen.getByRole('button', { name: 'Context' })
+    const contextBtn = getWorkspaceTab('context')
     fireEvent.click(contextBtn)
 
     expect(screen.getByText('Context window')).toBeDefined()
@@ -98,7 +133,7 @@ describe('Right Context Rail', () => {
   it('switches to Search section and renders empty state without workspace', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const searchBtn = screen.getByRole('button', { name: 'Search' })
+    const searchBtn = getWorkspaceTab('search')
     fireEvent.click(searchBtn)
 
     expect(screen.getByText('No workspace open')).toBeDefined()
@@ -108,24 +143,33 @@ describe('Right Context Rail', () => {
   })
 
   it('switches to Search section with workspace and allows searching', async () => {
+    const search = vi.spyOn(adapters.codeSearch, 'search').mockResolvedValue({ hits: [], scannedFiles: 1, truncated: false })
     setCurrentCwd('/repo')
 
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const searchBtn = screen.getByRole('button', { name: 'Search' })
+    const searchBtn = getWorkspaceTab('search')
     fireEvent.click(searchBtn)
 
     const input = screen.getByPlaceholderText('Search project files…')
     expect(input).toBeDefined()
 
     fireEvent.change(input, { target: { value: 'test-needle' } })
-    expect(screen.getByText('no matches for “test-needle”')).toBeDefined()
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 150))
+    })
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledWith({ query: 'test-needle', root: '/repo' })
+      expect(screen.getByText('no matches for “test-needle”')).toBeDefined()
+    })
   })
 
   it('switches to Browser section and renders empty state and controls', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const browserBtn = screen.getByRole('button', { name: 'Browser' })
+    const browserBtn = getWorkspaceTab('browser')
     fireEvent.click(browserBtn)
 
     expect(screen.getByText('No page open')).toBeDefined()
@@ -138,7 +182,7 @@ describe('Right Context Rail', () => {
   it('allows navigating to a preview URL in Browser section', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const browserBtn = screen.getByRole('button', { name: 'Browser' })
+    const browserBtn = getWorkspaceTab('browser')
     fireEvent.click(browserBtn)
 
     const urlInput = screen.getByPlaceholderText('https://example.com')
@@ -147,7 +191,7 @@ describe('Right Context Rail', () => {
     const openBtn = screen.getByRole('button', { name: 'Open' })
     fireEvent.click(openBtn)
 
-    const iframe = document.querySelector('iframe')
+    const iframe = globalThis.document.querySelector('iframe')
     expect(iframe).not.toBeNull()
     expect(iframe?.getAttribute('src')).toBe('https://example.org/test')
   })
@@ -155,7 +199,7 @@ describe('Right Context Rail', () => {
   it('persists right sidebar active section to storage', () => {
     render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
 
-    const searchBtn = screen.getByRole('button', { name: 'Search' })
+    const searchBtn = getWorkspaceTab('search')
     fireEvent.click(searchBtn)
 
     expect($rightSidebarSection.get()).toBe('search')

@@ -62,7 +62,7 @@ export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
           type="button"
         >
           <Codicon className="size-3 text-aro-iris-soft" name={IDE_CODICON[currentIde.id]} />
-          <span>{currentIde.name}</span>
+          <span className={compact ? 'sr-only' : undefined}>{currentIde.name}</span>
         </button>
       </Tip>
 
