@@ -51,13 +51,13 @@ export function AskDirective({ attrs, streaming }: { attrs: Record<string, strin
       className="my-3 flex min-w-0 max-w-full flex-col gap-2 overflow-visible duration-300 animate-in fade-in-0 slide-in-from-bottom-2"
       data-onboarding-card
     >
-      <div className="text-[13px] font-medium">{question}</div>
+      <div className="text-sm font-medium">{question}</div>
       {options.length > 0 && (
         <div className="flex min-w-0 max-w-full flex-wrap gap-2">
           {options.map(option => (
             <button
               className={cn(
-                'max-w-full shrink-0 rounded-full border px-3 py-1.5 text-left text-[12px] whitespace-normal wrap-anywhere transition-colors',
+                'max-w-full shrink-0 rounded-full border px-3 py-1.5 text-left text-xs whitespace-normal wrap-anywhere transition-colors',
                 picked === option
                   ? 'border-primary bg-primary text-primary-foreground'
                   : closed

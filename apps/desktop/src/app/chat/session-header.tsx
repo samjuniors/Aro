@@ -183,7 +183,7 @@ export function SessionHeader({
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    'group flex max-w-[420px] min-w-0 cursor-pointer items-center gap-2 rounded-[7px] px-1.5 py-1 transition-colors hover:bg-aro-hover',
+                    'group flex max-w-[420px] min-w-0 cursor-pointer items-center gap-2 rounded-control px-1.5 py-1 transition-colors hover:bg-aro-hover',
                     dropdownOpen && 'bg-aro-hover'
                   )}
                   type="button"
@@ -303,7 +303,7 @@ export function SessionHeader({
                     aria-label="Overview"
                     aria-pressed={overviewOpen}
                     className={cn(
-                      'flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
+                      'flex size-7 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
                       overviewOpen && 'bg-aro-hover text-aro-iris-soft'
                     )}
                     type="button"
@@ -314,7 +314,7 @@ export function SessionHeader({
               </Tip>
               <PopoverContent
                 align="end"
-                className="w-52 rounded-[10px] border border-aro-line bg-aro-raise/95 p-1.5 shadow-2xl backdrop-blur-xl z-50 text-aro-ink"
+                className="w-52 rounded-control border border-aro-line bg-aro-raise/95 p-1.5 shadow-aro-e4 backdrop-blur-xl z-50 text-aro-ink"
                 onOpenAutoFocus={e => e.preventDefault()}
                 side="bottom"
                 sideOffset={6}
@@ -401,7 +401,7 @@ export function SessionHeader({
           >
             <button
               aria-label="Session actions"
-              className="flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-7 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               type="button"
             >
               <IconMore size={13} />
@@ -422,7 +422,7 @@ export function SessionHeader({
             }
             aria-pressed={fileBrowserOpen}
             className={cn(
-              'pointer-events-auto flex size-7 cursor-pointer items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
+              'pointer-events-auto flex size-7 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
               fileBrowserOpen && 'bg-aro-hover text-aro-iris-soft'
             )}
             data-aro-new-tab-menu=""

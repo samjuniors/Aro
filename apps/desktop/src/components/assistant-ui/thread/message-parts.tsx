@@ -289,7 +289,7 @@ const ThinkingDisclosure: FC<{
 
   return (
     <div
-      className="my-2 overflow-hidden rounded-[9px] border border-dashed border-aro-line bg-aro-well/60"
+      className="my-2 overflow-hidden rounded-panel border border-dashed border-aro-line bg-aro-well/60"
       data-conversation-scaffold=""
       data-slot="aui_thinking-disclosure"
       ref={enterRef}
@@ -307,7 +307,7 @@ const ThinkingDisclosure: FC<{
         <span className={cn('min-w-0 flex-1 truncate font-aro-sans text-[11.5px] text-aro-ink-3 italic', pending && 'animate-pulse')}>
           {thoughtLabel}
         </span>
-        <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[10px] text-aro-ink-4">
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
           <TimelineTimestamp className={SCAFFOLD_META_CLASS} completedAt={completedAt} timestamp={timestamp} />
           {pending && <ActivityTimerText className={SCAFFOLD_META_CLASS} seconds={elapsed} />}
         </span>

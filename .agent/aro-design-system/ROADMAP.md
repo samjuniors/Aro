@@ -133,7 +133,7 @@ route opened; empty/loading/error states.
 failure, reauth, update, error boundary, guide startup. Recovery semantics
 unchanged. **Check:** force each state.
 - [x] 20. Boot surfaces
-- [ ] 🛑 **GATE C5**
+- [x] 🛑 **GATE C5**
 
 ---
 
@@ -147,7 +147,7 @@ verified; a11y pass; `DESIGN.md` matches code; no new failures vs baseline;
 **Founder check:** full walkthrough, 6 themes, glass on/off, RTL, one
 non-English locale.
 
-- [ ] 21. Theme radius reset (`--radius-*: initial`) + straggler fixes
+- [x] 21. Theme radius reset (`--radius-*: initial`) + straggler fixes
 - [ ] 22. Perf (long transcript, several panes, live stream)
 - [ ] 23. A11y (keyboard-only, contrast, roles, reduced motion)
 - [ ] 24. Prod build check + `DESIGN.md` sync

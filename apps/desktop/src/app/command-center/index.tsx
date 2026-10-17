@@ -658,10 +658,10 @@ function UsagePanel({ error, loading, onRefresh, period, usage }: UsagePanelProp
           </span>
           <span className="flex items-center gap-3 text-[0.65rem] text-(--ui-text-tertiary)">
             <span className="inline-flex items-center gap-1">
-              <span className="size-2 rounded-[1px] bg-[color:var(--dt-primary)]/60" /> {cc.input}
+              <span className="size-2 rounded-xs bg-[color:var(--dt-primary)]/60" /> {cc.input}
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="size-2 rounded-[1px] bg-emerald-500/70" /> {cc.output}
+              <span className="size-2 rounded-xs bg-emerald-500/70" /> {cc.output}
             </span>
           </span>
         </div>

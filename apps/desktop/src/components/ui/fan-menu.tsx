@@ -381,7 +381,7 @@ const FanCluster = memo(function FanCluster({
             aria-label={item.label}
             aria-pressed={item.active}
             className={cn(
-              'absolute inset-0 rounded-full shadow-md',
+              'absolute inset-0 rounded-full shadow-aro-e2',
               entered ? 'pointer-events-auto' : 'pointer-events-none'
             )}
             disabled={item.disabled}

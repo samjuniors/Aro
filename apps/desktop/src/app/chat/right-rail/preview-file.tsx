@@ -399,7 +399,7 @@ function MarkdownImage({ alt, src, ...rest }: ComponentProps<'img'>) {
   return (
     <img
       alt={alt ?? ''}
-      className="my-3 max-h-96 w-auto max-w-full rounded-lg border border-border object-contain shadow-sm"
+      className="my-3 max-h-96 w-auto max-w-full rounded-lg border border-border object-contain shadow-aro-e1"
       src={src}
       {...rest}
     />
@@ -1185,7 +1185,7 @@ export function LocalFilePreview({
       <div className="flex h-full w-full items-center justify-center overflow-auto bg-transparent p-4">
         <img
           alt={target.label}
-          className="max-h-full max-w-full rounded-lg object-contain shadow-sm"
+          className="max-h-full max-w-full rounded-lg object-contain shadow-aro-e1"
           draggable={false}
           src={state.dataUrl}
         />

@@ -826,7 +826,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'all'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'all'
                 ? 'bg-(--ui-control-active-background) font-semibold text-foreground shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -844,7 +844,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'free'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'free'
                 ? 'bg-emerald-500/15 font-semibold text-emerald-600 dark:text-emerald-400 shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -862,7 +862,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'paid'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'paid'
                 ? 'bg-amber-500/15 font-semibold text-amber-600 dark:text-amber-400 shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -1332,7 +1332,7 @@ function ModelFamilyRow({
         ) : pricing ? (
           <ModelPrice pricing={pricing} />
         ) : (
-          <span className="shrink-0 font-aro-mono text-[9px] text-(--ui-text-tertiary) opacity-70">
+          <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary) opacity-70">
             {provider.name}
           </span>
         )}

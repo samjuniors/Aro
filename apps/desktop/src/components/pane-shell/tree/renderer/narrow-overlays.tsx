@@ -205,7 +205,7 @@ export function NarrowOverlays() {
       {revealed && (
         <div
           className={cn(
-            'absolute inset-y-0 z-40 flex flex-col overflow-hidden bg-(--ui-sidebar-surface-background) shadow-2xl',
+            'absolute inset-y-0 z-40 flex flex-col overflow-hidden bg-(--ui-sidebar-surface-background) shadow-aro-e4',
             sideOf(revealed) === 'left'
               ? 'left-0 border-r border-(--ui-stroke-secondary)'
               : 'right-0 border-l border-(--ui-stroke-secondary)'

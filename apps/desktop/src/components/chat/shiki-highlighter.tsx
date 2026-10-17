@@ -194,7 +194,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
       {/* Aro prose-code header (prototype grammar): mono uppercase language
           label + the real hover actions (run in terminal / copy). */}
       <div className="flex h-[26px] items-center justify-between gap-2 border-b border-aro-line-soft bg-aro-code/50 pl-2.5 pr-1">
-        <span className="min-w-0 truncate font-aro-mono text-[9px] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
+        <span className="min-w-0 truncate font-aro-mono text-[var(--aro-text-2xs,10px)] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
           {language || 'code'}
         </span>
         {/* Prototype prose-code head: actions are ALWAYS visible (the
