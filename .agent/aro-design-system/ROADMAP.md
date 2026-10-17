@@ -51,11 +51,11 @@ sidebar (`/aro-design`), switch themes, look at every section.
       exclusions (theme/palette/shiki data files)
 - [x] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
       JSON (ratchet: counts only shrink; `design-allow:` lines ignored)
-- [~] 3. Tokens (additive only; parity test must stay green): add
+- [x] 3. Tokens (additive only; parity test must stay green): add
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
       a `prefers-reduced-motion` block
-  - [ ] 3.1 Contrast table, every role pair, all 6 themes
-- [ ] 4. Components on the contract, host primitives first: `Button`,
+  - [x] 3.1 Contrast table, every role pair, all 6 themes
+- [~] 4. Components on the contract, host primitives first: `Button`,
       `Input`, `Textarea`, `Select`, `DropdownMenu`, `Popover`, `Tooltip`,
       `Dialog`, `ConfirmDialog`, `Tabs`, `SegmentedControl`, `Switch`,
       `Checkbox`, `Badge`, `ListRow`, `Loader`, `EmptyState`, `ErrorState`,
