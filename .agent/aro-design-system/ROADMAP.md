@@ -91,7 +91,7 @@ consistent on 6 existing screens; smoke test.
 
 - [x] 6. One primitive per commit, baseline lowered each commit
 - [x] 7. Smoke test + before/after screenshots of 6 existing screens
-- [ ] 🛑 **GATE B**
+- [x] 🛑 **GATE B**
 
 ---
 
