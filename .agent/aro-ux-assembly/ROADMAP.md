@@ -92,7 +92,7 @@ screenshots and step counts per screen.
 **C1 Shell:** titlebar band, sidebar and profile rail, panes, statusbar,
 resize and collapse. **Check:** resize wide to narrow, pane drag/drop, tray.
 - [x] 10. Titlebar and tabs  - [x] 11. Sidebar and rail
-- [~] 12. Panes, statusbar, collapse behavior
+- [x] 12. Panes, statusbar, collapse behavior
 - [ ] 🛑 **GATE C1**
 
 **C2 Chat:** transcript measure and rhythm, tool rows, widgets, composer and
