@@ -505,11 +505,11 @@ export function BootFailureOverlay() {
           <ErrorIcon className="mt-0.5" size="1.25rem" />
           <div>
             <DialogPrimitive.Title asChild>
-              <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+              <h2 className="text-aro-lg font-semibold tracking-tight">
                 {remoteReauth ? copy.remoteTitle : cloudDown ? copy.cloudDownTitle : copy.title}
               </h2>
             </DialogPrimitive.Title>
-            <p className="mt-1 text-[0.8125rem] leading-5 text-(--ui-text-tertiary)">
+            <p className="mt-1 text-aro-md leading-5 text-(--ui-text-tertiary)">
               {remoteReauth ? copy.remoteDescription : cloudDown ? copy.cloudDownDescription : copy.description}
             </p>
           </div>
@@ -522,7 +522,7 @@ export function BootFailureOverlay() {
               <details className="mt-2 text-muted-foreground">
                 <summary className="cursor-pointer select-none font-medium">{copy.details}</summary>
                 <pre
-                  className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap wrap-break-word font-mono text-[0.6875rem] leading-relaxed"
+                  className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap wrap-break-word font-mono text-aro-xs leading-relaxed"
                   data-selectable-text="true"
                 >
                   {failureCopy.rawDetail}

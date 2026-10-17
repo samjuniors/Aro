@@ -194,7 +194,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate font-medium text-foreground/85">{title}</span>
-        <span aria-hidden="true" className="font-mono text-[0.6875rem] text-muted-foreground/85">
+        <span aria-hidden="true" className="font-mono text-aro-xs text-muted-foreground/85">
           {formatElapsed(state.elapsedSeconds)}
         </span>
       </div>
@@ -239,7 +239,7 @@ export function VoicePlaybackActivity() {
       </div>
 
       <Button
-        className="h-6 shrink-0 gap-1 rounded-full px-2 text-[0.6875rem]"
+        className="h-6 shrink-0 gap-1 rounded-full px-2 text-aro-xs"
         onClick={stopVoicePlayback}
         size="sm"
         type="button"

@@ -254,16 +254,16 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             >
               <Icon size={11} />
             </span>
-            <span className="shrink-0 font-aro-mono text-[9.5px] font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
+            <span className="shrink-0 font-aro-mono text-aro-xs font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
               {meta.label}
             </span>
             {target && (
-              <span className="min-w-0 flex-1 truncate font-aro-mono text-[11.5px] text-aro-ink-2" title={target}>
+              <span className="min-w-0 flex-1 truncate font-aro-mono text-aro-sm text-aro-ink-2" title={target}>
                 {target}
               </span>
             )}
             {isPending && (
-              <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-[10.5px] text-aro-cyan">
+              <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-aro-xs text-aro-cyan">
                 <i aria-hidden="true" className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />
                 running
               </span>
@@ -296,16 +296,16 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             >
               <Icon size={11} />
             </span>
-            <span className="shrink-0 font-aro-mono text-[9.5px] font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
+            <span className="shrink-0 font-aro-mono text-aro-xs font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
               {meta.label}
             </span>
             {target && (
-              <span className="min-w-0 flex-1 truncate font-aro-mono text-[11.5px] text-aro-ink-2" title={target}>
+              <span className="min-w-0 flex-1 truncate font-aro-mono text-aro-sm text-aro-ink-2" title={target}>
                 {target}
               </span>
             )}
             {isPending && (
-              <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[10.5px] text-aro-cyan">
+              <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-aro-xs text-aro-cyan">
                 <i aria-hidden="true" className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />
                 running
               </span>

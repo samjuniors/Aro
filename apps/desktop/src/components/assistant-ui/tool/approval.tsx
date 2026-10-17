@@ -337,7 +337,7 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
       <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2 text-xs">
         <IconShield className="text-aro-amber shrink-0" size={13} />
         <span className="font-semibold text-aro-ink">{showsDescription ? copy.commandDetails : copy.command}</span>
-        <span className="rounded-control bg-aro-amber-tint px-1.5 py-0.5 font-aro-mono text-[9.5px] font-medium text-aro-amber capitalize">
+        <span className="rounded-control bg-aro-amber-tint px-1.5 py-0.5 font-aro-mono text-aro-xs font-medium text-aro-amber capitalize">
           {request.smartDenied ? 'smart-denied' : 'approval required'}
         </span>
         {total > 1 && (
@@ -347,7 +347,7 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
         )}
       </div>
       {details.length > 0 && (
-        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-control border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-[11.5px] leading-relaxed text-aro-ink-2">
+        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-control border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-aro-sm leading-relaxed text-aro-ink-2">
           {details}
         </pre>
       )}

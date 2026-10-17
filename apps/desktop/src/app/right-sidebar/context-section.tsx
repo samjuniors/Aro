@@ -92,7 +92,7 @@ export function ContextSection() {
                 const percent = totalTokens > 0 ? Math.round((c.tokens / totalTokens) * 100) : 0
                 return (
                   <div key={c.id} className="flex items-center gap-2">
-                    <span className="w-[84px] shrink-0 truncate text-[10.5px] text-aro-ink-3">{c.label}</span>
+                    <span className="w-[84px] shrink-0 truncate text-aro-xs text-aro-ink-3">{c.label}</span>
                     <Bar value={percent} tone="iris" height={3} />
                     <span className="w-8 text-right font-aro-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
                       {compactNumber(c.tokens)}
@@ -101,7 +101,7 @@ export function ContextSection() {
                 )
               })
             ) : (
-              <div className="text-[10.5px] text-aro-ink-4">
+              <div className="text-aro-xs text-aro-ink-4">
                 {breakdownLoading ? 'Analyzing context…' : 'No active context tokens'}
               </div>
             )}
@@ -112,7 +112,7 @@ export function ContextSection() {
       {/* MCP Connectors */}
       <Panel>
         <div className="flex items-center justify-between border-b border-aro-line-soft px-2.5 py-2">
-          <span className="flex items-center gap-1.5 font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
+          <span className="flex items-center gap-1.5 font-aro-mono text-aro-xs font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
             <IconMcp size={10} /> MCP Connectors
           </span>
           <Badge mono tone={mcpServers.length > 0 ? 'mint' : 'neutral'} className="text-[var(--aro-text-2xs,9px)]">
@@ -121,7 +121,7 @@ export function ContextSection() {
         </div>
         <div className="p-2">
           {mcpServers.length === 0 ? (
-            <div className="py-2 text-center font-aro-mono text-[10.5px] text-aro-ink-4">
+            <div className="py-2 text-center font-aro-mono text-aro-xs text-aro-ink-4">
               {mcpLoading ? 'Querying connectors…' : 'No MCP servers configured'}
             </div>
           ) : (
@@ -137,7 +137,7 @@ export function ContextSection() {
                           s.enabled ? 'bg-aro-mint' : 'bg-aro-line-strong'
                         )}
                       />
-                      <span className="truncate font-aro-mono text-[10.5px] text-aro-ink-2" title={s.name}>
+                      <span className="truncate font-aro-mono text-aro-xs text-aro-ink-2" title={s.name}>
                         {s.name}
                       </span>
                       <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
@@ -155,7 +155,7 @@ export function ContextSection() {
       {/* Memory & context notes */}
       <Panel>
         <div className="flex items-center justify-between border-b border-aro-line-soft px-2.5 py-2">
-          <span className="flex items-center gap-1.5 font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
+          <span className="flex items-center gap-1.5 font-aro-mono text-aro-xs font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
             <IconBrain size={10} className="text-aro-mint" /> Agent Memory
           </span>
         </div>

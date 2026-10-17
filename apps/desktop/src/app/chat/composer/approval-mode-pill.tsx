@@ -137,7 +137,7 @@ export function ApprovalModePill({
           <button
             aria-label={`Approval mode: ${activeMeta.label}${yoloActive ? ' (YOLO bypass on)' : ''}`}
             className={cn(
-              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal shadow-(--aro-shadow-e1) transition-colors text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink-2',
+              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-aro-sm font-normal shadow-(--aro-shadow-e1) transition-colors text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink-2',
               activeMeta.id === 'off' && 'text-aro-amber font-medium',
               disabled && 'pointer-events-none opacity-50'
             )}
@@ -179,7 +179,7 @@ export function ApprovalModePill({
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-medium text-aro-ink">{m.label}</div>
-                <div className="text-[10.5px] leading-snug text-aro-ink-3">{m.desc}</div>
+                <div className="text-aro-xs leading-snug text-aro-ink-3">{m.desc}</div>
               </div>
               {isSelected && <IconCheck className="mt-1 shrink-0 text-aro-iris" size={12} />}
             </DropdownMenuItem>

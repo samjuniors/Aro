@@ -1669,12 +1669,12 @@ export function ChatBar({
                   <VoicePlaybackActivity />
                   {queueEdit && editingQueuedPrompt && (
                     <div className="flex items-center justify-between gap-2 rounded-panel border border-[color-mix(in_srgb,var(--dt-composer-ring)_32%,transparent)] bg-accent/18 px-2 py-1">
-                      <div className="min-w-0 text-[0.7rem] text-muted-foreground/88">
+                      <div className="min-w-0 text-aro-xs text-muted-foreground/88">
                         {t.composer.editingQueuedInComposer}
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <Button
-                          className="h-6 rounded-control px-2 text-[0.68rem]"
+                          className="h-6 rounded-control px-2 text-aro-xs"
                           onClick={() => exitQueuedEdit('cancel')}
                           type="button"
                           variant="ghost"
@@ -1682,7 +1682,7 @@ export function ChatBar({
                           {t.common.cancel}
                         </Button>
                         <Button
-                          className="h-6 rounded-control px-2 text-[0.68rem]"
+                          className="h-6 rounded-control px-2 text-aro-xs"
                           onClick={() => exitQueuedEdit('save')}
                           type="button"
                         >
@@ -1724,7 +1724,7 @@ export function ChatBar({
             <ContribSlot area={COMPOSER_AREAS.underside} />
           </div>
           {typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true' && !sessionId && (
-            <p className="mt-2 text-center text-[10.5px] text-(--ui-text-quaternary) select-none pointer-events-none">
+            <p className="mt-2 text-center text-aro-xs text-(--ui-text-quaternary) select-none pointer-events-none">
               Blank canvas — nothing is connected until you choose a project and model.
             </p>
           )}

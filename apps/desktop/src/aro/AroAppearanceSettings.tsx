@@ -362,7 +362,7 @@ export function AroAppearanceSettings() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[10.5px] text-muted-foreground line-clamp-1">
+                    <p className="mt-0.5 text-aro-xs text-muted-foreground line-clamp-1">
                       {item.source}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-(--ui-text-tertiary) line-clamp-2">
@@ -606,7 +606,7 @@ export function AroAppearanceSettings() {
                 <Book className="size-3.5 text-accent" />
                 <span className="text-xs font-medium text-foreground">Global Rules</span>
               </div>
-              <p className="text-[10.5px] text-muted-foreground">Workspace instructions</p>
+              <p className="text-aro-xs text-muted-foreground">Workspace instructions</p>
             </div>
             <ChevronRight className="size-3 text-muted-foreground" />
           </button>
@@ -621,7 +621,7 @@ export function AroAppearanceSettings() {
                 <Users className="size-3.5 text-accent" />
                 <span className="text-xs font-medium text-foreground">Agent Adapters</span>
               </div>
-              <p className="text-[10.5px] text-muted-foreground">Custom catalog & subagents</p>
+              <p className="text-aro-xs text-muted-foreground">Custom catalog & subagents</p>
             </div>
             <ChevronRight className="size-3 text-muted-foreground" />
           </button>
@@ -636,7 +636,7 @@ export function AroAppearanceSettings() {
                 <IconPulse className="text-accent" size={14} />
                 <span className="text-xs font-medium text-foreground">Aro Doctor</span>
               </div>
-              <p className="text-[10.5px] text-muted-foreground">Readiness & diagnostics</p>
+              <p className="text-aro-xs text-muted-foreground">Readiness & diagnostics</p>
             </div>
             <ChevronRight className="size-3 text-muted-foreground" />
           </button>
@@ -651,7 +651,7 @@ export function AroAppearanceSettings() {
                 <IconLayers className="text-accent" size={14} />
                 <span className="text-xs font-medium text-foreground">Design Spec</span>
               </div>
-              <p className="text-[10.5px] text-muted-foreground">Tokens & primitives</p>
+              <p className="text-aro-xs text-muted-foreground">Tokens & primitives</p>
             </div>
             <ChevronRight className="size-3 text-muted-foreground" />
           </button>
@@ -663,7 +663,7 @@ export function AroAppearanceSettings() {
         <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {DESIGN_SPECS[currentProfile]?.label ?? selectedItem.label} Specifications
         </h4>
-        <div className="mt-2.5 grid gap-x-6 gap-y-1.5 font-mono text-[10.5px] text-muted-foreground sm:grid-cols-2">
+        <div className="mt-2.5 grid gap-x-6 gap-y-1.5 font-mono text-aro-xs text-muted-foreground sm:grid-cols-2">
           <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
             <span>Display</span>
             <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.type.display}</span>

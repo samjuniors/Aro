@@ -32,7 +32,7 @@ type CatalogTarget = ConnectionTarget & { catalog: CatalogEntry; kind: 'plugin' 
 
 const SHELL_CLASS = `${WIDGET_SHELL_CLASS} text-[length:var(--conversation-text-font-size)] text-(--ui-text-primary)`
 const CAPTION = 'text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height)'
-const PILL = 'inline-flex items-center rounded-full px-1.5 py-0.5 text-[0.62rem] font-medium leading-[0.93rem]'
+const PILL = 'inline-flex items-center rounded-full px-1.5 py-0.5 text-aro-xs font-medium leading-[0.93rem]'
 
 const KIND_GLYPH = { plugin: Plug, skill: Book } as const
 
@@ -258,7 +258,7 @@ function RowOutcome({
           ) : null}
         </p>
         {namesOpen ? (
-          <ul className="flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 font-mono text-[0.6875rem] leading-4 text-(--ui-text-secondary)">
+          <ul className="flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 font-mono text-aro-xs leading-4 text-(--ui-text-secondary)">
             {target.tools.map(tool => (
               <li className="min-w-0 break-all" key={tool}>
                 {tool}

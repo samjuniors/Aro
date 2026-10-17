@@ -204,7 +204,7 @@ export function ProfileSwitcher({
                 <span className="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 ring-1 ring-(--ui-bg-chrome)" />
               </span>
               <span className="min-w-0 flex-1 text-left">
-                <span className="block truncate font-medium text-foreground leading-tight text-[12.5px]">
+                <span className="block truncate font-medium text-foreground leading-tight text-aro-sm">
                   {triggerLabel}
                 </span>
                 <span className="block truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary) leading-tight">
@@ -222,7 +222,7 @@ export function ProfileSwitcher({
               aria-label={`${p.title}: ${triggerLabel}`}
               className={cn(
                 'w-full min-w-0 justify-between overflow-hidden px-1 text-(--ui-text-secondary) data-[state=open]:bg-(--ui-control-active-background) data-[state=open]:text-foreground',
-                compact && 'h-full min-h-0 rounded-none px-1.5 text-[0.6875rem] font-normal'
+                compact && 'h-full min-h-0 rounded-none px-1.5 text-aro-xs font-normal'
               )}
               size="xs"
               type="button"

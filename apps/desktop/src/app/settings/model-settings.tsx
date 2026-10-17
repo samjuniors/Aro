@@ -1202,7 +1202,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                       )
                     }
                     description={
-                      <span className="font-mono text-[0.68rem]">
+                      <span className="font-mono text-aro-xs">
                         {isAuto ? m.autoUseMain : `${current.provider} · ${current.model || m.providerDefault}`}
                         {!isAuto && current.base_url && (
                           <span className="text-muted-foreground"> · {current.base_url}</span>
@@ -1412,7 +1412,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                 }
                 className={cn(slot.enabled === false && 'opacity-60')}
                 description={
-                  <span className="font-mono text-[0.68rem]">
+                  <span className="font-mono text-aro-xs">
                     {slot.provider} · {slot.model || m.model}
                   </span>
                 }
@@ -1484,7 +1484,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                 </div>
               }
               description={
-                <span className="font-mono text-[0.68rem]">
+                <span className="font-mono text-aro-xs">
                   {currentMoaPreset.aggregator.provider} · {currentMoaPreset.aggregator.model}
                 </span>
               }

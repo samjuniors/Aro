@@ -57,7 +57,7 @@ export function EnvPill({
             <Icon className="shrink-0" size={12} />
             <span className="max-w-[110px] truncate">{label}</span>
             {repoStatus?.changed && repoStatus.changed > 0 ? (
-              <span className="shrink-0 rounded-control px-1 text-[9.5px] font-mono font-medium text-amber-500 bg-amber-500/10">
+              <span className="shrink-0 rounded-control px-1 text-aro-xs font-mono font-medium text-amber-500 bg-amber-500/10">
                 +{repoStatus.changed}
               </span>
             ) : null}
@@ -72,7 +72,7 @@ export function EnvPill({
 
         <DropdownMenuItem
           className={cn(
-            'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] transition-colors',
+            'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-aro-sm transition-colors',
             !isWorktree && 'bg-aro-hover text-aro-ink'
           )}
           onClick={() => {
@@ -89,7 +89,7 @@ export function EnvPill({
         {worktrees.length > 0 && (
           <>
             <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
-            <div className="px-2 py-0.5 font-aro-mono text-[9.5px] text-aro-ink-4">Worktrees</div>
+            <div className="px-2 py-0.5 font-aro-mono text-aro-xs text-aro-ink-4">Worktrees</div>
             {worktrees.map(wt => {
               const active = wt.branch === currentBranch
               return (

@@ -186,7 +186,7 @@ export function CopyButton({
         <button
           aria-label={ariaLabel}
           className={cn(
-            'inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[0.75rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40',
+            'inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-aro-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40',
             className
           )}
           disabled={disabled}

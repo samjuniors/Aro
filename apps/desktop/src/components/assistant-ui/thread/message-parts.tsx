@@ -301,10 +301,10 @@ const ThinkingDisclosure: FC<{
         type="button"
       >
         <IconBrain className="shrink-0 text-aro-plum" size={12} />
-        <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">
+        <span className="font-aro-mono text-aro-xs font-semibold tracking-[.12em] text-aro-ink-4 uppercase">
           reasoning
         </span>
-        <span className={cn('min-w-0 flex-1 truncate font-aro-sans text-[11.5px] text-aro-ink-3 italic', pending && 'animate-pulse')}>
+        <span className={cn('min-w-0 flex-1 truncate font-aro-sans text-aro-sm text-aro-ink-3 italic', pending && 'animate-pulse')}>
           {thoughtLabel}
         </span>
         <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
@@ -319,7 +319,7 @@ const ThinkingDisclosure: FC<{
       {open && (
         <div
           className={cn(
-            'border-t border-dashed border-aro-line px-3 py-2.5 font-sans text-[12.5px] leading-[1.65] text-aro-ink-3 italic overflow-auto overscroll-x-contain overscroll-y-auto wrap-anywhere',
+            'border-t border-dashed border-aro-line px-3 py-2.5 font-sans text-aro-sm leading-[1.65] text-aro-ink-3 italic overflow-auto overscroll-x-contain overscroll-y-auto wrap-anywhere',
             isPreview && 'max-h-48'
           )}
           data-slot="aui_thinking-body"

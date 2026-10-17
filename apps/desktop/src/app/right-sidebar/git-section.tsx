@@ -87,7 +87,7 @@ export function GitSection() {
       {/* Worktrees list */}
       <Panel>
         <div className="flex items-center justify-between border-b border-aro-line-soft px-2.5 py-2">
-          <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
+          <span className="font-aro-mono text-aro-xs font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
             Worktrees
           </span>
           <Badge mono tone="neutral" className="text-[var(--aro-text-2xs,9px)]">
@@ -97,7 +97,7 @@ export function GitSection() {
 
         <div className="space-y-0.5 p-1">
           {worktrees.length === 0 ? (
-            <div className="p-2 text-center font-aro-mono text-[10.5px] text-aro-ink-4">
+            <div className="p-2 text-center font-aro-mono text-aro-xs text-aro-ink-4">
               Single checkout (main worktree)
             </div>
           ) : (

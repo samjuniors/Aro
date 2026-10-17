@@ -543,7 +543,7 @@ function HugeTextFallback({ containerClassName, text }: { containerClassName?: s
   return (
     <div
       className={cn(
-        'aui-md w-full max-w-none overflow-hidden rounded-panel border border-(--ui-stroke-tertiary) font-mono text-[0.7rem] leading-relaxed text-foreground/90',
+        'aui-md w-full max-w-none overflow-hidden rounded-panel border border-(--ui-stroke-tertiary) font-mono text-aro-xs leading-relaxed text-foreground/90',
         containerClassName
       )}
     >

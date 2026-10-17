@@ -500,7 +500,7 @@ function FreeTierReadyPanel({
         )}
       >
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="font-mono text-aro-xs uppercase tracking-[0.2em] text-muted-foreground">
             {t.onboarding.defaultModel}
           </span>
           <Badge size="xs" variant="success">
@@ -578,8 +578,8 @@ function Header() {
 
   return (
     <div className="bg-(--ui-chat-bubble-background) px-5 pt-5 pb-1">
-      <h2 className="text-[0.9375rem] font-semibold tracking-tight">{t.onboarding.headerTitle}</h2>
-      <p className="mt-1 max-w-xl text-[0.8125rem] leading-5 text-(--ui-text-tertiary)">{t.onboarding.headerDesc}</p>
+      <h2 className="text-aro-lg font-semibold tracking-tight">{t.onboarding.headerTitle}</h2>
+      <p className="mt-1 max-w-xl text-aro-md leading-5 text-(--ui-text-tertiary)">{t.onboarding.headerDesc}</p>
     </div>
   )
 }

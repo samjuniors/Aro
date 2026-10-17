@@ -314,7 +314,7 @@ export function BrowserSection() {
       </div>
 
       {error && (
-        <div className="shrink-0 bg-aro-rose/10 px-3 py-1 font-aro-mono text-[10.5px] text-aro-rose" role="alert">
+        <div className="shrink-0 bg-aro-rose/10 px-3 py-1 font-aro-mono text-aro-xs text-aro-rose" role="alert">
           {error}
         </div>
       )}

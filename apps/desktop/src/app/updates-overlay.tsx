@@ -310,7 +310,7 @@ function IdleView({
         {groups.map((group, index) => (
           <div key={group.id}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[0.625rem] font-semibold text-muted-foreground">{group.label}</p>
+              <p className="text-aro-xs font-semibold text-muted-foreground">{group.label}</p>
               {index === 0 && commits.length > 0 && (
                 <CopyButton
                   appearance="icon"

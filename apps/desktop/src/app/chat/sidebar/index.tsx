@@ -1633,7 +1633,7 @@ export function ChatSidebar({
                       // resolved region has been observed to swallow clicks on the
                       // top rows. Same carve-out as USER_BUBBLE_BASE_CLASS in
                       // thread.tsx.
-                      'flex h-7 w-full justify-start gap-2 rounded-control border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
+                      'flex h-7 w-full justify-start gap-2 rounded-control border border-transparent px-2 text-left text-aro-md font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
                       active &&
                         'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-none hover:border-(--ui-stroke-tertiary)!',
                       !isInteractive &&
@@ -1978,7 +1978,7 @@ export function ChatSidebar({
                 labelMeta={
                   worktreeGroupingActive ? (
                     reposScanning && !projectsSkeletonVisible ? (
-                      <GlyphSpinner ariaLabel={s.loading} className="text-[0.6875rem] text-(--ui-text-quaternary)" />
+                      <GlyphSpinner ariaLabel={s.loading} className="text-aro-xs text-(--ui-text-quaternary)" />
                     ) : undefined
                   ) : undefined
                 }
@@ -2055,7 +2055,7 @@ export function ChatSidebar({
                     label={group.label}
                     labelIcon={
                       <PlatformAvatar
-                        className="size-4 rounded-control text-[0.5625rem] [&_svg]:size-3"
+                        className="size-4 rounded-control text-aro-xs [&_svg]:size-3"
                         platformId={group.sourceId}
                         platformName={group.label}
                       />
@@ -2110,7 +2110,7 @@ export function ChatSidebar({
           <span className="flex-1 text-left font-medium">Settings</span>
           <kbd className="font-mono text-[var(--aro-text-2xs,9px)] text-(--ui-text-quaternary)">⌘,</kbd>
         </button>
-        <p className="px-2 pt-0.5 text-[9.5px] text-(--ui-text-quaternary) select-none">
+        <p className="px-2 pt-0.5 text-aro-xs text-(--ui-text-quaternary) select-none">
           Code workspace · saved on this device
         </p>
       </SidebarFooter>

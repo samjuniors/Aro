@@ -390,14 +390,14 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
         </span>
         <span className="min-w-0 flex-1 text-left">
           <span className="flex items-center gap-1.5">
-            <span className="truncate text-[12.5px] font-medium text-aro-ink">{model}</span>
+            <span className="truncate text-aro-sm font-medium text-aro-ink">{model}</span>
             {supportsReasoning && thinkingOn && (
               <span className="shrink-0 rounded-control px-1 text-[var(--aro-text-2xs,9px)] font-semibold uppercase tracking-wider text-aro-iris bg-aro-iris/10 border border-aro-iris/20">
                 {EFFORTS.find(e => e.id === effortValue)?.short ?? 'Think'}
               </span>
             )}
           </span>
-          <span className="block truncate font-aro-mono text-[9.5px] text-aro-ink-4">
+          <span className="block truncate font-aro-mono text-aro-xs text-aro-ink-4">
             {providerDisplayName(provider || '')} · {isLocalProvider ? 'on-device' : 'cloud'}
           </span>
         </span>
@@ -452,7 +452,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
 
                   {showThinkingToggle ? (
                     <div className="flex items-center gap-2 border-t border-aro-line-soft px-0.5 py-1.5">
-                      <span className="min-w-0 flex-1 text-[10.5px] text-aro-ink-3">{copy.thinking}</span>
+                      <span className="min-w-0 flex-1 text-aro-xs text-aro-ink-3">{copy.thinking}</span>
                       <Toggle
                         aria-label="Toggle thinking"
                         checked={thinkingOn}
@@ -466,7 +466,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
 
                   {effectiveFastControl.kind !== 'none' && (
                     <div className="flex items-center gap-2 border-t border-aro-line-soft px-0.5 py-1.5">
-                      <span className="min-w-0 flex-1 text-[10.5px] text-aro-ink-3">{copy.fast}</span>
+                      <span className="min-w-0 flex-1 text-aro-xs text-aro-ink-3">{copy.fast}</span>
                       <Toggle aria-label={copy.fast} checked={effectiveFastControl.on} onChange={setFast} size="sm" />
                     </div>
                   )}

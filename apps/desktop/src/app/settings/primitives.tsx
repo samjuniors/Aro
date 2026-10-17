@@ -139,7 +139,7 @@ export function SettingsGroup({
           <div>
             <h3 className="text-xs font-medium text-(--ui-text-primary)">{title}</h3>
             {description && (
-              <p className="mt-0.5 text-[10.5px] leading-relaxed text-(--ui-text-tertiary)">{description}</p>
+              <p className="mt-0.5 text-aro-xs leading-relaxed text-(--ui-text-tertiary)">{description}</p>
             )}
           </div>
           {aside && <div className="ml-auto flex items-center">{aside}</div>}
@@ -228,7 +228,7 @@ export function ListRow({
               {description}
             </div>
           )}
-          {hint && <div className="mt-1 block font-mono text-[0.68rem] text-muted-foreground/45">{hint}</div>}
+          {hint && <div className="mt-1 block font-mono text-aro-xs text-muted-foreground/45">{hint}</div>}
           {below}
         </div>
         {!wide && action && (

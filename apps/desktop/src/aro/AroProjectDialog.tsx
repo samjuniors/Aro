@@ -306,7 +306,7 @@ export function AroProjectDialog() {
               <span className="block text-xs font-medium text-aro-ink-3 uppercase tracking-wider">
                 Target Directory
               </span>
-              <span className="block truncate font-aro-mono text-[11.5px] text-aro-ink" title={pendingTrustFolder}>
+              <span className="block truncate font-aro-mono text-aro-sm text-aro-ink" title={pendingTrustFolder}>
                 {pendingTrustFolder}
               </span>
             </div>
@@ -341,7 +341,7 @@ export function AroProjectDialog() {
           </p>
 
           {error && (
-            <p className="text-[11.5px] text-aro-rose font-medium" role="alert">
+            <p className="text-aro-sm text-aro-rose font-medium" role="alert">
               {error}
             </p>
           )}
@@ -478,7 +478,7 @@ export function AroProjectDialog() {
                       <IconPlus size={11} />
                       <span>Choose a local folder</span>
                     </button>
-                    <span className="text-[10.5px] text-aro-ink-4">
+                    <span className="text-aro-xs text-aro-ink-4">
                       Sessions inside this project will run in this directory
                     </span>
                   </div>
@@ -490,7 +490,7 @@ export function AroProjectDialog() {
           {mode === 'add-folder' && (
             <div className="py-4 text-center">
               <button
-                className="inline-flex h-[32px] items-center gap-2 rounded-control bg-aro-iris px-4 text-[12.5px] font-medium text-aro-on-iris hover:brightness-110 cursor-pointer"
+                className="inline-flex h-[32px] items-center gap-2 rounded-control bg-aro-iris px-4 text-aro-sm font-medium text-aro-on-iris hover:brightness-110 cursor-pointer"
                 disabled={submitting}
                 onClick={() => void handlePickFolder()}
                 type="button"
@@ -502,7 +502,7 @@ export function AroProjectDialog() {
           )}
 
           {error && (
-            <p className="text-[11.5px] text-aro-rose font-medium" role="alert">
+            <p className="text-aro-sm text-aro-rose font-medium" role="alert">
               {error}
             </p>
           )}

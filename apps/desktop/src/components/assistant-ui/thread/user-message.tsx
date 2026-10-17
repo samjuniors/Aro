@@ -61,7 +61,7 @@ export function StickyHumanMessageContainer({
         {/* Prototype grammar: 28px monogram avatar, left-aligned row. */}
         <div
           aria-hidden
-          className="flex size-7 shrink-0 items-center justify-center rounded-panel border border-aro-line-soft bg-aro-hover font-aro-mono text-[10.5px] font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
+          className="flex size-7 shrink-0 items-center justify-center rounded-panel border border-aro-line-soft bg-aro-hover font-aro-mono text-aro-xs font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
         >
           Y
         </div>
@@ -215,14 +215,14 @@ const AgentMessageNote: FC<{ text: string }> = ({ text }) => {
   // message, so the exchange still reads in order.
   return (
     <div
-      className="flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-[0.6875rem] leading-5 text-muted-foreground/60"
+      className="flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-aro-xs leading-5 text-muted-foreground/60"
       data-slot="aui_agent-message-note"
     >
       <span className="flex items-center justify-center gap-1.5">
         {avatar ? (
           <img alt="" aria-hidden className="size-4 shrink-0 rounded-full object-cover" src={avatar} />
         ) : (
-          <span aria-hidden className="text-[0.8125rem] leading-none">
+          <span aria-hidden className="text-aro-md leading-none">
             🤖
           </span>
         )}
@@ -233,7 +233,7 @@ const AgentMessageNote: FC<{ text: string }> = ({ text }) => {
           <summary className="cursor-pointer select-none text-center text-muted-foreground/45 hover:text-muted-foreground/70">
             show message
           </summary>
-          <div className="mt-1 max-w-[36rem] rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-[0.75rem] leading-5 text-foreground/85">
+          <div className="mt-1 max-w-[36rem] rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-aro-sm leading-5 text-foreground/85">
             <UserMessageText text={body} />
           </div>
         </details>
@@ -434,7 +434,7 @@ export const UserMessage: FC<{
           <div className="human-message-with-todos-wrapper flex w-full flex-col gap-0">
             {/* Aro attributed header: "You" + real timestamp, above the bubble. */}
             <div className="mb-1.5 flex flex-wrap items-center gap-2 px-0.5">
-              <span className="text-[12.5px] font-semibold text-aro-ink">{copy.you}</span>
+              <span className="text-aro-sm font-semibold text-aro-ink">{copy.you}</span>
               {createdAt !== undefined && (
                 <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

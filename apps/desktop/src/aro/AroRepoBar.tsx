@@ -234,7 +234,7 @@ export function AroRepoBar({
               >
                 <input
                   autoFocus
-                  className="w-full h-[28px] rounded-control border border-aro-line bg-aro-sunken/60 px-2 font-mono text-[11.5px] text-aro-ink focus:border-aro-iris focus:outline-none"
+                  className="w-full h-[28px] rounded-control border border-aro-line bg-aro-sunken/60 px-2 font-mono text-aro-sm text-aro-ink focus:border-aro-iris focus:outline-none"
                   onChange={e => setNewBranchName(e.target.value)}
                   placeholder="e.g. feature/my-update"
                   value={newBranchName}
@@ -281,7 +281,7 @@ export function AroRepoBar({
                   <div className="px-2 py-2 text-center text-xs text-aro-ink-4">No matching branches</div>
                 ) : filteredBranches.length === 0 ? (
                   <DropdownMenuItem
-                    className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] font-mono bg-aro-hover text-aro-ink"
+                    className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-aro-sm font-mono bg-aro-hover text-aro-ink"
                     disabled
                   >
                     <IconBranch className="shrink-0 text-aro-iris-soft" size={12} />
@@ -295,7 +295,7 @@ export function AroRepoBar({
                     return (
                       <DropdownMenuItem
                         className={cn(
-                          'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] font-mono transition-colors',
+                          'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-aro-sm font-mono transition-colors',
                           isActive ? 'bg-aro-hover text-aro-ink font-medium' : 'hover:bg-aro-hover/60 text-aro-ink-2'
                         )}
                         key={b.name}
@@ -313,7 +313,7 @@ export function AroRepoBar({
               <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
 
               <DropdownMenuItem
-                className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
+                className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-aro-sm text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
                 onClick={e => {
                   e.preventDefault()
                   setCreatingBranch(true)

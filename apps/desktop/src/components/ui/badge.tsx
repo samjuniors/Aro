@@ -24,8 +24,8 @@ const badgeVariants = cva(
         solid: 'bg-primary text-primary-foreground'
       },
       size: {
-        default: 'px-1.5 py-0.5 text-[0.65rem] [&_svg]:size-3',
-        xs: 'px-1 py-px text-[0.6rem] [&_svg]:size-2.5',
+        default: 'px-1.5 py-0.5 text-aro-xs [&_svg]:size-3',
+        xs: 'px-1 py-px text-aro-xs [&_svg]:size-2.5',
         // Count badge overlay uses rounded-full per DESIGN.md §3.1
         overlay: 'h-2 min-w-2 justify-center rounded-full px-px text-[0.5rem] font-semibold tabular-nums'
       }

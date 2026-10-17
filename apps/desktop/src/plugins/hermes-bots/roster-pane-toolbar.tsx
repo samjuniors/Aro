@@ -70,7 +70,7 @@ export function renderRosterToolbar({
   return (
     <>
       <div className="flex items-center justify-between gap-2 px-2.5 pt-2.5 pb-1.5">
-        <span className="text-[0.6875rem] font-semibold uppercase tracking-wider text-(--ui-text-quaternary)">
+        <span className="text-aro-xs font-semibold uppercase tracking-wider text-(--ui-text-quaternary)">
           Bots
         </span>
         <div className="flex items-center gap-0.5">
@@ -128,7 +128,7 @@ export function renderRosterToolbar({
             <SearchField
               aria-label={b.roster.search}
               containerClassName={cn('min-w-0 flex-1', query ? 'opacity-100!' : 'opacity-50 focus-within:opacity-100')}
-              inputClassName="w-full text-[0.75rem] placeholder:text-(--ui-text-tertiary)"
+              inputClassName="w-full text-aro-sm placeholder:text-(--ui-text-tertiary)"
               key={'roster-search'}
               onChange={setQuery}
               placeholder={b.roster.searchPlaceholder}
@@ -206,7 +206,7 @@ export function renderRosterToolbar({
                             kind={option.kind}
                           />
                           <span className="min-w-0 flex-1 truncate">{option.label || option.connectionId}</span>
-                          <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)">
+                          <span className="text-aro-xs tabular-nums text-(--ui-text-quaternary)">
                             {option.count}
                           </span>
                           {gatewayFilter === option.connectionId ? <Codicon name="check" /> : null}

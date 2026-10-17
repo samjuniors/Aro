@@ -338,7 +338,7 @@ export function AroTitlebar() {
             {/* Git Branch Badge */}
             {!isDraftSession && branchName && (
               <span
-                className="hidden items-center gap-1 font-mono text-[10.5px] text-aro-ink-3 md:flex"
+                className="hidden items-center gap-1 font-mono text-aro-xs text-aro-ink-3 md:flex"
                 title={`Git branch: ${branchName}`}
               >
                 <IconBranch size={11} />

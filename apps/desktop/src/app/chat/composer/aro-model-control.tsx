@@ -54,7 +54,7 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={currentModel || 'Model'}
-          className="h-[28px] shrink-0 gap-[6px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal whitespace-nowrap text-aro-ink-2 shadow-(--aro-shadow-e1) transition-colors hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink"
+          className="h-[28px] shrink-0 gap-[6px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-aro-sm font-normal whitespace-nowrap text-aro-ink-2 shadow-(--aro-shadow-e1) transition-colors hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink"
           data-aro-model-control=""
           data-aro-model-pill=""
           disabled={disabled}

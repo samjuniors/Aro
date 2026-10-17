@@ -590,7 +590,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                       <span className="text-[length:var(--conversation-caption-font-size)] font-medium text-(--ui-text-tertiary)">
                         Aro Canonical Palettes
                       </span>
-                      <span className="font-mono text-[10.5px] text-(--ui-text-quaternary) capitalize">
+                      <span className="font-mono text-aro-xs text-(--ui-text-quaternary) capitalize">
                         Active: {themeName}
                       </span>
                     </div>

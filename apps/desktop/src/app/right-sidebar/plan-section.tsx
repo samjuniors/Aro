@@ -50,8 +50,8 @@ export function PlanSection() {
     <div className="space-y-3 p-3">
       <Panel className="p-3">
         <div className="flex items-center justify-between">
-          <span className="font-aro-display text-[12.5px] font-semibold text-aro-ink">Implementation plan</span>
-          <Badge mono tone="iris" className="text-[9.5px]">
+          <span className="font-aro-display text-aro-sm font-semibold text-aro-ink">Implementation plan</span>
+          <Badge mono tone="iris" className="text-aro-xs">
             {completedCount}/{totalCount} tasks
           </Badge>
         </div>
@@ -118,7 +118,7 @@ export function PlanSection() {
                   >
                     {item.content}
                   </span>
-                  <span className="mt-0.5 flex items-center gap-1.5 font-aro-mono text-[9.5px] text-aro-ink-4">
+                  <span className="mt-0.5 flex items-center gap-1.5 font-aro-mono text-aro-xs text-aro-ink-4">
                     <span>#{item.id}</span>
                     <span>·</span>
                     <span

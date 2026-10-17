@@ -1290,7 +1290,7 @@ function RestSquare({
                   <button
                     aria-busy={pending || undefined}
                     aria-label={statusText ? `${label}, ${statusText}` : label}
-                    className="relative grid size-5 shrink-0 select-none place-items-center rounded-control text-[0.5625rem] font-semibold uppercase leading-none opacity-35 transition-opacity hover:opacity-100 aria-busy:opacity-100"
+                    className="relative grid size-5 shrink-0 select-none place-items-center rounded-control text-aro-xs font-semibold uppercase leading-none opacity-35 transition-opacity hover:opacity-100 aria-busy:opacity-100"
                     data-connection-id={agent.connectionId}
                     data-profile={agent.profile}
                     data-slot="profile-rail-rest-square"
@@ -1470,7 +1470,7 @@ function ProfileSquare({
                 <TooltipTrigger asChild>
                   <button
                     className={cn(
-                      'relative grid size-5 shrink-0 cursor-grab touch-none select-none place-items-center rounded-control text-[0.5625rem] font-semibold uppercase leading-none transition-opacity hover:opacity-100',
+                      'relative grid size-5 shrink-0 cursor-grab touch-none select-none place-items-center rounded-control text-aro-xs font-semibold uppercase leading-none transition-opacity hover:opacity-100',
                       active ? 'opacity-100' : 'opacity-55',
                       isDragging && 'z-10 cursor-grabbing opacity-100'
                     )}
