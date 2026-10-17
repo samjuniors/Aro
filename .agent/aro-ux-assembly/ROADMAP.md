@@ -30,6 +30,7 @@ Record answers as D-UX-006..008 below.
 - D-UX-006 Journeys to perfect first: **Chat and composer** (focus first on conversation flow, prompt input, streaming rhythm, and approvals) (2026-10-17).
 - D-UX-007 Primary screen target: **13 to 15 inch laptop, graceful narrow and wide** (default container queries tuned for standard laptops with fluid collapse for narrow and wide) (2026-10-17).
 - D-UX-008 Density: **keep current feel, normalized to the spacing scale** (4px scale, 32px standard control height, calm and breathable) (2026-10-17).
+- D-UX-009 Phase C fix scope: **Fix P1 (F-006) + P2 (F-005)** during screen assembly; NB-001 deferred (2026-10-17).
 
 ---
 
@@ -78,7 +79,7 @@ journey scorecard "before" numbers recorded; fix order proposed.
 - [x] 8. Keyboard-only pass and focus-order pass; log rows
 - [x] 9. Propose fix order and any `NEEDS-BEHAVIOR` items as selectable
       options (recommended order: P0, then P1 on core journeys)
-- [ ] 🛑 **GATE B** (founder selects scope; decisions recorded)
+- [x] 🛑 **GATE B** (founder selects scope; decisions recorded)
 
 ---
 
@@ -90,7 +91,7 @@ screenshots and step counts per screen.
 
 **C1 Shell:** titlebar band, sidebar and profile rail, panes, statusbar,
 resize and collapse. **Check:** resize wide to narrow, pane drag/drop, tray.
-- [ ] 10. Titlebar and tabs  - [ ] 11. Sidebar and rail
+- [x] 10. Titlebar and tabs  - [~] 11. Sidebar and rail
 - [ ] 12. Panes, statusbar, collapse behavior
 - [ ] 🛑 **GATE C1**
 
