@@ -38,8 +38,8 @@ export function PlanSection() {
         <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconList size={18} />
         </div>
-        <h3 className="mt-3 font-aro-display text-[13px] font-semibold text-aro-ink">No active plan</h3>
-        <p className="mt-1 max-w-[220px] text-[11px] leading-relaxed text-aro-ink-3">
+        <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No active plan</h3>
+        <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-aro-ink-3">
           The agent will create and maintain steps as tasks are planned and executed.
         </p>
       </div>
@@ -55,12 +55,12 @@ export function PlanSection() {
             {completedCount}/{totalCount} tasks
           </Badge>
         </div>
-        <p className="mt-1 text-[11px] text-aro-ink-3">
+        <p className="mt-1 text-xs text-aro-ink-3">
           Agent-maintained outline tracking turn goals and execution progress.
         </p>
         <div className="mt-2.5 flex items-center gap-2">
           <Bar value={progressPercent} tone="iris" height={4} />
-          <span className="shrink-0 font-aro-mono text-[10px] text-aro-ink-4">
+          <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
             {progressPercent}%
           </span>
         </div>
@@ -77,7 +77,7 @@ export function PlanSection() {
             <div
               key={item.id}
               className={cn(
-                'overflow-hidden rounded-[9px] border transition-colors',
+                'overflow-hidden rounded-control border transition-colors',
                 isOpen ? 'border-aro-line-strong bg-aro-raise' : 'border-aro-line-soft bg-aro-raise/50 hover:border-aro-line',
                 isActive && 'border-aro-cyan/35 bg-aro-cyan-tint/10'
               )}
@@ -89,7 +89,7 @@ export function PlanSection() {
               >
                 <span
                   className={cn(
-                    'mt-[1px] flex size-[16px] shrink-0 items-center justify-center rounded-[4px] border',
+                    'mt-[1px] flex size-[16px] shrink-0 items-center justify-center rounded-xs border',
                     isDone
                       ? 'border-aro-mint/40 bg-aro-mint-tint text-aro-mint'
                       : isActive
@@ -112,7 +112,7 @@ export function PlanSection() {
                 <span className="min-w-0 flex-1">
                   <span
                     className={cn(
-                      'block text-[12px] leading-[1.45]',
+                      'block text-xs leading-[1.45]',
                       isDone ? 'text-aro-ink-4 line-through' : 'text-aro-ink-2'
                     )}
                   >
@@ -143,7 +143,7 @@ export function PlanSection() {
               </button>
 
               {isOpen && item.parent && (
-                <div className="border-t border-aro-line-soft px-2.5 py-1.5 font-aro-mono text-[10px] text-aro-ink-4">
+                <div className="border-t border-aro-line-soft px-2.5 py-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   Parent task: #{item.parent}
                 </div>
               )}

@@ -224,7 +224,7 @@ export function AroRepoBar({
         <DropdownMenuContent align="start" className="w-[280px] p-1.5" side="top" sideOffset={8}>
           {creatingBranch ? (
             <div className="p-2 space-y-2">
-              <div className="text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">Create new branch</div>
+              <div className="text-[var(--aro-text-2xs,10px)] font-semibold text-aro-ink-4 uppercase tracking-wider">Create new branch</div>
               <form
                 className="space-y-2"
                 onSubmit={e => {
@@ -234,7 +234,7 @@ export function AroRepoBar({
               >
                 <input
                   autoFocus
-                  className="w-full h-[28px] rounded-[6px] border border-aro-line bg-aro-sunken/60 px-2 font-mono text-[11.5px] text-aro-ink focus:border-aro-iris focus:outline-none"
+                  className="w-full h-[28px] rounded-control border border-aro-line bg-aro-sunken/60 px-2 font-mono text-[11.5px] text-aro-ink focus:border-aro-iris focus:outline-none"
                   onChange={e => setNewBranchName(e.target.value)}
                   placeholder="e.g. feature/my-update"
                   value={newBranchName}
@@ -259,16 +259,16 @@ export function AroRepoBar({
             </div>
           ) : (
             <>
-              <div className="px-2 py-1 text-[10px] font-semibold tracking-wider uppercase text-aro-ink-4">
+              <div className="px-2 py-1 text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider uppercase text-aro-ink-4">
                 Branches
               </div>
 
               {branches.length > 5 && (
-                <div className="mb-1 flex items-center gap-1.5 rounded-[6px] border border-aro-line-soft bg-aro-sunken/40 px-2 py-1">
+                <div className="mb-1 flex items-center gap-1.5 rounded-control border border-aro-line-soft bg-aro-sunken/40 px-2 py-1">
                   <IconSearch className="text-aro-ink-4 shrink-0" size={11} />
                   <input
                     aria-label="Filter branches"
-                    className="w-full bg-transparent text-[11px] text-aro-ink focus:outline-none placeholder:text-aro-ink-4"
+                    className="w-full bg-transparent text-xs text-aro-ink focus:outline-none placeholder:text-aro-ink-4"
                     onChange={e => setBranchSearch(e.target.value)}
                     placeholder="Filter branches…"
                     value={branchSearch}
@@ -278,10 +278,10 @@ export function AroRepoBar({
 
               <div className="max-h-[200px] overflow-y-auto space-y-0.5">
                 {filteredBranches.length === 0 && branches.length > 0 ? (
-                  <div className="px-2 py-2 text-center text-[11px] text-aro-ink-4">No matching branches</div>
+                  <div className="px-2 py-2 text-center text-xs text-aro-ink-4">No matching branches</div>
                 ) : filteredBranches.length === 0 ? (
                   <DropdownMenuItem
-                    className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] font-mono bg-aro-hover text-aro-ink"
+                    className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] font-mono bg-aro-hover text-aro-ink"
                     disabled
                   >
                     <IconBranch className="shrink-0 text-aro-iris-soft" size={12} />
@@ -295,7 +295,7 @@ export function AroRepoBar({
                     return (
                       <DropdownMenuItem
                         className={cn(
-                          'flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] font-mono transition-colors',
+                          'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] font-mono transition-colors',
                           isActive ? 'bg-aro-hover text-aro-ink font-medium' : 'hover:bg-aro-hover/60 text-aro-ink-2'
                         )}
                         key={b.name}
@@ -313,7 +313,7 @@ export function AroRepoBar({
               <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
 
               <DropdownMenuItem
-                className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
+                className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
                 onClick={e => {
                   e.preventDefault()
                   setCreatingBranch(true)
@@ -324,7 +324,7 @@ export function AroRepoBar({
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+                className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-xs text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
                 onClick={() => {
                   setBranchMenuOpen(false)
 

@@ -77,12 +77,12 @@ export function ContextSection() {
       <Panel className="p-3">
         <div className="flex items-center gap-3">
           <Ring value={usagePercent} size={54} stroke={5} tone="var(--aro-iris)">
-            <span className="font-aro-mono text-[11px] font-semibold text-aro-ink">{usagePercent}%</span>
+            <span className="font-aro-mono text-xs font-semibold text-aro-ink">{usagePercent}%</span>
           </Ring>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-medium text-aro-ink-2">Context window</span>
-              <span className="font-aro-mono text-[10px] text-aro-ink-4">
+              <span className="text-xs font-medium text-aro-ink-2">Context window</span>
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                 {compactNumber(totalTokens)} / {compactNumber(maxTokens)}
               </span>
             </div>
@@ -94,7 +94,7 @@ export function ContextSection() {
                   <div key={c.id} className="flex items-center gap-2">
                     <span className="w-[84px] shrink-0 truncate text-[10.5px] text-aro-ink-3">{c.label}</span>
                     <Bar value={percent} tone="iris" height={3} />
-                    <span className="w-8 text-right font-aro-mono text-[9px] text-aro-ink-4">
+                    <span className="w-8 text-right font-aro-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
                       {compactNumber(c.tokens)}
                     </span>
                   </div>
@@ -115,7 +115,7 @@ export function ContextSection() {
           <span className="flex items-center gap-1.5 font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
             <IconMcp size={10} /> MCP Connectors
           </span>
-          <Badge mono tone={mcpServers.length > 0 ? 'mint' : 'neutral'} className="text-[9px]">
+          <Badge mono tone={mcpServers.length > 0 ? 'mint' : 'neutral'} className="text-[var(--aro-text-2xs,9px)]">
             {mcpServers.filter(s => s.enabled).length} live
           </Badge>
         </div>
@@ -129,7 +129,7 @@ export function ContextSection() {
               {mcpServers.map(s => {
                 const toolCount = s.tools?.length ?? 0
                 return (
-                  <div key={s.name} className="rounded-[7px] border border-aro-line-soft bg-aro-well px-2 py-1.5">
+                  <div key={s.name} className="rounded-control border border-aro-line-soft bg-aro-well px-2 py-1.5">
                     <div className="flex items-center gap-1.5">
                       <i
                         className={cn(
@@ -140,7 +140,7 @@ export function ContextSection() {
                       <span className="truncate font-aro-mono text-[10.5px] text-aro-ink-2" title={s.name}>
                         {s.name}
                       </span>
-                      <span className="ml-auto shrink-0 font-aro-mono text-[9px] text-aro-ink-4">
+                      <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
                         {toolCount}t
                       </span>
                     </div>
@@ -160,7 +160,7 @@ export function ContextSection() {
           </span>
         </div>
         <div className="p-2.5">
-          <p className="text-[11px] leading-relaxed text-aro-ink-3">
+          <p className="text-xs leading-relaxed text-aro-ink-3">
             Persistent cross-session memories and learned context are injected automatically per turn.
           </p>
         </div>

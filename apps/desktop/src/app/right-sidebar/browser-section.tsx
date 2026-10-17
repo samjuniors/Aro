@@ -187,7 +187,7 @@ export function BrowserSection() {
   }, [])
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden font-aro-sans text-[11px]">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden font-aro-sans text-xs">
       {/* Tab Strip */}
       <div aria-label="Browser tabs" className="flex shrink-0 items-center gap-1 border-b border-aro-line-soft bg-aro-sunken/60 px-2 py-1 select-none" role="tablist">
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scrollbar-none">
@@ -198,7 +198,7 @@ export function BrowserSection() {
               <div
                 aria-selected={isActive}
                 className={cn(
-                  'flex h-[26px] max-w-[140px] shrink-0 items-center gap-1 rounded-[6px] border border-transparent px-2 text-[11px] transition-colors',
+                  'flex h-[26px] max-w-[140px] shrink-0 items-center gap-1 rounded-control border border-transparent px-2 text-xs transition-colors',
                   isActive
                     ? 'border-aro-line bg-aro-raise font-medium text-aro-ink shadow-aro-e1'
                     : 'text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink-2'
@@ -236,7 +236,7 @@ export function BrowserSection() {
           <Tip label="New tab">
             <button
               aria-label="New browser tab"
-              className="flex size-[24px] shrink-0 items-center justify-center rounded-[6px] text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-[24px] shrink-0 items-center justify-center rounded-control text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={handleNewTab}
               type="button"
             >
@@ -250,7 +250,7 @@ export function BrowserSection() {
       <div className="flex shrink-0 items-center gap-2 border-b border-aro-line-soft bg-aro-raise/40 px-3 py-1.5">
         <input
           aria-label="Preview URL"
-          className="h-[26px] min-w-[120px] flex-1 rounded-[6px] border border-aro-line-soft bg-aro-sunken px-2 font-aro-mono text-[11px] text-aro-ink outline-none placeholder:text-aro-ink-4"
+          className="h-[26px] min-w-[120px] flex-1 rounded-control border border-aro-line-soft bg-aro-sunken px-2 font-aro-mono text-xs text-aro-ink outline-none placeholder:text-aro-ink-4"
           onChange={e => setInputVal(e.target.value)}
           onKeyDown={e => {
             if (e.key === 'Enter') {
@@ -273,7 +273,7 @@ export function BrowserSection() {
           <Tip label="Reload">
             <button
               aria-label="Reload preview"
-              className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-7 shrink-0 items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={handleReload}
               type="button"
             >
@@ -281,14 +281,14 @@ export function BrowserSection() {
             </button>
           </Tip>
         )}
-        <div aria-label="Viewport size" className="flex items-center gap-0.5 rounded-[6px] border border-aro-line-soft bg-aro-sunken p-0.5" role="group">
+        <div aria-label="Viewport size" className="flex items-center gap-0.5 rounded-control border border-aro-line-soft bg-aro-sunken p-0.5" role="group">
           {VIEWPORTS.map(v => (
             <Tip key={v.id} label={v.label}>
               <button
                 aria-label={`${v.label} viewport`}
                 aria-pressed={viewport === v.id}
                 className={cn(
-                  'flex size-6 items-center justify-center rounded-[4px] text-aro-ink-4 transition-colors',
+                  'flex size-6 items-center justify-center rounded-xs text-aro-ink-4 transition-colors',
                   viewport === v.id ? 'bg-aro-raise text-aro-ink shadow-aro-e1' : 'hover:text-aro-ink-2'
                 )}
                 onClick={() => handleSetViewport(v.id)}
@@ -303,7 +303,7 @@ export function BrowserSection() {
           <Tip label="Open in external browser">
             <button
               aria-label="Open externally"
-              className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-7 shrink-0 items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={() => window.open(activeTab.url, '_blank', 'noopener,noreferrer')}
               type="button"
             >
@@ -323,13 +323,13 @@ export function BrowserSection() {
       <div className="min-h-0 flex-1 overflow-auto bg-aro-sunken/40">
         {activeTab.url ? (
           <div className="flex h-full min-h-0 flex-col">
-            <p className="shrink-0 border-b border-aro-line-soft bg-aro-sunken/20 px-3 py-1 text-[10px] text-aro-ink-4">
+            <p className="shrink-0 border-b border-aro-line-soft bg-aro-sunken/20 px-3 py-1 text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
               Local preview tab. Some sites block embedded iframes (X-Frame-Options); use external open if blank.
             </p>
             <div className={cn('flex min-h-0 flex-1 justify-center p-2', viewport !== 'desktop' && 'items-start')}>
               <div
                 className={cn(
-                  'relative h-full transition-all',
+                  'relative h-full transition-[width,transform]',
                   viewport === 'desktop'
                     ? 'w-full'
                     : 'max-w-full rounded-xl border border-aro-line-strong bg-white shadow-aro-e3 overflow-hidden'
@@ -357,8 +357,8 @@ export function BrowserSection() {
             <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
               <IconEye size={18} />
             </div>
-            <h3 className="mt-3 font-aro-display text-[13px] font-semibold text-aro-ink">No page open</h3>
-            <p className="mt-1 max-w-[240px] text-[11px] leading-relaxed text-aro-ink-3">
+            <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No page open</h3>
+            <p className="mt-1 max-w-[240px] text-xs leading-relaxed text-aro-ink-3">
               Enter a URL above to open an in-app browser preview. Switch between desktop, tablet, and mobile viewports.
             </p>
           </div>

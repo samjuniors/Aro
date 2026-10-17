@@ -104,8 +104,8 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
         <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconSearch size={18} />
         </div>
-        <h3 className="mt-3 font-aro-display text-[13px] font-semibold text-aro-ink">No workspace open</h3>
-        <p className="mt-1 max-w-[220px] text-[11px] leading-relaxed text-aro-ink-3">
+        <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No workspace open</h3>
+        <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-aro-ink-3">
           Open a project or folder to search text and code across workspace files.
         </p>
       </div>
@@ -113,13 +113,13 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden font-aro-sans text-[11px]">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden font-aro-sans text-xs">
       {/* Search Bar Header */}
       <div className="flex shrink-0 items-center gap-2 border-b border-aro-line-soft bg-aro-raise/50 px-3 py-2">
         <IconSearch className="shrink-0 text-aro-ink-4" size={13} />
         <input
           aria-label="Search project files"
-          className="h-[24px] min-w-0 flex-1 bg-transparent font-aro-mono text-[11.5px] text-aro-ink outline-none placeholder:text-aro-ink-4"
+          className="h-[24px] min-w-0 flex-1 bg-transparent font-aro-mono text-xs text-aro-ink outline-none placeholder:text-aro-ink-4"
           onChange={e => setQuery(e.target.value)}
           placeholder="Search project files…"
           type="text"
@@ -136,14 +136,14 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
           </button>
         )}
         {query.trim().length >= 2 && (
-          <Badge className="shrink-0 text-[9.5px]" mono tone={hits.length > 0 ? 'iris' : 'neutral'}>
+          <Badge className="shrink-0 text-[var(--aro-text-2xs,10px)]" mono tone={hits.length > 0 ? 'iris' : 'neutral'}>
             {hits.length} hit{hits.length === 1 ? '' : 's'}
           </Badge>
         )}
       </div>
 
       {/* Scope / Status Note */}
-      <div className="flex shrink-0 items-center justify-between border-b border-aro-line-soft bg-aro-sunken/40 px-3 py-1 font-aro-mono text-[9.5px] text-aro-ink-4">
+      <div className="flex shrink-0 items-center justify-between border-b border-aro-line-soft bg-aro-sunken/40 px-3 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
         <span>Local scan · {scannedFiles} files checked{truncated ? ' (cap reached)' : ''}</span>
         {searching && <span className="animate-pulse text-aro-iris-soft">Scanning…</span>}
       </div>
@@ -155,12 +155,12 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
             <div className="flex size-9 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3">
               <IconSearch size={16} />
             </div>
-            <p className="max-w-[220px] text-[11px] leading-relaxed text-aro-ink-3">
+            <p className="max-w-[220px] text-xs leading-relaxed text-aro-ink-3">
               Ripgrep-style search across workspace files. Matches stream in as you type (minimum 2 characters).
             </p>
           </div>
         ) : hits.length === 0 && !searching ? (
-          <div className="flex h-full min-h-[180px] flex-col items-center justify-center p-6 text-center font-aro-mono text-[11px] text-aro-ink-4">
+          <div className="flex h-full min-h-[180px] flex-col items-center justify-center p-6 text-center font-aro-mono text-xs text-aro-ink-4">
             no matches for “{query.trim()}”
           </div>
         ) : (
@@ -174,10 +174,10 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
                   type="button"
                 >
                   <IconFolder className="shrink-0 text-aro-ink-4" size={11} />
-                  <span className="min-w-0 flex-1 truncate font-aro-mono text-[11px] font-medium text-aro-ink-2">
+                  <span className="min-w-0 flex-1 truncate font-aro-mono text-xs font-medium text-aro-ink-2">
                     {formatDisplayPath(filePath)}
                   </span>
-                  <span className="font-aro-mono text-[9px] text-aro-ink-4">
+                  <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                     {fileHits.length}
                   </span>
                 </button>
@@ -190,10 +190,10 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
                       aria-label={`Open line ${hit.line}`}
                       type="button"
                     >
-                      <span className="w-6 shrink-0 text-right font-aro-mono text-[10px] text-aro-ink-4 group-hover:text-aro-ink-2">
+                      <span className="w-6 shrink-0 text-right font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 group-hover:text-aro-ink-2">
                         {hit.line || '·'}
                       </span>
-                      <code className="min-w-0 flex-1 truncate font-aro-mono text-[10.5px] text-aro-ink-3 group-hover:text-aro-ink">
+                      <code className="min-w-0 flex-1 truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3 group-hover:text-aro-ink">
                         {hit.text}
                       </code>
                     </button>

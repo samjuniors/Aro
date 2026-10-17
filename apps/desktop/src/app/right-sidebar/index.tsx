@@ -329,7 +329,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                   <Icon size={11} />
                   <span className="workspace-tab-title">{config.label}</span>
                   {count !== undefined && count > 0 && (
-                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[9px] text-aro-ink-3">
+                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                       {count}
                     </span>
                   )}
@@ -551,10 +551,10 @@ function FilesystemTab({
         </Tip>
       </RightSidebarSectionHeader>
       <div className="px-2.5 py-1.5 border-b border-aro-line-soft bg-aro-well/30">
-        <div className="flex items-center gap-1.5 rounded-md border border-aro-line/50 bg-aro-well px-2 py-1 text-aro-ink-4 focus-within:border-aro-iris focus-within:text-aro-ink">
+        <div className="flex items-center gap-1.5 rounded-control border border-aro-line/50 bg-aro-well px-2 py-1 text-aro-ink-4 focus-within:border-aro-iris focus-within:text-aro-ink">
           <IconSearch className="shrink-0" size={11} />
           <input
-            className="w-full bg-transparent text-[11px] text-aro-ink outline-none placeholder:text-aro-ink-4"
+            className="w-full bg-transparent text-xs text-aro-ink outline-none placeholder:text-aro-ink-4"
             onChange={e => setFileFilter(e.target.value)}
             placeholder="Filter files in workspace…"
             type="text"
@@ -640,7 +640,7 @@ function FileTreeBody({
         <EmptyState body={r.unreadableBody(error)} title={r.unreadableTitle} />
         {onRetry && (
           <button
-            className="text-[0.68rem] font-medium text-muted-foreground transition hover:text-foreground"
+            className="text-[var(--aro-text-2xs,10px)] font-medium text-muted-foreground transition hover:text-foreground"
             onClick={onRetry}
             type="button"
           >
@@ -665,7 +665,7 @@ function FileTreeBody({
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
           <EmptyState body={r.treeErrorBody} title={r.treeErrorTitle} />
           <button
-            className="text-[0.68rem] font-medium text-muted-foreground transition hover:text-foreground"
+            className="text-[var(--aro-text-2xs,10px)] font-medium text-muted-foreground transition hover:text-foreground"
             onClick={reset}
             type="button"
           >
@@ -717,9 +717,9 @@ export function EmptyState({ body, title }: { body: string; title?: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1 px-4 text-center">
       {title && (
-        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.07em] text-muted-foreground/75">{title}</div>
+        <div className="text-[var(--aro-text-2xs,10px)] font-semibold uppercase tracking-[0.07em] text-muted-foreground/75">{title}</div>
       )}
-      <div className="text-[0.68rem] leading-relaxed text-muted-foreground/65">{body}</div>
+      <div className="text-[var(--aro-text-2xs,10px)] leading-relaxed text-muted-foreground/65">{body}</div>
     </div>
   )
 }

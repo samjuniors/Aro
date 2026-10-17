@@ -27,8 +27,8 @@ export function GitSection() {
         <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconGit size={18} />
         </div>
-        <h3 className="mt-3 font-aro-display text-[13px] font-semibold text-aro-ink">No Git Repository</h3>
-        <p className="mt-1 max-w-[220px] text-[11px] leading-relaxed text-aro-ink-3">
+        <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No Git Repository</h3>
+        <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-aro-ink-3">
           Open a folder containing a Git repository to view branches, worktrees, and working tree changes.
         </p>
       </div>
@@ -46,15 +46,15 @@ export function GitSection() {
       <Panel className="p-3">
         <div className="flex items-center gap-2">
           <IconBranch size={13} className="text-aro-iris-soft" />
-          <span className="truncate font-aro-mono text-[12px] font-medium text-aro-iris-soft">
+          <span className="truncate font-aro-mono text-xs font-medium text-aro-iris-soft">
             {branchName}
           </span>
-          <span className="ml-auto font-aro-mono text-[10px] text-aro-ink-4">
+          <span className="ml-auto font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
             ↑{ahead} · ↓{behind}
           </span>
         </div>
 
-        <div className="mt-2 flex items-center justify-between text-[11px] text-aro-ink-3">
+        <div className="mt-2 flex items-center justify-between text-xs text-aro-ink-3">
           <span>
             {dirtyCount === 0 ? (
               <span className="text-aro-mint">Working tree clean</span>
@@ -65,7 +65,7 @@ export function GitSection() {
             )}
           </span>
           {dirtyCount > 0 && (
-            <Badge mono tone="amber" className="text-[9px]">
+            <Badge mono tone="amber" className="text-[var(--aro-text-2xs,9px)]">
               {dirtyCount} modified
             </Badge>
           )}
@@ -90,7 +90,7 @@ export function GitSection() {
           <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
             Worktrees
           </span>
-          <Badge mono tone="neutral" className="text-[9px]">
+          <Badge mono tone="neutral" className="text-[var(--aro-text-2xs,9px)]">
             {worktrees.length} total
           </Badge>
         </div>
@@ -109,7 +109,7 @@ export function GitSection() {
                 <div
                   key={wt.path}
                   className={cn(
-                    'flex items-center gap-2 rounded-[7px] px-2.5 py-1.5 text-left text-[11px] transition-colors',
+                    'flex items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-xs transition-colors',
                     isCurrent ? 'bg-aro-iris-tint/60 text-aro-ink' : 'text-aro-ink-2 hover:bg-aro-hover/60'
                   )}
                 >
@@ -120,7 +120,7 @@ export function GitSection() {
                   <div className="min-w-0 flex-1 truncate">
                     <span className="font-aro-mono font-medium">{wtBranch}</span>
                     {wt.isMain && (
-                      <span className="ml-1.5 font-aro-mono text-[9px] text-aro-ink-4">(main)</span>
+                      <span className="ml-1.5 font-aro-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">(main)</span>
                     )}
                   </div>
                   {isCurrent ? (
@@ -131,7 +131,7 @@ export function GitSection() {
                     <Button
                       size="xs"
                       variant="ghost"
-                      className="h-5 px-1.5 text-[10px]"
+                      className="h-5 px-1.5 text-[var(--aro-text-2xs,10px)]"
                       onClick={() => handleSwitchWorktree(wt.path)}
                     >
                       Open

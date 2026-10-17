@@ -65,28 +65,28 @@ function getFileIcon(path: string) {
   const ext = path.split('.').pop()?.toLowerCase()
   if (ext === 'tsx' || ext === 'ts') {
     return (
-      <span className="rounded bg-sky-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-sky-400 shrink-0">
+      <span className="rounded-xs bg-sky-500/15 px-1 py-0.5 font-mono text-[var(--aro-text-2xs,10px)] font-bold text-sky-400 shrink-0">
         TS
       </span>
     )
   }
   if (ext === 'jsx' || ext === 'js') {
     return (
-      <span className="rounded bg-amber-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-amber-400 shrink-0">
+      <span className="rounded-xs bg-amber-500/15 px-1 py-0.5 font-mono text-[var(--aro-text-2xs,10px)] font-bold text-amber-400 shrink-0">
         JS
       </span>
     )
   }
   if (ext === 'md') {
     return (
-      <span className="rounded bg-emerald-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-emerald-400 shrink-0">
+      <span className="rounded-xs bg-emerald-500/15 px-1 py-0.5 font-mono text-[var(--aro-text-2xs,10px)] font-bold text-emerald-400 shrink-0">
         M↓
       </span>
     )
   }
   if (ext === 'css' || ext === 'scss') {
     return (
-      <span className="rounded bg-cyan-500/15 px-1 py-0.5 font-mono text-[9px] font-bold text-cyan-400 shrink-0">
+      <span className="rounded-xs bg-cyan-500/15 px-1 py-0.5 font-mono text-[var(--aro-text-2xs,10px)] font-bold text-cyan-400 shrink-0">
         CSS
       </span>
     )
@@ -176,7 +176,7 @@ export function ReviewPane() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] text-[12.5px] font-semibold text-aro-ink hover:bg-aro-hover transition-colors"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-control text-xs font-semibold text-aro-ink hover:bg-aro-hover transition-colors"
               >
                 <span>
                   {scope === 'uncommitted'
@@ -188,7 +188,7 @@ export function ReviewPane() {
                 <IconChevronDown size={11} className="text-aro-ink-3 shrink-0" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
+            <DropdownMenuContent align="start" className="w-64 bg-aro-raise border-aro-line p-1 shadow-(--aro-shadow-e3) z-50">
               {(['uncommitted', 'branch', 'lastTurn'] as HermesReviewScope[]).map(sc => (
                 <DropdownMenuItem
                   key={sc}
@@ -199,18 +199,18 @@ export function ReviewPane() {
                   }}
                   className="flex flex-col items-start gap-0.5 py-1.5 px-2.5 cursor-pointer rounded-md focus:bg-aro-hover"
                 >
-                  <div className="flex items-center justify-between w-full font-medium text-[12px] text-aro-ink">
+                  <div className="flex items-center justify-between w-full font-medium text-xs text-aro-ink">
                     <span>{scopeLabels[sc].title}</span>
                     {scope === sc && <Codicon name="check" size="0.75rem" className="text-aro-iris-soft" />}
                   </div>
-                  <span className="text-[10px] text-aro-ink-4 leading-normal">{scopeLabels[sc].desc}</span>
+                  <span className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4 leading-normal">{scopeLabels[sc].desc}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           {/* Churn summary badge (+added -removed) */}
-          <div className="flex items-center gap-1.5 font-aro-mono text-[11px] font-medium ml-1">
+          <div className="flex items-center gap-1.5 font-aro-mono text-xs font-medium ml-1">
             <span className="text-emerald-500 font-bold">+{totalAdded.toLocaleString()}</span>
             <span className="text-rose-500 font-bold">−{totalRemoved.toLocaleString()}</span>
           </div>
@@ -264,17 +264,17 @@ export function ReviewPane() {
                 </button>
               </DropdownMenuTrigger>
             </Tip>
-            <DropdownMenuContent align="end" className="w-48 bg-aro-raise border-aro-line p-1 shadow-lg z-50">
+            <DropdownMenuContent align="end" className="w-48 bg-aro-raise border-aro-line p-1 shadow-(--aro-shadow-e3) z-50">
               <DropdownMenuItem
                 onClick={() => setDiffMode(m => (m === 'unified' ? 'split' : 'unified'))}
-                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
               >
                 <span>{diffMode === 'split' ? 'Unified diff' : 'Side-by-side diff'}</span>
                 <IconSplitVertical size={13} className="text-aro-ink-3" />
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setWrapText(w => !w)}
-                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
               >
                 <span>{wrapText ? 'Disable word wrap' : 'Enable word wrap'}</span>
                 <IconWrapText size={13} className="text-aro-ink-3" />
@@ -285,7 +285,7 @@ export function ReviewPane() {
                   <DropdownMenuItem
                     disabled={!hasFiles}
                     onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                    className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
                   >
                     <span>{c.stageAll}</span>
                     <IconPlus size={13} className="text-aro-ink-3" />
@@ -293,7 +293,7 @@ export function ReviewPane() {
                   <DropdownMenuItem
                     disabled={!hasFiles}
                     onClick={() => requestRevert(null)}
-                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-rose-500 hover:bg-aro-hover flex items-center justify-between"
+                    className="text-xs cursor-pointer rounded py-1.5 px-2 text-rose-500 hover:bg-aro-hover flex items-center justify-between"
                   >
                     <span>{c.revertAll}</span>
                     <IconUndo size={13} className="text-rose-400" />
@@ -302,21 +302,21 @@ export function ReviewPane() {
                   <DropdownMenuItem
                     disabled={!hasFiles}
                     onClick={handleCommitPrimary}
-                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
+                    className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
                   >
                     Commit...
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     disabled={!hasFiles}
                     onClick={handleAmend}
-                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
+                    className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
                   >
                     Amend
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     disabled={!hasFiles}
                     onClick={handlePush}
-                    className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
+                    className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover"
                   >
                     Push
                   </DropdownMenuItem>
@@ -325,7 +325,7 @@ export function ReviewPane() {
               )}
               <DropdownMenuItem
                 onClick={() => void refreshReview()}
-                className="text-[11.5px] cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                className="text-xs cursor-pointer rounded py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
               >
                 <span>{t.rightSidebar.refreshTree}</span>
                 <IconRefresh size={13} className="text-aro-ink-3" />
@@ -341,7 +341,7 @@ export function ReviewPane() {
               aria-pressed={showRightFiles}
               onClick={() => setShowRightFiles(v => !v)}
               className={cn(
-                'codex-changes-action-icon rounded-[6px] border border-transparent transition-all',
+                'codex-changes-action-icon rounded-control border border-transparent transition-colors',
                 showRightFiles && 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
               )}
             >
@@ -381,13 +381,13 @@ export function ReviewPane() {
                       onClick={() => void selectReviewFile(file)}
                       className="flex items-center justify-between border-b border-aro-line-soft px-3 py-1.5 bg-aro-base hover:bg-aro-hover/60 transition-colors cursor-pointer select-none group text-left w-full"
                     >
-                      <div className="flex items-center gap-2 font-mono text-[12px] text-aro-ink-3 group-hover:text-aro-ink min-w-0">
+                      <div className="flex items-center gap-2 font-mono text-xs text-aro-ink-3 group-hover:text-aro-ink min-w-0">
                         {getFileIcon(file.path)}
                         <span className="truncate text-aro-ink-2 font-medium">
                           {parentDir ? `.../${fileName}` : fileName}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                      <div className="flex items-center gap-2 font-mono text-xs shrink-0">
                         <span className="text-emerald-500 font-medium">+{file.added}</span>
                         <span className="text-rose-500 font-medium">−{file.removed}</span>
                         <IconMore size={12} className="text-aro-ink-4 opacity-50 group-hover:opacity-100" />
@@ -400,14 +400,14 @@ export function ReviewPane() {
                   <div key={file.path} className="flex min-h-0 flex-1 flex-col">
                     {/* Active file header bar */}
                     <div className="flex items-center justify-between border-b border-aro-line-soft px-3 py-2 bg-aro-raise/40">
-                      <div className="flex items-center gap-2 font-mono text-[12px] text-aro-ink font-medium min-w-0">
+                      <div className="flex items-center gap-2 font-mono text-xs text-aro-ink font-medium min-w-0">
                         {getFileIcon(file.path)}
                         <span className="font-semibold text-aro-ink shrink-0">{fileName}</span>
-                        <span className="text-[11px] text-aro-ink-4 truncate font-normal" title={displayPath(file.path)}>
+                        <span className="text-xs text-aro-ink-4 truncate font-normal" title={displayPath(file.path)}>
                           {parentDir}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
+                      <div className="flex items-center gap-2 font-mono text-xs shrink-0">
                         <span className="text-emerald-500 font-bold">+{file.added}</span>
                         <span className="text-rose-500 font-bold">−{file.removed}</span>
                         {isUncommitted && (
@@ -453,7 +453,7 @@ export function ReviewPane() {
                           virtualized
                         />
                       ) : (
-                        <div className="py-6 text-center text-[0.66rem] text-muted-foreground/60">{c.noDiff}</div>
+                        <div className="py-6 text-center text-[var(--aro-text-2xs,10px)] text-muted-foreground/60">{c.noDiff}</div>
                       )}
                     </div>
                   </div>
@@ -483,7 +483,7 @@ export function ReviewPane() {
               <button
                 type="button"
                 onClick={() => setFilterQuery('')}
-                className="text-aro-ink-4 hover:text-aro-ink text-[11px]"
+                className="text-aro-ink-4 hover:text-aro-ink text-xs"
               >
                 <IconX size={11} />
               </button>
@@ -507,7 +507,7 @@ export function ReviewPane() {
                 <button
                   type="button"
                   onClick={() => void stageReviewFile(null).catch(err => notifyError(err, c.stageAll))}
-                  className="text-[11px] font-medium text-aro-iris-soft hover:underline cursor-pointer"
+                  className="text-xs font-medium text-aro-iris-soft hover:underline cursor-pointer"
                 >
                   {c.stageAll}
                 </button>
@@ -527,7 +527,7 @@ export function ReviewPane() {
             {revertingAll ? c.revertAllConfirm : c.revertConfirm}
             {!revertingAll && revertTarget?.path && (
               <span
-                className="mt-2 block truncate font-mono text-[0.7rem] text-(--ui-text-secondary)"
+                className="mt-2 block truncate font-mono text-[var(--aro-text-2xs,10px)] text-(--ui-text-secondary)"
                 title={displayPath(revertTarget.path)}
               >
                 {displayPath(revertTarget.path)}
