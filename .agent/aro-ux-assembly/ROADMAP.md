@@ -60,7 +60,7 @@ the Layout sections, resize the window, flip themes.
 - [x] 4. Container-query width classes and collapse order implemented in the
       templates (right panes, then sidebar to rail, then toolbar to menu)
 - [x] 5. Gallery "Layout" sections + screenshots at 3 widths (or BLOCKED)
-- [ ] 🛑 **GATE A**
+- [x] 🛑 **GATE A**
 
 ---
 
@@ -72,7 +72,7 @@ the Layout sections, resize the window, flip themes.
 journey scorecard "before" numbers recorded; fix order proposed.
 **Founder check:** read `FRICTION.md`; pick what to fix via the interview.
 
-- [ ] 6. Walk every route and all 19 settings categories live; log rows
+- [x] 6. Walk every route and all 19 settings categories live; log rows
 - [ ] 7. Walk the 10 default journeys (`LAYOUT-UX.md` section 8); record
       steps, shifts, focus losses, time to first feedback
 - [ ] 8. Keyboard-only pass and focus-order pass; log rows
