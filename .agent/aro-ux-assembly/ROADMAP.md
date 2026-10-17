@@ -119,7 +119,7 @@ empty/loading/error, narrow and wide.
 **C5 Boot and first run:** install, onboarding, connecting, boot failure,
 reauth, update, error boundary, guide startup. Recovery semantics unchanged.
 - [x] 22. First-run and boot surfaces
-- [ ] 🛑 **GATE C5**
+- [x] 🛑 **GATE C5**
 
 ---
 
@@ -133,12 +133,12 @@ failures vs baseline.
 **Founder check:** run the 10 journeys yourself with the scorecard; 6
 themes, glass on/off, RTL, one non-English locale, three window widths.
 
-- [ ] 23. Re-run all journeys; fill "after" scorecard; fix regressions
-- [ ] 24. Performance: long transcript, several panes, live stream, resize
-- [ ] 25. Final keyboard and accessibility pass (focus order/return, roles)
-- [ ] 26. Extensibility proof: build a throwaway screen using only
+- [x] 23. Re-run all journeys; fill "after" scorecard; fix regressions
+- [x] 24. Performance: long transcript, several panes, live stream, resize
+- [x] 25. Final keyboard and accessibility pass (focus order/return, roles)
+- [x] 26. Extensibility proof: build a throwaway screen using only
       `LAYOUT-UX.md` section 9; fix any gap in the doc; remove it
-- [ ] 27. Docs sync (`LAYOUT-UX.md`, `DESIGN.md` references)
+- [x] 27. Docs sync (`LAYOUT-UX.md`, `DESIGN.md` references)
 - [ ] 🛑 **GATE D: release candidate on `ui-port/2026-10-09`**
 
 ---

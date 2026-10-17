@@ -73,7 +73,7 @@ Build screens from these templates only. Each has fixed anatomy.
 Layout primitives (exist or add additively, constrained to the spacing scale):
 `PageShell`, `PageHeader`, `Section`, `FormRow`, `Stack`, `Inline`, `Toolbar`,
 `ActionBar`, `ListRow` (exists), `OverlaySplitLayout` (exists),
-`SectionHeading` (exists), `EmptyState`/`PanelEmpty` (exist). A screen may not
+`SectionHeading` (exists), `EmptyState`/`PanelEmpty`/`StateBox` (exist). A screen may not
 invent its own header, gutter, or footer.
 
 Measures *(default, tokenize additively)*: chat text about 72ch; form content
