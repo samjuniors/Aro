@@ -27,7 +27,11 @@ Every 🛑 GATE: agent stops and waits for "continue".
    visible.
 Record answers as D-UI-007..009 below.
 
-(Answers and later decisions are appended here.)
+- D-UI-007 Visual direction: **Cursor/Zed calm and flat** (2026-10-17).
+- D-UI-008 Primary theme to perfect first: **obsidian** (2026-10-17).
+- D-UI-009 `/aro-design` in production builds: **dev-only (hidden in prod)** (2026-10-17).
+
+(Later decisions appended below.)
 
 ## PHASE A: Design system (additive; no screen/primitive edits)
 
@@ -38,11 +42,11 @@ RTL, reduced motion; ratchet test in place; no new check failures.
 **Founder check:** `npm run dev` in `apps/desktop`, open **Aro Design** in the
 sidebar (`/aro-design`), switch themes, look at every section.
 
-- [ ] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
+- [x] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
       failing lists, boot smoke); list the 21 fixed routes + 19 settings
       categories; explain how Aro themes reach the host app
       (`host-theme.css`, `src/themes`); confirm two-kit default (AGENT.md)
-- [ ] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
+- [~] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
       value-to-role map (in the report, not DESIGN.md); decide hex-scan
       exclusions (theme/palette/shiki data files)
 - [ ] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
