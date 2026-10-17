@@ -40,10 +40,10 @@ const variantMap: Record<Variant, string> = {
 }
 
 const sizeMap: Record<Size, string> = {
-  xs: 'h-[24px] px-2 text-[11.5px] gap-1 rounded-aro-sm',
-  sm: 'h-[30px] px-3 text-[12.5px] gap-1.5 rounded-aro-md',
-  md: 'h-[34px] px-3.5 text-[13px] gap-2 rounded-aro-md',
-  lg: 'h-[40px] px-5 text-[14px] gap-2 rounded-aro-lg',
+  xs: 'h-[24px] px-2 text-xs gap-1 rounded-aro-sm',
+  sm: 'h-[30px] px-3 text-xs gap-1.5 rounded-aro-md',
+  md: 'h-[34px] px-3.5 text-xs gap-2 rounded-aro-md',
+  lg: 'h-[40px] px-5 text-sm gap-2 rounded-aro-lg',
 }
 
 export function Button({
@@ -163,8 +163,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-[2px] text-[10.5px] font-medium',
-        mono && 'font-aro-mono text-[10px]',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-[2px] text-[var(--aro-text-2xs,10px)] font-medium',
+        mono && 'font-aro-mono text-[var(--aro-text-2xs,10px)]',
         toneBg[tone],
         className,
       )}
@@ -179,7 +179,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
   return (
     <kbd
       className={cn(
-        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-aro-xs border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[9.5px] leading-none font-medium text-aro-ink-3',
+        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-aro-xs border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none font-medium text-aro-ink-3',
         className,
       )}
     >
@@ -200,7 +200,7 @@ export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivEl
 export function SectionLabel({ children, className, right }: { children: ReactNode; className?: string; right?: ReactNode }) {
   return (
     <div className={cn('flex items-center justify-between gap-2 px-2.5 pt-2.5 pb-1.5', className)}>
-      <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">{children}</span>
+      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">{children}</span>
       {right}
     </div>
   )
@@ -216,7 +216,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
     <input
       {...rest}
       className={cn(
-        'h-[32px] w-full rounded-aro-md border border-aro-line bg-aro-sunken px-2.5 text-[12.5px] text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
+        'h-[32px] w-full rounded-aro-md border border-aro-line bg-aro-sunken px-2.5 text-xs text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
         className,
       )}
     />
@@ -376,7 +376,7 @@ export function MenuItem({
   return (
     <button
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2.5 rounded-aro-md px-2 py-[7px] text-left text-[12.5px] transition-colors',
+        'flex w-full cursor-pointer items-center gap-2.5 rounded-aro-md px-2 py-[7px] text-left text-xs transition-colors',
         active
           ? 'bg-aro-iris-tint text-aro-iris-soft'
           : danger
@@ -389,13 +389,13 @@ export function MenuItem({
     >
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {hint && <span className="shrink-0 font-aro-mono text-[10px] text-aro-ink-4">{hint}</span>}
+      {hint && <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{hint}</span>}
     </button>
   )
 }
 
 export function MenuLabel({ children }: { children: ReactNode }) {
-  return <div className="px-2 pt-2 pb-1 font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">{children}</div>
+  return <div className="px-2 pt-2 pb-1 font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">{children}</div>
 }
 
 export function MenuSep() {
@@ -432,7 +432,7 @@ export function Select({
           className={cn(
             'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-aro-md text-aro-ink-2 transition-colors hover:text-aro-ink',
             !bare && 'border border-aro-line bg-aro-raise hover:border-aro-line-strong',
-            size === 'xs' ? 'h-[24px] px-1.5 text-[11.5px]' : 'h-[30px] px-2 text-[12.5px]',
+            size === 'xs' ? 'h-[24px] px-1.5 text-xs' : 'h-[30px] px-2 text-xs',
           )}
           type="button"
         >
@@ -533,7 +533,7 @@ export function Segmented<T extends string>({
             aria-pressed={on}
             className={cn(
               'inline-flex cursor-pointer items-center gap-1.5 rounded-aro-sm font-medium transition-[background-color,color,box-shadow,transform] duration-150',
-              size === 'md' ? 'px-3 py-[6px] text-[12.5px]' : 'px-2.5 py-[4px] text-[12px]',
+              size === 'md' ? 'px-3 py-[6px] text-xs' : 'px-2.5 py-[4px] text-xs',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
@@ -569,7 +569,7 @@ export function Tabs<T extends string>({
           <button
             aria-selected={on}
             className={cn(
-              'relative cursor-pointer rounded-aro-sm px-2.5 py-[6px] text-[12.5px] font-medium transition-colors',
+              'relative cursor-pointer rounded-aro-sm px-2.5 py-[6px] text-xs font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
@@ -580,7 +580,7 @@ export function Tabs<T extends string>({
             <span className="flex items-center gap-1.5">
               {it.label}
               {it.count !== undefined && (
-                <span className={cn('rounded-full px-1.5 font-aro-mono text-[9.5px]', on ? 'bg-aro-iris-tint text-aro-iris-soft' : 'bg-aro-hover text-aro-ink-4')}>
+                <span className={cn('rounded-full px-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)]', on ? 'bg-aro-iris-tint text-aro-iris-soft' : 'bg-aro-hover text-aro-ink-4')}>
                   {it.count}
                 </span>
               )}
@@ -686,12 +686,12 @@ export function Stat({
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-aro-lg border border-aro-line-soft bg-aro-raise p-3">
-      <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
+      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
       <div className="flex items-end justify-between gap-2">
-        <span className={cn('text-[20px] leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
+        <span className={cn('text-xl leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
         {chart && <Sparkline data={chart} h={18} w={54} />}
       </div>
-      {sub && <span className="text-[11px] text-aro-ink-3">{sub}</span>}
+      {sub && <span className="text-xs text-aro-ink-3">{sub}</span>}
     </div>
   )
 }
@@ -703,7 +703,7 @@ export function Tip({ label, children, side = 'top' }: { label: string; children
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-aro-sm border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
+          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-aro-sm border border-aro-line-strong bg-aro-overlay px-2 py-1 text-xs whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
           side === 'top' ? 'bottom-[calc(100%+7px)]' : 'top-[calc(100%+7px)]',
         )}
       >
@@ -730,8 +730,8 @@ export function EmptyState({
         <Icon size={19} />
       </div>
       <div className="space-y-1">
-        <p className="text-[13.5px] font-semibold text-aro-ink">{title}</p>
-        <p className="max-w-[280px] text-[12px] leading-relaxed text-aro-ink-3">{body}</p>
+        <p className="text-sm font-semibold text-aro-ink">{title}</p>
+        <p className="max-w-[280px] text-xs leading-relaxed text-aro-ink-3">{body}</p>
       </div>
       {action}
     </div>
@@ -777,8 +777,8 @@ export function Modal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-aro-line-soft bg-aro-raise/60 px-4 py-3">
           <div>
-            <h3 className="font-aro-display text-[15px] font-semibold tracking-[-.015em] text-aro-ink">{title}</h3>
-            {sub && <p className="mt-0.5 text-[12px] leading-[1.5] text-aro-ink-3">{sub}</p>}
+            <h3 className="font-aro-display text-base font-semibold tracking-[-.015em] text-aro-ink">{title}</h3>
+            {sub && <p className="mt-0.5 text-xs leading-[1.5] text-aro-ink-3">{sub}</p>}
           </div>
           <IconButton icon={IconX} label="Close" onClick={onClose} size={28} />
         </div>
@@ -799,7 +799,7 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
       {items.map((t) => (
         <div
           className={cn(
-            'animate-aro-slide-up rounded-aro-md border bg-aro-overlay px-3 py-2 text-[12px] text-aro-ink shadow-aro-e3',
+            'animate-aro-slide-up rounded-aro-md border bg-aro-overlay px-3 py-2 text-xs text-aro-ink shadow-aro-e3',
             t.tone === 'mint'
               ? 'border-aro-mint/30'
               : t.tone === 'rose'

@@ -126,7 +126,7 @@ Skills/Messaging/Artifacts/Cron/Profiles/Agents/Starmap, Aro pages
 (Transcript, Review, Tasks, Rules, Agents, Doctor, Bridge). **Check:** each
 route opened; empty/loading/error states.
 - [x] 17. Workspace/projects  - [x] 18. Capabilities + system views
-- [ ] 19. Aro pages + remaining overlays
+- [x] 19. Aro pages + remaining overlays
 - [ ] 🛑 **GATE C4**
 
 **C5 Boot/onboarding/update/error:** install, onboarding, connecting, boot

@@ -350,7 +350,7 @@ function approvalRisk(command: string): 'low' | 'medium' | 'high' {
 export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLabel?: string; local?: boolean }) {
   if (live) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-mint uppercase">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-mint uppercase">
         <i className="size-[5px] animate-aro-breathe rounded-full bg-aro-mint" />
         live
       </span>
@@ -360,7 +360,7 @@ export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLab
   if (local) {
     return (
       <span
-        className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-iris/30 bg-aro-iris-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-iris-soft uppercase"
+        className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-iris/30 bg-aro-iris-tint px-2 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-iris-soft uppercase"
         title="Your own tasks, persisted on this device (conductor.workspace.v3.tasks). They are not agent todos and never leave the app."
       >
         <i className="size-[5px] rounded-full bg-aro-iris" />
@@ -371,7 +371,7 @@ export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLab
 
   return (
     <span
-      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-3 uppercase"
+      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise px-2 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-ink-3 uppercase"
       title="No active live data stream connected."
     >
       <i className="size-[5px] rounded-full bg-aro-ink-4" />
@@ -735,7 +735,7 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
       <button
         aria-expanded={open}
         aria-label="Switch session"
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise px-2.5 py-1 font-aro-mono text-[10px] text-aro-ink-2 transition-colors hover:border-aro-line-strong hover:text-aro-ink"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise px-2.5 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 transition-colors hover:border-aro-line-strong hover:text-aro-ink"
         onClick={() => setOpen(o => !o)}
       >
         <span className="size-[5px] rounded-full bg-aro-iris" />
@@ -745,12 +745,12 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
       {open && (
         <>
           <div aria-hidden className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="animate-aro-rise absolute right-0 top-[calc(100%+6px)] z-40 w-[300px] overflow-hidden rounded-[10px] border border-aro-line-soft bg-aro-raise shadow-aro-e3">
+          <div className="animate-aro-rise absolute right-0 top-[calc(100%+6px)] z-40 w-[300px] overflow-hidden rounded-panel border border-aro-line-soft bg-aro-raise shadow-aro-e3">
             <div className="border-b border-aro-line-soft p-2">
               <input
                 aria-label="Search sessions"
                 autoFocus
-                className="h-[26px] w-full rounded-[6px] border border-aro-line-soft bg-aro-well px-2 font-aro-mono text-[11px] text-aro-ink-2 outline-none placeholder:text-aro-ink-4 focus:border-aro-iris/50"
+                className="h-[26px] w-full rounded-control border border-aro-line-soft bg-aro-well px-2 font-aro-mono text-xs text-aro-ink-2 outline-none placeholder:text-aro-ink-4 focus:border-aro-iris/50"
                 onChange={e => setQ(e.target.value)}
                 placeholder="Search sessions…"
                 value={q}
@@ -763,7 +763,7 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
                 return (
                   <button
                     className={cn(
-                      'flex w-full cursor-pointer flex-col gap-0.5 rounded-[7px] px-2 py-1.5 text-left transition-colors',
+                      'flex w-full cursor-pointer flex-col gap-0.5 rounded-control px-2 py-1.5 text-left transition-colors',
                       on ? 'bg-aro-iris-tint' : 'hover:bg-aro-hover/60',
                     )}
                     key={s.id}
@@ -772,8 +772,8 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
                       openSessionFromPicker(s.id, () => undefined, 'in-place')
                     }}
                   >
-                    <span className="truncate text-[11.5px] text-aro-ink">{s.title?.trim() || 'Untitled session'}</span>
-                    <span className="flex items-center gap-2 font-aro-mono text-[9.5px] text-aro-ink-4">
+                    <span className="truncate text-xs text-aro-ink">{s.title?.trim() || 'Untitled session'}</span>
+                    <span className="flex items-center gap-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                       <span className={cn('size-[5px] rounded-full', s.ended_at ? 'bg-aro-line-strong' : 'bg-aro-mint')} />
                       {relativeTime(s.ended_at ?? s.started_at)}
                       {s.model ? <span className="truncate">{s.model}</span> : null}
@@ -782,7 +782,7 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
                 )
               })}
               {list.length === 0 && (
-                <div className="px-2 py-4 text-center text-[11px] text-aro-ink-4">no sessions match</div>
+                <div className="px-2 py-4 text-center text-xs text-aro-ink-4">no sessions match</div>
               )}
             </div>
           </div>
@@ -795,7 +795,7 @@ export function SessionPicker({ sessions, activeStoredId }: { sessions: SessionI
 /** Shared empty-state slot for live pages before data lands. */
 export function InlineHint({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-[9px] border border-dashed border-aro-line bg-aro-well/60 px-3 py-2 text-[11.5px] text-aro-ink-4">
+    <div className="flex items-center gap-2 rounded-control border border-dashed border-aro-line bg-aro-well/60 px-3 py-2 text-xs text-aro-ink-4">
       {children}
     </div>
   )

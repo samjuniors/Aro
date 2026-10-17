@@ -36,29 +36,29 @@ function TaskCard({ t, blocked, onOpen, active }: { t: Task; blocked?: boolean; 
   const a = t.assignee ? agentById(t.assignee) : null
 
   return (
-    <button className={cn('w-full cursor-pointer space-y-2 rounded-[10px] border bg-aro-raise p-2.5 text-left transition-all hover:shadow-aro-e2', active ? 'border-aro-iris/50' : 'border-aro-line-soft hover:border-aro-line-strong')} onClick={onOpen}>
+    <button className={cn('w-full cursor-pointer space-y-2 rounded-control border bg-aro-raise p-2.5 text-left transition-colors hover:shadow-aro-e2', active ? 'border-aro-iris/50' : 'border-aro-line-soft hover:border-aro-line-strong')} onClick={onOpen}>
       <div className="flex items-center gap-1.5">
-        <span className={cn('rounded-[3px] px-1 font-aro-mono text-[8.5px] font-bold uppercase', toneBg[prioTone[t.priority]])}>{t.priority}</span>
-        <span className="font-aro-mono text-[9.5px] text-aro-ink-4">{t.key}</span>
-        <span className="ml-auto rounded-[3px] border border-aro-line-soft px-1 font-aro-mono text-[8.5px] text-aro-ink-4">{srcLabel[t.source]}</span>
+        <span className={cn('rounded-xs px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] font-bold uppercase', toneBg[prioTone[t.priority]])}>{t.priority}</span>
+        <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{t.key}</span>
+        <span className="ml-auto rounded-xs border border-aro-line-soft px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{srcLabel[t.source]}</span>
       </div>
-      <p className="text-[12.5px] leading-[1.45] font-medium text-aro-ink">{t.title}</p>
+      <p className="text-xs leading-[1.45] font-medium text-aro-ink">{t.title}</p>
       <div className="flex items-center gap-1.5">
         {t.human ? (
-          <span aria-hidden className="flex size-4 items-center justify-center rounded-[4px] bg-aro-hover font-aro-mono text-[8px] font-bold text-aro-ink-2">DV</span>
+          <span aria-hidden className="flex size-4 items-center justify-center rounded-xs bg-aro-hover font-aro-mono text-[var(--aro-text-2xs,10px)] font-bold text-aro-ink-2">DV</span>
         ) : a ? (
           <AgentMark from={a.from} glyph={a.glyph} size={16} to={a.to} />
         ) : (
-          <span className="flex size-4 items-center justify-center rounded-[4px] border border-dashed border-aro-line-strong text-aro-ink-4"><IconPlus size={9} /></span>
+          <span className="flex size-4 items-center justify-center rounded-xs border border-dashed border-aro-line-strong text-aro-ink-4"><IconPlus size={9} /></span>
         )}
-        <span className="truncate font-aro-mono text-[9.5px] text-aro-ink-4">{t.human ? 'you' : a?.name ?? 'auto-assign'}</span>
+        <span className="truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{t.human ? 'you' : a?.name ?? 'auto-assign'}</span>
         {blocked && t.status !== 'done' && (
           <Tip label="Blocked by an unfinished dependency">
-            <span className="flex items-center gap-1 font-aro-mono text-[9px] text-aro-rose"><IconWarning size={9} /> blocked</span>
+            <span className="flex items-center gap-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-rose"><IconWarning size={9} /> blocked</span>
           </Tip>
         )}
-        <span className="ml-auto font-aro-mono text-[9.5px] text-aro-ink-4">{t.estimate}</span>
-        {t.cost && <span className="font-aro-mono text-[9.5px] text-aro-ink-3">{t.cost}</span>}
+        <span className="ml-auto font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{t.estimate}</span>
+        {t.cost && <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">{t.cost}</span>}
       </div>
       {t.status === 'running' && <Bar height={2} indeterminate tone="cyan" />}
     </button>
@@ -109,9 +109,9 @@ export function AroTasksPage() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
       <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
         <div className="min-w-0">
-          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">work graph · {live ? 'agent todo_list' : local ? 'your tasks' : 'tasks'}</div>
-          <h1 className="text-[15px] font-semibold text-aro-ink">Tasks</h1>
-          <p className="mt-0.5 text-[11.5px] text-aro-ink-3">{live ? 'This board is the session’s live todo_list — statuses stream in as the agent works.' : local ? 'Your own tasks, saved on this device — separate from the agent’s plans.' : 'Tasks and plans appear here as you add them or as Aro plans its work.'}</p>
+          <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">work graph · {live ? 'agent todo_list' : local ? 'your tasks' : 'tasks'}</div>
+          <h1 className="text-sm font-semibold text-aro-ink">Tasks</h1>
+          <p className="mt-0.5 text-xs text-aro-ink-3">{live ? 'This board is the session’s live todo_list — statuses stream in as the agent works.' : local ? 'Your own tasks, saved on this device — separate from the agent’s plans.' : 'Tasks and plans appear here as you add them or as Aro plans its work.'}</p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <SourceBadge live={live} local={local} />
@@ -139,9 +139,9 @@ export function AroTasksPage() {
             <InlineHint>No todo_list in this session yet — ask the agent to plan and its todos fill this board live.</InlineHint>
           )}
           {tasks.length === 0 && !composing && (
-            <div className="mb-4 rounded-[11px] border border-dashed border-aro-line-soft bg-aro-well/40 p-6 text-center">
-              <h3 className="text-[13.5px] font-semibold text-aro-ink">No tasks on this board yet</h3>
-              <p className="mx-auto mt-1 max-w-[420px] text-[12px] text-aro-ink-3">
+            <div className="mb-4 rounded-panel border border-dashed border-aro-line-soft bg-aro-well/40 p-6 text-center">
+              <h3 className="text-sm font-semibold text-aro-ink">No tasks on this board yet</h3>
+              <p className="mx-auto mt-1 max-w-[420px] text-xs text-aro-ink-3">
                 Create a task above to keep a personal list on this device, or prompt Aro to plan a goal and watched todos will populate here automatically.
               </p>
               <div className="mt-3 flex justify-center gap-2">
@@ -161,36 +161,36 @@ export function AroTasksPage() {
                 const list = filtered.filter((t) => t.status === c.id)
 
                 return (
-                  <div className="flex flex-col rounded-[11px] border border-aro-line-soft bg-aro-sunken" key={c.id}>
+                  <div className="flex flex-col rounded-panel border border-aro-line-soft bg-aro-sunken" key={c.id}>
                     <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2.5">
                       <i className={cn('size-[6px] rounded-full', toneDot[c.tone])} />
-                      <span className="text-[12.5px] font-semibold text-aro-ink">{c.label}</span>
-                      <span className="rounded-full bg-aro-raise px-1.5 font-aro-mono text-[9.5px] text-aro-ink-4">{list.length}</span>
+                      <span className="text-xs font-semibold text-aro-ink">{c.label}</span>
+                      <span className="rounded-full bg-aro-raise px-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{list.length}</span>
                     </div>
                     <div className="flex-1 space-y-2 p-2">
                       {list.map((t) => <TaskCard active={sel === t.id} blocked={isBlocked(t)} key={t.id} onOpen={() => setSel(t.id)} t={t} />)}
-                      {list.length === 0 && <div className="rounded-[9px] border border-dashed border-aro-line px-3 py-5 text-center text-[11px] text-aro-ink-4">drop here</div>}
+                      {list.length === 0 && <div className="rounded-control border border-dashed border-aro-line px-3 py-5 text-center text-xs text-aro-ink-4">drop here</div>}
                     </div>
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="overflow-hidden rounded-[11px] border border-aro-line-soft bg-aro-raise">
+            <div className="overflow-hidden rounded-panel border border-aro-line-soft bg-aro-raise">
               {filtered.map((t) => {
                 const a = t.assignee ? agentById(t.assignee) : null
 
                 return (
                   <button className={cn('flex w-full cursor-pointer items-center gap-3 border-b border-aro-line-soft/70 px-3 py-2.5 text-left last:border-0 hover:bg-aro-hover/60', sel === t.id && 'bg-aro-iris-tint/50')} key={t.id} onClick={() => setSel(t.id)}>
-                    <span className={cn('w-6 rounded-[3px] text-center font-aro-mono text-[9px] font-bold uppercase', toneText[prioTone[t.priority]])}>{t.priority}</span>
-                    <span className="w-[76px] font-aro-mono text-[10px] text-aro-ink-4">{t.key}</span>
-                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-aro-ink">{t.title}</span>
-                    <Badge className="text-[9px]" mono tone={COLS.find((c) => c.id === t.status)!.tone}>{t.status}</Badge>
-                    <span className="flex w-[110px] items-center gap-1.5 font-aro-mono text-[10px] text-aro-ink-3">
+                    <span className={cn('w-6 rounded-xs text-center font-aro-mono text-[var(--aro-text-2xs,10px)] font-bold uppercase', toneText[prioTone[t.priority]])}>{t.priority}</span>
+                    <span className="w-[76px] font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{t.key}</span>
+                    <span className="min-w-0 flex-1 truncate text-xs text-aro-ink">{t.title}</span>
+                    <Badge className="text-[var(--aro-text-2xs,10px)]" mono tone={COLS.find((c) => c.id === t.status)!.tone}>{t.status}</Badge>
+                    <span className="flex w-[110px] items-center gap-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                       {a && <AgentMark from={a.from} glyph={a.glyph} size={14} to={a.to} />}
                       {t.human ? 'you' : a?.name ?? '—'}
                     </span>
-                    <span className="w-10 text-right font-aro-mono text-[10px] text-aro-ink-4">{t.estimate}</span>
+                    <span className="w-10 text-right font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{t.estimate}</span>
                   </button>
                 )
               })}
@@ -201,33 +201,33 @@ export function AroTasksPage() {
         {task && (
           <aside className="flex w-[330px] shrink-0 flex-col border-l border-aro-line-soft bg-aro-sunken">
             <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2.5">
-              <span className="font-aro-mono text-[10px] text-aro-ink-4">{task.key}</span>
-              <Badge className="text-[9px]" mono tone={prioTone[task.priority]}>{task.priority}</Badge>
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{task.key}</span>
+              <Badge className="text-[var(--aro-text-2xs,10px)]" mono tone={prioTone[task.priority]}>{task.priority}</Badge>
               <IconButton className="ml-auto" icon={IconX} label="Close" onClick={() => setSel(null)} size={24} />
             </div>
             <div className="aro-scroll-thin flex-1 space-y-3 overflow-y-auto p-3">
-              <h3 className="text-[14px] leading-[1.4] font-semibold text-aro-ink">{task.title}</h3>
+              <h3 className="text-sm leading-[1.4] font-semibold text-aro-ink">{task.title}</h3>
               <div className="flex flex-wrap gap-1">
-                {task.tags.map((tag) => <span className="rounded-[4px] bg-aro-hover px-1.5 py-px font-aro-mono text-[9.5px] text-aro-ink-3" key={tag}>#{tag}</span>)}
+                {task.tags.map((tag) => <span className="rounded-xs bg-aro-hover px-1.5 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3" key={tag}>#{tag}</span>)}
               </div>
-              <div className="rounded-[9px] border border-aro-line-soft bg-aro-raise p-2.5">
-                <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">status</div>
+              <div className="rounded-control border border-aro-line-soft bg-aro-raise p-2.5">
+                <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">status</div>
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {COLS.map((c) => (
-                    <button className={cn('cursor-pointer rounded-full border px-2 py-px text-[10.5px]', task.status === c.id ? 'border-aro-iris/50 bg-aro-iris-tint text-aro-iris-soft' : 'border-aro-line text-aro-ink-3 hover:text-aro-ink')} key={c.id} onClick={() => move(task.id, c.id)}>
+                    <button className={cn('cursor-pointer rounded-full border px-2 py-px text-[var(--aro-text-2xs,10px)]', task.status === c.id ? 'border-aro-iris/50 bg-aro-iris-tint text-aro-iris-soft' : 'border-aro-line text-aro-ink-3 hover:text-aro-ink')} key={c.id} onClick={() => move(task.id, c.id)}>
                       {c.label}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="rounded-[9px] border border-aro-line-soft bg-aro-raise p-2.5">
-                <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">done means</div>
+              <div className="rounded-control border border-aro-line-soft bg-aro-raise p-2.5">
+                <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">done means</div>
                 {task.criteria.length === 0 ? (
-                  <p className="mt-1.5 text-[11.5px] italic text-aro-ink-4">The agent owns this list — completion comes from its todo_list updates.</p>
+                  <p className="mt-1.5 text-xs italic text-aro-ink-4">The agent owns this list — completion comes from its todo_list updates.</p>
                 ) : (
                   task.criteria.map((c) => (
-                    <label className="mt-1.5 flex cursor-pointer items-start gap-2 text-[12px] text-aro-ink-2" key={c}>
-                      <span className="mt-px flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border border-aro-line-strong">
+                    <label className="mt-1.5 flex cursor-pointer items-start gap-2 text-xs text-aro-ink-2" key={c}>
+                      <span className="mt-px flex size-3.5 shrink-0 items-center justify-center rounded-xs border border-aro-line-strong">
                         {task.status === 'done' && <IconCheck className="text-aro-mint" size={9} />}
                       </span>
                       {c}
@@ -236,17 +236,17 @@ export function AroTasksPage() {
                 )}
               </div>
               {task.deps && (
-                <div className="rounded-[9px] border border-aro-line-soft bg-aro-raise p-2.5">
-                  <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">blocked by</div>
+                <div className="rounded-control border border-aro-line-soft bg-aro-raise p-2.5">
+                  <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">blocked by</div>
                   {task.deps.map((d) => {
                     const dt = tasks.find((x) => x.id === d)
 
                     if (!dt) {return null}
 
                     return (
-                      <button className="mt-1.5 flex w-full cursor-pointer items-center gap-2 text-left text-[12px] text-aro-ink-2 hover:text-aro-ink" key={d} onClick={() => setSel(d)}>
+                      <button className="mt-1.5 flex w-full cursor-pointer items-center gap-2 text-left text-xs text-aro-ink-2 hover:text-aro-ink" key={d} onClick={() => setSel(d)}>
                         <i className={cn('size-[6px] rounded-full', dt.status === 'done' ? 'bg-aro-mint' : 'bg-aro-rose')} />
-                        <span className="font-aro-mono text-[10px] text-aro-ink-4">{dt.key}</span>
+                        <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{dt.key}</span>
                         <span className="truncate">{dt.title}</span>
                       </button>
                     )
@@ -254,13 +254,13 @@ export function AroTasksPage() {
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-[9px] border border-aro-line-soft bg-aro-raise p-2.5">
-                  <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">estimate</div>
-                  <div className="mt-1 text-[14px] font-semibold text-aro-ink">{task.estimate}</div>
+                <div className="rounded-control border border-aro-line-soft bg-aro-raise p-2.5">
+                  <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">estimate</div>
+                  <div className="mt-1 text-sm font-semibold text-aro-ink">{task.estimate}</div>
                 </div>
-                <div className="rounded-[9px] border border-aro-line-soft bg-aro-raise p-2.5">
-                  <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">spent</div>
-                  <div className="mt-1 text-[14px] font-semibold text-aro-ink">{task.cost ?? '$0'}</div>
+                <div className="rounded-control border border-aro-line-soft bg-aro-raise p-2.5">
+                  <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">spent</div>
+                  <div className="mt-1 text-sm font-semibold text-aro-ink">{task.cost ?? '$0'}</div>
                 </div>
               </div>
             </div>

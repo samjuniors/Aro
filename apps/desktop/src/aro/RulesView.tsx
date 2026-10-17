@@ -243,7 +243,7 @@ export function AroRulesPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[10px] font-semibold tracking-wider text-aro-ink-4 uppercase">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider text-aro-ink-4 uppercase">
                 Configuration
               </span>
               <Badge mono tone="iris">
@@ -253,10 +253,10 @@ export function AroRulesPage() {
                 conductor.workspace.v3.rules
               </Badge>
             </div>
-            <h1 className="text-[20px] font-semibold tracking-tight text-aro-ink">
+            <h1 className="text-lg font-semibold tracking-tight text-aro-ink">
               Global Rules
             </h1>
-            <p className="text-[12px] text-aro-ink-3">
+            <p className="text-xs text-aro-ink-3">
               Locally saved instructions stored in workspace preferences. Note: Active Hermes agent instructions are configured via Profile SOUL.md; these local rules are stored locally and do not alter live Hermes agent execution.
             </p>
           </div>
@@ -279,19 +279,19 @@ export function AroRulesPage() {
         {/* Runtime Boundary Notice */}
         <section
           aria-label="Runtime Integration Notice"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
         >
           <div className="flex items-center gap-2">
             <IconSliders className="text-aro-iris" size={15} />
-            <h2 className="text-[12.5px] font-semibold text-aro-ink">
+            <h2 className="text-xs font-semibold text-aro-ink">
               Locally Saved Rules (Not Injected into Hermes Runtime)
             </h2>
             <Badge mono tone="amber">
               local storage only
             </Badge>
           </div>
-          <p className="text-[11.5px] text-aro-ink-3">
-            These rules are persisted strictly in local workspace preferences (<code className="font-aro-mono text-[10.5px]">conductor.workspace.v3.rules</code>). Hermes agent execution instructions are loaded from Profile <code className="font-aro-mono text-[10.5px]">SOUL.md</code>. Creating, editing, enabling, or disabling rules here does not alter live Hermes agent execution until server-side rules synchronization is connected.
+          <p className="text-xs text-aro-ink-3">
+            These rules are persisted strictly in local workspace preferences (<code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">conductor.workspace.v3.rules</code>). Hermes agent execution instructions are loaded from Profile <code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">SOUL.md</code>. Creating, editing, enabling, or disabling rules here does not alter live Hermes agent execution until server-side rules synchronization is connected.
           </p>
         </section>
 
@@ -320,18 +320,18 @@ export function AroRulesPage() {
         {/* Add Rule Card */}
         <section
           aria-label="Add Instruction Rule"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-3"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-3"
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-[13px] font-semibold text-aro-ink">Add New Rule</h2>
-            <span className="font-aro-mono text-[10px] text-aro-ink-4">Global scope</span>
+            <h2 className="text-xs font-semibold text-aro-ink">Add New Rule</h2>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Global scope</span>
           </div>
 
           <form className="space-y-2" onSubmit={handleAdd}>
             <div className="flex items-center gap-2">
               <div className="min-w-0 flex-1">
                 <Input
-                  className="font-aro-mono text-[12px]"
+                  className="font-aro-mono text-xs"
                   onChange={e => {
                     setDraft(e.target.value)
 
@@ -354,7 +354,7 @@ export function AroRulesPage() {
 
             {addError && (
               <div
-                className="flex items-center gap-1.5 font-aro-mono text-[11px] text-aro-rose"
+                className="flex items-center gap-1.5 font-aro-mono text-xs text-aro-rose"
                 role="alert"
               >
                 <IconWarning size={13} />
@@ -384,7 +384,7 @@ export function AroRulesPage() {
               size={13}
             />
             <Input
-              className="pl-8 text-[12px]"
+              className="pl-8 text-xs"
               onChange={e => setSearch(e.target.value)}
               placeholder="Search rules..."
               value={search}
@@ -395,19 +395,19 @@ export function AroRulesPage() {
         {/* Rules List */}
         <section aria-label="Rules List" className="space-y-2">
           {rules.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-aro-line-strong p-8 text-center">
+            <div className="rounded-panel border border-dashed border-aro-line-strong p-8 text-center">
               <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-aro-hover text-aro-ink-3">
                 <IconSliders size={20} />
               </div>
-              <h3 className="mt-3 text-[14px] font-semibold text-aro-ink">
+              <h3 className="mt-3 text-sm font-semibold text-aro-ink">
                 No global rules added
               </h3>
-              <p className="mx-auto mt-1 max-w-md text-[12px] text-aro-ink-3">
+              <p className="mx-auto mt-1 max-w-md text-xs text-aro-ink-3">
                 Global instructions steer agent behavior across all sessions. Write your first rule above to establish workspace standards.
               </p>
             </div>
           ) : filteredRules.length === 0 ? (
-            <div className="rounded-[10px] border border-aro-line-soft bg-aro-raise/50 p-6 text-center text-[12px] text-aro-ink-3">
+            <div className="rounded-panel border border-aro-line-soft bg-aro-raise/50 p-6 text-center text-xs text-aro-ink-3">
               No rules matching &ldquo;{search}&rdquo; in {filter} rules.
             </div>
           ) : (
@@ -418,7 +418,7 @@ export function AroRulesPage() {
               return (
                 <div
                   className={cn(
-                    'group relative rounded-[8px] border bg-aro-raise p-3.5 transition-all shadow-aro-e1',
+                    'group relative rounded-control border bg-aro-raise p-3.5 transition-colors shadow-aro-e1',
                     isEditing
                       ? 'border-aro-iris/60 bg-aro-raise'
                       : disabled
@@ -432,7 +432,7 @@ export function AroRulesPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-aro-mono text-[10px] font-bold text-aro-iris">
+                          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-bold text-aro-iris">
                             EDITING RULE #{originalIndex + 1}
                           </span>
                           {isDirty ? (
@@ -445,14 +445,14 @@ export function AroRulesPage() {
                             </Badge>
                           )}
                         </div>
-                        <span className="text-[10px] text-aro-ink-4">
+                        <span className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                           Esc to cancel · Enter to save
                         </span>
                       </div>
 
                       <Input
                         autoFocus
-                        className="font-aro-mono text-[12px]"
+                        className="font-aro-mono text-xs"
                         onChange={e => {
                           setEditingDraft(e.target.value)
 
@@ -471,7 +471,7 @@ export function AroRulesPage() {
 
                       {editError && (
                         <div
-                          className="flex items-center gap-1.5 font-aro-mono text-[11px] text-aro-rose"
+                          className="flex items-center gap-1.5 font-aro-mono text-xs text-aro-rose"
                           role="alert"
                         >
                           <IconWarning size={12} />
@@ -503,7 +503,7 @@ export function AroRulesPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                             #{originalIndex + 1}
                           </span>
                           {disabled ? (
@@ -518,7 +518,7 @@ export function AroRulesPage() {
                         </div>
                         <p
                           className={cn(
-                            'text-[12.5px] leading-relaxed break-words',
+                            'text-xs leading-relaxed break-words',
                             disabled
                               ? 'text-aro-ink-4 line-through decoration-aro-ink-4/50'
                               : 'font-medium text-aro-ink'
