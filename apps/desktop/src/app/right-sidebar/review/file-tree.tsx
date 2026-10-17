@@ -107,8 +107,13 @@ const ROW_HEIGHT = 24
 // Rows mounted above and below the viewport while scrolling.
 const OVERSCAN_ROWS = 12
 
-export function ReviewFileTree() {
-  const files = useStore($reviewFiles)
+export function ReviewFileTree({ filterQuery = '' }: { filterQuery?: string } = {}) {
+  const allFiles = useStore($reviewFiles)
+  const files = useMemo(() => {
+    if (!filterQuery.trim()) return allFiles
+    const q = filterQuery.toLowerCase()
+    return allFiles.filter(f => f.path.toLowerCase().includes(q))
+  }, [allFiles, filterQuery])
   const open = useStore($reviewOpen)
   const loading = useStore($reviewLoading)
   const mode = useStore($reviewTreeMode)

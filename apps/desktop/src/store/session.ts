@@ -346,6 +346,8 @@ function workspaceCwdKey(connection: HermesConnection | null = $connection.get()
 export const getRememberedWorkspaceCwd = (): string => storedString(workspaceCwdKey())?.trim() || ''
 export type NewChatWorkspaceTarget = null | string | undefined
 
+export const $configuredDefaultProjectDir = atom<string>(configuredDefaultProjectDir)
+
 export const getConfiguredDefaultProjectDir = (): string => configuredDefaultProjectDir
 
 export async function syncConfiguredDefaultProjectDir(shouldPublish: () => boolean = () => true): Promise<string> {
@@ -354,6 +356,7 @@ export async function syncConfiguredDefaultProjectDir(shouldPublish: () => boole
   if (!settings) {
     if (shouldPublish()) {
       configuredDefaultProjectDir = ''
+      $configuredDefaultProjectDir.set('')
     }
 
     return configuredDefaultProjectDir
@@ -363,6 +366,7 @@ export async function syncConfiguredDefaultProjectDir(shouldPublish: () => boole
 
   if (shouldPublish()) {
     configuredDefaultProjectDir = dir?.trim() || ''
+    $configuredDefaultProjectDir.set(configuredDefaultProjectDir)
   }
 
   return configuredDefaultProjectDir
@@ -429,6 +433,7 @@ export async function ensureDefaultWorkspaceCwd(shouldPublish: () => boolean = (
 
 export function applyConfiguredDefaultProjectDir(dir: null | string | undefined): void {
   configuredDefaultProjectDir = dir?.trim() || ''
+  $configuredDefaultProjectDir.set(configuredDefaultProjectDir)
 }
 
 interface AppAtom<T> {

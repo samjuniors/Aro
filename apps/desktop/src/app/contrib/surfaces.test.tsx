@@ -12,7 +12,13 @@ import type { WiringActions } from './types'
 
 vi.mock('@/contrib/react/use-contributions', () => ({ useContributions: vi.fn() }))
 vi.mock('@/store/connections', () => ({ $activeConnectionId: atom('local') }))
-vi.mock('@/store/gateway', () => ({ $gateway: atom<unknown>(null) }))
+// The hand-written gateway mock predates the AroSidebar import chain: pulling
+// the sidebar in (module scope) reaches src/store/projects, whose module-level
+// $gateway.subscribe(syncReposScanning) calls activeGateway() while the file
+// evaluates. The real store exports it (src/store/gateway.ts); the mock has to
+// answer it so projects.ts can finish loading, and keep it null so every
+// repo-scan subscription treats "no gateway" exactly as the tests intend.
+vi.mock('@/store/gateway', () => ({ $gateway: atom<unknown>(null), activeGateway: () => null }))
 vi.mock('@/store/profile', async importOriginal => ({
   // Same reason as the session mock: the Aro model menu's controller chain
   // reads more of this store at module scope than the old mock provided.
@@ -39,9 +45,11 @@ vi.mock('../shell/hooks/use-statusbar-items', () => ({
 }))
 vi.mock('../shell/statusbar-controls', () => ({ StatusbarControls: () => null }))
 vi.mock('../routes', () => ({
+  CAPABILITIES_ROUTE: '/capabilities',
   contributedRoutes: () => [],
   NEW_CHAT_ROUTE: '/new',
   ROUTES_AREA: 'routes',
+  SETTINGS_ROUTE: '/settings',
   sessionRoute: (id: string) => `/${id}`
 }))
 vi.mock('./latest-actions', () => ({ latestChatActions: () => ({}), latestSidebarActions: () => ({}) }))

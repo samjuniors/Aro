@@ -29,11 +29,17 @@ import {
 } from '@/store/profile'
 import { $projectScope, ALL_PROJECTS } from '@/store/project-scope'
 import {
+  $configuredDefaultProjectDir,
   $currentCwd,
   $selectedStoredSessionId,
   $sessions,
+  applyConfiguredDefaultProjectDir,
+  commitWorkspaceCwdForSelectedSession,
+  ensureDefaultWorkspaceCwd,
+  getConfiguredDefaultProjectDir,
   sessionMatchesStoredId,
   setCurrentCwd,
+  setNewChatWorkspaceTarget,
   setSessions,
   workspaceCwdForNewSession
 } from '@/store/session'
@@ -191,8 +197,11 @@ export function resolveNewSessionCwd(): string {
 // in the project through resolveNewSessionCwd.
 export function followEnteredProjectCwd(cwd: string): void {
   const target = cwd.trim()
+  const selectedSessionId = $selectedStoredSessionId.get()
 
-  if (!target || $selectedStoredSessionId.get() || target === $currentCwd.get()) {
+  // `draft_*` rows are local composer drafts, not persisted conversations. A
+  // project picked while one is open should become that draft's workspace.
+  if (!target || (selectedSessionId && !selectedSessionId.startsWith('draft_')) || target === $currentCwd.get()) {
     return
   }
 
@@ -1315,6 +1324,7 @@ export async function deleteProject(id: string): Promise<void> {
       )
     )
   })
+  void refreshProjects()
   void refreshProjectTree()
 }
 
@@ -1337,12 +1347,13 @@ export async function setActiveProject(id: null | string): Promise<void> {
 export interface ProjectDialogState {
   mode: 'add-folder' | 'create' | 'rename'
   projectId?: string
+  folder?: string
   name?: string
 }
 
 export const $projectDialog = atom<null | ProjectDialogState>(null)
 
-export function openProjectCreate(): void {
+export function openProjectCreate(options?: { folder?: string; name?: string }): void {
   if ($projectsRpcAvailable.get() === false) {
     notify({
       kind: 'warning',
@@ -1352,7 +1363,7 @@ export function openProjectCreate(): void {
     return
   }
 
-  $projectDialog.set({ mode: 'create' })
+  $projectDialog.set({ mode: 'create', ...options })
 }
 
 /** Clear the armed "New project" drag placement — on dialog close, so a later
@@ -1638,4 +1649,50 @@ export async function openFolderAsProject(dir?: string): Promise<void> {
     ?.repoStatus(target)
     .then(() => refreshProjectTree())
     .catch(() => undefined)
+}
+
+/** Pick and persist a default workspace directory used when no project is selected. */
+export async function chooseAndSetDefaultWorkspaceDir(): Promise<string | null> {
+  const settings = window.hermesDesktop?.settings
+
+  let chosenDir: string | null = null
+
+  if (settings?.pickDefaultProjectDir) {
+    const picked = await settings.pickDefaultProjectDir()
+    if (picked.canceled || !picked.dir) {
+      return null
+    }
+    const result = await settings.setDefaultProjectDir(picked.dir)
+    chosenDir = result.dir
+  } else {
+    chosenDir = await pickProjectFolder()
+  }
+
+  if (chosenDir) {
+    applyConfiguredDefaultProjectDir(chosenDir)
+    setCurrentCwd(chosenDir)
+    setNewChatWorkspaceTarget(chosenDir)
+    followEnteredProjectCwd(chosenDir)
+
+    const activeSessionId = $selectedStoredSessionId.get()
+    if (activeSessionId) {
+      commitWorkspaceCwdForSelectedSession(chosenDir)
+      setSessions(prev => prev.map(s => (s.id === activeSessionId ? { ...s, cwd: chosenDir } : s)))
+    }
+
+    notify({ durationMs: 4_000, kind: 'success', message: 'Default workspace directory updated' })
+  }
+
+  return chosenDir
+}
+
+/** Clear the configured default workspace directory. */
+export async function clearConfiguredDefaultWorkspaceDir(): Promise<void> {
+  const settings = window.hermesDesktop?.settings
+  if (settings?.setDefaultProjectDir) {
+    await settings.setDefaultProjectDir(null)
+  }
+  applyConfiguredDefaultProjectDir(null)
+  await ensureDefaultWorkspaceCwd()
+  notify({ durationMs: 4_000, kind: 'info', message: 'Default workspace directory cleared' })
 }

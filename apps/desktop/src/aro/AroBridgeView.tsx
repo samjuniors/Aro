@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 
-import { useAroBridge, type AroBridgeStep } from './bridge'
+import { type AroBridgeStep, useAroBridge } from './bridge'
 import { IconBolt, IconBrain, IconRefresh, IconSearch, IconStop, IconWarning, IconX, IconZap } from './Icons'
 import { Badge, Button, EmptyState, Input, Panel, Segmented } from './ui'
 
@@ -96,16 +96,26 @@ function ErrorRow({ step }: { step: Extract<AroBridgeStep, { kind: 'error' }> })
 /* ================================ page ================================ */
 
 export function AroBridgeView() {
-  const { status, sessionId, startError, steps, busy, send, toolResult, interrupt, stop, restart } = useAroBridge()
+  const { status, sessionId, activeSessionId, startError, steps, busy, send, toolResult, interrupt, stop, restart } = useAroBridge()
   const [engine, setEngine] = useState<'demo' | 'openai'>('demo')
   const [baseUrl, setBaseUrl] = useState('http://localhost:8642/v1')
   const [model, setModel] = useState('aro-4-70b')
+  const [apiKey, setApiKey] = useState('')
   const [draft, setDraft] = useState('')
 
   const chip =
     status === 'ready' ? <Badge dot mono tone="mint">ready</Badge>
     : status === 'starting' ? <Badge dot mono tone="amber">starting</Badge>
+    : status === 'idle' ? <Badge dot mono tone="neutral">idle</Badge>
     : <Badge dot mono tone="rose">exited</Badge>
+
+  const handleEngineChange = (newEngine: 'demo' | 'openai') => {
+    setEngine(newEngine)
+
+    if (status !== 'idle') {
+      restart({ engine: newEngine, ...(newEngine === 'openai' ? { baseUrl, model, apiKey } : {}) })
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
@@ -116,28 +126,48 @@ export function AroBridgeView() {
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {chip}
-          <Badge mono tone="neutral">{sessionId ? `session ${sessionId.slice(0, 10)}` : 'session —'}</Badge>
+          <Badge mono tone="neutral">{sessionId ? `bridge ${sessionId.slice(0, 10)}` : 'bridge —'}</Badge>
+          {activeSessionId && <Badge mono tone="iris">{`session ${activeSessionId.slice(0, 8)}`}</Badge>}
+          {engine === 'demo' ? (
+            <Badge dot mono tone="amber">demo mode (synthetic)</Badge>
+          ) : (
+            <Badge dot mono tone="cyan">openai engine</Badge>
+          )}
           <Segmented
             items={[{ label: 'Demo', value: 'demo' }, { label: 'OpenAI', value: 'openai' }]}
-            onChange={setEngine}
+            onChange={handleEngineChange}
             value={engine}
           />
           <Button
-            icon={IconRefresh}
-            onClick={() => restart({ engine, ...(engine === 'openai' ? { baseUrl, model } : {}) })}
-            variant="outline"
+            icon={status === 'idle' ? IconBolt : IconRefresh}
+            onClick={() => restart({ engine, ...(engine === 'openai' ? { baseUrl, model, apiKey } : {}) })}
+            variant={status === 'idle' ? 'primary' : 'outline'}
           >
-            Restart
+            {status === 'idle' ? 'Start bridge' : 'Restart'}
           </Button>
         </div>
       </header>
 
+      {engine === 'demo' && (
+        <div className="flex items-center gap-2 border-b border-aro-amber/20 bg-aro-amber-tint/40 px-5 py-2 text-[11.5px] text-aro-ink-3">
+          <IconWarning className="shrink-0 text-aro-amber" size={12} />
+          <span>Running in <strong>demo / test mode</strong> (canned responses). Switch to <strong>OpenAI</strong> above to run against a real model engine.</span>
+        </div>
+      )}
+
       {engine === 'openai' && (
         <div className="flex flex-wrap items-center gap-2 border-b border-aro-line-soft bg-aro-sunken/40 px-5 py-2">
           <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">endpoint</span>
-          <Input aria-label="base url" className="w-[240px]" onChange={e => setBaseUrl(e.target.value)} value={baseUrl} />
-          <Input aria-label="model" className="w-[160px]" onChange={e => setModel(e.target.value)} value={model} />
-          <span className="text-[11px] text-aro-ink-4">applied on Restart</span>
+          <Input aria-label="base url" className="w-[200px]" onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" value={baseUrl} />
+          <Input aria-label="model" className="w-[140px]" onChange={e => setModel(e.target.value)} placeholder="model name" value={model} />
+          <Input aria-label="api key" className="w-[140px]" onChange={e => setApiKey(e.target.value)} placeholder="API key (optional)" type="password" value={apiKey} />
+          <Button
+            onClick={() => restart({ engine: 'openai', baseUrl, model, apiKey })}
+            size="xs"
+            variant="outline"
+          >
+            Apply
+          </Button>
         </div>
       )}
 
@@ -146,22 +176,43 @@ export function AroBridgeView() {
           {startError && (
             <div className="flex items-start gap-2 rounded-[9px] border border-aro-rose/25 bg-aro-rose-tint/60 px-3 py-2.5 text-[12px] leading-relaxed text-aro-rose">
               <IconWarning className="mt-0.5 shrink-0" size={13} />
-              <span>{startError} — the daemon needs the checkout's venv python (HERMES_DESKTOP_PYTHON overrides it).</span>
+              <div className="flex-1">
+                <div>{startError}</div>
+                <div className="mt-1 text-[11px] opacity-80">
+                  {engine === 'openai'
+                    ? 'Real-engine verification requires an active OpenAI-compatible endpoint and credentials. No silent demo fallback will be substituted.'
+                    : "The daemon requires the checkout's venv python (HERMES_DESKTOP_PYTHON overrides it)."}
+                </div>
+              </div>
+              <Button icon={IconRefresh} onClick={() => restart({ engine, ...(engine === 'openai' ? { baseUrl, model, apiKey } : {}) })} size="xs" variant="outline">Retry</Button>
             </div>
           )}
 
           {steps.length === 0 && !startError && (
             <EmptyState
-              body="Send a prompt below — the daemon streams its thinking, tool calls and reply here."
+              body={
+                status === 'idle'
+                  ? 'The bridge daemon runs in an isolated child process. Click Start bridge to begin.'
+                  : 'Send a prompt below — the daemon streams its thinking, tool calls and reply here.'
+              }
               icon={IconBolt}
-              title={status === 'starting' ? 'Starting the bridge daemon…' : 'No events yet'}
+              title={
+                status === 'starting'
+                  ? 'Starting the bridge daemon…'
+                  : status === 'idle'
+                    ? 'Bridge daemon idle'
+                    : 'No events yet'
+              }
             />
           )}
 
           {steps.map((step, i) => {
             if (step.kind === 'thinking') {return <ThinkingRow key={i} step={step} />}
+
             if (step.kind === 'tool') {return <div className="pl-10" key={i}><ToolCard onResolve={toolResult} step={step} /></div>}
+
             if (step.kind === 'reply') {return <ReplyBlock key={i} step={step} />}
+
             return <ErrorRow key={i} step={step} />
           })}
 
@@ -192,7 +243,15 @@ export function AroBridgeView() {
                 setDraft('')
               }
             }}
-            placeholder={status === 'ready' ? 'Ask the bridge…' : status === 'starting' ? 'Starting the daemon…' : 'Session ended — Restart first'}
+            placeholder={
+              status === 'ready'
+                ? 'Ask the bridge…'
+                : status === 'starting'
+                  ? 'Starting the daemon…'
+                  : status === 'idle'
+                    ? 'Bridge daemon idle — click Start bridge first'
+                    : 'Session ended — Restart first'
+            }
             value={draft}
           />
           <Button

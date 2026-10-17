@@ -315,13 +315,13 @@ export function AroTranscriptPage() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
       <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
         <div className="min-w-0">
-          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">tool timeline · {live ? 'live session' : 'pattern'}</div>
+          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">tool timeline · {live ? 'live session' : 'session'}</div>
           <h1 className="text-[15px] font-semibold text-aro-ink">Session transcript</h1>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <SourceBadge live={live} />
           {live && model && <Badge className="text-[9.5px]" mono tone="iris">{model}</Badge>}
-          <Badge mono tone="neutral">{live ? `session ${sessionId ? sessionId.slice(0, 8) : '—'}` : 'session s-9f2'}</Badge>
+          <Badge mono tone="neutral">{sessionId ? `session ${sessionId.slice(0, 8)}` : 'no session'}</Badge>
           {live && checkpoints.length > 0 && <Badge mono tone="sky">{checkpoints.length} checkpoint{checkpoints.length === 1 ? '' : 's'}</Badge>}
           {live && <SessionPicker activeStoredId={storedSessionId} sessions={sessions} />}
         </div>
@@ -345,13 +345,13 @@ export function AroTranscriptPage() {
                 </div>
               ))
             : null}
-          {busy ? (
+          {busy && (
             <StreamingRow label="Aro is working — tool events stream in as they run" />
-          ) : live ? null : (
-            <StreamingRow label="Aro is watching the review queue" />
           )}
-          {live && steps.length === 0 && !busy && (
-            <InlineHint>No turns in this session yet — send a prompt in chat and the live timeline fills here.</InlineHint>
+          {steps.length === 0 && !busy && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <InlineHint>No activity in this session yet — send a prompt in chat and the live timeline will appear here.</InlineHint>
+            </div>
           )}
         </div>
       </div>

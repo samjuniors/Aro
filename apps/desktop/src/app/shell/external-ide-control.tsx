@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react'
-import { useState } from 'react'
 
+import { $preferredIde, adapters, EDITOR_CATALOG, type SupportedIde } from '@/adapters'
 import { Codicon } from '@/components/ui/codicon'
 import {
   DropdownMenu,
@@ -11,52 +11,35 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Tip } from '@/components/ui/tooltip'
-import { persistString, readKey } from '@/lib/storage'
 import { notify } from '@/store/notifications'
 import { $currentCwd } from '@/store/session'
 
-export type SupportedIde = 'cursor' | 'vscode' | 'windsurf' | 'zed'
+export type { SupportedIde }
 
-export const IDE_CATALOG: { id: SupportedIde; name: string; scheme: string; codicon: string }[] = [
-  { id: 'cursor', name: 'Cursor', scheme: 'cursor://file', codicon: 'code' },
-  { id: 'vscode', name: 'VS Code', scheme: 'vscode://file', codicon: 'vscode' },
-  { id: 'windsurf', name: 'Windsurf', scheme: 'windsurf://file', codicon: 'window' },
-  { id: 'zed', name: 'Zed', scheme: 'zed://file', codicon: 'edit' }
-]
-
-const PREFERRED_IDE_KEY = 'hermes.desktop.external-ide.preferred'
+/** Presentation-only codicon per editor (component chrome, not adapter data). */
+const IDE_CODICON: Record<SupportedIde, string> = {
+  cursor: 'code',
+  vscode: 'vscode',
+  windsurf: 'window',
+  zed: 'edit'
+}
 
 export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
   const currentCwd = useStore($currentCwd)
+  const preferredIde = useStore($preferredIde)
 
-  const [preferredIde, setPreferredIde] = useState<SupportedIde>(() => {
-    const stored = readKey(PREFERRED_IDE_KEY) as SupportedIde | null
-
-    return stored || 'cursor'
-  })
-
-  const currentIde = IDE_CATALOG.find(i => i.id === preferredIde) || IDE_CATALOG[0]
+  const currentIde = EDITOR_CATALOG.find(i => i.id === preferredIde) || EDITOR_CATALOG[0]
   // Only the REAL session cwd — no fallback path. Without an attached
   // folder there is nothing to open, and the control says so honestly.
   const projectPath = currentCwd?.trim() || null
 
   const openInIde = (ideId: SupportedIde) => {
-    const ide = IDE_CATALOG.find(i => i.id === ideId)
+    if (!projectPath) {return}
 
-    if (!ide || !projectPath) {return}
-
-    setPreferredIde(ideId)
-    persistString(PREFERRED_IDE_KEY, ideId)
-
-    const normalizedPath = projectPath.replace(/\\/g, '/')
-    const targetUrl = `${ide.scheme}/${encodeURI(normalizedPath)}`
-
-    try {
-      window.open(targetUrl, '_self')
-      notify({ kind: 'info', message: `Opening in ${ide.name}…` })
-    } catch {
-      notify({ kind: 'info', message: `Launched ${ide.name} protocol for ${normalizedPath}` })
-    }
+    // The editors adapter owns the catalog, the persisted preference, and
+    // the OS protocol launch (behavior identical to the previous inline
+    // implementation — same key, same schemes).
+    adapters.editors.open(projectPath, ideId)
   }
 
   const copyPath = () => {
@@ -78,8 +61,8 @@ export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
           onClick={() => openInIde(preferredIde)}
           type="button"
         >
-          <Codicon className="size-3 text-aro-iris-soft" name={currentIde.codicon} />
-          <span>{currentIde.name}</span>
+          <Codicon className="size-3 text-aro-iris-soft" name={IDE_CODICON[currentIde.id]} />
+          <span className={compact ? 'sr-only' : undefined}>{currentIde.name}</span>
         </button>
       </Tip>
 
@@ -99,14 +82,14 @@ export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
           <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-(--ui-text-quaternary)">
             Connected IDEs
           </DropdownMenuLabel>
-          {IDE_CATALOG.map(ide => (
+          {EDITOR_CATALOG.map(ide => (
             <DropdownMenuItem
               className="flex items-center justify-between text-xs cursor-pointer"
               key={ide.id}
               onClick={() => openInIde(ide.id)}
             >
               <span className="flex items-center gap-2">
-                <Codicon className="size-3 text-aro-iris-soft" name={ide.codicon} />
+                <Codicon className="size-3 text-aro-iris-soft" name={IDE_CODICON[ide.id]} />
                 <span>{ide.name}</span>
               </span>
               {ide.id === preferredIde && <Codicon className="size-3 text-aro-mint" name="check" />}

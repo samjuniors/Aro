@@ -512,7 +512,8 @@
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-fade'] {
-  padding: 12px 14px 6px;
+  /* Prototype .reference-composer-input padding: 14px 14px 4px (was 12px 14px 6px). */
+  padding: 14px 14px 4px;
   gap: 4px;
   background: transparent;
 }
@@ -569,7 +570,8 @@
 }
 
 :root[data-aro-ui='true'] [data-slot='composer-surface'] [contenteditable='true'] {
-  min-height: 58px;
+  /* Prototype .reference-composer-input: min-height 66px (was 58px). */
+  min-height: 66px;
   color: var(--aro-ink);
   font-size: 13.5px;
   line-height: 1.55;
@@ -640,11 +642,11 @@
 
 :root[data-aro-ui='true'] [data-slot='composer-surface'] .model-control {
   display: inline-flex;
-  height: 30px;
+  height: 28px;
   align-items: center;
   gap: 4px;
-  border-radius: 6px;
-  padding: 0 5px;
+  border-radius: 9999px;
+  padding: 0 8px;
   font-size: 11.5px;
   color: var(--aro-ink-2);
   white-space: nowrap;
@@ -1112,7 +1114,10 @@
 :root[data-aro-ui='true'] [data-slot='composer-surface'] {
   position: relative;
   border: 1px solid var(--aro-line);
-  border-radius: 16px;
+  /* Prototype formula verbatim (globals.css .reference-composer): the frame
+     radius tracks the design axis, not a constant — 21/17/21/9/13px across the
+     five profiles (was a hard 16px). */
+  border-radius: calc(var(--d-composer-radius, 16px) + 5px);
   background: var(--aro-overlay);
   box-shadow: 0 3px 12px -5px rgba(0, 0, 0, 0.45);
   transition: border-color 160ms ease, box-shadow 160ms ease;
@@ -1408,9 +1413,34 @@
   border-radius: 99px;
   background: linear-gradient(
     to right,
+    color-mix(in srgb, var(--effort-color) 78%, transparent) 0%,
     color-mix(in srgb, var(--effort-color) 78%, transparent) var(--effort-fill, 50%),
-    var(--aro-track) var(--effort-fill, 50%)
+    var(--aro-track) var(--effort-fill, 50%),
+    var(--aro-track) var(--effort-max-pct, 100%),
+    var(--effort-unsupported-track, rgba(120, 120, 120, 0.22)) var(--effort-max-pct, 100%),
+    var(--effort-unsupported-track, rgba(120, 120, 120, 0.22)) 100%
   );
+}
+:root[data-aro-ui='true'] .effort-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+:root[data-aro-ui='true'] .effort-range:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+:root[data-aro-ui='true'] .effort-bars i.is-unsupported {
+  background: var(--effort-unsupported-track, rgba(120, 120, 120, 0.22)) !important;
+  box-shadow: none !important;
+  opacity: 0.35;
+}
+:root[data-aro-ui='true'] .effort-slider.is-thinking-off {
+  opacity: 0.72;
+}
+:root[data-aro-ui='true'] .effort-slider.is-thinking-off .effort-range {
+  opacity: 0.45;
+  filter: grayscale(0.6);
 }
 :root[data-aro-ui='true'] .effort-range::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -1423,21 +1453,33 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--effort-color) 16%, transparent), 0 1px 4px rgba(0, 0, 0, 0.4);
   transition: transform 130ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-:root[data-aro-ui='true'] .effort-range:hover::-webkit-slider-thumb {
+:root[data-aro-ui='true'] .effort-range:hover:not(:disabled)::-webkit-slider-thumb {
   transform: scale(1.18);
 }
-:root[data-aro-ui='true'] .effort-range:active::-webkit-slider-thumb {
+:root[data-aro-ui='true'] .effort-range:active:not(:disabled)::-webkit-slider-thumb {
   transform: scale(1.04);
 }
 :root[data-aro-ui='true'] .effort-range::-moz-range-track {
   height: 4px;
   border-radius: 99px;
-  background: var(--aro-track);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--effort-color) 78%, transparent) 0%,
+    color-mix(in srgb, var(--effort-color) 78%, transparent) var(--effort-fill, 50%),
+    var(--aro-track) var(--effort-fill, 50%),
+    var(--aro-track) var(--effort-max-pct, 100%),
+    var(--effort-unsupported-track, rgba(120, 120, 120, 0.22)) var(--effort-max-pct, 100%),
+    var(--effort-unsupported-track, rgba(120, 120, 120, 0.22)) 100%
+  );
 }
 :root[data-aro-ui='true'] .effort-range::-moz-range-progress {
   height: 4px;
   border-radius: 99px;
-  background: var(--effort-color);
+  background: transparent;
+}
+:root[data-aro-ui='true'] .effort-range:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 :root[data-aro-ui='true'] .effort-range::-moz-range-thumb {
   width: 10px;
@@ -1597,42 +1639,29 @@
   }
 }
 
-/* Phase 3 — Center View: Fresh stage suggestion chips */
+/* Phase 3 — Center View: Fresh stage suggestion chips.
+   The chip surface/hover/active rules that used to live here referenced
+   token names that do not exist in tokens.css (--aro-panel-raised,
+   --aro-border, --aro-text, --aro-text-secondary). Invalid-at-computed-value
+   time unset the properties and silently defeated the prototype-accurate
+   `.fresh-suggestion` block above (overlay background, iris hover). The
+   broken duplicates were removed; that earlier block is the single source.
+   Container margin follows the prototype (12px, not 24px). */
 :root[data-aro-ui='true'] [data-slot='fresh-suggestions'] {
   max-width: 48rem;
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
 }
 
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip'] {
-  background: var(--aro-panel-raised);
-  border-color: var(--aro-border);
-  color: var(--aro-text-secondary);
-  border-radius: 9999px;
-  transition: all 140ms ease;
-}
-
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:hover {
-  background: color-mix(in srgb, var(--aro-panel-raised) 70%, var(--aro-iris));
-  border-color: color-mix(in srgb, var(--aro-iris) 40%, var(--aro-border));
-  color: var(--aro-text);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
-  transform: translateY(-1px);
-}
-
-:root[data-aro-ui='true'] [data-slot='fresh-suggestion-chip']:active {
-  transform: translateY(0);
-}
-
-/* Phase 3 — FindBar transcript search */
+/* Phase 3 — FindBar transcript search (vars repaired to the real tokens) */
 :root[data-aro-ui='true'] [role='search'] {
-  background: var(--aro-panel-raised);
-  border-color: var(--aro-border);
+  background: var(--aro-raise);
+  border-color: var(--aro-line);
   box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
   border-radius: 0.75rem;
 }
 
 :root[data-aro-ui='true'] [role='search'] input {
-  color: var(--aro-text);
+  color: var(--aro-ink);
 }
 
 /* Phase 3 — Run in terminal code card button */
@@ -2200,6 +2229,8 @@
   flex-direction: column;
   position: relative;
   isolation: isolate;
+  container-name: aro-workspace-rail;
+  container-type: inline-size;
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
@@ -2360,6 +2391,10 @@
   color: var(--aro-rose);
   opacity: 1;
 }
+:root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-close:focus-visible {
+  opacity: 1;
+  color: var(--aro-ink);
+}
 
 :root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-new,
 :root[data-aro-ui='true'] .aro-workspace-sidebar .workspace-tab-toolbar,
@@ -2514,28 +2549,116 @@
   color: var(--aro-ink);
 }
 
+/* Commit Split Button (matching Google Antigravity Screenshot 1) */
+:root[data-aro-ui='true'] .codex-commit-split {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  background: var(--aro-iris);
+  color: #fff;
+  height: 26px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 120ms ease;
+}
+:root[data-aro-ui='true'] .codex-commit-split:hover {
+  background: color-mix(in srgb, var(--aro-iris) 85%, #fff);
+}
+:root[data-aro-ui='true'] .codex-commit-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+:root[data-aro-ui='true'] .codex-commit-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 20px;
+  padding: 0;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: background 120ms;
+}
+:root[data-aro-ui='true'] .codex-commit-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Review Scope Dropdown Button (matching Google Antigravity Screenshot 4) */
+:root[data-aro-ui='true'] .codex-scope-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--aro-well);
+  border: 1px solid var(--aro-line);
+  color: var(--aro-ink);
+  font-size: 11.5px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 120ms;
+}
+:root[data-aro-ui='true'] .codex-scope-trigger:hover {
+  background: var(--aro-hover);
+  border-color: var(--aro-line-strong);
+}
+
+/* Staged / Changes Drawer Partition Headers (Screenshot 2) */
+:root[data-aro-ui='true'] .codex-drawer-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--aro-ink-3);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+:root[data-aro-ui='true'] .codex-drawer-empty-hint {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--aro-ink-4);
+  font-style: italic;
+}
+
 :root[data-aro-ui='true'] .codex-changes-split-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 250px;
+  display: flex;
+  flex-direction: row;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 @media (max-width: 580px) {
   :root[data-aro-ui='true'] .codex-changes-split-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) auto;
+    flex-direction: column;
   }
 }
 
 :root[data-aro-ui='true'] .codex-changes-diff-viewport {
+  flex: 1 1 0%;
+  min-width: 0;
   overflow-y: auto;
   background: var(--aro-base);
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  border-right: 1px solid var(--aro-line-soft);
+  transition: flex 0.28s cubic-bezier(0.16, 1, 0.3, 1), width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root[data-aro-ui='true'] .codex-changes-empty-stage {
@@ -2576,10 +2699,32 @@
 }
 
 :root[data-aro-ui='true'] .codex-changes-files-sidebar {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--aro-raise);
   overflow: hidden;
+  border-left: 1px solid var(--aro-line-soft);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              min-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s ease,
+              border-color 0.2s ease;
+  will-change: transform, width;
+}
+
+:root[data-aro-ui='true'] .codex-changes-files-sidebar.is-hidden {
+  transform: translateX(100%);
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0;
+  border-left: 1px solid transparent;
+  pointer-events: none;
 }
 
 :root[data-aro-ui='true'] .codex-changes-filter-box {
@@ -2853,5 +2998,443 @@
   background: var(--aro-hover);
   color: var(--aro-ink-2);
 }
+
+/* Aro UI: completely remove the vertical Restore sidebar rail */
+:root[data-aro-ui='true'] [title="Restore"],
+:root[data-aro-ui='true'] [data-tree-group] > [title="Restore"],
+:root[data-aro-ui='true'] [data-tree-group] [title="Restore"] {
+  display: none !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Production polish pass                                                     */
+/* -------------------------------------------------------------------------- */
+
+/* One interaction language across native controls, contribution surfaces,
+   and Aro-owned views. The app already owns the palette; this layer makes
+   focus, disabled, hover, and scroll states feel like one product. */
+:root[data-aro-ui='true'] {
+  --aro-control-border: color-mix(in srgb, var(--aro-line) 82%, transparent);
+}
+
+:root[data-aro-ui='true'] body,
+:root[data-aro-ui='true'] button,
+:root[data-aro-ui='true'] input,
+:root[data-aro-ui='true'] textarea,
+:root[data-aro-ui='true'] select {
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-aro-ui='true'] button:not(:disabled),
+:root[data-aro-ui='true'] [role='button'],
+:root[data-aro-ui='true'] [role='tab'],
+:root[data-aro-ui='true'] [role='menuitem'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-aro-ui='true'] button:focus-visible,
+:root[data-aro-ui='true'] input:focus-visible,
+:root[data-aro-ui='true'] textarea:focus-visible,
+:root[data-aro-ui='true'] select:focus-visible,
+:root[data-aro-ui='true'] [role='button']:focus-visible,
+:root[data-aro-ui='true'] [role='tab']:focus-visible,
+:root[data-aro-ui='true'] [role='menuitem']:focus-visible {
+  outline: none;
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] :is(input, textarea, select)::selection {
+  background: color-mix(in srgb, var(--aro-iris) 28%, transparent);
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane]) {
+  scrollbar-color: var(--aro-line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--aro-line-strong) 70%, transparent);
+  background-clip: padding-box;
+}
+
+:root[data-aro-ui='true'] :is(.aro-scroll-thin, [data-aro-transcript], [data-sessions-mode], [data-aro-context-pane])::-webkit-scrollbar-thumb:hover {
+  background: var(--aro-iris-soft);
+  background-clip: padding-box;
+}
+
+/* Shell chrome: quiet separators, clearer anchors, and consistent density. */
+:root[data-aro-ui='true'] .app-titlebar {
+  background: color-mix(in srgb, var(--aro-bg) 82%, var(--aro-void));
+  border-bottom-color: color-mix(in srgb, var(--aro-line) 72%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--aro-ink) 3%, transparent) inset;
+}
+
+:root[data-aro-ui='true'] .titlebar-search {
+  min-width: 178px;
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 78%, var(--aro-bg));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--aro-ink) 3%, transparent) inset;
+}
+
+:root[data-aro-ui='true'] .titlebar-search:focus-visible,
+:root[data-aro-ui='true'] .titlebar-search:active {
+  border-color: color-mix(in srgb, var(--aro-iris) 64%, var(--aro-line));
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] .product-switcher,
+:root[data-aro-ui='true'] .sidebar-mode-switcher {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 88%, var(--aro-void));
+}
+
+:root[data-aro-ui='true'] .product-option.selected,
+:root[data-aro-ui='true'] .sidebar-mode-tab.selected {
+  background: var(--aro-raise);
+  box-shadow: var(--aro-shadow-panel);
+}
+
+:root[data-aro-ui='true'] .titlebar-profile-btn {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-sunken) 78%, var(--aro-bg));
+}
+
+:root[data-aro-ui='true'] .titlebar-profile-btn:focus-visible,
+:root[data-aro-ui='true'] .titlebar-profile-btn:active {
+  box-shadow: var(--aro-focus-ring);
+}
+
+/* Sidebar hierarchy: active state is a rail, not a bright tile. This keeps
+   the session list quiet while making the current location unambiguous. */
+:root[data-aro-ui='true'] .codex-sidebar {
+  background: color-mix(in srgb, var(--aro-sunken) 94%, var(--aro-void));
+  border-right-color: color-mix(in srgb, var(--aro-line) 72%, transparent);
+}
+
+:root[data-aro-ui='true'] .sidebar-brand {
+  background: color-mix(in srgb, var(--aro-bg) 30%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--aro-line) 48%, transparent);
+}
+
+:root[data-aro-ui='true'] .new-session-action {
+  border-color: color-mix(in srgb, var(--aro-iris) 34%, var(--aro-line));
+  background: color-mix(in srgb, var(--aro-iris) 8%, var(--aro-raise));
+  color: var(--aro-ink);
+  box-shadow: var(--aro-shadow-panel);
+}
+
+:root[data-aro-ui='true'] .new-session-action:hover {
+  border-color: color-mix(in srgb, var(--aro-iris) 58%, var(--aro-line));
+  background: color-mix(in srgb, var(--aro-iris) 14%, var(--aro-raise));
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--aro-iris) 58%, transparent);
+}
+
+:root[data-aro-ui='true'] .sidebar-search {
+  border-color: var(--aro-control-border);
+  background: color-mix(in srgb, var(--aro-bg) 70%, var(--aro-sunken));
+}
+
+:root[data-aro-ui='true'] .sidebar-search:focus {
+  border-color: color-mix(in srgb, var(--aro-iris) 66%, var(--aro-line));
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row,
+:root[data-aro-ui='true'] .session-list-row,
+:root[data-aro-ui='true'] .bot-roster-row {
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-inout), color var(--aro-dur-fast) var(--aro-ease-inout), box-shadow var(--aro-dur-fast) var(--aro-ease-inout);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row.active,
+:root[data-aro-ui='true'] .session-list-row.selected,
+:root[data-aro-ui='true'] .bot-roster-row.selected {
+  background: color-mix(in srgb, var(--aro-iris) 12%, var(--aro-sunken));
+  box-shadow: inset 2px 0 0 var(--aro-iris), 0 1px 0 color-mix(in srgb, var(--aro-iris) 8%, transparent) inset;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] .sidebar-navigation-row.active svg,
+:root[data-aro-ui='true'] .session-list-row.selected svg {
+  color: var(--aro-iris-soft);
+}
+
+:root[data-aro-ui='true'] .sidebar-project-group {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Native-looking floating surfaces. Keep structure flat and let the token
+   shadow carry the hierarchy instead of stacking multiple dark borders. */
+:root[data-aro-ui='true'] [data-radix-popper-content-wrapper] > *,
+:root[data-aro-ui='true'] [data-slot='composer-completion-drawer'],
+:root[data-aro-ui='true'] .menu,
+:root[data-aro-ui='true'] .popover-content {
+  border-radius: var(--aro-radius-overlay);
+  box-shadow: var(--aro-shadow-menu);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface'] {
+  border-color: color-mix(in srgb, var(--aro-line-strong) 64%, var(--aro-line));
+  border-radius: var(--aro-radius-panel);
+  box-shadow: var(--aro-shadow-composer);
+}
+
+:root[data-aro-ui='true'] [data-slot='composer-surface']:focus-within {
+  box-shadow: var(--aro-focus-ring), var(--aro-shadow-composer);
+}
+
+/* Keep the state beam, but make idle controls calmer and active controls more
+   legible. Streaming/listening still gets the existing expressive treatment. */
+:root[data-aro-ui='true'] [data-aro-composer-controls] button:focus-visible,
+:root[data-aro-ui='true'] [data-slot='composer-surface'] button:focus-visible {
+  box-shadow: var(--aro-focus-ring);
+}
+
+:root[data-aro-ui='true'] [data-aro-composer-controls] [data-aro-model-pill][data-state='open'],
+:root[data-aro-ui='true'] [data-aro-composer-controls] [data-aro-reasoning-pill][data-state='open'] {
+  background: color-mix(in srgb, var(--aro-iris) 12%, var(--aro-overlay));
+  color: var(--aro-ink);
+}
+
+/* Context panes and file trees share the same row anatomy as sessions. */
+:root[data-aro-ui='true'] [data-aro-context-pane] :is(button, [role='treeitem']) {
+  border-radius: var(--aro-radius-control);
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-inout), color var(--aro-dur-fast) var(--aro-ease-inout);
+}
+
+:root[data-aro-ui='true'] [data-aro-context-pane] :is(button, [role='treeitem']):focus-visible {
+  box-shadow: var(--aro-focus-ring);
+}
+
+/* Reduce visual noise on very narrow windows without hiding core actions. */
+@media (max-width: 760px) {
+  :root[data-aro-ui='true'] .titlebar-search {
+    min-width: 0;
+    width: 36px;
+    padding-inline: 10px;
+  }
+
+  :root[data-aro-ui='true'] .titlebar-search-label,
+  :root[data-aro-ui='true'] .titlebar-search-kbd {
+    display: none;
+  }
+
+  :root[data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+    padding-inline: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-aro-ui='true'] :is(button, input, textarea, select, [role='button'], [role='tab'], [role='treeitem']) {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The rail can be resized independently of the window. Adapt its tabs to the
+   rail width so the fixed tool controls never sit on top of the selected tab. */
+@container aro-workspace-rail (max-width: 440px) {
+  .aro-workspace-sidebar .workspace-tabstrip {
+    gap: 2px;
+    padding-inline: 5px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-title {
+    display: none;
+  }
+
+  .aro-workspace-sidebar .workspace-tab {
+    max-width: 48px;
+    padding-inline: 1px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-main {
+    gap: 4px;
+    padding-inline: 4px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-close {
+    width: 16px;
+    margin-inline: 0;
+  }
+
+  .aro-workspace-sidebar .workspace-panel-external-ide {
+    display: none;
+  }
+}
+
+@container aro-workspace-rail (max-width: 340px) {
+  .aro-workspace-sidebar .workspace-tabstrip {
+    gap: 1px;
+    padding-inline: 3px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-new,
+  .aro-workspace-sidebar .workspace-tab-toolbar,
+  .aro-workspace-sidebar .workspace-panel-full {
+    width: 23px;
+    height: 23px;
+  }
+
+  .aro-workspace-sidebar .workspace-tab-close {
+    width: 14px;
+  }
+}
+
+/* ============================================================================
+   ARO SETTINGS & CONTROLS POLISH (Prototype parity)
+   ----------------------------------------------------------------------------
+   Card containers with rounded-[11px] geometry, hairline dividers, Apple-style
+   pill switches, prototype segmented control pills, and refined navigation.
+   ============================================================================ */
+
+/* Settings Navigation Sidebar */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] {
+  background: var(--aro-sunken);
+  border-right: 1px solid var(--aro-line-soft);
+  padding-top: 10px;
+  padding-inline: 8px;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'] {
+  height: 29px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  gap: 8px;
+  padding-inline: 8px;
+  color: var(--aro-ink-3);
+  border-color: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-']:hover {
+  background: color-mix(in srgb, var(--aro-hover) 60%, transparent);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'][aria-current='page'],
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'].bg-\(--ui-bg-tertiary\) {
+  background: var(--aro-hover) !important;
+  color: var(--aro-ink) !important;
+  font-weight: 500;
+}
+
+/* Settings Main View & Headers */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main {
+  background: var(--aro-bg);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main h1,
+:root[data-aro-ui='true'] .settings-view h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main p,
+:root[data-aro-ui='true'] .settings-view p {
+  color: var(--aro-ink-3);
+}
+
+/* Settings Group Cards (Prototype 11px radius, hairline border, raise surface) */
+:root[data-aro-ui='true'] .settings-group,
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main section.overflow-hidden.rounded-\[11px\],
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main div.grid.gap-1 > div.rounded-lg {
+  border-radius: 11px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  overflow: hidden;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main div.grid.gap-1 > div.rounded-lg {
+  padding-inline: 14px;
+}
+
+/* Apple-style Pill Switches */
+:root[data-aro-ui='true'] button[data-slot='switch'],
+:root[data-aro-ui='true'] [role='switch']:not([data-seg]) {
+  border-radius: 9999px !important;
+  height: 22px;
+  width: 38px;
+  padding: 2px;
+  transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease;
+}
+
+:root[data-aro-ui='true'] button[data-slot='switch'][data-state='checked'],
+:root[data-aro-ui='true'] [role='switch'][aria-checked='true'] {
+  background-color: var(--aro-iris) !important;
+  border-color: transparent !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-aro-ui='true'] button[data-slot='switch'][data-state='unchecked'],
+:root[data-aro-ui='true'] [role='switch'][aria-checked='false'] {
+  background-color: color-mix(in srgb, var(--aro-ink-4) 30%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--aro-line-strong) 80%, transparent) !important;
+}
+
+:root[data-aro-ui='true'] span[data-slot='switch-thumb'],
+:root[data-aro-ui='true'] [role='switch'] > span {
+  border-radius: 9999px !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26), 0 1px 1px rgba(0, 0, 0, 0.12) !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Segmented Controls (Prototype smooth pill track) */
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr {
+  border-radius: 8px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  padding: 2px;
+  gap: 2px;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button {
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='true'] {
+  background: var(--aro-raise) !important;
+  color: var(--aro-ink) !important;
+  box-shadow: var(--shadow-e1) !important;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='false'] {
+  color: var(--aro-ink-3) !important;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='false']:hover {
+  color: var(--aro-ink-2) !important;
+}
+
+/* Settings Inputs & Selects */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main input:not([type='checkbox']):not([type='radio']),
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main select {
+  border-radius: 7px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  color: var(--aro-ink);
+  font-size: 12px;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main input:focus,
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main select:focus {
+  border-color: color-mix(in srgb, var(--aro-iris) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro-iris) 20%, transparent);
+}
+
 
 

@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { requestComposerSubmit } from '@/app/chat/composer/focus'
 import { Button } from '@/components/ui/button'
@@ -50,6 +50,20 @@ export function ReviewShipBar() {
   const canCommit = hasFiles && message.trim().length > 0 && !busy
   const canGenerate = hasFiles && !generating && !busy
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const handleFocus = (e: Event) => {
+      textareaRef.current?.focus()
+      const customEvent = e as CustomEvent<{ amend?: boolean }>
+      if (customEvent.detail?.amend) {
+        setMessage(prev => (prev ? prev : 'amend: update previous commit'))
+      }
+    }
+    window.addEventListener('aro-focus-commit-message', handleFocus)
+    return () => window.removeEventListener('aro-focus-commit-message', handleFocus)
+  }, [])
+
   // Commit / push / PR operate on the working tree, so they only make sense for
   // the uncommitted scope — the branch / last-turn scopes are read-only views.
   if (scope !== 'uncommitted') {
@@ -98,6 +112,7 @@ export function ReviewShipBar() {
           fills the right edge on one row, then sticks to the top as it grows. */}
       <div className="relative">
         <Textarea
+          ref={textareaRef}
           className="field-sizing-content max-h-40 min-h-0 resize-none pr-9"
           disabled={generating}
           onChange={event => setMessage(event.target.value)}

@@ -25,6 +25,7 @@ import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
+import { $userTasks, adapters, type WorkspaceTask, type WorkspaceTaskStatus } from '@/adapters'
 import { openSessionFromPicker } from '@/app/open-session'
 import type { ChatMessage, ChatMessagePart } from '@/lib/chat-messages/types'
 import { desktopGit } from '@/lib/desktop-git'
@@ -32,14 +33,14 @@ import { parseTodos, type TodoItem } from '@/lib/todos'
 import { cn } from '@/lib/utils'
 import { activeGateway } from '@/store/gateway'
 import { $approvalRequests, answerApproval, type ApprovalRequest } from '@/store/prompts'
-import { $reviewFiles, refreshReview, reviewRepoCwd, stageReviewFile, unstageReviewFile } from '@/store/review'
+import { $reviewFiles, $reviewIsRepo, refreshReview, reviewRepoCwd, stageReviewFile, unstageReviewFile } from '@/store/review'
 import { $activeSessionId, $busy, $messages, $sessions } from '@/store/session'
 import { $sessionStates } from '@/store/session-states'
 import { $retainedTodosBySession, $todosBySession } from '@/store/todos'
 import { $workspaceChangeTick } from '@/store/workspace-events'
 import type { SessionInfo } from '@/types/hermes'
 
-import { type DiffFile, type DiffLine, REVIEW_CHECKPOINTS, type Step, type Task, TASKS, type ToolName, TRANSCRIPT } from './workbenchData'
+import { type DiffFile, type DiffLine, type Step, type Task, type TaskStatus, type ToolName } from './workbenchData'
 
 /* ============================ pure adapters ============================ */
 
@@ -167,7 +168,8 @@ export function fmtClock(unixSeconds?: number): string {
   }
 }
 
-function textOfParts(parts: readonly ChatMessagePart[]): string {
+function textOfParts(parts: readonly ChatMessagePart[] | undefined): string {
+  if (!parts || !Array.isArray(parts)) {return ''}
   let text = ''
 
   for (const p of parts) {if (p.type === 'text' && typeof p.text === 'string') {text += p.text}}
@@ -193,7 +195,7 @@ export function messagesToSteps(messages: readonly ChatMessage[]): Step[] {
     if (msg.role !== 'assistant') {continue}
     let pendingText = ''
 
-    for (const part of msg.parts) {
+    for (const part of (msg.parts ?? [])) {
       if (part.type === 'reasoning') {
         const text = (part.text ?? '').trim()
         const ms = part.timestamp && part.completedAt ? Math.max(0, Math.round((part.completedAt - part.timestamp) * 1000)) : 0
@@ -345,19 +347,35 @@ function approvalRisk(command: string): 'low' | 'medium' | 'high' {
 
 /* ============================ source badge ============================ */
 
-export function SourceBadge({ live, demoLabel }: { live: boolean; demoLabel?: string }) {
-  return live ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-mint uppercase">
-      <i className="size-[5px] animate-aro-breathe rounded-full bg-aro-mint" />
-      live
-    </span>
-  ) : (
+export function SourceBadge({ live, demoLabel, local }: { live: boolean; demoLabel?: string; local?: boolean }) {
+  if (live) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-mint/30 bg-aro-mint-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-mint uppercase">
+        <i className="size-[5px] animate-aro-breathe rounded-full bg-aro-mint" />
+        live
+      </span>
+    )
+  }
+
+  if (local) {
+    return (
+      <span
+        className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-iris/30 bg-aro-iris-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-iris-soft uppercase"
+        title="Your own tasks, persisted on this device (conductor.workspace.v3.tasks). They are not agent todos and never leave the app."
+      >
+        <i className="size-[5px] rounded-full bg-aro-iris" />
+        your list · local
+      </span>
+    )
+  }
+
+  return (
     <span
-      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-amber/30 bg-aro-amber-tint px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-amber uppercase"
-      title="No live data yet — the seed shapes from the prototype are shown. Start a session (or open one) and this page goes live on its own."
+      className="inline-flex cursor-help items-center gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise px-2 py-px font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-3 uppercase"
+      title="No active live data stream connected."
     >
-      <i className="size-[5px] rounded-full bg-aro-amber" />
-      {demoLabel ?? 'demo data'}
+      <i className="size-[5px] rounded-full bg-aro-ink-4" />
+      {demoLabel ?? 'offline'}
     </span>
   )
 }
@@ -368,8 +386,7 @@ export interface AroCheckpoint { hash: string; label: string; at: string }
 
 type RollbackListReply = { enabled?: boolean; checkpoints?: { hash?: string; message?: string; timestamp?: string }[] }
 
-/** Checkpoints via the real `rollback.list` RPC; empty (and the page falls
- *  back to the seed strip) when the backend is offline or has none. */
+/** Checkpoints via the real `rollback.list` RPC; empty when the backend is offline or has none. */
 export function useAroCheckpoints(sessionId: string | null, live: boolean): AroCheckpoint[] {
   const [checkpoints, setCheckpoints] = useState<AroCheckpoint[]>([])
   useEffect(() => {
@@ -400,7 +417,7 @@ export function useAroCheckpoints(sessionId: string | null, live: boolean): AroC
     return () => { cancelled = true }
   }, [live, sessionId])
 
-  return live && checkpoints.length > 0 ? checkpoints : live ? [] : REVIEW_CHECKPOINTS
+  return live && checkpoints.length > 0 ? checkpoints : []
 }
 
 /* ============================ transcript ============================ */
@@ -421,7 +438,7 @@ export function useAroTranscript() {
   const state = sessionId ? states[sessionId] : undefined
   const live = messages.length > 0 || busy
 
-  const steps = useMemo<Step[]>(() => (live ? messagesToSteps(messages) : TRANSCRIPT), [live, messages])
+  const steps = useMemo<Step[]>(() => (live ? messagesToSteps(messages) : []), [live, messages])
 
   const approvals = useMemo<AroLiveApproval[]>(() => {
     if (!live) {return []}
@@ -474,6 +491,8 @@ export function useAroTranscript() {
 export interface AroReviewData {
   files: DiffFile[]
   live: boolean
+  available: boolean
+  error: string | null
   loading: boolean
   stagedSet: ReadonlySet<string>
   toggleStaged: (path: string) => void
@@ -482,38 +501,53 @@ export interface AroReviewData {
 
 export function useAroReview(): AroReviewData {
   const liveFiles = useStore($reviewFiles)
+  const isRepo = useStore($reviewIsRepo)
   const tick = useStore($workspaceChangeTick)
   const [diffs, setDiffs] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
+  const [diffLoading, setDiffLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const seq = useRef(0)
 
-  const live = liveFiles.length > 0
+  const git = desktopGit()
+  const cwd = reviewRepoCwd()
+  const available = Boolean(git?.review && cwd && isRepo)
+  const live = available && error === null
 
-  // Keep the host's changed-file store fresh (it also refreshes on its own
-  // workspace ticks; this primes it when our page is the open surface).
-  useEffect(() => {
-    void refreshReview()
-  }, [tick])
 
   // Fetch the unified diff per changed file (uncommitted scope) — the same
   // git bridge the host review pane uses. Re-runs when the agent edits files.
   useEffect(() => {
-    if (!live) {return}
-    const mine = ++seq.current
-    const git = desktopGit()
-    const cwd = reviewRepoCwd()
+    if (!available) {
+      setDiffs({})
+      setError('Git review unavailable — no Git repository or desktop Git bridge')
 
-    if (!git || !cwd) {
+      return
+    }
+
+    setError(null)
+
+    if (liveFiles.length === 0) {
       setDiffs({})
 
       return
     }
 
-    setLoading(true)
+    const mine = ++seq.current
+    const gitReview = desktopGit()?.review
+    const currentCwd = reviewRepoCwd()
+
+    if (!gitReview || !currentCwd) {
+      setDiffs({})
+      setError('Git review unavailable — no Git repository or desktop Git bridge')
+
+      return
+    }
+
+    setDiffLoading(true)
     void Promise.all(
       liveFiles.slice(0, 40).map(async (f): Promise<[string, string]> => {
         try {
-          return [f.path, await git.review.diff(cwd, f.path, 'uncommitted', undefined, f.staged)]
+          return [f.path, await gitReview.diff(currentCwd, f.path, 'uncommitted', undefined, f.staged)]
         } catch {
           return [f.path, '']
         }
@@ -521,12 +555,16 @@ export function useAroReview(): AroReviewData {
     ).then(entries => {
       if (mine !== seq.current) {return}
       setDiffs(Object.fromEntries(entries.filter(([, d]) => d && d.trim().length > 0)))
-      setLoading(false)
+      setDiffLoading(false)
+    }).catch(err => {
+      if (mine !== seq.current) {return}
+      setError(err instanceof Error ? err.message : String(err))
+      setDiffLoading(false)
     })
-  }, [live, liveFiles])
+  }, [available, liveFiles])
 
   const files = useMemo<DiffFile[]>(() => {
-    if (!live) {return []}
+    if (!available || liveFiles.length === 0) {return []}
 
     return liveFiles.map(f => {
       const parsed = parseUnifiedDiff(diffs[f.path] ?? '', f.path)
@@ -535,9 +573,9 @@ export function useAroReview(): AroReviewData {
         ? { ...parsed, path: f.path, adds: f.added || parsed.adds, dels: f.removed || parsed.dels }
         : { path: f.path, adds: f.added, dels: f.removed, lines: [] as DiffLine[] }
     })
-  }, [live, liveFiles, diffs])
+  }, [available, liveFiles, diffs])
 
-  const stagedSet = useMemo(() => new Set(live ? liveFiles.filter(f => f.staged).map(f => f.path) : []), [live, liveFiles])
+  const stagedSet = useMemo(() => new Set(available ? liveFiles.filter(f => f.staged).map(f => f.path) : []), [available, liveFiles])
 
   const toggleStaged = useCallback(
     (path: string) => {
@@ -551,15 +589,72 @@ export function useAroReview(): AroReviewData {
     void refreshReview()
   }, [])
 
-  return { files, live, loading, stagedSet, toggleStaged, refresh }
+  return { files, live, available, error, loading: diffLoading, stagedSet, toggleStaged, refresh }
 }
 
 /* ============================ tasks ============================ */
 
-export function useAroTasks() {
+/** Board column ↔ prototype workspace status (translation lives here, in
+ * the wiring layer — never in components; GLOSSARY "Field-level renames"). */
+const TASK_STATUS_TO_COLUMN: Record<WorkspaceTaskStatus, TaskStatus> = {
+  todo: 'backlog',
+  doing: 'running',
+  done: 'done'
+}
+
+const COLUMN_TO_TASK_STATUS: Record<TaskStatus, WorkspaceTaskStatus> = {
+  backlog: 'todo',
+  ready: 'todo',
+  running: 'doing',
+  review: 'doing',
+  done: 'done'
+}
+
+/** A user task (local adapter) → the board's work-graph card. */
+export function userTaskToCard(t: WorkspaceTask, index: number): Task {
+  return {
+    id: t.id,
+    key: `MINE-${String(index + 1).padStart(2, '0')}`,
+    title: t.title,
+    status: TASK_STATUS_TO_COLUMN[t.status] ?? 'backlog',
+    priority: 'p2',
+    source: 'manual',
+    human: true,
+    estimate: '—',
+    criteria: [],
+    tags: ['mine']
+  }
+}
+
+/** Persisted user tasks → the column id the board should move it to. */
+export function userTaskStatusForColumn(column: TaskStatus): WorkspaceTaskStatus {
+  return COLUMN_TO_TASK_STATUS[column] ?? 'todo'
+}
+
+export interface AroTasksData {
+  tasks: Task[]
+  live: boolean
+  hasSession: boolean
+  /** The user's persisted local tasks (adapter store — survives restarts). */
+  userTasks: WorkspaceTask[]
+  /** True when the strip shows the user's own (non-demo) tasks. */
+  local: boolean
+  /** True when `id` belongs to a persisted user task. */
+  isUserTask: (id: string) => boolean
+  /** Create a persisted user task; returns the stored record. */
+  createUserTask: (title: string) => WorkspaceTask
+  /** Persist a status move for a user task (agent todos are NOT persisted —
+   * the agent owns its list; D-0009). */
+  moveUserTask: (id: string, column: TaskStatus) => void
+  /** Remove a user task (seed/agent rows are not removable). */
+  removeUserTask: (id: string) => boolean
+}
+
+export function useAroTasks(): AroTasksData {
   const sessionId = useStore($activeSessionId)
   const todosMap = useStore($todosBySession)
   const retainedMap = useStore($retainedTodosBySession)
+  const userTasks = useStore($userTasks)
 
   const todos = useMemo(() => {
     if (!sessionId) {return []}
@@ -569,9 +664,34 @@ export function useAroTasks() {
 
   const live = todos.length > 0
 
-  const tasks = useMemo<Task[]>(() => (live ? todosToTasks(todos) : TASKS), [live, todos])
+  const userCards = useMemo(() => userTasks.map(userTaskToCard), [userTasks])
 
-  return { tasks, live, hasSession: sessionId != null }
+  const tasks = useMemo<Task[]>(
+    () => (live ? [...todosToTasks(todos), ...userCards] : userCards),
+    [live, todos, userCards]
+  )
+
+  const isUserTask = useCallback((id: string) => userTasks.some(t => t.id === id), [userTasks])
+
+  const createUserTask = useCallback((title: string) => adapters.tasks.create({ title }), [])
+
+  const moveUserTask = useCallback((id: string, column: TaskStatus) => {
+    adapters.tasks.update(id, { status: userTaskStatusForColumn(column) })
+  }, [])
+
+  const removeUserTask = useCallback((id: string) => adapters.tasks.remove(id), [])
+
+  return {
+    tasks,
+    live,
+    hasSession: sessionId != null,
+    userTasks,
+    local: !live && userTasks.length > 0,
+    isUserTask,
+    createUserTask,
+    moveUserTask,
+    removeUserTask
+  }
 }
 
 /* ============================ session picker ============================ */

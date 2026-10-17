@@ -4,7 +4,7 @@
 // git-ipc.ts (dependency-light, resolvers injected) and the embedded
 // terminal's session/channel shape (terminal-ipc.ts). The renderer never
 // talks to the daemon directly — it only sees these IPC surfaces.
-import { spawn } from 'node:child_process'
+import { type ChildProcess, spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
@@ -22,6 +22,8 @@ export interface AroBridgeStartOptions {
   baseUrl?: string
   model?: string
   apiKey?: string
+  sessionId?: string
+  cwd?: string
 }
 
 /** A fully resolved daemon spawn spec (the source-python backend shape). */
@@ -66,12 +68,14 @@ export function resolveDefaultAroDaemon(opts: AroBridgeStartOptions = {}): AroBr
     args.push('--api-key', opts.apiKey)
   }
 
+  const daemonCwd = opts.cwd && existsSync(opts.cwd) ? opts.cwd : repoRoot
+
   return {
     command: python,
     args,
     // The daemon imports aro_bridge from the checkout, not the user's env.
     env: { ...process.env, PYTHONPATH: repoRoot },
-    cwd: repoRoot
+    cwd: daemonCwd
   }
 }
 
@@ -82,9 +86,10 @@ export interface AroBridgeDeps {
 
 interface AroBridgeSession {
   id: string
-  child: import('node:child_process').ChildProcess
+  child: ChildProcess
   sessionId: string | null
   sender: Electron.WebContents
+  onSenderDestroyed: (() => void) | null
   buffer: string
   resolveStart: ((sessionId: string) => void) | null
   rejectStart: ((error: Error) => void) | null
@@ -103,9 +108,11 @@ function aroExitChannel(sessionId: string): string {
 
 export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
   // Internal id → session; a second index by the daemon's own session id once
-  // its session_start arrives (all later invokes address the daemon by that).
+  // its session_start arrives (all later invokes address the daemon by that);
+  // and a third index by sender id for lifecycle idempotence.
   const sessions = new Map<string, AroBridgeSession>()
   const bySessionId = new Map<string, string>()
+  const bySenderId = new Map<number, AroBridgeSession>()
 
   function findSession(sessionId: string): AroBridgeSession | null {
     const id = bySessionId.get(String(sessionId || ''))
@@ -137,6 +144,24 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
       bySessionId.delete(session.sessionId)
     }
 
+    if (session.sender) {
+      const senderId = session.sender.id
+
+      if (bySenderId.get(senderId) === session) {
+        bySenderId.delete(senderId)
+      }
+
+      if (session.onSenderDestroyed) {
+        try {
+          session.sender.removeListener('destroyed', session.onSenderDestroyed)
+        } catch {
+          // Sender might already be destroyed
+        }
+
+        session.onSenderDestroyed = null
+      }
+    }
+
     try {
       session.child.kill()
     } catch {
@@ -145,6 +170,24 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
   }
 
   ipcMain.handle('hermes:aro:bridge:start', async (event, opts: AroBridgeStartOptions = {}) => {
+    // Deterministic start: if a session with this sessionId is already active and healthy, reuse it.
+    if (opts.sessionId) {
+      const existing = findSession(opts.sessionId)
+
+      if (existing && !existing.child.killed && existing.sessionId) {
+        return { sessionId: existing.sessionId }
+      }
+    }
+
+    // Idempotence per sender: if this sender already has a running/starting daemon,
+    // teardown the prior session so repeated start requests do not create duplicate daemon processes.
+    const senderId = event.sender.id
+    const existingForSender = bySenderId.get(senderId)
+
+    if (existingForSender) {
+      teardown(existingForSender)
+    }
+
     const spec = resolveAroDaemon(opts || {})
 
     if (!spec) {
@@ -155,6 +198,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     }
 
     const id = `arb_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`
+
     const child = spawn(
       spec.command,
       spec.args,
@@ -170,6 +214,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
       child,
       sessionId: null,
       sender: event.sender,
+      onSenderDestroyed: null,
       buffer: '',
       resolveStart: null,
       rejectStart: null,
@@ -177,6 +222,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     }
 
     sessions.set(id, session)
+    bySenderId.set(senderId, session)
 
     const started = new Promise<string>((resolve, reject) => {
       session.resolveStart = resolve
@@ -187,8 +233,10 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
       }, START_TIMEOUT_MS)
     })
 
-    // The renderer that started the daemon owns its lifetime.
-    event.sender.once('destroyed', () => teardown(session))
+    // The renderer that started the daemon owns its lifetime; clean up listener on teardown.
+    const onSenderDestroyed = (): void => teardown(session)
+    session.onSenderDestroyed = onSenderDestroyed
+    event.sender.once('destroyed', onSenderDestroyed)
 
     child.on('error', (error: Error): void => {
       session.rejectStart?.(new Error(`aro bridge daemon failed to start: ${error.message}`))
@@ -250,7 +298,7 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
           session.resolveStart?.(ev.sessionId)
         }
 
-        if (session.sessionId && !event.sender.isDestroyed()) {
+        if (session.sessionId && (!event.sender.isDestroyed || !event.sender.isDestroyed())) {
           event.sender.send(aroEventChannel(session.sessionId), ev)
         }
       }

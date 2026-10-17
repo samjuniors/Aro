@@ -49,9 +49,10 @@ import {
 import { $focusedStoredSessionId } from '@/store/session-focus'
 import { $sessionStates, sessionTileDelegate } from '@/store/session-states'
 import { $transcriptTailBySessionId, transcriptTailState } from '@/store/transcript-tail'
+import { $fileBrowserOpen, setFileBrowserOpen } from '@/store/layout'
 import { isAuxiliaryWindow, isWatchWindow } from '@/store/windows'
 
-import { primaryRouteSelectedSessionId, routeSessionId } from '../routes'
+import { NEW_CHAT_ROUTE, primaryRouteSelectedSessionId, routeSessionId } from '../routes'
 
 import { ChatDropOverlay } from './chat-drop-overlay'
 import { ChatSwapOverlay, ChatSyncBadge } from './chat-swap-overlay'
@@ -724,6 +725,15 @@ const ChatViewContent = memo(function ChatViewContent({
 
   const overlayKind: DragKind = dragKind === 'files' ? 'files' : sessionDragging && !sessionEdgeHover ? 'session' : null
 
+  // Fresh blank session should keep workspace panel closed until chat begins
+  useEffect(() => {
+    if (isPrimary && messagesEmpty && !busy && (!selectedSessionId || location.pathname === NEW_CHAT_ROUTE)) {
+      if ($fileBrowserOpen.get()) {
+        setFileBrowserOpen(false)
+      }
+    }
+  }, [isPrimary, messagesEmpty, busy, selectedSessionId, location.pathname])
+
   return (
     <div
       className={cn(
@@ -746,6 +756,7 @@ const ChatViewContent = memo(function ChatViewContent({
           busy={busy}
           cwd={currentCwd}
           isRoutedSessionView={isRoutedSessionView}
+          messagesEmpty={messagesEmpty}
           onDeleteSelectedSession={onDeleteSelectedSession}
           onToggleSelectedPin={onToggleSelectedPin}
           selectedSessionId={selectedSessionId}

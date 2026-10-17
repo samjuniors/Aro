@@ -237,10 +237,17 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
 
   root.style.setProperty('color-scheme', rendered)
   root.dataset.hermesTheme = skinName
-  root.dataset.theme = skinName
-  root.dataset.aroUi = 'true'
   root.dataset.hermesMode = rendered
   root.classList.toggle('dark', isDark)
+
+  const isAro = root.dataset.aroUi === 'true'
+  if (isAro && typeof window !== 'undefined') {
+    const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
+    const effectiveTheme = isProtoTheme ? skinName : (localStorage.getItem('aro.theme') || 'obsidian')
+    root.dataset.theme = effectiveTheme
+  } else {
+    root.dataset.theme = skinName
+  }
 
   // Translucency is tuned per appearance, and "appearance" means the palette
   // actually painted — a skin that keeps a bright surface in "dark" wants
@@ -543,6 +550,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setPreview(null)
     setThemeNameState(next)
     skinPref.assign(liveProfile(), next)
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aro.theme', next)
+        localStorage.setItem('conductor.theme', next)
+        document.documentElement.dataset.theme = next
+        window.dispatchEvent(new CustomEvent('aro:theme', { detail: next }))
+      }
+    } catch {}
   }, [])
 
   const setMode = useCallback((next: ThemeMode) => {

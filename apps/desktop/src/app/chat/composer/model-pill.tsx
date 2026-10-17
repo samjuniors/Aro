@@ -29,8 +29,8 @@ import type { ChatBarState } from './types'
 // truncates when the row is genuinely out of room (#49340) — not at an
 // arbitrary 160px.
 const PILL = cn(
-  'h-(--composer-control-size) min-w-0 shrink gap-1 rounded-md px-2 text-xs font-normal',
-  'text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
+  'h-[28px] min-w-0 shrink gap-1 rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-xs font-normal shadow-sm transition-all',
+  'text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink'
 )
 
 /**

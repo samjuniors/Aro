@@ -643,6 +643,74 @@ describe('OAuth onboarding', () => {
     expect(state.flow.status === 'error' ? state.flow.message : '').toContain('Confirm this expensive model.')
     expect(requestGatewayMock).not.toHaveBeenCalledWith('setup.runtime_check', expect.anything())
   })
+
+  it('falls back to live recommended model when a stale model fails assignment', async () => {
+    const staleModel = 'tencent/hy3:free'
+    const liveRecommended = 'stealth/space-bunny-alpha'
+    const setCalls: string[] = []
+
+    installApiMock(async ({ path, body }: { path: string; body?: any }) => {
+      if (path === '/api/providers/oauth/nous/submit') {
+        return { ok: true, status: 'approved' }
+      }
+
+      if (path.startsWith('/api/model/options')) {
+        return {
+          model: staleModel,
+          provider: 'nous',
+          providers: [{ name: 'Nous Portal', slug: 'nous', models: [staleModel, liveRecommended] }]
+        }
+      }
+
+      if (path.startsWith('/api/model/recommended-default?')) {
+        return { provider: 'nous', model: liveRecommended, free_tier: true }
+      }
+
+      if (path === '/api/model/set') {
+        const targetModel = body?.model || ''
+        setCalls.push(targetModel)
+        if (targetModel === staleModel) {
+          throw new Error("400: Model 'tencent/hy3:free' was not found in this provider's model listing.")
+        }
+        return { ok: true, provider: 'nous', model: targetModel, gateway_tools: [] }
+      }
+
+      throw new Error(`unexpected api path: ${path}`)
+    })
+
+    const requestGatewayMock = vi.fn(async (method: string) => {
+      if (method === 'reload.env') return {}
+      if (method === 'setup.status') return { provider_configured: true }
+      if (method === 'setup.runtime_check') return { ok: true }
+      throw new Error(`unexpected gateway method: ${method}`)
+    })
+
+    $desktopOnboarding.set(
+      baseState({
+        flow: {
+          status: 'awaiting_user',
+          provider: makeOAuthProvider('nous', 'Nous Portal'),
+          start: {
+            auth_url: 'https://portal.example/auth',
+            expires_in: 600,
+            flow: 'pkce',
+            session_id: 'portal-session'
+          },
+          code: 'fresh-code'
+        },
+        requested: true
+      })
+    )
+
+    await submitOnboardingCode(onboardingContext(requestGatewayMock as OnboardingContext['requestGateway']))
+
+    const state = $desktopOnboarding.get()
+    expect(state.flow.status).toBe('confirming_model')
+    if (state.flow.status === 'confirming_model') {
+      expect(state.flow.currentModel).toBe(liveRecommended)
+    }
+    expect(setCalls).toContain(liveRecommended)
+  })
 })
 
 describe('saveOnboardingLocalEndpoint', () => {

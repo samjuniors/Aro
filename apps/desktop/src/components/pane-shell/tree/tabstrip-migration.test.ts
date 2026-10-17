@@ -57,4 +57,24 @@ describe('migratePersistedTree', () => {
 
     expect(JSON.stringify(migrated)).not.toContain('headerHidden')
   })
+
+  it('prunes redundant standalone review group when unified files companion sidebar is present', () => {
+    const migrated = persisted({
+      id: 'spl-root',
+      orientation: 'row',
+      type: 'split',
+      weights: [1, 3, 1, 1],
+      children: [
+        { id: 'grp-sessions', panes: ['sessions'], active: 'sessions', type: 'group' },
+        { id: 'grp-main', panes: ['workspace'], active: 'workspace', type: 'group' },
+        { id: 'grp-review', panes: ['review'], active: 'review', type: 'group' },
+        { id: 'grp-files', panes: ['files'], active: 'files', tabStrip: 'always', type: 'group' }
+      ]
+    })
+
+    const children = migrated.children as Array<{ id: string; tabStrip?: string }>
+    expect(children.map(c => c.id)).toEqual(['grp-sessions', 'grp-main', 'grp-files'])
+    const filesGroup = children.find(c => c.id === 'grp-files')
+    expect(filesGroup?.tabStrip).toBeUndefined()
+  })
 })

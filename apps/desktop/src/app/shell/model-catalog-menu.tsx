@@ -121,6 +121,100 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
   )
 }
 
+// The backend's provider row for staged local models (inventory.py's
+// _local_runtime_row). Downloads-in-flight attach to this group.
+export const LOCAL_PROVIDER_SLUG = 'llamacpp'
+
+/**
+ * Determines whether a model is genuinely free based on dynamic real sources:
+ * - Provider account-level free tier flag (`provider.free_tier`, `provider.free_tier_row`)
+ * - Live provider pricing table (`pricing.free === true` or input/output === 0 / 'free')
+ * - Local on-device providers (`llamacpp`, `ollama`, `local`, `local-runtime`) with 0 API cost
+ * - Aggregator `:free` models (e.g. OpenRouter free variants)
+ * - Excludes locked models in `provider.unavailable_models`
+ */
+export function isModelFree(family: ModelFamily, provider: ModelOptionProvider): boolean {
+  // If the model is locked/unavailable under current account entitlement, it is not free
+  if (provider.unavailable_models && provider.unavailable_models.includes(family.id)) {
+    return false
+  }
+
+  // 1. Live pricing metadata reported by the provider/gateway
+  const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
+
+  if (pricing) {
+    if (pricing.free) {
+      return true
+    }
+
+    const inStr = (pricing.input || '').trim().toLowerCase()
+    const outStr = (pricing.output || '').trim().toLowerCase()
+
+    const inFree = !inStr || inStr === 'free' || inStr === '0' || inStr === '$0' || inStr === '0.00' || inStr === '$0.00'
+    const outFree = !outStr || outStr === 'free' || outStr === '0' || outStr === '$0' || outStr === '0.00' || outStr === '$0.00'
+
+    if (inFree && outFree && (pricing.input || pricing.output)) {
+      return true
+    }
+
+    if (pricing.input && !inFree && pricing.output && !outFree) {
+      return false
+    }
+  }
+
+  // 2. Provider account-level free tier entitlement (e.g. Nous Portal free tier account or free-tier row)
+  if (provider.free_tier || provider.free_tier_row) {
+    return true
+  }
+
+  // 3. Local on-device runtimes (always 0 API cost)
+  const pSlug = (provider.slug || '').toLowerCase()
+  const pName = (provider.name || '').toLowerCase()
+  const pAuth = (provider.auth_type || '').toLowerCase()
+  const pSource = (provider.source || '').toLowerCase()
+
+  if (
+    pSlug === LOCAL_PROVIDER_SLUG ||
+    pSlug === 'ollama' ||
+    pAuth === 'local' ||
+    pSource === 'local-runtime' ||
+    pSlug.includes('local') ||
+    pName.includes('local') ||
+    pName.includes('ollama') ||
+    pName.includes('on-device')
+  ) {
+    return true
+  }
+
+  // 4. Aggregator free model tags (e.g. OpenRouter `:free` or `/free` slug)
+  const id = family.id.toLowerCase()
+
+  if (id.includes(':free') || id.includes('/free') || id.endsWith('-free')) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Determines whether a model is paid/metered based on real sources:
+ * Returns false if the model is free. Returns true if it carries non-zero
+ * live pricing, or is a commercial API-keyed provider.
+ */
+export function isModelPaid(family: ModelFamily, provider: ModelOptionProvider): boolean {
+  if (isModelFree(family, provider)) {
+    return false
+  }
+
+  const pricing = provider.pricing?.[family.id] ?? (family.fastId ? provider.pricing?.[family.fastId] : undefined)
+
+  if (pricing) {
+    return !pricing.free
+  }
+
+  return true
+}
+
 /** One model choice, everything a caller needs to act on a selection.
  *  `effort` is '' for "inherit the default" and 'none' for thinking off. */
 export interface ModelChoice {
@@ -164,6 +258,8 @@ interface ModelCatalogMenuProps {
   /** Rows appended under the catalog (Refresh Models, Edit Models, …). */
   footer?: ReactNode
   gateway?: HermesGateway
+  /** When true, suppresses the per-row submenu and right arrow (chevron), clicking selects immediately. */
+  hideSubmenu?: boolean
   /** Owner-routed RPC for catalog reads. Preferred over `gateway.request` so
    *  a tile's menu queries the session owner's backend, not chrome's. */
   request?: <T>(method: string, params?: Record<string, unknown>) => Promise<T>
@@ -197,6 +293,7 @@ export function ModelCatalogMenu({
   controller,
   footer,
   gateway,
+  hideSubmenu,
   includeMoa = false,
   ownerConnectionId,
   profile = 'default',
@@ -208,6 +305,7 @@ export function ModelCatalogMenu({
   const copyPicker = t.modelPicker
   const closeMenu = useContext(ModelMenuCloseContext)
   const [search, setSearch] = useState<string>('')
+  const [tierFilter, setTierFilter] = useState<'all' | 'free' | 'paid'>('all')
   // "Add custom model…" turns the search box into slug entry: the catalog
   // steps aside until something is typed, and the placeholder says what to
   // type. Typing a slug without this works too; the row just makes it findable.
@@ -319,7 +417,13 @@ export function ModelCatalogMenu({
   // In-flight downloads render inside the Local provider group when it
   // exists, else as their own trailing 'Local' group (first download —
   // nothing staged yet, so the catalog has no local provider row).
-  const shownDownloads = q ? downloads.filter(job => foldIncludes(job.target || '', q)) : downloads
+  // Downloads are local on-device models (free), so hide when filtering by paid.
+  const shownDownloads = useMemo(() => {
+    if (tierFilter === 'paid') {return []}
+
+    return q ? downloads.filter(job => foldIncludes(job.target || '', q)) : downloads
+  }, [downloads, q, tierFilter])
+
   const hasLocalGroup = pickerProviders.some(provider => provider.slug === LOCAL_PROVIDER_SLUG)
 
   // Resolve visibility HERE, against the catalog we actually fetched: an empty
@@ -339,10 +443,20 @@ export function ModelCatalogMenu({
   // Favorites ignore the Edit Models shortlist on purpose: a star IS an
   // explicit "always show me this one". A search turns the section off — a
   // query means "show me every match", listed in their provider's place.
-  const favoriteRows = useMemo(
-    () => (q ? [] : resolveFavoriteRows(pickerProviders, favoriteKeys)),
-    [pickerProviders, favoriteKeys, q]
-  )
+  const favoriteRows = useMemo(() => {
+    if (q) {return []}
+    const all = resolveFavoriteRows(pickerProviders, favoriteKeys)
+
+    if (tierFilter === 'free') {
+      return all.filter(r => isModelFree(r.family, r.provider))
+    }
+
+    if (tierFilter === 'paid') {
+      return all.filter(r => isModelPaid(r.family, r.provider))
+    }
+
+    return all
+  }, [pickerProviders, favoriteKeys, q, tierFilter])
 
   // The same rows are dropped from the provider groups, so no model is ever
   // listed twice in one open menu. Not while searching: a query lists every
@@ -360,18 +474,20 @@ export function ModelCatalogMenu({
         search,
         { model: current.model, provider: current.provider },
         shownKeys,
-        q ? null : favoriteSet
+        q ? null : favoriteSet,
+        tierFilter
       ),
-    [pickerProviders, search, current.model, current.provider, shownKeys, q, favoriteSet]
+    [pickerProviders, search, current.model, current.provider, shownKeys, q, favoriteSet, tierFilter]
   )
 
   // Presets are searchable rows like everything else — an unfiltered preset
   // sitting under zero model matches would otherwise become the "first match"
   // Enter commits.
-  const shownMoaPresets = useMemo(
-    () => (q ? moaPresets.filter(preset => foldIncludes(`moa ${preset}`, q)) : moaPresets),
-    [moaPresets, q]
-  )
+  const shownMoaPresets = useMemo(() => {
+    if (tierFilter !== 'all') {return []}
+
+    return q ? moaPresets.filter(preset => foldIncludes(`moa ${preset}`, q)) : moaPresets
+  }, [moaPresets, q, tierFilter])
 
   const hideCatalog = slugEntry && !search
 
@@ -403,7 +519,7 @@ export function ModelCatalogMenu({
     [customSlug, pickerProviders, current.provider]
   )
 
-  const selectFamily = async (family: ModelFamily, provider: ModelOptionProvider): Promise<boolean> => {
+  const selectFamily = (family: ModelFamily, provider: ModelOptionProvider): boolean | Promise<boolean> => {
     const caps = provider.capabilities?.[family.id]
     const preset = controller.presetFor(provider.slug, family.id)
 
@@ -413,19 +529,25 @@ export function ModelCatalogMenu({
     const variantFast = !(caps?.fast ?? false) && !!family.fastId
     const targetId = variantFast && preset.fast === true ? family.fastId! : family.id
 
-    if ((await controller.select(targetId, provider.slug)) === false) {
-      return false
+    const applyPreset = () => {
+      controller.applyPreset(
+        {
+          effort: (caps?.reasoning ?? true) ? (preset.effort ?? defaultEffort) : undefined,
+          fast: (caps?.fast ?? false) ? (preset.fast ?? false) : undefined
+        },
+        { model: family.id, provider: provider.slug }
+      )
+
+      return true
     }
 
-    controller.applyPreset(
-      {
-        effort: (caps?.reasoning ?? true) ? (preset.effort ?? defaultEffort) : undefined,
-        fast: (caps?.fast ?? false) ? (preset.fast ?? false) : undefined
-      },
-      { model: family.id, provider: provider.slug }
-    )
+    const selected = controller.select(targetId, provider.slug)
 
-    return true
+    if (selected && typeof selected === 'object' && 'then' in selected) {
+      return Promise.resolve(selected).then(result => result === false ? false : applyPreset())
+    }
+
+    return applyPreset()
   }
 
   const selectMoaPreset = async (preset: string) => {
@@ -536,10 +658,20 @@ export function ModelCatalogMenu({
     }
 
     if (!rowIsCurrent(row)) {
-      void selectFamily(row.family, row.provider)
-    }
+      const selected = selectFamily(row.family, row.provider)
 
-    closeMenu()
+      if (selected && typeof selected === 'object' && 'then' in selected) {
+        void selected.then(success => {
+          if (success) {
+            closeMenu()
+          }
+        }).catch(() => {})
+      } else if (selected) {
+        closeMenu()
+      }
+    } else {
+      closeMenu()
+    }
   }
 
   // Shift+Enter stars the highlighted model — the keyboard twin of
@@ -689,6 +821,65 @@ export function ModelCatalogMenu({
         value={search}
       />
 
+      {!hideCatalog && (
+        <div className="flex items-center gap-1 px-2.5 pb-1.5 pt-0.5" role="tablist">
+          <button
+            aria-selected={tierFilter === 'all'}
+            className={cn(
+              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              tierFilter === 'all'
+                ? 'bg-(--ui-control-active-background) font-semibold text-foreground shadow-2xs'
+                : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
+            )}
+            onClick={() => {
+              setTierFilter('all')
+              setKbOverride(null)
+            }}
+            role="tab"
+            tabIndex={-1}
+            type="button"
+          >
+            All
+          </button>
+          <button
+            aria-selected={tierFilter === 'free'}
+            className={cn(
+              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              tierFilter === 'free'
+                ? 'bg-emerald-500/15 font-semibold text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
+            )}
+            onClick={() => {
+              setTierFilter('free')
+              setKbOverride(null)
+            }}
+            role="tab"
+            tabIndex={-1}
+            type="button"
+          >
+            Free
+          </button>
+          <button
+            aria-selected={tierFilter === 'paid'}
+            className={cn(
+              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              tierFilter === 'paid'
+                ? 'bg-amber-500/15 font-semibold text-amber-600 dark:text-amber-400 shadow-2xs'
+                : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
+            )}
+            onClick={() => {
+              setTierFilter('paid')
+              setKbOverride(null)
+            }}
+            role="tab"
+            tabIndex={-1}
+            type="button"
+          >
+            Paid
+          </button>
+        </div>
+      )}
+
       {!hideCatalog && <DropdownMenuSeparator className="mx-0" />}
 
       {hideCatalog ? null : loading ? (
@@ -735,6 +926,7 @@ export function ModelCatalogMenu({
                     defaultEffort={defaultEffort}
                     family={family}
                     favorite
+                    hideSubmenu={hideSubmenu}
                     kbProps={kbRowProps(`${provider.slug}:${family.id}`)}
                     loadingModels={loadingModels}
                     onSelect={selectFamily}
@@ -783,6 +975,7 @@ export function ModelCatalogMenu({
                       defaultEffort={defaultEffort}
                       family={family}
                       favorite={favoriteSet.has(favoriteModelKey(group.provider.slug, family.id))}
+                      hideSubmenu={hideSubmenu}
                       kbProps={kbRowProps(`${group.provider.slug}:${family.id}`)}
                       key={`${group.provider.slug}:${family.id}`}
                       loadingModels={loadingModels}
@@ -942,12 +1135,14 @@ interface ModelFamilyRowProps {
   family: ModelFamily
   /** Whether this model is starred — paints the filled star. */
   favorite: boolean
+  /** When true, suppresses the per-row submenu and right arrow (chevron), clicking selects immediately. */
+  hideSubmenu?: boolean
   /** Keyboard/hover props built by the host, so the Favorites section and
    *  the provider groups share ONE flat selection order. */
   kbProps: KbRowProps
   loadingModels: Record<string, LocalModelLoadProgress>
   /** Commit this family — what a click means belongs to the host that owns it. */
-  onSelect: (family: ModelFamily, provider: ModelOptionProvider) => Promise<boolean | void> | void
+  onSelect: (family: ModelFamily, provider: ModelOptionProvider) => boolean | Promise<boolean | void> | void
   /** Keyboard-focus round trip for the sub this row opens (#86966). */
   onSubOpenChange?: (open: boolean, key: string) => void
   provider: ModelOptionProvider
@@ -964,6 +1159,7 @@ function ModelFamilyRow({
   defaultEffort,
   family,
   favorite,
+  hideSubmenu,
   kbProps,
   loadingModels,
   onSelect,
@@ -976,6 +1172,10 @@ function ModelFamilyRow({
   const copyPicker = t.modelPicker
   const closeMenu = useContext(ModelMenuCloseContext)
   const showPricing = useStore($showModelPricing)
+
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  const suppressSubmenu = hideSubmenu ?? isAro
+  const isFree = isModelFree(family, provider)
 
   const rowKey = `${provider.slug}:${family.id}`
 
@@ -1035,11 +1235,27 @@ function ModelFamilyRow({
   // that submenu — without it the row's effort badge reads as a fixed
   // model+effort combo rather than an editable setting (#86966).
   const activate = () => {
-    if (!isCurrent) {
-      void onSelect(family, provider)
+    if (isCurrent) {
+      closeMenu()
+
+      return
     }
 
-    closeMenu()
+    const selected = onSelect(family, provider)
+
+    if (selected && typeof selected === 'object' && 'then' in selected) {
+      void Promise.resolve(selected).then(result => {
+        if (result !== false) {
+          closeMenu()
+        }
+      }).catch(() => {})
+
+      return
+    }
+
+    if (selected !== false) {
+      closeMenu()
+    }
   }
 
   const toggleFavorite = () => {
@@ -1048,6 +1264,85 @@ function ModelFamilyRow({
   }
 
   const favoriteLabel = favorite ? copy.removeFavorite : copy.addFavorite
+
+  if (suppressSubmenu) {
+    return (
+      <DropdownMenuItem
+        onClick={event => {
+          if (event.shiftKey) {
+            event.preventDefault()
+            toggleFavorite()
+          }
+        }}
+        onSelect={event => {
+          event.preventDefault()
+          activate()
+        }}
+        {...kbProps}
+        className={cn(kbProps.className, 'group/model')}
+      >
+        <Tip label={<TipHintLabel hint={favorite ? undefined : copy.favoriteShortcut} text={favoriteLabel} />}>
+          <button
+            aria-label={favoriteLabel}
+            aria-pressed={favorite}
+            className={cn(
+              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-sm transition-colors duration-100 hover:text-foreground hover:transition-none',
+              favorite
+                ? 'text-(--ui-text-secondary)'
+                : 'text-(--ui-text-quaternary) group-hover/model:text-(--ui-text-tertiary) group-hover/model:transition-none group-data-[kb-active]/model:text-(--ui-text-tertiary)'
+            )}
+            onClick={event => {
+              event.preventDefault()
+              event.stopPropagation()
+              toggleFavorite()
+            }}
+            tabIndex={-1}
+            type="button"
+          >
+            <Codicon name={favorite ? 'star-full' : 'star-empty'} size="0.75rem" />
+          </button>
+        </Tip>
+        <span className="flex min-w-0 flex-1 items-center gap-1.5">
+          {decoration.icon !== undefined ? <ModelMenuRowIcon icon={decoration.icon} /> : null}
+          <span className="min-w-0 truncate">
+            <HighlightMatches foldSeparators query={search} text={name} />
+          </span>
+          {tag ? <ModelChip>{tag}</ModelChip> : null}
+          {decoration.badge ? (
+            <Badge className="shrink-0 uppercase tracking-wide" data-model-menu-row-badge="" size="xs" variant="muted">
+              {decoration.badge}
+            </Badge>
+          ) : null}
+        </span>
+        {loadProgress ? (
+          <span className="flex shrink-0 items-center gap-1.5" title={copyPicker.loadingIntoMemory}>
+            <span className="h-1 w-14 overflow-hidden rounded-full bg-(--ui-bg-tertiary)">
+              <span
+                className="block h-full rounded-full bg-primary transition-[width] duration-500"
+                style={{ width: `${Math.max(2, loadProgress.percent)}%` }}
+              />
+            </span>
+            <span className="text-[0.62rem] tabular-nums text-(--ui-text-tertiary)">{loadProgress.percent}%</span>
+          </span>
+        ) : null}
+        {isFree ? (
+          <span className="shrink-0 rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            Free
+          </span>
+        ) : pricing ? (
+          <ModelPrice pricing={pricing} />
+        ) : (
+          <span className="shrink-0 font-aro-mono text-[9px] text-(--ui-text-tertiary) opacity-70">
+            {provider.name}
+          </span>
+        )}
+        {fastControl.kind !== 'none' && fastControl.on ? (
+          <ModelChip setting>{copy.fast}</ModelChip>
+        ) : null}
+        {isCurrent ? <Codicon className="text-foreground" name="check" size="0.75rem" /> : null}
+      </DropdownMenuItem>
+    )
+  }
 
   return (
     <DropdownMenuSub onOpenChange={open => onSubOpenChange?.(open, rowKey)}>
@@ -1156,10 +1451,6 @@ function caretAtEnd(input: HTMLInputElement): boolean {
   return selectionStart === value.length && selectionEnd === value.length
 }
 
-// The backend's provider row for staged local models (inventory.py's
-// _local_runtime_row). Downloads-in-flight attach to this group.
-const LOCAL_PROVIDER_SLUG = 'llamacpp'
-
 // Heading for every row group in the list (Favorites, providers, downloads).
 const catalogGroupLabel =
   'px-2 pb-0.5 pt-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-(--ui-text-tertiary)'
@@ -1257,7 +1548,8 @@ function groupModels(
   current: { model: string; provider: string },
   visible: Set<string> | null,
   /** Favorites to leave out (they paint in their own section); null lists every row. */
-  favorites: ReadonlySet<string> | null
+  favorites: ReadonlySet<string> | null,
+  tierFilter: 'all' | 'free' | 'paid' = 'all'
 ): ProviderGroup[] {
   const q = normalize(search)
   const groups: ProviderGroup[] = []
@@ -1300,8 +1592,21 @@ function groupModels(
     // Favorites already paint in the Favorites section, so drop them here:
     // an open menu never lists the same model twice.
     const families = allFamilies.filter(
-      family =>
-        (shown.has(family.id) || family.id === activeId) && !favorites?.has(favoriteModelKey(provider.slug, family.id))
+      family => {
+        if (!((shown.has(family.id) || family.id === activeId) && !favorites?.has(favoriteModelKey(provider.slug, family.id)))) {
+          return false
+        }
+
+        if (tierFilter === 'free') {
+          return isModelFree(family, provider)
+        }
+
+        if (tierFilter === 'paid') {
+          return isModelPaid(family, provider)
+        }
+
+        return true
+      }
     )
 
     if (families.length > 0) {

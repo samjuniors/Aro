@@ -395,9 +395,14 @@ export function TreeGroup({
   // (tabs reading top-to-bottom). In a column (stacked zones) the horizontal
   // header IS the collapsed form, exactly as before.
   //
-  // Every minimized row group becomes a vertical restore rail. A horizontal
-  // multi-tab strip cannot fit in the collapsed 28px track.
-  const verticalCollapse = Boolean(node.minimized) && parentAxis === 'row' && !isEmpty
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  const verticalCollapse = !isAro && Boolean(node.minimized) && parentAxis === 'row' && !isEmpty
+
+  useEffect(() => {
+    if (isAro && node.minimized) {
+      setTreeGroupMinimized(node.id, false)
+    }
+  }, [isAro, node.id, node.minimized])
 
   // A minimized group IS its header, so it shows one regardless.
   const headerVisible =

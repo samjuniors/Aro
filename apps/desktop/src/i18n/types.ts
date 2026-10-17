@@ -3155,6 +3155,8 @@ export interface Translations {
 
   composer: {
     message: string
+    chooseProject: string
+    projectAttachHint: string
     wakingProfile: (profile: string) => string
     placeholderStarting: string
     placeholderReconnecting: string
@@ -4201,6 +4203,7 @@ export interface Translations {
     closeAll: string
     newSessionTab: string
     newTab: string
+    newTabInFullView: string
     pluginDisabled: (pluginId: string) => string
     pluginDisabledBody: string
     missingPane: (paneId: string) => string

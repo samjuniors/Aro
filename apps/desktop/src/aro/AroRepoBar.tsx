@@ -1,15 +1,14 @@
 import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { IconBranch, IconCheck, IconChevronDown, IconGit, IconPlus, IconSearch, IconSettings } from '@/aro/Icons'
 import {
-  IconBranch,
-  IconCheck,
-  IconChevronDown,
-  IconGit,
-  IconPlus,
-  IconSearch,
-  IconSettings
-} from '@/aro/Icons'
+  $aroDraftProjectId,
+  $aroSessionProjectMap,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId
+} from '@/aro/project-session-map'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,27 +16,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+import type { HermesGitBranch } from '@/global'
 import { cn } from '@/lib/utils'
-import {
-  openWorktreeDialog,
-  refreshRepoStatus,
-  registerRepoStatusCwd,
-  repoStatusForCwd
-} from '@/store/coding-status'
+import { openWorktreeDialog, refreshRepoStatus, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
+import { notify, notifyError } from '@/store/notifications'
 import { $projectScope } from '@/store/project-scope'
 import {
-  $projectTree,
+  $projectOwnerBySessionId,
   $projects,
+  $projectTree,
   listRepoBranches,
-  projectIdForCwd,
   projectRootCwd,
   switchBranchInRepo
 } from '@/store/projects'
-import { $aroSessionProjectMap } from '@/aro/project-session-map'
 import { $pullRequestsByBranch, branchPrKey, refreshPullRequests } from '@/store/pull-requests'
-import { notify, notifyError } from '@/store/notifications'
-import type { HermesGitBranch } from '@/global'
+import { $sessions } from '@/store/session'
 
 function formatCount(n: number): string {
   return n.toLocaleString('en-US')
@@ -58,18 +51,35 @@ export function AroRepoBar({
   const explicitProjects = useStore($projects)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
+  const sessions = useStore($sessions)
+  const projectOwners = useStore($projectOwnerBySessionId)
 
-  const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? (sessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
+  const session = sessionId ? sessions.find(item => item.id === sessionId) : null
 
-  const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
-    || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
-    || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
-    || (cwd || null)
+  const currentProjectId = session
+    ? session.id.startsWith('draft_')
+      ? aroSessionProjectMap[session.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+      : resolveAroSessionProjectId(session, explicitProjects, projectOwners, aroSessionProjectMap)
+    : sessionId
+      ? aroSessionProjectMap[sessionId] ||
+        (sessionId.startsWith('draft_') ? resolveAroDraftProjectId(aroDraftProjectId, projectScope) : null)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
 
-  const folderName = currentRoot ? currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : undefined
-  const repoName = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : folderName || 'Repository'
+  const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
+
+  const currentRoot = currentProject
+    ? currentProject.primary_path ||
+      currentProject.folders?.[0]?.path ||
+      projectRootCwd(projects.find(item => item.id === currentProjectId))
+    : ''
+
+  const folderName = currentRoot
+    .replace(/[/\\]+$/, '')
+    .split(/[/\\]/)
+    .pop()
+
+  const repoName = currentProject?.name || folderName || 'Repository'
   const isDemo = Boolean(currentProject?.id?.includes('demo') || repoName.toLowerCase().includes('demo'))
 
   // Live status
@@ -77,8 +87,12 @@ export function AroRepoBar({
   const status = useStore($status)
 
   useEffect(() => {
-    if (!currentRoot) return
+    if (!currentRoot) {
+      return
+    }
+
     const unregister = registerRepoStatusCwd(currentRoot)
+
     return () => {
       unregister?.()
     }
@@ -95,7 +109,10 @@ export function AroRepoBar({
   const [switching, setSwitching] = useState(false)
 
   const loadBranches = useCallback(async () => {
-    if (!currentRoot) return
+    if (!currentRoot) {
+      return
+    }
+
     try {
       const list = await listRepoBranches(currentRoot)
       setBranches(list)
@@ -126,9 +143,12 @@ export function AroRepoBar({
   const handleSwitch = async (targetBranch: string) => {
     if (!currentRoot || targetBranch === currentBranch) {
       setBranchMenuOpen(false)
+
       return
     }
+
     setSwitching(true)
+
     try {
       await switchBranchInRepo(currentRoot, targetBranch)
       void refreshRepoStatus(currentRoot)
@@ -142,9 +162,13 @@ export function AroRepoBar({
   }
 
   const handleCreateBranch = async (targetBranch: string) => {
-    if (!currentRoot || !targetBranch.trim()) return
+    if (!currentRoot || !targetBranch.trim()) {
+      return
+    }
+
     const branchToCreate = targetBranch.trim()
     setSwitching(true)
+
     try {
       await switchBranchInRepo(currentRoot, branchToCreate, true)
       void refreshRepoStatus(currentRoot)
@@ -160,23 +184,22 @@ export function AroRepoBar({
     }
   }
 
-  const filteredBranches = branches.filter(b =>
-    !branchSearch.trim() || b.name.toLowerCase().includes(branchSearch.toLowerCase())
+  const filteredBranches = branches.filter(
+    b => !branchSearch.trim() || b.name.toLowerCase().includes(branchSearch.toLowerCase())
   )
 
   const adds = status?.added ?? 0
   const dels = status?.removed ?? 0
   const hasChanges = adds > 0 || dels > 0 || (status?.changed ?? 0) > 0
 
+  if (!currentProject || !currentRoot) {
+    return null
+  }
+
   return (
-    <div className="repo-dock" data-demo={isDemo ? 'true' : undefined} data-aro-repo-bar="">
+    <div className="repo-dock" data-aro-repo-bar="" data-demo={isDemo ? 'true' : undefined}>
       {/* Repo / Project Name button */}
-      <button
-        className="repo-dock-repo"
-        onClick={onOpenDiff}
-        title="Open changes panel"
-        type="button"
-      >
+      <button aria-label="Open changes panel" className="repo-dock-repo" onClick={onOpenDiff} type="button">
         <IconGit className="repo-dock-repo-icon" size={13} />
         <span className="repo-dock-repo-name">{repoName}</span>
         {isDemo && <span className="repo-dock-demo">DEMO</span>}
@@ -188,28 +211,26 @@ export function AroRepoBar({
       <DropdownMenu onOpenChange={setBranchMenuOpen} open={branchMenuOpen}>
         <DropdownMenuTrigger asChild>
           <button
+            aria-label={`Branch: ${currentBranch} (Click to switch or create)`}
             className="repo-dock-branch"
             disabled={switching}
-            title={`Branch: ${currentBranch} (Click to switch or create)`}
             type="button"
           >
-            <IconBranch size={11} className="shrink-0" />
+            <IconBranch className="shrink-0" size={11} />
             <span className="truncate">{currentBranch}</span>
-            <IconChevronDown size={10} className="shrink-0 opacity-60" />
+            <IconChevronDown className="shrink-0 opacity-60" size={10} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[280px] p-1.5" side="top" sideOffset={8}>
           {creatingBranch ? (
             <div className="p-2 space-y-2">
-              <div className="text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">
-                Create new branch
-              </div>
+              <div className="text-[10px] font-semibold text-aro-ink-4 uppercase tracking-wider">Create new branch</div>
               <form
+                className="space-y-2"
                 onSubmit={e => {
                   e.preventDefault()
                   void handleCreateBranch(newBranchName)
                 }}
-                className="space-y-2"
               >
                 <input
                   autoFocus
@@ -230,12 +251,7 @@ export function AroRepoBar({
                   >
                     Cancel
                   </Button>
-                  <Button
-                    disabled={!newBranchName.trim() || switching}
-                    size="xs"
-                    type="submit"
-                    variant="default"
-                  >
+                  <Button disabled={!newBranchName.trim() || switching} size="xs" type="submit" variant="default">
                     Create branch
                   </Button>
                 </div>
@@ -249,7 +265,7 @@ export function AroRepoBar({
 
               {branches.length > 5 && (
                 <div className="mb-1 flex items-center gap-1.5 rounded-[6px] border border-aro-line-soft bg-aro-sunken/40 px-2 py-1">
-                  <IconSearch size={11} className="text-aro-ink-4 shrink-0" />
+                  <IconSearch className="text-aro-ink-4 shrink-0" size={11} />
                   <input
                     aria-label="Filter branches"
                     className="w-full bg-transparent text-[11px] text-aro-ink focus:outline-none placeholder:text-aro-ink-4"
@@ -262,21 +278,20 @@ export function AroRepoBar({
 
               <div className="max-h-[200px] overflow-y-auto space-y-0.5">
                 {filteredBranches.length === 0 && branches.length > 0 ? (
-                  <div className="px-2 py-2 text-center text-[11px] text-aro-ink-4">
-                    No matching branches
-                  </div>
+                  <div className="px-2 py-2 text-center text-[11px] text-aro-ink-4">No matching branches</div>
                 ) : filteredBranches.length === 0 ? (
                   <DropdownMenuItem
                     className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] font-mono bg-aro-hover text-aro-ink"
                     disabled
                   >
-                    <IconBranch size={12} className="shrink-0 text-aro-iris-soft" />
+                    <IconBranch className="shrink-0 text-aro-iris-soft" size={12} />
                     <span className="flex-1 truncate">{currentBranch}</span>
-                    <IconCheck size={12} className="shrink-0 text-aro-mint" />
+                    <IconCheck className="shrink-0 text-aro-mint" size={12} />
                   </DropdownMenuItem>
                 ) : (
                   filteredBranches.map(b => {
                     const isActive = b.name === currentBranch
+
                     return (
                       <DropdownMenuItem
                         className={cn(
@@ -286,9 +301,9 @@ export function AroRepoBar({
                         key={b.name}
                         onClick={() => void handleSwitch(b.name)}
                       >
-                        <IconBranch size={12} className="shrink-0 text-aro-ink-3" />
+                        <IconBranch className="shrink-0 text-aro-ink-3" size={12} />
                         <span className="flex-1 truncate">{b.name}</span>
-                        {isActive && <IconCheck size={12} className="shrink-0 text-aro-mint" />}
+                        {isActive && <IconCheck className="shrink-0 text-aro-mint" size={12} />}
                       </DropdownMenuItem>
                     )
                   })
@@ -304,7 +319,7 @@ export function AroRepoBar({
                   setCreatingBranch(true)
                 }}
               >
-                <IconPlus size={11} className="shrink-0" />
+                <IconPlus className="shrink-0" size={11} />
                 <span>Create new branch…</span>
               </DropdownMenuItem>
 
@@ -312,12 +327,13 @@ export function AroRepoBar({
                 className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
                 onClick={() => {
                   setBranchMenuOpen(false)
+
                   if (currentRoot) {
                     void openWorktreeDialog({ repoPath: currentRoot })
                   }
                 }}
               >
-                <IconGit size={11} className="shrink-0" />
+                <IconGit className="shrink-0" size={11} />
                 <span>Branch off into worktree…</span>
               </DropdownMenuItem>
             </>
@@ -327,16 +343,16 @@ export function AroRepoBar({
 
       {/* Changes Diff Counts */}
       <button
+        aria-label={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
         className={cn('repo-dock-diff', !hasChanges && 'repo-dock-diff-empty')}
         onClick={onOpenDiff}
-        title={hasChanges ? 'Open changes review panel' : 'Working tree clean'}
         type="button"
       >
         {hasChanges ? (
           <>
             <span className="repo-dock-adds">+{formatCount(adds || status?.changed || 0)}</span>
             <span className="repo-dock-dels">-{formatCount(dels)}</span>
-            <IconChevronDown size={11} className="-rotate-90 opacity-60" />
+            <IconChevronDown className="-rotate-90 opacity-60" size={11} />
           </>
         ) : (
           <span className="repo-dock-clean">No changes</span>
@@ -347,6 +363,7 @@ export function AroRepoBar({
       <div className="repo-dock-right">
         {pr ? (
           <button
+            aria-label={`View PR #${pr.number}: ${pr.title}`}
             className="repo-dock-merge"
             onClick={() => {
               if (pr.url) {
@@ -355,30 +372,23 @@ export function AroRepoBar({
                 notify({ kind: 'info', message: `PR #${pr.number}: ${pr.title}` })
               }
             }}
-            title={`View PR #${pr.number}: ${pr.title}`}
             type="button"
           >
             <IconGit size={12} /> Merge PR #{pr.number}
           </button>
         ) : (
           <button
+            aria-label="Merge PR (No open PR)"
             className="repo-dock-merge repo-dock-merge-disabled"
             onClick={() => {
               notify({ kind: 'info', message: 'No open pull request on this branch.' })
             }}
-            title="Merge PR (No open PR)"
             type="button"
           >
             <IconGit size={12} /> Merge PR
           </button>
         )}
-        <button
-          className="repo-dock-gear"
-          onClick={onOpenSettings}
-          title="Project & worktree settings"
-          type="button"
-          aria-label="Project settings"
-        >
+        <button aria-label="Project settings" className="repo-dock-gear" onClick={onOpenSettings} type="button">
           <IconSettings size={13} />
         </button>
       </div>

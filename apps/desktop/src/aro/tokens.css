@@ -24,6 +24,65 @@
    ============================================================================ */
 
 /* ============================================================================
+   0 · WEBFONTS — the prototype's identity faces, bundled locally
+   ----------------------------------------------------------------------------
+   The prototype loads these via next/font/google (src/app/layout.tsx), which
+   defines `--f-grotesk`, `--f-inter`, `--f-newsreader`, `--f-dmsans`, `--f-jbmono`
+   on <html>. Every `--d-font-*` below is written `var(--f-grotesk, "Space Grotesk")`,
+   so with no local face it silently fell back to the system UI font and the
+   design system lost its identity (Space Grotesk display, Newsreader serif,
+   DM Sans prose). We ship the same SIL-OFL faces as bundled variable woff2 and
+   bind them here so the fallback chain resolves to the real typefaces offline.
+   ============================================================================ */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;   /* variable axis — covers the 500/600 the profiles use */
+  font-display: swap;
+  src: url('../fonts/SpaceGrotesk-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;   /* variable axis — covers the 400/500/600 body+meta steps */
+  font-display: swap;
+  src: url('../fonts/Inter-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 200 800;   /* variable axis — the editorial (serif) display face */
+  font-display: swap;
+  src: url('../fonts/Newsreader-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 100 1000;  /* variable axis — the editorial body/meta face */
+  font-display: swap;
+  src: url('../fonts/DMSans-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+/* The prototype's next/font CSS variables, bound to the bundled families so
+   the `var(--f-…, "Family")` indirection in the design profiles resolves to a
+   real loaded face instead of dropping through to the system font. JetBrains
+   Mono is already bundled in styles.css; we bind its variable here for parity. */
+:root {
+  --f-grotesk: 'Space Grotesk';
+  --f-inter: 'Inter';
+  --f-newsreader: 'Newsreader';
+  --f-dmsans: 'DM Sans';
+  --f-jbmono: 'JetBrains Mono';
+}
+
+/* ============================================================================
    1 · TAILWIND THEME BRIDGE — namespaced tokens over raw Aro variables
    ============================================================================ */
 @theme inline {
@@ -176,11 +235,36 @@
 [data-theme] {
   --aro-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --aro-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --aro-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --aro-ease-in-quit: cubic-bezier(0.4, 0, 1, 1);
+  --aro-ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Duration ladder — prototype's --dur-fast/mid/slow/panel, renamed to the
+     aro namespace so transitions can reference a shared timing scale instead
+     of hardcoding milliseconds at each call site. */
+  --aro-dur-fast: 100ms;
+  --aro-dur-mid: 150ms;
+  --aro-dur-slow: 220ms;
+  --aro-dur-panel: 260ms;
+
+  /* Shared interaction + elevation contract. Keep these derived from the
+     active theme so every shell surface gets the same focus language and
+     depth without repeating shadows in feature CSS. */
+  --aro-radius-control: 7px;
+  --aro-radius-panel: 10px;
+  --aro-radius-overlay: 14px;
+  --aro-focus-ring: 0 0 0 1.5px color-mix(in srgb, var(--aro-iris) 76%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--aro-iris) 18%, transparent);
+  --aro-shadow-panel: 0 12px 30px -18px var(--aro-shadow-c), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
+  --aro-shadow-menu: 0 18px 44px -18px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 5%, transparent) inset;
+  --aro-shadow-composer: 0 18px 40px -24px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
 }
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */
+/* NOTE: no `:root[data-aro-ui='true']` selector here — that compound would
+   out-specify every sibling theme block's `html[data-theme='…']` (0,2,0 vs
+   0,1,1) and freeze the root on obsidian. `:root` alone already covers the
+   always-on default; sibling themes override it by cascade order. */
 :root,
-:root[data-aro-ui='true'],
 html[data-theme='obsidian'],
 [data-theme='obsidian'] {
   color-scheme: dark;
@@ -276,8 +360,6 @@ html[data-theme='obsidian'],
   --color-sky: var(--aro-sky);
   --color-sky-tint: color-mix(in srgb, var(--aro-sky) 12%, var(--aro-bg));
 
-  --d-chrome-height: 40px;
-  --d-composer-radius: 16px;
   --shadow-e1: 0 1px 2px var(--aro-shadow-a);
   --shadow-e2: 0 2px 8px -2px var(--aro-shadow-b);
   --shadow-e3: 0 12px 32px -8px var(--aro-shadow-c);
@@ -427,6 +509,142 @@ html[data-theme='paper'],
   --aro-shadow-b: rgba(60, 45, 20, 0.09);
   --aro-shadow-c: rgba(60, 45, 20, 0.15);
   --aro-shadow-d: rgba(60, 45, 20, 0.22);
+}
+
+/* ---- ink · editorial dark variant — warm near-black paper, ember signal ----
+   The prototype's editorial (serif) dark counterpart to `paper`. Values
+   verbatim from prototype globals.css `html[data-theme="ink"]`. */
+html[data-theme='ink'],
+[data-theme='ink'] {
+  color-scheme: dark;
+  --aro-void: #100d0a;
+  --aro-sunken: #16120e;
+  --aro-bg: #1a1611;
+  --aro-raise: #221d17;
+  --aro-hover: #2b241c;
+  --aro-overlay: #241e18;
+  --aro-well: #1e1913;
+  --aro-code: #0c0a07;
+  --aro-track: #302820;
+  --aro-line: #3a3128;
+  --aro-line-soft: #2c251c;
+  --aro-line-strong: #e8e2d6;
+  --aro-ink: #f0ead9;
+  --aro-ink-2: #c3b8a3;
+  --aro-ink-3: #8d8271;
+  --aro-ink-4: #6a6152;
+  --aro-iris: #e8663a;
+  --aro-iris-soft: #f08c62;
+  --aro-iris-deep: #b8411c;
+  --aro-on-iris: #100d0a;
+  --aro-cyan: #5cb8a8;
+  --aro-mint: #7bbf7a;
+  --aro-amber: #d9a441;
+  --aro-rose: #dd6a5c;
+  --aro-sky: #7ba4d4;
+  --aro-plum: #b882ab;
+  --aro-shadow-a: rgba(0, 0, 0, 0.5);
+  --aro-shadow-b: rgba(0, 0, 0, 0.6);
+  --aro-shadow-c: rgba(0, 0, 0, 0.7);
+  --aro-shadow-d: rgba(0, 0, 0, 0.85);
+}
+
+/* ============================================================================
+   3b · DESIGN AXES — profiles (`data-design`), density (`data-density`),
+   motion (`data-motion`). Presentation-only (FEATURE_MAP `design-profiles`).
+   Ported from `prototype/src/app/globals.css` "DESIGN SYSTEM PROFILES" +
+   `AppearanceSettings.tsx`; values verbatim — the two dead `--d-*` constants
+   previously carried in the obsidian block are superseded by the aro profile
+   (they had zero consumers; `--d-chrome-height` here is the prototype's 46px).
+   Applied by `src/aro/design-axes.ts` on the primary window's opt-in root.
+   ============================================================================ */
+
+/* ---- aro · the default profile (also the bare-html fallback) -------------- */
+html,
+html[data-design='aro'] {
+  --d-font-display: var(--f-grotesk, "Space Grotesk"), "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 12px; --d-radius-panel: 10px; --d-radius-control: 7px;
+  --d-sidebar-size: 272px; --d-context-size: 368px; --d-chrome-height: 46px;
+  --d-border-opacity: 1; --d-panel-shadow: var(--shadow-e2); --d-panel-padding: 12px;
+  --d-type-scale: 1; --d-rule-weight: 1px;
+  --d-row-height: 29px; --d-control-height: 30px; --d-page-gutter: 24px; --d-composer-radius: 16px; --d-content-max: 820px;
+}
+html[data-design='codex'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 8px; --d-radius-panel: 8px; --d-radius-control: 6px;
+  --d-sidebar-size: 292px; --d-context-size: 400px; --d-chrome-height: 44px;
+  --d-border-opacity: .86; --d-panel-shadow: 0 1px 3px rgba(0,0,0,.28); --d-panel-padding: 10px;
+  --d-type-scale: .98; --d-rule-weight: 1px;
+  --d-row-height: 27px; --d-control-height: 28px; --d-page-gutter: 20px; --d-composer-radius: 12px; --d-content-max: 800px;
+}
+html[data-design='claude'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 14px; --d-radius-panel: 12px; --d-radius-control: 8px;
+  --d-sidebar-size: 284px; --d-context-size: 382px; --d-chrome-height: 48px;
+  --d-border-opacity: .9; --d-panel-shadow: 0 8px 24px rgba(0,0,0,.18); --d-panel-padding: 14px;
+  --d-type-scale: 1.01; --d-rule-weight: 1px;
+  --d-row-height: 31px; --d-control-height: 32px; --d-page-gutter: 24px; --d-composer-radius: 16px; --d-content-max: 840px;
+}
+html[data-design='editorial'] {
+  --d-font-display: var(--f-newsreader, "Newsreader"), Georgia, serif;
+  --d-font-sans: var(--f-dmsans, "DM Sans"), "DM Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 3px; --d-radius-panel: 4px; --d-radius-control: 3px;
+  --d-sidebar-size: 304px; --d-context-size: 420px; --d-chrome-height: 52px;
+  --d-border-opacity: 1; --d-panel-shadow: 0 1px 0 color-mix(in srgb, var(--color-ink) 14%, transparent); --d-panel-padding: 16px;
+  --d-type-scale: 1.04; --d-rule-weight: 2px;
+  --d-row-height: 33px; --d-control-height: 34px; --d-page-gutter: 28px; --d-composer-radius: 4px; --d-content-max: 900px;
+}
+html[data-design='cursor'] {
+  --d-font-display: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-font-sans: var(--f-inter, "Inter"), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --d-radius-card: 8px; --d-radius-panel: 6px; --d-radius-control: 5px;
+  --d-sidebar-size: 248px; --d-context-size: 352px; --d-chrome-height: 42px;
+  --d-border-opacity: .92; --d-panel-shadow: 0 1px 2px rgba(0,0,0,.24); --d-panel-padding: 8px;
+  --d-type-scale: .94; --d-rule-weight: 1px;
+  --d-row-height: 25px; --d-control-height: 26px; --d-page-gutter: 18px; --d-composer-radius: 10px; --d-content-max: 780px;
+}
+
+/* ---- typography scale — every profile gets real px steps ----------------- */
+html[data-design='aro'] { --d-size-display: 23px; --d-size-title: 13.5px; --d-size-body: 13.5px; --d-size-meta: 12px; --d-size-mono: 11.5px; --d-leading: 1.65; }
+html[data-design='codex'] { --d-size-display: 20px; --d-size-title: 13px; --d-size-body: 13px; --d-size-meta: 11.5px; --d-size-mono: 11px; --d-leading: 1.6; }
+html[data-design='claude'] { --d-size-display: 24px; --d-size-title: 13.5px; --d-size-body: 13.5px; --d-size-meta: 12px; --d-size-mono: 11.5px; --d-leading: 1.68; }
+html[data-design='editorial'] { --d-size-display: 38px; --d-size-title: 16px; --d-size-body: 13.5px; --d-size-meta: 11.5px; --d-size-mono: 11.5px; --d-leading: 1.7; }
+html[data-design='cursor'] { --d-size-display: 18px; --d-size-title: 12.5px; --d-size-body: 12.5px; --d-size-meta: 11px; --d-size-mono: 10.5px; --d-leading: 1.58; }
+
+/* Typography hooks (prototype grammar — page titles read through .font-display). */
+html[data-design] .ds-display { font-size: var(--d-size-display); }
+html[data-design] .ds-body { font-size: var(--d-size-body); line-height: var(--d-leading); }
+html[data-design] .ds-meta { font-size: var(--d-size-meta); }
+html[data-design] .ds-mono { font-size: var(--d-size-mono); }
+html[data-design] .font-display { font-family: var(--d-font-display); }
+
+/* ---- density axis — compact tightens the port's Aro chrome rows ----------- */
+html[data-density='compact'] .sidebar-navigation-row,
+html[data-density='compact'] .bot-roster-row {
+  min-height: 28px;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] > [data-slot='aui_thread-content'] {
+  padding-top: 1.25rem;
+  padding-bottom: 1rem;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] [data-role='user'] {
+  margin-block: 0.25rem 0.5rem;
+}
+html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] .composer-human-message {
+  padding: 0.5rem 0.7rem;
+}
+
+/* ---- motion axis — reduced kills decorative animation globally ----------- */
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* ============================================================================

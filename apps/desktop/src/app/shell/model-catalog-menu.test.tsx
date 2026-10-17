@@ -31,7 +31,7 @@ import {
 import { $defaultReasoningEffort } from '@/store/session'
 import type { LocalRuntimeJob } from '@/types/hermes'
 
-import { ModelCatalogMenu, ModelMenuCloseContext, type ModelMenuController } from './model-catalog-menu'
+import { isModelFree, isModelPaid, ModelCatalogMenu, ModelMenuCloseContext, type ModelMenuController } from './model-catalog-menu'
 import { MODEL_MENU_ROW_AREA, type ModelMenuRowContribution } from './model-menu-row-decorations'
 
 // Radix calls these on open; jsdom doesn't implement them.
@@ -195,7 +195,10 @@ describe('the reasoning-effort badge (#51833)', () => {
 
 // A minimal controller — these tests are about the CATALOG's own behaviour
 // (what it lists, what it offers), not about what any host does with a pick.
-function renderMenu(current: Partial<ModelMenuController['current']> = {}) {
+function renderMenu(
+  current: Partial<ModelMenuController['current']> = {},
+  menuProps: { hideSubmenu?: boolean } = {}
+) {
   const select = vi.fn()
 
   const controller: ModelMenuController = {
@@ -213,7 +216,7 @@ function renderMenu(current: Partial<ModelMenuController['current']> = {}) {
       <ModelMenuCloseContext.Provider value={closeMenu}>
         <DropdownMenu open>
           <DropdownMenuContent>
-            <ModelCatalogMenu controller={controller} />
+            <ModelCatalogMenu controller={controller} hideSubmenu={menuProps.hideSubmenu} />
           </DropdownMenuContent>
         </DropdownMenu>
       </ModelMenuCloseContext.Provider>
@@ -707,3 +710,188 @@ describe('the catalog renders per-model pricing', () => {
     expect(screen.queryByText('free')).toBeNull()
   })
 })
+
+describe('isModelFree helper', () => {
+  it('identifies free models by pricing.free or zero input/output', () => {
+    expect(
+      isModelFree(
+        { fastId: null, id: 'm1' },
+        {
+          name: 'P1',
+          slug: 'p1',
+          pricing: { m1: { input: '$0.00', output: '$0.00', free: true } }
+        }
+      )
+    ).toBe(true)
+
+    expect(
+      isModelFree(
+        { fastId: null, id: 'm2' },
+        {
+          name: 'P1',
+          slug: 'p1',
+          pricing: { m2: { input: '0', output: '0', free: false } }
+        }
+      )
+    ).toBe(true)
+
+    expect(
+      isModelFree(
+        { fastId: null, id: 'm3' },
+        {
+          name: 'P1',
+          slug: 'p1',
+          pricing: { m3: { input: '$1.00', output: '$2.00', free: false } }
+        }
+      )
+    ).toBe(false)
+  })
+
+  it('identifies on-device / local providers and :free slugs as free', () => {
+    expect(
+      isModelFree(
+        { fastId: null, id: 'deepseek-r1:8b' },
+        { name: 'Ollama', slug: 'ollama' }
+      )
+    ).toBe(true)
+
+    expect(
+      isModelFree(
+        { fastId: null, id: 'meta-llama/llama-3.3-70b-instruct:free' },
+        { name: 'OpenRouter', slug: 'openrouter' }
+      )
+    ).toBe(true)
+  })
+
+  it('identifies provider account-level free tier entitlement, respecting unavailable_models', () => {
+    // Free tier account
+    expect(
+      isModelFree(
+        { fastId: null, id: 'nous/hermes-3-llama-3.1-8b' },
+        { name: 'Nous Portal', slug: 'nous', free_tier: true }
+      )
+    ).toBe(true)
+
+    // Locked model on free tier account is not free
+    expect(
+      isModelFree(
+        { fastId: null, id: 'nous/hermes-3-llama-3.1-405b' },
+        { name: 'Nous Portal', slug: 'nous', free_tier: true, unavailable_models: ['nous/hermes-3-llama-3.1-405b'] }
+      )
+    ).toBe(false)
+  })
+
+  it('correctly categorizes paid models with isModelPaid', () => {
+    expect(
+      isModelPaid(
+        { fastId: null, id: 'gpt-4o' },
+        { name: 'OpenAI', slug: 'openai' }
+      )
+    ).toBe(true)
+
+    expect(
+      isModelPaid(
+        { fastId: null, id: 'ollama-model' },
+        { name: 'Ollama', slug: 'ollama' }
+      )
+    ).toBe(false)
+  })
+})
+
+describe('free and paid tier filtering in model catalog', () => {
+  beforeEach(() => {
+    getGlobalModelOptions.mockResolvedValue({
+      providers: [
+        {
+          name: 'Provider A',
+          slug: 'prov-a',
+          models: ['model-free', 'model-paid'],
+          pricing: {
+            'model-free': { input: 'free', output: 'free', free: true },
+            'model-paid': { input: '$1.00', output: '$3.00', free: false }
+          }
+        }
+      ]
+    })
+  })
+
+  it('switches between All, Free, and Paid tabs to filter models', async () => {
+    renderMenu()
+
+    await screen.findByText('Model Free')
+    expect(screen.getByText('Model Paid')).not.toBeNull()
+
+    // Click Free tab
+    const freeTab = screen.getByRole('tab', { name: 'Free' })
+    fireEvent.click(freeTab)
+
+    expect(screen.queryByText('Model Free')).not.toBeNull()
+    expect(screen.queryByText('Model Paid')).toBeNull()
+
+    // Click Paid tab
+    const paidTab = screen.getByRole('tab', { name: 'Paid' })
+    fireEvent.click(paidTab)
+
+    expect(screen.queryByText('Model Free')).toBeNull()
+    expect(screen.queryByText('Model Paid')).not.toBeNull()
+
+    // Click All tab
+    const allTab = screen.getByRole('tab', { name: 'All' })
+    fireEvent.click(allTab)
+
+    expect(screen.queryByText('Model Free')).not.toBeNull()
+    expect(screen.queryByText('Model Paid')).not.toBeNull()
+  })
+})
+
+describe('submenu suppression in Aro mode / hideSubmenu', () => {
+  beforeEach(() => {
+    getGlobalModelOptions.mockResolvedValue({
+      providers: [
+        {
+          name: 'Google',
+          slug: 'google',
+          models: ['gemini-2.5-flash']
+        }
+      ]
+    })
+  })
+
+  afterEach(() => {
+    delete document.documentElement.dataset.aroUi
+  })
+
+  it('renders a plain dropdown item without chevron-right arrow when hideSubmenu is true', async () => {
+    const select = renderMenu({}, { hideSubmenu: true })
+
+    const row = await screen.findByText('Gemini 2.5')
+    const trigger = row.closest('[data-slot="dropdown-menu-sub-trigger"]')
+
+    // No sub-trigger and no chevron arrow
+    expect(trigger).toBeNull()
+    const item = row.closest('[data-slot="dropdown-menu-item"]')
+    expect(item).not.toBeNull()
+    expect(item?.querySelector('.codicon-chevron-right')).toBeNull()
+
+    // Clicking selects immediately and closes the menu
+    fireEvent.click(item!)
+    expect(select).toHaveBeenCalledWith('gemini-2.5-flash', 'google')
+    expect(closeMenu).toHaveBeenCalled()
+  })
+
+  it('suppresses submenu automatically when data-aro-ui is true', async () => {
+    document.documentElement.dataset.aroUi = 'true'
+    const select = renderMenu({})
+
+    const row = await screen.findByText('Gemini 2.5')
+    const item = row.closest('[data-slot="dropdown-menu-item"]')
+
+    expect(item).not.toBeNull()
+    expect(item?.querySelector('.codicon-chevron-right')).toBeNull()
+
+    fireEvent.click(item!)
+    expect(select).toHaveBeenCalledWith('gemini-2.5-flash', 'google')
+    expect(closeMenu).toHaveBeenCalled()
+  })
+})
+

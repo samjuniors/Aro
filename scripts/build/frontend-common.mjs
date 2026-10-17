@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { setTimeout } from 'node:timers/promises'
@@ -82,10 +82,30 @@ export function publishDirectory(staged, out, { source } = {}) {
   writeFileSync(path.join(staged, productMarker), productOwner)
   const backup = `${staged}.previous`
   const previous = existsSync(out)
-  if (previous) renameSync(out, backup)
+  if (previous) {
+    try {
+      renameSync(out, backup)
+    } catch {
+      cpSync(staged, out, { recursive: true })
+      return
+    }
+  }
   try {
     renameSync(staged, out)
   } catch (error) {
+    if (error.code === 'EPERM' && process.platform === 'win32') {
+      try {
+        cpSync(staged, out, { recursive: true })
+        rmSync(staged, { recursive: true, force: true })
+        if (previous) rmSync(backup, { recursive: true, force: true })
+        return
+      } catch (cpErr) {
+        if (previous) {
+          try { renameSync(backup, out) } catch {}
+        }
+        throw cpErr
+      }
+    }
     if (previous) renameSync(backup, out)
     throw error
   }

@@ -38,7 +38,7 @@ const FALLBACK_COPY: IntroCopy[] = [
     body: "Bring the code, question, or stuck part. I'll read the room before making changes."
   },
   {
-    headline: 'What should Hermes look at?',
+    headline: 'What should Aro look at?',
     body: "Send the task, failing path, or half-formed plan. I'll help turn it into action."
   },
   {
@@ -152,7 +152,7 @@ function pickCopy(copies: IntroCopy[], seed = 0): IntroCopy {
   return copies[Math.abs(seed) % copies.length] || FALLBACK_COPY[0]
 }
 
-const WORDMARK = 'HERMES AGENT'
+const WORDMARK = 'ARO AGENT'
 
 function resolveCopy(personality?: string, seed?: number): IntroCopy {
   const personalityKey = normalizeKey(personality)
@@ -220,11 +220,13 @@ export function Intro({ personality, seed }: IntroProps) {
 
   const bodies =
     t.intro.stock[key] ?? (NEUTRAL_PERSONALITIES.has(key) ? t.intro.stock.none : t.intro.custom(personality || ''))
+
   const body = bodies?.[Math.abs(rotationSeed) % bodies.length] ?? copy.body
 
   const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
   const projectScope = useStore($projectScope)
   const projects = useStore($projectTree)
+
   const activeProject =
     isAro && projectScope && projectScope !== ALL_PROJECTS
       ? (projects.find(p => p.id === projectScope && !p.isNoProject) ?? null)
@@ -243,7 +245,7 @@ export function Intro({ personality, seed }: IntroProps) {
             </h1>
             {!activeProject && (
               <p className="mt-2 text-center text-xs text-aro-ink-3 max-w-md mx-auto leading-relaxed">
-                Attach a project with the folder button in the composer toolbar, or just start typing — you can attach one later.
+                {t.composer.projectAttachHint}
               </p>
             )}
           </>
@@ -260,11 +262,12 @@ export function Intro({ personality, seed }: IntroProps) {
         data-slot="fresh-suggestions"
       >
         {isAro ? (
-          ARO_FRESH_IDEAS.map(idea => {
+          ARO_FRESH_IDEAS.map((idea, index) => {
             const Icon = idea.icon
+
             return (
               <button
-                className="fresh-suggestion"
+                className="fresh-suggestion animate-aro-rise"
                 data-slot="fresh-suggestion-chip"
                 key={idea.label}
                 onClick={() => {
@@ -275,6 +278,7 @@ export function Intro({ personality, seed }: IntroProps) {
                     requestComposerFocus('active')
                   }
                 }}
+                style={{ animationDelay: `${120 + index * 70}ms` }}
                 type="button"
               >
                 <Icon size={12} />
@@ -285,18 +289,18 @@ export function Intro({ personality, seed }: IntroProps) {
         ) : (
           FRESH_IDEAS.map(idea => (
             <button
-              key={idea.label}
-              type="button"
               className="group inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise/80 px-3.5 py-1.5 text-xs font-medium text-aro-ink-2 shadow-sm backdrop-blur-md transition-all hover:border-aro-iris/50 hover:bg-aro-hover hover:text-aro-ink active:scale-[0.98]"
               data-slot="fresh-suggestion-chip"
+              key={idea.label}
               onClick={() => {
                 requestComposerInsert(idea.prompt, { mode: 'block', target: 'active' })
                 requestComposerFocus('active')
               }}
+              type="button"
             >
               <Codicon
-                name={idea.icon}
                 className="size-3 text-aro-iris-soft transition-colors group-hover:text-aro-cyan"
+                name={idea.icon}
               />
               <span>{idea.label}</span>
             </button>

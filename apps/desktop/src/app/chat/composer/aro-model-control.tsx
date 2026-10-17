@@ -5,7 +5,6 @@ import { useSessionView } from '@/app/chat/session-view'
 import { ModelMenuCloseContext } from '@/app/shell/model-menu-panel'
 import { IconChevronDown } from '@/aro/Icons'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { GlyphSpinner } from '@/components/ui/glyph-spinner'
 import { releaseTypingFocus } from '@/components/ui/keyboard-first'
@@ -55,7 +54,7 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={currentModel || 'Model'}
-          className="h-[30px] shrink-0 gap-[5px] rounded-[6px] border-none bg-transparent px-[5px] text-[11.5px] font-normal whitespace-nowrap text-aro-ink-2 shadow-none hover:bg-aro-hover hover:text-aro-ink"
+          className="h-[28px] shrink-0 gap-[6px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal whitespace-nowrap text-aro-ink-2 shadow-sm transition-all hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink"
           data-aro-model-control=""
           data-aro-model-pill=""
           disabled={disabled}
@@ -78,7 +77,12 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[330px] p-0" side="top" sideOffset={8}>
+      <DropdownMenuContent
+        align="end"
+        className="w-[min(330px,calc(100vw-16px))] max-w-[calc(100vw-16px)] p-0"
+        side="top"
+        sideOffset={8}
+      >
         <ModelMenuCloseContext.Provider value={() => setMenuOpen(false)}>
           {model.aroMenu}
         </ModelMenuCloseContext.Provider>

@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react'
 import { atom } from 'nanostores'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { Orb, ORB_LABEL, type OrbState, useMicLevel } from '@/app/chat/orb'
 import { Codicon } from '@/components/ui/codicon'
@@ -12,22 +13,55 @@ import type { ConversationStatus } from './composer/hooks/use-voice-conversation
 import type { VoiceActivityState, VoiceStatus } from './composer/types'
 
 /** Orb visibility + drag position are desktop-local presentation prefs.
- *  `storedBoolean`/`persistBoolean` follow the same pattern as the wake-word
- *  toggle (`store/wake-word.ts`). */
-const ORB_VISIBLE_KEY = 'hermes.desktop.voice.orb.visible'
-const $orbVisible = atom(localStorage.getItem(ORB_VISIBLE_KEY) !== 'false')
-$orbVisible.subscribe(value => persistBoolean(ORB_VISIBLE_KEY, value))
+ *  Syncs both `hermes.desktop.voice.orb.visible` (merge-base wire key) and
+ *  `conductor.voice.orb` (prototype/titlebar key). */
+export const ORB_VISIBLE_KEY = 'hermes.desktop.voice.orb.visible'
+export const CONDUCTOR_ORB_KEY = 'conductor.voice.orb'
 
-const ORB_OPEN_KEY = 'hermes.desktop.voice.orb.open'
-const $orbOpen = atom(localStorage.getItem(ORB_OPEN_KEY) === 'true')
+export function readOrbVisible(): boolean {
+  try {
+    const conductor = localStorage.getItem(CONDUCTOR_ORB_KEY)
+
+    if (conductor !== null) {
+      return conductor !== 'false'
+    }
+
+    const hermes = localStorage.getItem(ORB_VISIBLE_KEY)
+
+    if (hermes !== null) {
+      return hermes !== 'false'
+    }
+
+    return true
+  } catch {
+    return true
+  }
+}
+
+export const $orbVisible = atom(readOrbVisible())
+$orbVisible.subscribe(value => {
+  persistBoolean(ORB_VISIBLE_KEY, value)
+
+  try {
+    localStorage.setItem(CONDUCTOR_ORB_KEY, String(value))
+  } catch {
+    // storage unavailable
+  }
+})
+
+export const ORB_OPEN_KEY = 'hermes.desktop.voice.orb.open'
+export const $orbOpen = atom(localStorage.getItem(ORB_OPEN_KEY) === 'true')
 $orbOpen.subscribe(value => persistBoolean(ORB_OPEN_KEY, value))
 
-function readPosition(): { x: number; y: number } {
+export function readPosition(): { x: number; y: number } {
   try {
     const raw = localStorage.getItem('hermes.desktop.voice.orb.position')
     const parsed = raw ? JSON.parse(raw) : null
 
-    return parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number' ? parsed : { x: 0, y: 0 }
+    // Clamp y >= 0 so old persisted positions cannot pull the orb into the composer send band
+    return parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number'
+      ? { x: parsed.x, y: Math.max(0, parsed.y) }
+      : { x: 0, y: 0 }
   } catch {
     return { x: 0, y: 0 }
   }
@@ -49,27 +83,31 @@ const STATE_HINT: Record<OrbState, string> = {
  * the REAL voice conversation (VAD loop: listen → submit → speak). Every
  * state shown (listening/thinking/speaking/elapsed/mic level) is the live
  * engine state; nothing is simulated locally.
+ *
+ * Portaled to document.body so that fixed positioning is truly viewport-relative
+ * and never trapped by ancestor CSS transforms (such as composer-dock -translate-x-1/2),
+ * preventing overlap with the composer send control across all viewports.
  */
 export function VoiceAgentOrb({
   busy = false,
-  conversationActive,
-  conversationStatus,
-  dictate,
-  onEndConversation,
-  onStartConversation,
-  onSubmit,
-  voiceActivity,
-  voiceStatus
+  conversationActive = false,
+  conversationStatus = 'idle',
+  dictate = () => undefined,
+  onEndConversation = () => undefined,
+  onStartConversation = () => undefined,
+  onSubmit = () => undefined,
+  voiceActivity = { elapsedSeconds: 0, level: 0, status: 'idle' },
+  voiceStatus = 'idle'
 }: {
   busy?: boolean
-  conversationActive: boolean
-  conversationStatus: ConversationStatus
-  dictate: () => void
-  onEndConversation: () => void
-  onStartConversation: () => void
-  onSubmit: (text: string) => void
-  voiceActivity: VoiceActivityState
-  voiceStatus: VoiceStatus
+  conversationActive?: boolean
+  conversationStatus?: ConversationStatus
+  dictate?: () => void
+  onEndConversation?: () => void
+  onStartConversation?: () => void
+  onSubmit?: (text: string) => void
+  voiceActivity?: VoiceActivityState
+  voiceStatus?: VoiceStatus
 }) {
   const visible = useStore($orbVisible)
   const open = useStore($orbOpen)
@@ -80,16 +118,81 @@ export function VoiceAgentOrb({
   const dragRef = useRef<{ x: number; y: number; px: number; py: number; moved: boolean } | null>(null)
   const suppressClick = useRef(false)
 
-  const listening = conversationActive || voiceStatus !== 'idle'
-  const micLevel = useMicLevel(listening)
+  const isListening = voiceStatus === 'recording' || conversationStatus === 'listening'
+  const micLevel = useMicLevel(isListening)
 
-  const orbState: OrbState = listening
+  const orbState: OrbState = isListening
     ? 'listening'
-    : busy || conversationStatus === 'thinking'
+    : voiceStatus === 'transcribing' || busy || conversationStatus === 'thinking'
       ? 'thinking'
       : conversationStatus === 'speaking'
         ? 'speaking'
         : 'idle'
+
+  // Listen to conductor:voice:orb events from titlebar / shortcuts
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
+    const handleToggle = (event: Event) => {
+      const custom = event as CustomEvent<boolean>
+
+      if (typeof custom.detail === 'boolean') {
+        $orbVisible.set(custom.detail)
+      } else {
+        $orbVisible.set(readOrbVisible())
+      }
+    }
+
+    window.addEventListener('conductor:voice:orb', handleToggle)
+
+    return () => window.removeEventListener('conductor:voice:orb', handleToggle)
+  }, [])
+
+  // Close open dialog on Escape
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') {
+      return undefined
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        setOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open])
+
+  // Keep position clamped within viewport on resize
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
+    const handleResize = () => {
+      setPosition(prev => {
+        const maxX = window.innerWidth - 80
+        const maxY = window.innerHeight - 120
+        const clampedX = Math.max(-16, Math.min(maxX, prev.x))
+        const clampedY = Math.max(0, Math.min(maxY, prev.y))
+
+        if (clampedX === prev.x && clampedY === prev.y) {
+          return prev
+        }
+
+        return { x: clampedX, y: clampedY }
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     try {
@@ -131,9 +234,13 @@ export function VoiceAgentOrb({
       dragRef.current.moved = true
     }
 
+    const maxX = typeof window !== 'undefined' ? window.innerWidth - 80 : 800
+    const maxY = typeof window !== 'undefined' ? window.innerHeight - 120 : 600
+
+    // Clamp y >= 0 so dragging can never drag the orb downward into the composer toolbar / send button
     setPosition({
-      x: Math.max(-16, Math.min(window.innerWidth - 80, dragRef.current.px - dx)),
-      y: Math.max(-30, Math.min(window.innerHeight - 90, dragRef.current.py - dy))
+      x: Math.max(-16, Math.min(maxX, dragRef.current.px - dx)),
+      y: Math.max(0, Math.min(maxY, dragRef.current.py - dy))
     })
   }
 
@@ -155,13 +262,18 @@ export function VoiceAgentOrb({
           ? 'text-aro-iris-soft'
           : 'text-(--ui-text-tertiary)'
 
-  const transcript = voiceActivity.elapsedSeconds > 0 || listening
-    ? `${Math.floor(voiceActivity.elapsedSeconds / 60)}:${String(voiceActivity.elapsedSeconds % 60).padStart(2, '0')}`
+  const elapsed = voiceActivity?.elapsedSeconds ?? 0
+
+  const transcript = elapsed > 0 || isListening
+    ? `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`
     : ''
 
-  return (
+  const content = (
     <div
-      className="voice-agent fixed right-6 bottom-[46px] z-[80] flex flex-col items-end select-none"
+      className="voice-agent fixed right-6 bottom-[112px] z-[80] flex flex-col items-end select-none"
+      data-orb-open={open ? '' : undefined}
+      data-orb-state={orbState}
+      data-testid="voice-agent-orb"
       style={{ transform: `translate(${-position.x}px, ${-position.y}px)` }}
     >
       {open && (
@@ -241,7 +353,7 @@ export function VoiceAgentOrb({
               onClick={() => dictate()}
               type="button"
             >
-              <Codicon name={voiceStatus === 'idle' ? 'mic' : 'mic'} size="0.9rem" />
+              <Codicon name="mic" size="0.9rem" />
             </button>
             <button
               aria-label="Send"
@@ -266,6 +378,7 @@ export function VoiceAgentOrb({
           <button
             aria-label={`Aro voice · ${ORB_LABEL[orbState]} · click to open, double-click to talk`}
             className="relative flex size-[54px] cursor-grab items-center justify-center rounded-full transition-transform focus-visible:ring-2 focus-visible:ring-aro-iris focus-visible:outline-none hover:scale-105 active:cursor-grabbing"
+            data-testid="orb-toggle-button"
             onClick={() => {
               if (suppressClick.current) {
                 suppressClick.current = false
@@ -299,4 +412,10 @@ export function VoiceAgentOrb({
       )}
     </div>
   )
+
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  return createPortal(content, document.body)
 }

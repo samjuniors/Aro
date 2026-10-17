@@ -46,10 +46,27 @@ import { revealFileInTree } from '@/store/layout'
 import { $onboardingGate, guidedOnboardingActive } from '@/store/onboarding-gate'
 import { $activeGatewayProfile } from '@/store/profile'
 import { $profileRailVisible } from '@/store/profile-rail-prefs'
-import { $projectTree, projectNameForCwd } from '@/store/projects'
+import {
+  $aroDraftProjectId,
+  $aroSessionProjectMap,
+  clearAroProjectAndRevertToDefault,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId
+} from '@/aro/project-session-map'
+import { $projectScope } from '@/store/project-scope'
+import {
+  $projectOwnerBySessionId,
+  $projects,
+  $projectTree,
+  chooseAndSetDefaultWorkspaceDir,
+  clearConfiguredDefaultWorkspaceDir,
+  openFolderAsProject,
+  projectNameForCwd
+} from '@/store/projects'
 import {
   $activeSessionId,
   $busy,
+  $configuredDefaultProjectDir,
   $connection,
   $currentCwd,
   $currentUsage,
@@ -129,6 +146,7 @@ export function useStatusbarItems({
   // primary (or a draft with no runtime slice yet). A focused TILE keeps its
   // own cwd in `$sessionStates` and must not paint the primary's workspace.
   const primaryCwd = useStore($currentCwd)
+  const configuredDefaultDir = useStore($configuredDefaultProjectDir)
   const primaryUsage = useStore($currentUsage)
   const gatewayRestarting = useStore($gatewayRestarting)
   const primarySessionStartedAt = useStore($sessionStartedAt)
@@ -273,19 +291,52 @@ export function useStatusbarItems({
       focusedStateStoredId === focusedStoredSessionId ||
       liveCwdSharesFocusLineage)
 
-  const currentCwd = (
+  const explicitProjects = useStore($projects)
+  const projectScope = useStore($projectScope)
+  const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
+  const projectOwners = useStore($projectOwnerBySessionId)
+  const sessions = useStore($sessions)
+
+  const effectiveSessionId = focusedStoredSessionId || selectedStoredSessionId
+  const effectiveSession = effectiveSessionId
+    ? sessions.find(s => sessionMatchesStoredId(s, effectiveSessionId))
+    : null
+
+  const activeAroProjectId = effectiveSession
+    ? effectiveSession.id.startsWith('draft_')
+      ? aroSessionProjectMap[effectiveSession.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+      : resolveAroSessionProjectId(effectiveSession, explicitProjects, projectOwners, aroSessionProjectMap)
+    : effectiveSessionId
+      ? aroSessionProjectMap[effectiveSessionId] ||
+        (effectiveSessionId.startsWith('draft_') ? resolveAroDraftProjectId(aroDraftProjectId, projectScope) : null)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+
+  const activeAroProject = activeAroProjectId
+    ? explicitProjects.find(p => p.id === activeAroProjectId && !p.archived) || null
+    : null
+
+  const activeAroProjectRoot =
+    (activeAroProject && 'primary_path' in activeAroProject ? activeAroProject.primary_path : null) ||
+    (activeAroProject && 'folders' in activeAroProject ? activeAroProject.folders?.[0]?.path : null) ||
+    null
+
+  const rawCwd = (
     (liveCwdBelongsToFocus ? focusedStateCwd : '') ||
     focusedRowCwd ||
     (primaryFocused ? primaryCwd : '') ||
     ''
   ).trim()
 
-  // Derive the workspace's project name from the already-cached project tree
-  // (backend truth via projects.*), so the status item labels by project without
-  // a second per-session copy of the same fact. Re-derives whenever the cwd or
-  // the tree changes; null (no named project) falls back to the cwd leaf below.
+  const currentCwd = activeAroProject
+    ? (activeAroProjectRoot || rawCwd || '').trim()
+    : (rawCwd || configuredDefaultDir || '').trim()
+
+  // Derive the workspace's project name from explicit project first, falling back
+  // to the cached project tree (backend truth via projects.*).
   const projectTree = useStore($projectTree)
-  const projectName = useMemo(() => projectNameForCwd(currentCwd), [currentCwd, projectTree])
+  const treeProjectName = useMemo(() => projectNameForCwd(currentCwd), [currentCwd, projectTree])
+  const projectName = activeAroProject ? activeAroProject.name : treeProjectName
 
   const sessionStartedAt = resolveSessionTimerSince({
     focusedStoredSessionId,
@@ -550,44 +601,77 @@ export function useStatusbarItems({
         variant: 'action'
       },
       {
-        hidden: !currentCwd,
         icon: <FolderOpen className="size-3" />,
         id: 'workspace-cwd',
         // Prefer the named project; fall back to the cwd leaf. Hover tip uses
         // the shared display formatter (home → ~) so statusbar and branch bar
         // agree on how a path looks.
-        label: projectName || (currentCwd ? pathLeaf(currentCwd) : undefined),
-        menuItems: currentCwd
-          ? [
-              {
-                id: 'copy-workspace-path',
-                label: fileMenu.copyPath,
-                onSelect: () => void copyFilePath(currentCwd),
-                title: displayPath(currentCwd)
-              },
-              // The OS file manager needs the local filesystem; a remote
-              // backend's workspace is not on this computer (the sidebar
-              // trees already hide reveal the same way), and a row tagged
-              // with another gateway is never local either.
-              ...(focusedWorkspaceRemote || !offerLocalReveal
-                ? []
-                : [
-                    {
-                      id: 'reveal-workspace-finder',
-                      label: fileMenu.revealFileManager,
-                      onSelect: () => void revealFile(currentCwd),
-                      title: displayPath(currentCwd)
-                    }
-                  ]),
-              {
-                id: 'reveal-workspace-sidebar',
-                label: fileMenu.revealInSidebar,
-                onSelect: () => revealFileInTree(currentCwd),
-                title: displayPath(currentCwd)
-              }
-            ]
-          : undefined,
-        title: currentCwd ? displayPath(currentCwd) : undefined,
+        label: projectName || (currentCwd ? pathLeaf(currentCwd) : t.composer.chooseProject),
+        menuItems: [
+          ...(currentCwd
+            ? [
+                {
+                  id: 'copy-workspace-path',
+                  label: fileMenu.copyPath,
+                  onSelect: () => void copyFilePath(currentCwd),
+                  title: displayPath(currentCwd)
+                },
+                // The OS file manager needs the local filesystem; a remote
+                // backend's workspace is not on this computer (the sidebar
+                // trees already hide reveal the same way), and a row tagged
+                // with another gateway is never local either.
+                ...(focusedWorkspaceRemote || !offerLocalReveal
+                  ? []
+                  : [
+                      {
+                        id: 'reveal-workspace-finder',
+                        label: fileMenu.revealFileManager,
+                        onSelect: () => void revealFile(currentCwd),
+                        title: displayPath(currentCwd)
+                      }
+                    ]),
+                {
+                  id: 'reveal-workspace-sidebar',
+                  label: fileMenu.revealInSidebar,
+                  onSelect: () => revealFileInTree(currentCwd),
+                  title: displayPath(currentCwd)
+                }
+              ]
+            : []),
+          ...(activeAroProject || projectName
+            ? [
+                {
+                  id: 'clear-selected-project',
+                  label: 'Clear project (revert to default)',
+                  onSelect: () => void clearAroProjectAndRevertToDefault(effectiveSessionId),
+                  title: 'Clear project and revert session workspace to default location'
+                }
+              ]
+            : []),
+          {
+            id: 'select-default-workspace-dir',
+            label: 'Choose default workspace directory…',
+            onSelect: () => void chooseAndSetDefaultWorkspaceDir(),
+            title: 'Set default directory for sessions when no project is selected'
+          },
+          ...(configuredDefaultDir
+            ? [
+                {
+                  id: 'clear-default-workspace-dir',
+                  label: 'Clear default workspace directory',
+                  onSelect: () => void clearConfiguredDefaultWorkspaceDir(),
+                  title: displayPath(configuredDefaultDir)
+                }
+              ]
+            : []),
+          {
+            id: 'open-project-folder',
+            label: 'Open folder as project…',
+            onSelect: () => void openFolderAsProject(),
+            title: 'Open an existing local folder as a project'
+          }
+        ],
+        title: currentCwd ? displayPath(currentCwd) : 'No workspace selected',
         toggleLabel: copy.toggleWorkspace,
         variant: 'menu'
       },

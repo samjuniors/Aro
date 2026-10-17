@@ -110,6 +110,46 @@ export function SettingsSection({
   )
 }
 
+/**
+ * SettingsGroup: Prototype-style grouped card with rounded-[11px], hairline borders,
+ * optional title header, and internal row dividers.
+ */
+export function SettingsGroup({
+  title,
+  description,
+  aside,
+  children,
+  className
+}: {
+  title?: ReactNode
+  description?: ReactNode
+  aside?: ReactNode
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <section
+      className={cn(
+        'settings-group mb-5 overflow-hidden rounded-[11px] border border-(--ui-stroke-primary) bg-(--ui-bg-card)',
+        className
+      )}
+    >
+      {title && (
+        <div className="flex items-center justify-between border-b border-(--ui-stroke-secondary) px-4 py-3">
+          <div>
+            <h3 className="text-[12px] font-medium text-(--ui-text-primary)">{title}</h3>
+            {description && (
+              <p className="mt-0.5 text-[10.5px] leading-relaxed text-(--ui-text-tertiary)">{description}</p>
+            )}
+          </div>
+          {aside && <div className="ml-auto flex items-center">{aside}</div>}
+        </div>
+      )}
+      <div className="divide-y divide-(--ui-stroke-secondary) px-4">{children}</div>
+    </section>
+  )
+}
+
 export function NavLink({
   icon: Icon,
   label,

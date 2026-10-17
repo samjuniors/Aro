@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { $activeTreeGroup, $layoutTree } from '@/components/pane-shell/tree/store'
@@ -7,6 +7,7 @@ import { $connection, $selectedStoredSessionId, $sessions, $workspaceCwdOwner, s
 import { $sessionTiles } from '@/store/session-states'
 
 import { resetProjectTreeState } from './files/use-project-tree'
+import { setRightSidebarSection } from './store'
 
 import { RightSidebarPane } from './index'
 
@@ -78,6 +79,21 @@ describe('RightSidebarPane', () => {
 
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Refresh tree' })).toBeNull())
     expect(readDir).not.toHaveBeenCalled()
+  })
+
+  it('keeps the Files section mounted safely as a workspace appears and disappears', async () => {
+    setRightSidebarSection('files')
+    setCurrentCwd('')
+
+    render(<RightSidebarPane onActivateFile={vi.fn()} onActivateFolder={vi.fn()} />)
+
+    expect(await screen.findByRole('button', { name: 'Open folder' })).toBeTruthy()
+
+    act(() => setCurrentCwd('/repo'))
+    expect(await screen.findByRole('button', { name: 'Refresh workspace' })).toBeTruthy()
+
+    act(() => setCurrentCwd(''))
+    expect(await screen.findByRole('button', { name: 'Open folder' })).toBeTruthy()
   })
 
   it('reads the focused tile workspace cwd when a tile tab is focused', async () => {

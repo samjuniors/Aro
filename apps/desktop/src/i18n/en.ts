@@ -3736,6 +3736,8 @@ export const en: Translations = {
 
   composer: {
     message: 'Message',
+    chooseProject: 'Choose project',
+    projectAttachHint: 'Choose a project above the composer, or start typing — you can attach one later.',
     wakingProfile: profile => `Waking up ${profile}…`,
     placeholderStarting: 'Starting Hermes...',
     placeholderReconnecting: 'Reconnecting to Hermes…',
@@ -4965,6 +4967,7 @@ export const en: Translations = {
     closeAll: 'Close all',
     newSessionTab: 'New session tab',
     newTab: 'New tab',
+    newTabInFullView: 'New tab in full view',
     pluginDisabled: pluginId => `Plugin "${pluginId}" disabled`,
     pluginDisabledBody: 'Re-enable it in Capabilities → Plugins to bring the pane back.',
     missingPane: paneId => `missing pane: ${paneId}`,

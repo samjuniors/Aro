@@ -11,8 +11,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import { cn } from '@/lib/utils'
 
@@ -57,11 +57,12 @@ export function Button({
     <button
       {...rest}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-all duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
         variantMap[variant],
         sizeMap[size],
         className,
       )}
+      type={rest.type ?? 'button'}
     >
       {Icon && <Icon size={size === 'xs' ? 12 : size === 'lg' ? 16 : 13} />}
       {children}
@@ -88,11 +89,12 @@ export function IconButton({
       {...rest}
       aria-label={label}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-all duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94]',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
       style={{ width: size, height: size }}
+      type={rest.type ?? 'button'}
     >
       <Icon size={Math.round(size * 0.5)} />
     </button>
@@ -245,6 +247,7 @@ export function Menu({
 
   const ref = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
   const [coords, setCoords] = useState<{ top: number; left: number; opensAbove: boolean }>({
     top: 0,
     left: 0,
@@ -252,7 +255,7 @@ export function Menu({
   })
 
   const updatePosition = useCallback(() => {
-    if (!ref.current) return
+    if (!ref.current) {return}
     const rect = ref.current.getBoundingClientRect()
     const spaceBelow = window.innerHeight - rect.bottom
     const spaceAbove = rect.top
@@ -265,6 +268,7 @@ export function Menu({
     if (left + width > window.innerWidth - 8) {
       left = Math.max(8, window.innerWidth - width - 8)
     }
+
     if (left < 8) {
       left = 8
     }
@@ -273,12 +277,13 @@ export function Menu({
   }, [align, width])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {return}
 
     updatePosition()
 
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as Node
+
       if (
         ref.current &&
         !ref.current.contains(target) &&
@@ -319,13 +324,15 @@ export function Menu({
         typeof document !== 'undefined' &&
         createPortal(
           <div
-            ref={menuRef}
+            aria-label="Menu"
             className={cn(
               'fixed z-[99999] overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
               coords.opensAbove
                 ? 'origin-bottom animate-aro-slide-up -translate-y-full'
                 : 'origin-top animate-aro-slide-down',
             )}
+            ref={menuRef}
+            role="menu"
             style={{
               top: coords.top,
               left: coords.left,
@@ -370,6 +377,8 @@ export function MenuItem({
             : 'text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
       )}
       onClick={onClick}
+      role="menuitem"
+      type="button"
     >
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -411,11 +420,14 @@ export function Select({
       className={className}
       trigger={(open) => (
         <button
+          aria-expanded={open}
+          aria-haspopup="menu"
           className={cn(
             'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-[7px] text-aro-ink-2 transition-colors hover:text-aro-ink',
             !bare && 'border border-aro-line bg-aro-raise hover:border-aro-line-strong',
             size === 'xs' ? 'h-[24px] px-1.5 text-[11.5px]' : 'h-[30px] px-2 text-[12.5px]',
           )}
+          type="button"
         >
           <span className="truncate font-medium">{current?.label ?? value}</span>
           <IconChevronDown className={cn('shrink-0 opacity-60 transition-transform', open && 'rotate-180')} size={12} />
@@ -441,22 +453,51 @@ export function Select({
   )
 }
 
-export function Toggle({ checked, onChange, size = 'md' }: { checked: boolean; onChange: (v: boolean) => void; size?: 'sm' | 'md' }) {
-  const w = size === 'sm' ? 30 : 36
-  const h = size === 'sm' ? 17 : 20
+export function Toggle({
+  checked,
+  onChange,
+  size = 'md',
+  disabled,
+  className,
+  'aria-label': ariaLabel
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  size?: 'sm' | 'md'
+  disabled?: boolean
+  className?: string
+  'aria-label'?: string
+}) {
+  const w = size === 'sm' ? 30 : 38
+  const h = size === 'sm' ? 18 : 22
   const k = h - 4
+  const travel = w - k - 4
 
   return (
     <button
       aria-checked={checked}
-      className={cn('relative shrink-0 cursor-pointer rounded-full transition-colors duration-200', checked ? 'bg-aro-iris' : 'bg-aro-line-strong')}
+      aria-label={ariaLabel}
+      className={cn(
+        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aro-iris/40 disabled:pointer-events-none disabled:opacity-40',
+        checked
+          ? 'bg-aro-iris shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]'
+          : 'bg-black/15 dark:bg-white/15 border border-black/5 dark:border-white/10',
+        className
+      )}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
       role="switch"
       style={{ width: w, height: h }}
+      type="button"
     >
       <span
-        className="absolute top-[2px] left-0 rounded-full bg-white shadow-aro-e1 transition-transform duration-200"
-        style={{ width: k, height: k, transform: `translateX(${checked ? w - k - 2 : 2}px)` }}
+        aria-hidden
+        className="pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{
+          width: k,
+          height: k,
+          transform: `translateX(${checked ? travel : 0}px)`
+        }}
       />
     </button>
   )
@@ -476,19 +517,21 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md'
 }) {
   return (
-    <div className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)}>
+    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
       {items.map((it) => {
         const on = it.value === value
 
         return (
           <button
+            aria-pressed={on}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-all duration-150',
+              'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-[background-color,color,box-shadow,transform] duration-150',
               size === 'md' ? 'px-3 py-[6px] text-[12.5px]' : 'px-2.5 py-[4px] text-[12px]',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
             onClick={() => onChange(it.value)}
+            type="button"
           >
             {it.icon && <it.icon size={12} />}
             {it.label}
@@ -511,18 +554,21 @@ export function Tabs<T extends string>({
   className?: string
 }) {
   return (
-    <div className={cn('flex items-center gap-0.5', className)}>
+    <div aria-label="Tabs" className={cn('flex items-center gap-0.5', className)} role="tablist">
       {items.map((it) => {
         const on = it.value === value
 
         return (
           <button
+            aria-selected={on}
             className={cn(
               'relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
             onClick={() => onChange(it.value)}
+            role="tab"
+            type="button"
           >
             <span className="flex items-center gap-1.5">
               {it.label}
@@ -650,7 +696,7 @@ export function Tip({ label, children, side = 'top' }: { label: string; children
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-all duration-150 group-hover/tip:scale-100 group-hover/tip:opacity-100',
+          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
           side === 'top' ? 'bottom-[calc(100%+7px)]' : 'top-[calc(100%+7px)]',
         )}
       >
@@ -709,6 +755,7 @@ export function Modal({
   }, [open, onClose])
 
   if (!open) {return null}
+
   if (typeof document === 'undefined') {return null}
 
   return createPortal(

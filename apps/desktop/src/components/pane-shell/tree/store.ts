@@ -809,6 +809,10 @@ export function treePanesWithPrefix(prefix: string): string[] {
  *  An atom so the strip re-renders when the action becomes available. */
 export const $newSessionTabAction = atom<(() => void) | null>(null)
 
+/** Workspace Launchpad's explicit Side chat action. Unlike New tab, this one
+ *  intentionally creates a separate chat session in the adjacent pane. */
+export const $newSideChatAction = atom<(() => void) | null>(null)
+
 /**
  * Keyboard slots (⌘1…⌘9, ⌃Tab) must index the SAME tabs the strip paints —
  * chrome-hidden panes (files in Focus layout), unregistered ones, and

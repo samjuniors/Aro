@@ -496,8 +496,233 @@ export const obsidianTheme: DesktopTheme = {
   }
 }
 
+/** Daylight — clean light, high legibility. Violet iris accent, mint state. */
+export const daylightTheme: DesktopTheme = {
+  name: 'daylight',
+  label: 'Daylight',
+  description: 'Clean light · high legibility — Aro canonical light',
+  colors: {
+    background: '#ffffff',
+    foreground: '#15181f',
+    card: '#f7f8fb',
+    cardForeground: '#15181f',
+    popover: '#ffffff',
+    popoverForeground: '#15181f',
+    primary: '#5b4ce6',
+    primaryForeground: '#ffffff',
+    secondary: '#f4f5f8',
+    secondaryForeground: '#3f4655',
+    muted: '#f3f4f8',
+    mutedForeground: '#6b7383',
+    accent: '#eceef3',
+    accentForeground: '#15181f',
+    destructive: '#d8404f',
+    destructiveForeground: '#ffffff',
+    border: '#dfe3ea',
+    input: '#dfe3ea',
+    ring: '#5b4ce6',
+    sidebarBackground: '#f4f5f8'
+  },
+  darkColors: {
+    background: '#ffffff',
+    foreground: '#15181f',
+    card: '#f7f8fb',
+    cardForeground: '#15181f',
+    popover: '#ffffff',
+    popoverForeground: '#15181f',
+    primary: '#5b4ce6',
+    primaryForeground: '#ffffff',
+    secondary: '#f4f5f8',
+    secondaryForeground: '#3f4655',
+    muted: '#f3f4f8',
+    mutedForeground: '#6b7383',
+    accent: '#eceef3',
+    accentForeground: '#15181f',
+    destructive: '#d8404f',
+    destructiveForeground: '#ffffff',
+    border: '#dfe3ea',
+    input: '#dfe3ea',
+    ring: '#5b4ce6',
+    sidebarBackground: '#f4f5f8'
+  },
+  typography: {
+    fontSans: '"Inter", ' + SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  }
+}
+
+/** Nord — arctic blue-grey, frost accent. */
+export const nordTheme: DesktopTheme = {
+  name: 'nord',
+  label: 'Nord',
+  description: 'Arctic blue-grey · frost accent',
+  colors: {
+    background: '#2a303b',
+    foreground: '#eceff4',
+    card: '#313845',
+    cardForeground: '#eceff4',
+    popover: '#333b49',
+    popoverForeground: '#eceff4',
+    primary: '#88c0d0',
+    primaryForeground: '#1f232c',
+    secondary: '#313845',
+    secondaryForeground: '#c8cfdb',
+    muted: '#2d3440',
+    mutedForeground: '#8d97a8',
+    accent: '#3a4252',
+    accentForeground: '#eceff4',
+    destructive: '#bf616a',
+    destructiveForeground: '#ffffff',
+    border: '#3b4354',
+    input: '#3b4354',
+    ring: '#88c0d0',
+    sidebarBackground: '#242933'
+  },
+  darkColors: {
+    background: '#2a303b',
+    foreground: '#eceff4',
+    card: '#313845',
+    cardForeground: '#eceff4',
+    popover: '#333b49',
+    popoverForeground: '#eceff4',
+    primary: '#88c0d0',
+    primaryForeground: '#1f232c',
+    secondary: '#313845',
+    secondaryForeground: '#c8cfdb',
+    muted: '#2d3440',
+    mutedForeground: '#8d97a8',
+    accent: '#3a4252',
+    accentForeground: '#eceff4',
+    destructive: '#bf616a',
+    destructiveForeground: '#ffffff',
+    border: '#3b4354',
+    input: '#3b4354',
+    ring: '#88c0d0',
+    sidebarBackground: '#242933'
+  },
+  typography: {
+    fontSans: '"Inter", ' + SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  }
+}
+
+/** Paper — warm light editorial, ink on paper. */
+export const paperTheme: DesktopTheme = {
+  name: 'paper',
+  label: 'Paper',
+  description: 'Warm light · ink on paper — editorial light',
+  colors: {
+    background: '#faf7f0',
+    foreground: '#23201a',
+    card: '#f4f0e6',
+    cardForeground: '#23201a',
+    popover: '#fbf9f3',
+    popoverForeground: '#23201a',
+    primary: '#8a5cf6',
+    primaryForeground: '#ffffff',
+    secondary: '#f4f0e6',
+    secondaryForeground: '#4b463c',
+    muted: '#f0ebe0',
+    mutedForeground: '#7a7262',
+    accent: '#e9e3d5',
+    accentForeground: '#23201a',
+    destructive: '#c7453f',
+    destructiveForeground: '#ffffff',
+    border: '#dcd4c3',
+    input: '#dcd4c3',
+    ring: '#8a5cf6',
+    sidebarBackground: '#f1ede3'
+  },
+  darkColors: {
+    background: '#faf7f0',
+    foreground: '#23201a',
+    card: '#f4f0e6',
+    cardForeground: '#23201a',
+    popover: '#fbf9f3',
+    popoverForeground: '#23201a',
+    primary: '#8a5cf6',
+    primaryForeground: '#ffffff',
+    secondary: '#f4f0e6',
+    secondaryForeground: '#4b463c',
+    muted: '#f0ebe0',
+    mutedForeground: '#7a7262',
+    accent: '#e9e3d5',
+    accentForeground: '#23201a',
+    destructive: '#c7453f',
+    destructiveForeground: '#ffffff',
+    border: '#dcd4c3',
+    input: '#dcd4c3',
+    ring: '#8a5cf6',
+    sidebarBackground: '#f1ede3'
+  },
+  typography: {
+    fontSans: '"DM Sans", "Inter", ' + SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  }
+}
+
+/** Ink — editorial dark, terracotta on near-black paper. */
+export const inkTheme: DesktopTheme = {
+  name: 'ink',
+  label: 'Ink',
+  description: 'Editorial dark · serif on near-black paper',
+  colors: {
+    background: '#1a1611',
+    foreground: '#f0ead9',
+    card: '#221d17',
+    cardForeground: '#f0ead9',
+    popover: '#241e18',
+    popoverForeground: '#f0ead9',
+    primary: '#e8663a',
+    primaryForeground: '#100d0a',
+    secondary: '#221d17',
+    secondaryForeground: '#c3b8a3',
+    muted: '#1e1913',
+    mutedForeground: '#8d8271',
+    accent: '#2b241c',
+    accentForeground: '#f0ead9',
+    destructive: '#dd6a5c',
+    destructiveForeground: '#ffffff',
+    border: '#3a3128',
+    input: '#3a3128',
+    ring: '#e8663a',
+    sidebarBackground: '#16120e'
+  },
+  darkColors: {
+    background: '#1a1611',
+    foreground: '#f0ead9',
+    card: '#221d17',
+    cardForeground: '#f0ead9',
+    popover: '#241e18',
+    popoverForeground: '#f0ead9',
+    primary: '#e8663a',
+    primaryForeground: '#100d0a',
+    secondary: '#221d17',
+    secondaryForeground: '#c3b8a3',
+    muted: '#1e1913',
+    mutedForeground: '#8d8271',
+    accent: '#2b241c',
+    accentForeground: '#f0ead9',
+    destructive: '#dd6a5c',
+    destructiveForeground: '#ffffff',
+    border: '#3a3128',
+    input: '#3a3128',
+    ring: '#e8663a',
+    sidebarBackground: '#16120e'
+  },
+  typography: {
+    fontSans: '"DM Sans", "Inter", ' + SYSTEM_SANS,
+    fontMono: SYSTEM_MONO
+  }
+}
+
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
   obsidian: obsidianTheme,
+  daylight: daylightTheme,
+  nord: nordTheme,
+  ember: emberTheme,
+  paper: paperTheme,
+  ink: inkTheme,
   nous: nousTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,
@@ -506,7 +731,6 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
   'nous-alt': nousAltTheme,
   classic: classicTheme,
   midnight: midnightTheme,
-  ember: emberTheme,
   mono: monoTheme,
   slate: slateTheme,
   cyberpunk: cyberpunkTheme

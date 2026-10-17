@@ -10,13 +10,15 @@
  * stopped on unmount.
  */
 
+import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { AroBridgeEvent, AroBridgeStartOptions } from '@/global'
+import { $activeSessionId, $currentCwd } from '@/store/session'
 
 export type { AroBridgeEvent, AroBridgeStartOptions }
 
-export type AroBridgeStatus = 'starting' | 'ready' | 'exited'
+export type AroBridgeStatus = 'idle' | 'starting' | 'ready' | 'exited'
 
 /** A renderable timeline entry derived from the event stream: thinking rows,
  * tool cards (call + merged result), the accumulating reply block, errors. */
@@ -45,10 +47,14 @@ export function deriveAroSteps(events: AroBridgeEvent[]): AroBridgeStep[] {
     switch (ev.type) {
       case 'thinking':
         steps.push({ kind: 'thinking', label: ev.label, ms: ev.ms })
+
         break
+
       case 'tool_call':
         steps.push({ kind: 'tool', callId: ev.callId, tool: ev.tool, args: ev.args })
+
         break
+
       case 'tool_result':
         for (let i = steps.length - 1; i >= 0; i--) {
           const step = steps[i]
@@ -58,9 +64,11 @@ export function deriveAroSteps(events: AroBridgeEvent[]): AroBridgeStep[] {
             step.ms = ev.ms
             step.summary = ev.summary
             step.lines = ev.lines
+
             break
           }
         }
+
         break
       case 'assistant_delta': {
         const last = steps[steps.length - 1]
@@ -70,8 +78,10 @@ export function deriveAroSteps(events: AroBridgeEvent[]): AroBridgeStep[] {
         } else {
           steps.push({ kind: 'reply', text: ev.text, closed: false })
         }
+
         break
       }
+
       case 'reply_done': {
         const last = steps[steps.length - 1]
 
@@ -79,12 +89,17 @@ export function deriveAroSteps(events: AroBridgeEvent[]): AroBridgeStep[] {
           last.ms = ev.ms
           last.closed = true
         }
+
         break
       }
+
       case 'error':
         steps.push({ kind: 'error', message: ev.message })
+
         break
+
       case 'session_start':
+
       case 'done':
         break
     }
@@ -96,7 +111,8 @@ export function deriveAroSteps(events: AroBridgeEvent[]): AroBridgeStep[] {
 export interface UseAroBridge {
   status: AroBridgeStatus
   sessionId: string | null
-  /** Why a session failed to start (resolver refusal, spawn failure). */
+  activeSessionId: string | null
+  /** Why a session failed to start or exited unexpectedly. */
   startError: string | null
   events: AroBridgeEvent[]
   steps: AroBridgeStep[]
@@ -106,12 +122,16 @@ export interface UseAroBridge {
   toolResult: (callId: string, ok: boolean, output: string) => void
   interrupt: () => void
   stop: () => void
+  start: (opts: AroBridgeStartOptions) => Promise<void>
   /** Tear the session down and start a new one (engine dial / restart). */
-  restart: (opts: AroBridgeStartOptions) => void
+  restart: (opts: AroBridgeStartOptions) => Promise<void>
 }
 
 export function useAroBridge(): UseAroBridge {
-  const [status, setStatus] = useState<AroBridgeStatus>('starting')
+  const activeSessionId = useStore($activeSessionId)
+  const currentCwd = useStore($currentCwd)
+
+  const [status, setStatus] = useState<AroBridgeStatus>('idle')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [startError, setStartError] = useState<string | null>(null)
   const [events, setEvents] = useState<AroBridgeEvent[]>([])
@@ -122,6 +142,7 @@ export function useAroBridge(): UseAroBridge {
   const startTokenRef = useRef(0)
 
   const teardown = useCallback((): void => {
+    startTokenRef.current++
     unsubscribeRef.current?.()
     unsubscribeRef.current = null
 
@@ -130,26 +151,35 @@ export function useAroBridge(): UseAroBridge {
     sessionRef.current = null
     setSessionId(null)
 
-    if (sid) {
+    if (sid && window.hermesDesktop?.aroBridge) {
       void window.hermesDesktop.aroBridge.stop(sid)
     }
   }, [])
 
   const startSession = useCallback(
     async (opts: AroBridgeStartOptions): Promise<void> => {
+      teardown()
       const token = ++startTokenRef.current
 
-      teardown()
       setEvents([])
       setStartError(null)
       setBusy(false)
       setStatus('starting')
 
       try {
-        const { sessionId: sid } = await window.hermesDesktop.aroBridge.start(opts)
+        if (!window.hermesDesktop?.aroBridge) {
+          throw new Error('Aro bridge preload surface unavailable in this environment')
+        }
+
+        const runOpts: AroBridgeStartOptions = {
+          cwd: currentCwd?.trim() || undefined,
+          ...opts
+        }
+
+        const { sessionId: sid } = await window.hermesDesktop.aroBridge.start(runOpts)
 
         if (token !== startTokenRef.current) {
-          // A newer start (or unmount) won the race — drop this session.
+          // A newer start (or unmount/session switch) won the race — drop this session.
           void window.hermesDesktop.aroBridge.stop(sid)
 
           return
@@ -159,44 +189,68 @@ export function useAroBridge(): UseAroBridge {
         setSessionId(sid)
 
         const offEvent = window.hermesDesktop.aroBridge.onEvent(sid, (ev: AroBridgeEvent): void => {
+          // Ensure late events from previous or stopped sessions never update active UI
+          if (token !== startTokenRef.current || sessionRef.current !== sid) {
+            return
+          }
+
           setEvents(prev => [...prev, ev])
 
           if (ev.type === 'done') {
             setBusy(false)
           }
         })
-        const offExit = window.hermesDesktop.aroBridge.onExit(sid, (): void => {
+
+        const offExit = window.hermesDesktop.aroBridge.onExit(sid, (payload: { code: number | null }): void => {
+          if (token !== startTokenRef.current || sessionRef.current !== sid) {
+            return
+          }
+
           setBusy(false)
           setStatus('exited')
+
+          if (payload?.code !== null && payload?.code !== 0) {
+            setStartError(`Bridge daemon exited unexpectedly (code ${payload.code})`)
+          }
         })
 
         unsubscribeRef.current = (): void => {
           offEvent()
           offExit()
         }
+
         setStatus('ready')
       } catch (error: unknown) {
-        setStartError(error instanceof Error ? error.message : String(error))
-        setStatus('exited')
+        if (token === startTokenRef.current) {
+          setStartError(error instanceof Error ? error.message : String(error))
+          setStatus('exited')
+        }
       }
     },
-    [teardown]
+    [currentCwd, teardown]
   )
 
-  // One session per mount, demo engine by default (deterministic, no network).
+  // Invalidate and tear down previous daemon session on session/workspace context switch
+  // without automatically spawning a new daemon.
   useEffect(() => {
-    void startSession({ engine: 'demo' })
+    teardown()
+    setStatus('idle')
+    setEvents([])
+    setStartError(null)
+    setBusy(false)
+  }, [activeSessionId, currentCwd, teardown])
 
+  // Clean up daemon process and subscriptions on unmount
+  useEffect(() => {
     return () => {
-      startTokenRef.current++
       teardown()
     }
-  }, [startSession, teardown])
+  }, [teardown])
 
   const send = useCallback((text: string): void => {
     const sid = sessionRef.current
 
-    if (!sid || !text.trim()) {
+    if (!sid || !text.trim() || !window.hermesDesktop?.aroBridge) {
       return
     }
 
@@ -207,7 +261,7 @@ export function useAroBridge(): UseAroBridge {
   const toolResult = useCallback((callId: string, ok: boolean, output: string): void => {
     const sid = sessionRef.current
 
-    if (sid) {
+    if (sid && window.hermesDesktop?.aroBridge) {
       void window.hermesDesktop.aroBridge.toolResult(sid, callId, ok, output)
     }
   }, [])
@@ -215,7 +269,7 @@ export function useAroBridge(): UseAroBridge {
   const interrupt = useCallback((): void => {
     const sid = sessionRef.current
 
-    if (sid) {
+    if (sid && window.hermesDesktop?.aroBridge) {
       void window.hermesDesktop.aroBridge.interrupt(sid)
     }
   }, [])
@@ -229,5 +283,19 @@ export function useAroBridge(): UseAroBridge {
 
   const steps = deriveAroSteps(events)
 
-  return { status, sessionId, startError, events, steps, busy, send, toolResult, interrupt, stop, restart: startSession }
+  return {
+    status,
+    sessionId,
+    activeSessionId: activeSessionId || null,
+    startError,
+    events,
+    steps,
+    busy,
+    start: startSession,
+    send,
+    toolResult,
+    interrupt,
+    stop,
+    restart: startSession
+  }
 }

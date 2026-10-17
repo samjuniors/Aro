@@ -646,7 +646,8 @@ export function TreeSplit({
   // leaves dead space — e.g. terminal + logs split into two 38vh zones with
   // the rail above them collapsed). An UNCAPPED last track absorbs the
   // leftover; capped sidebars (review/files) keep their max and stay put.
-  const isMinimized = (child: LayoutNode) => child.type === 'group' && Boolean(child.minimized)
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  const isMinimized = (child: LayoutNode) => !isAro && child.type === 'group' && Boolean(child.minimized)
 
   // Side toggles own physical sides of the root row, including after a flip.
   // In edit mode sides stay visible.

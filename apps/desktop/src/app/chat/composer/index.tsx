@@ -15,28 +15,35 @@ import {
 import { useTourMarker } from '@/app/chat/tour-marker'
 import { VoiceAgentOrb } from '@/app/chat/voice-agent-orb'
 import { useHudComposerDrag } from '@/app/hud/composer-drag'
+import { AroRepoBar } from '@/aro/AroRepoBar'
+import { IconBranch, IconCheck, IconChevronDown, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
+import {
+  $aroDraftProjectId,
+  $aroSessionProjectMap,
+  assignSessionToProject,
+  clearAroProjectAndRevertToDefault,
+  resolveAroDraftProjectId,
+  resolveAroSessionProjectId,
+  setAroDraftProject,
+  unassignSessionFromProject
+} from '@/aro/project-session-map'
 import { composerFloatingStrip, composerInputBacking } from '@/components/chat/composer-dock'
 import { $chatOnboardingSolo, $chatOnboardingThreadIds } from '@/components/onboarding-chat/assembly'
 import { OnboardingSkip } from '@/components/onboarding-chat/skip'
 import { Button } from '@/components/ui/button'
-import { Codicon } from '@/components/ui/codicon'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Slot as ContribSlot } from '@/contrib/react/slot'
 import { useI18n } from '@/i18n'
 import { chatMessageText } from '@/lib/chat-messages'
 import { sanitizeComposerInput } from '@/lib/composer-input-sanitize'
-import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { desktopGit } from '@/lib/desktop-git'
-import { isDesktopFsRemoteMode } from '@/lib/desktop-fs'
+import { DATA_IMAGE_URL_RE } from '@/lib/embedded-images'
 import { triggerHaptic } from '@/lib/haptics'
-import { IconBranch, IconCheck, IconChevronDown, IconFolder, IconPlus, IconSearch, IconX } from '@/aro/Icons'
-import { FolderOpen } from '@/lib/icons'
 import { isMacPlatform } from '@/lib/platform'
 import { useStoreSelector, useStoresSelector } from '@/lib/use-session-slice'
 import { cn } from '@/lib/utils'
 import { interceptsTypedVoiceStop } from '@/lib/voice-stop-word'
 import { openWorktreeDialog, registerRepoStatusCwd, repoStatusForCwd } from '@/store/coding-status'
-import { $aroSessionProjectMap } from '@/aro/project-session-map'
 import { sessionCompacting } from '@/store/compaction'
 import { browseBackward, browseForward, deriveUserHistory, isBrowsingHistory } from '@/store/composer-input-history'
 import { POPOUT_WIDTH_REM } from '@/store/composer-popout'
@@ -46,24 +53,34 @@ import { $showsAdvancedChrome } from '@/store/interface-mode'
 import { notifyError } from '@/store/notifications'
 import { $projectScope, exitProjectScope } from '@/store/project-scope'
 import {
+  $activeProjectId,
+  $projectOwnerBySessionId,
+  $projects,
   $projectTree,
   $projectTreeLoading,
-  $projects,
+  chooseAndSetDefaultWorkspaceDir,
   enterProject,
-  moveSessionToProject,
-  openFolderAsProject,
+  followEnteredProjectCwd,
   openProjectCreate,
-  projectIdForCwd,
-  projectRootCwd,
   refreshProjects,
   refreshProjectTree,
-  requestStartWorkSession
+  requestStartWorkSession,
+  setActiveProject
 } from '@/store/projects'
-import { assignSessionToProject, setAroDraftProject } from '@/aro/project-session-map'
-import { AroRepoBar } from '@/aro/AroRepoBar'
 import { sessionBlockingPrompt } from '@/store/prompts'
 import { toggleReview } from '@/store/review'
-import { $gatewayState } from '@/store/session'
+import {
+  $configuredDefaultProjectDir,
+  $gatewayState,
+  $selectedStoredSessionId,
+  $sessions,
+  commitWorkspaceCwdForSelectedSession,
+  getConfiguredDefaultProjectDir,
+  setCurrentCwd,
+  setCurrentCwdTransient,
+  setNewChatWorkspaceTarget,
+  setSessions
+} from '@/store/session'
 import { $botChatSessionIds, $sessionStates, $sessionTiles, isBotChatSession } from '@/store/session-states'
 import { useForcedTextDirection } from '@/store/text-direction'
 import { $threadScrolledUpBySession } from '@/store/thread-scroll'
@@ -1173,19 +1190,32 @@ export function ChatBar({
   const explicitProjects = useStore($projects)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
 
   const chatBarSessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const chatBarCurrentProjectId = sessionId ? (chatBarSessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const chatBarCurrentProject = projects.find(project => project.id === chatBarCurrentProjectId) || explicitProjects.find(p => p.id === chatBarCurrentProjectId)
-  const chatBarCurrentRoot = (chatBarCurrentProject && 'label' in chatBarCurrentProject ? projectRootCwd(chatBarCurrentProject) : null)
-    || (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null)
-    || (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null)
-    || (cwd || null)
+  const chatBarCurrentProjectId = sessionId ? chatBarSessionProjectFromMap : aroDraftProjectId || projectScope
+
+  const chatBarCurrentProject = chatBarCurrentProjectId
+    ? explicitProjects.find(p => p.id === chatBarCurrentProjectId && !p.archived)
+    : null
+
+  const chatBarCurrentRoot =
+    (chatBarCurrentProject && 'primary_path' in chatBarCurrentProject ? chatBarCurrentProject.primary_path : null) ||
+    (chatBarCurrentProject && 'folders' in chatBarCurrentProject ? chatBarCurrentProject.folders?.[0]?.path : null) ||
+    null
 
   const leadingCluster = (
     <div className="flex min-w-0 items-center gap-1" data-aro-composer-leading="">
       {contextMenu}
-      <ProjectPickerControl cwd={cwd} disabled={inputDisabled} profile={profile} sessionId={sessionId} />
+      {!isAro && (
+        <ProjectPickerControl
+          cwd={cwd}
+          disabled={inputDisabled}
+          placement="toolbar"
+          profile={profile}
+          sessionId={sessionId}
+        />
+      )}
       {!isAro && (
         <>
           <Button
@@ -1197,7 +1227,9 @@ export function ChatBar({
             type="button"
             variant="ghost"
           >
-            <span aria-hidden className="font-mono text-xs font-semibold">/</span>
+            <span aria-hidden className="font-mono text-xs font-semibold">
+              /
+            </span>
           </Button>
           <Button
             aria-label="Path and context references"
@@ -1208,33 +1240,29 @@ export function ChatBar({
             type="button"
             variant="ghost"
           >
-            <span aria-hidden className="font-mono text-xs font-semibold">@</span>
+            <span aria-hidden className="font-mono text-xs font-semibold">
+              @
+            </span>
           </Button>
         </>
       )}
     </div>
   )
 
-  const modeControl = <ApprovalModePill disabled={disabled} gateway={gateway} />
+  const modeControl = <ApprovalModePill disabled={disabled} gateway={gateway} sessionId={sessionId} />
 
   const envControl = (
     <EnvPill
       cwd={cwd}
       disabled={disabled}
       onBranchOff={() => void openWorktreeDialog({ repoPath: cwd ?? undefined })}
-      onOpenWorktree={(path) => {
+      onOpenWorktree={path => {
         requestStartWorkSession(path)
       }}
     />
   )
 
-  const contextControl = (
-    <ContextPill
-      busy={busy}
-      gateway={gateway}
-      sessionId={sessionId}
-    />
-  )
+  const contextControl = <ContextPill busy={busy} gateway={gateway} sessionId={sessionId} />
 
   const controls = (
     <ComposerControls
@@ -1491,7 +1519,8 @@ export function ChatBar({
             data-aro-composer=""
             data-drag-active={dragActive ? '' : undefined}
             data-hud-grabbing={hudGrabbing ? '' : undefined}
-            data-popped-out={poppedOut ? '' : undefined} data-slot="composer-root"
+            data-popped-out={poppedOut ? '' : undefined}
+            data-slot="composer-root"
             data-status-stack={statusStackVisible && !statusDrawerCollapsed ? '' : undefined}
             data-thread-scrolled-up={scrolledUp ? '' : undefined}
             data-tip-region=""
@@ -1566,13 +1595,29 @@ export function ChatBar({
                   COMPOSER_DROP_FADE_CLASS,
                   dragActive && COMPOSER_DROP_ACTIVE_CLASS
                 )}
-                data-slot="composer-surface"
-                data-aro-composer-surface=""
                 data-aro-composer-layout="codex"
+                data-aro-composer-surface=""
                 data-aro-listening={voiceStatus !== 'idle' ? '' : undefined}
                 data-aro-streaming={busy ? '' : undefined}
+                data-slot="composer-surface"
                 ref={composerSurfaceRef}
               >
+                {/* Prototype drop overlay (globals.css .reference-composer +
+                    Workbench.tsx drop card): while a drag hovers the composer, a
+                    dashed iris panel with a raised card announces the attach
+                    target. Pointer-events-none — the real handlers live on the
+                    composer root and the input. */}
+                {isAro && dragActive ? (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 z-30 flex animate-in items-center justify-center rounded-[inherit] border-2 border-dashed border-aro-iris bg-aro-void/85 fade-in zoom-in-95 backdrop-blur-xs duration-150"
+                  >
+                    <div className="flex items-center gap-2 rounded-[8px] border border-aro-line-strong bg-aro-raise px-3.5 py-2 text-[13px] font-medium text-aro-iris-soft shadow-lg">
+                      <IconFolder className="animate-bounce" size={17} />
+                      <span>Drop to attach to this session</span>
+                    </div>
+                  </div>
+                ) : null}
                 <div aria-hidden className={composerInputBacking} />
                 {codingRowShown && (
                   <StatusDrawerContent collapsed={statusDrawerCollapsed} id={codingDrawerId}>
@@ -1606,6 +1651,15 @@ export function ChatBar({
                     additions beside the "+" menu and before the controls.
                     All four render nothing until something contributes. */}
                   <ContribSlot area={COMPOSER_AREAS.top} />
+                  {isAro && (
+                    <ProjectPickerControl
+                      cwd={cwd}
+                      disabled={inputDisabled}
+                      placement="header"
+                      profile={profile}
+                      sessionId={sessionId}
+                    />
+                  )}
                   <RestoredDraftNotice
                     freshDraft={activeQueueSessionKey === null}
                     onUndone={clearDraft}
@@ -1638,10 +1692,7 @@ export function ChatBar({
                     </div>
                   )}
                   {attachments.length > 0 && <AttachmentList attachments={attachments} onRemove={onRemoveAttachment} />}
-                  <div
-                    className="min-h-[4.25rem] min-w-0 w-full"
-                    data-slot="input"
-                  >
+                  <div className="min-h-[4.25rem] min-w-0 w-full" data-slot="input">
                     {input}
                   </div>
                   <div
@@ -1657,7 +1708,7 @@ export function ChatBar({
               </div>
             </div>
           </ComposerPrimitive.Root>
-          {isAro && Boolean(chatBarCurrentRoot || chatBarCurrentProject) && (
+          {isAro && Boolean(chatBarCurrentProject && chatBarCurrentRoot) && (
             <AroRepoBar
               cwd={chatBarCurrentRoot}
               onOpenDiff={() => toggleReview(chatBarCurrentRoot, scope.target)}
@@ -1680,21 +1731,24 @@ export function ChatBar({
           {/* The floating voice orb, driven by THIS composer's real voice
               engine (dictation pipeline + VAD conversation). Fixed-position,
               so the dock column is just its React home. */}
-          {typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true' && !hudMode && !poppedOut && (
-            <VoiceAgentOrb
-              busy={busy}
-              conversationActive={voiceConversationActive}
-              conversationStatus={conversation.status}
-              dictate={dictate}
-              onEndConversation={endConversation}
-              onStartConversation={startConversation}
-              onSubmit={text => {
-                void onSubmit(text)
-              }}
-              voiceActivity={voiceActivityState}
-              voiceStatus={voiceStatus}
-            />
-          )}
+          {typeof document !== 'undefined' &&
+            document.documentElement.dataset.aroUi === 'true' &&
+            !hudMode &&
+            !poppedOut && (
+              <VoiceAgentOrb
+                busy={busy}
+                conversationActive={voiceConversationActive}
+                conversationStatus={conversation.status}
+                dictate={dictate}
+                onEndConversation={endConversation}
+                onStartConversation={startConversation}
+                onSubmit={text => {
+                  void onSubmit(text)
+                }}
+                voiceActivity={voiceActivityState}
+                voiceStatus={voiceStatus}
+              />
+            )}
         </div>
       </ComposerPrimitive.Unstable_TriggerPopoverRoot>
 
@@ -1726,45 +1780,69 @@ export function ChatBarFallback() {
   )
 }
 
-
 /** Project selector matching the prototype's "attach/switch project" control.
  * Existing sessions move through Hermes' workspace RPC; a fresh draft enters
  * the project scope so the next session is created in that workspace. */
 function ProjectPickerControl({
   cwd,
   disabled,
+  placement,
   profile,
   sessionId
 }: {
   cwd?: null | string
   disabled: boolean
+  placement: 'header' | 'toolbar'
   profile?: null | string
   sessionId?: null | string
 }) {
+  const { t } = useI18n()
   const projects = useStore($projectTree)
   const explicitProjects = useStore($projects)
   const loading = useStore($projectTreeLoading)
   const projectScope = useStore($projectScope)
   const aroSessionProjectMap = useStore($aroSessionProjectMap)
+  const aroDraftProjectId = useStore($aroDraftProjectId)
+  const sessions = useStore($sessions)
+  const projectOwners = useStore($projectOwnerBySessionId)
   const [open, setOpen] = useState(false)
-  const [gitStatus, setGitStatus] = useState<Awaited<ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>> | null>(null)
+
+  const [gitStatus, setGitStatus] = useState<Awaited<
+    ReturnType<NonNullable<ReturnType<typeof desktopGit>>['repoStatus']>
+  > | null>(null)
+
   const [search, setSearch] = useState('')
-  const sessionProjectFromMap = sessionId ? aroSessionProjectMap[sessionId] : null
-  const currentProjectId = sessionId ? (sessionProjectFromMap || (cwd ? projectIdForCwd(cwd) : null)) : projectScope
-  const currentProject = projects.find(project => project.id === currentProjectId) || explicitProjects.find(p => p.id === currentProjectId)
-  const currentRoot = (currentProject && 'label' in currentProject ? projectRootCwd(currentProject) : null)
-    || (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null)
-    || (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null)
-    || (cwd || null)
-  const folderName = currentRoot ? currentRoot.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : undefined
-  const currentLabel = currentProject ? ('label' in currentProject ? currentProject.label : currentProject.name) : folderName
+  const session = sessionId ? sessions.find(item => item.id === sessionId) : null
+
+  const currentProjectId = session
+    ? session.id.startsWith('draft_')
+      ? aroSessionProjectMap[session.id] || resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+      : resolveAroSessionProjectId(session, explicitProjects, projectOwners, aroSessionProjectMap)
+    : sessionId
+      ? aroSessionProjectMap[sessionId] ||
+        (sessionId.startsWith('draft_') ? resolveAroDraftProjectId(aroDraftProjectId, projectScope) : null)
+      : resolveAroDraftProjectId(aroDraftProjectId, projectScope)
+
+  const currentProject = currentProjectId ? explicitProjects.find(p => p.id === currentProjectId && !p.archived) : null
+
+  const currentRoot =
+    (currentProject && 'primary_path' in currentProject ? currentProject.primary_path : null) ||
+    (currentProject && 'folders' in currentProject ? currentProject.folders?.[0]?.path : null) ||
+    null
+
+  const currentLabel = currentProject?.name
 
   const $repoStatus = repoStatusForCwd(currentRoot)
   const liveRepoStatus = useStore($repoStatus)
+  const configuredDefault = useStore($configuredDefaultProjectDir)
 
   useEffect(() => {
-    if (!currentRoot) return
+    if (!currentRoot) {
+      return
+    }
+
     const unregister = registerRepoStatusCwd(currentRoot)
+
     return () => {
       unregister?.()
     }
@@ -1787,15 +1865,18 @@ function ProjectPickerControl({
       return
     }
 
-    void git.repoStatus(currentRoot).then(status => {
-      if (!cancelled) {
-        setGitStatus(status)
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setGitStatus(null)
-      }
-    })
+    void git
+      .repoStatus(currentRoot)
+      .then(status => {
+        if (!cancelled) {
+          setGitStatus(status)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGitStatus(null)
+        }
+      })
 
     return () => {
       cancelled = true
@@ -1808,9 +1889,9 @@ function ProjectPickerControl({
     const list: Array<{ id: string; label: string; path: string; color?: string; isDemo?: boolean }> = []
     const seen = new Set<string>()
 
-    // 1. From explicit projects ($projects)
+    // Strictly from explicit projects ($projects)
     for (const p of explicitProjects) {
-      if (p.id && !p.archived) {
+      if (p.id && !p.archived && !seen.has(p.id)) {
         seen.add(p.id)
         const pPath = p.primary_path || p.folders?.[0]?.path || ''
         list.push({
@@ -1823,81 +1904,89 @@ function ProjectPickerControl({
       }
     }
 
-    // 2. From project tree ($projectTree)
-    for (const node of projects) {
-      if (node.id && !node.isNoProject && !node.archived && !seen.has(node.id)) {
-        seen.add(node.id)
-        const root = node.path || projectRootCwd(node) || node.repos?.[0]?.path || ''
-        const label = node.label || (root ? root.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || node.id
-        list.push({
-          id: node.id,
-          label,
-          path: root,
-          color: node.color || undefined,
-          isDemo: node.id.includes('demo') || label.toLowerCase().includes('demo')
-        })
-      }
-    }
-
-    // 3. Child repos from project tree nodes (ensures auto-discovered repos appear in chooser)
-    for (const node of projects) {
-      if (node.repos && node.repos.length > 0) {
-        for (const repo of node.repos) {
-          if (repo.id && repo.id !== '__no_project__' && !seen.has(repo.id)) {
-            seen.add(repo.id)
-            const repoPath = repo.path || ''
-            const repoLabel = repo.label || (repoPath ? repoPath.replace(/[/\\]+$/, '').split(/[/\\]/).pop() : '') || repo.id
-            list.push({
-              id: repo.id,
-              label: repoLabel,
-              path: repoPath,
-              color: node.color || undefined,
-              isDemo: repo.id.includes('demo') || repoLabel.toLowerCase().includes('demo')
-            })
-          }
-        }
-      }
-    }
-
     return list
-  }, [projects, explicitProjects])
+  }, [explicitProjects])
 
   const filteredProjects = useMemo(() => {
-    if (!search.trim()) return availableProjects
+    if (!search.trim()) {
+      return availableProjects
+    }
+
     const query = search.toLowerCase()
-    return availableProjects.filter(p =>
-      p.label.toLowerCase().includes(query) ||
-      (p.path || '').toLowerCase().includes(query)
+
+    return availableProjects.filter(
+      p => p.label.toLowerCase().includes(query) || (p.path || '').toLowerCase().includes(query)
     )
   }, [availableProjects, search])
 
   const chooseProject = async (projectId?: string) => {
+    const isDraftSession = Boolean(sessionId?.startsWith('draft_'))
+    const isFreshDraft = !sessionId || isDraftSession
+
     if (!projectId) {
-      exitProjectScope()
+      await clearAroProjectAndRevertToDefault(sessionId)
       setOpen(false)
+
       return
     }
 
     const project = availableProjects.find(item => item.id === projectId)
 
-    if (!project || project.id === currentProjectId) {
+    if (!project) {
       setOpen(false)
+
+      return
+    }
+
+    const projectRoot = project.path.trim()
+
+    if (project.id === currentProjectId) {
+      if (isFreshDraft) {
+        setAroDraftProject(projectId)
+        setNewChatWorkspaceTarget(projectRoot || null)
+        if (projectRoot) {
+          setCurrentCwd(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+        }
+
+        if (isDraftSession && sessionId) {
+          void assignSessionToProject(sessionId, projectId)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
+      }
+
+      setOpen(false)
+
       return
     }
 
     try {
-      if (sessionId) {
+      if (sessionId && !isDraftSession) {
         await assignSessionToProject(sessionId, projectId)
+
+        if (sessionId === $selectedStoredSessionId.get() && projectRoot) {
+          setCurrentCwd(projectRoot)
+          commitWorkspaceCwdForSelectedSession(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
       } else {
         setAroDraftProject(projectId)
+        setNewChatWorkspaceTarget(projectRoot || null)
+        if (projectRoot) {
+          setCurrentCwd(projectRoot)
+          followEnteredProjectCwd(projectRoot)
+        }
+
+        if (isDraftSession && sessionId) {
+          await assignSessionToProject(sessionId, projectId)
+          setSessions(prev => prev.map(item => (item.id === sessionId ? { ...item, cwd: projectRoot || null } : item)))
+        }
       }
 
       enterProject(projectId)
       setOpen(false)
-      void Promise.all([
-        refreshProjects().catch(() => {}),
-        refreshProjectTree().catch(() => {})
-      ])
+      void Promise.all([refreshProjects().catch(() => {}), refreshProjectTree().catch(() => {})])
     } catch (error) {
       notifyError(error, 'Could not switch project')
     }
@@ -1907,51 +1996,100 @@ function ProjectPickerControl({
     <DropdownMenu
       onOpenChange={next => {
         setOpen(next)
+
         if (!next) {
           setSearch('')
         } else {
-          void Promise.all([
-            refreshProjects().catch(() => {}),
-            refreshProjectTree().catch(() => {})
-          ])
+          void Promise.all([refreshProjects().catch(() => {}), refreshProjectTree().catch(() => {})])
         }
       }}
       open={open}
     >
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label={
-            currentLabel
-              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
-              : 'Attach a project'
-          }
+      {placement === 'header' && currentLabel ? (
+        <div
           className={cn(
-            'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
-            currentLabel && 'text-aro-iris-soft'
+            'group/project-pill flex h-7 w-auto max-w-[min(100%,18rem)] min-w-0 self-start items-center rounded-full border border-aro-line-soft bg-aro-raise/60 pl-2.5 pr-1 text-left text-[11px] text-aro-ink hover:bg-aro-hover hover:border-aro-line transition-colors',
+            disabled && 'opacity-60 pointer-events-none'
           )}
           data-aro-project-control=""
-          data-aro-project-selected={currentLabel ? '' : undefined}
-          disabled={disabled}
-          size="icon"
-          title={
-            currentLabel
-              ? `Project: ${currentLabel}${effectiveStatus?.branch ? ` · Git: ${effectiveStatus.branch}` : ''}`
-              : 'Attach a project'
-          }
-          type="button"
-          variant="ghost"
+          data-aro-project-placement={placement}
+          data-aro-project-selected=""
         >
-          <IconFolder size={15} />
-        </Button>
-      </DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label={`${t.sidebar.projects.worktreeProjectLabel}: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`}
+              className="flex h-full min-w-0 flex-1 items-center gap-1.5 text-left text-[11px] text-aro-ink hover:text-aro-ink focus:outline-none"
+              disabled={disabled}
+              type="button"
+            >
+              <IconFolder className="shrink-0 text-aro-iris-soft" size={14} />
+              <span className="max-w-[11rem] min-w-0 truncate font-medium">{currentLabel}</span>
+              <IconChevronDown
+                className="shrink-0 text-aro-ink-4 transition-transform group-data-[state=open]:rotate-180"
+                size={11}
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <button
+            aria-label="Clear project"
+            className="ml-1 flex size-4 shrink-0 items-center justify-center rounded-full text-aro-ink-4 hover:bg-aro-raise hover:text-aro-ink transition-colors"
+            disabled={disabled}
+            onClick={e => {
+              e.stopPropagation()
+              e.preventDefault()
+              void chooseProject(undefined)
+            }}
+            title="Clear project (revert to default workspace)"
+            type="button"
+          >
+            <IconX size={10} />
+          </button>
+        </div>
+      ) : (
+        <DropdownMenuTrigger asChild>
+          <Button
+            aria-label={
+              currentLabel
+                ? `${t.sidebar.projects.worktreeProjectLabel}: ${currentLabel}${effectiveStatus?.branch ? ` (${effectiveStatus.branch})` : ''}`
+                : t.composer.chooseProject
+            }
+            className={cn(
+              placement === 'header'
+                ? 'group flex h-7 w-auto max-w-[min(100%,16rem)] min-w-0 self-start items-center justify-start gap-1.5 rounded-full border border-aro-line-soft bg-aro-raise/60 px-2.5 text-left text-[11px] text-aro-ink-3 hover:bg-aro-hover hover:text-aro-ink'
+                : 'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink',
+              currentLabel && placement === 'header' && 'text-aro-ink'
+            )}
+            data-aro-project-control=""
+            data-aro-project-placement={placement}
+            data-aro-project-selected={currentLabel ? '' : undefined}
+            disabled={disabled}
+            size={placement === 'header' ? 'sm' : 'icon'}
+            type="button"
+            variant="ghost"
+          >
+            <IconFolder size={15} />
+            {placement === 'header' && (
+              <>
+                <span className="max-w-[12rem] min-w-0 truncate">{currentLabel || t.composer.chooseProject}</span>
+                <IconChevronDown
+                  className="shrink-0 text-aro-ink-4 transition-transform group-data-[state=open]:rotate-180"
+                  size={12}
+                />
+              </>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+      )}
       <DropdownMenuContent align="start" className="w-[340px] p-0" side="top" sideOffset={8}>
         <div className="repo-chooser">
           {currentRoot && effectiveStatus ? (
-            <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-md bg-aro-base/70 px-2.5 py-1.5 text-[11px] text-aro-ink-3 border border-aro-border-subtle">
-              <IconBranch size={12} className="text-aro-iris-soft shrink-0" />
+            <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-md border border-aro-line-soft bg-aro-bg/70 px-2.5 py-1.5 text-[11px] text-aro-ink-3">
+              <IconBranch className="text-aro-iris-soft shrink-0" size={12} />
               <span className="min-w-0 flex-1 truncate font-mono">{effectiveStatus.branch || 'Detached HEAD'}</span>
               {effectiveStatus.changed > 0 ? (
-                <span className="shrink-0 text-amber-500 font-medium font-mono">+{effectiveStatus.changed} changed</span>
+                <span className="shrink-0 text-amber-500 font-medium font-mono">
+                  +{effectiveStatus.changed} changed
+                </span>
               ) : (
                 <span className="shrink-0 text-emerald-500 font-medium font-mono">Clean</span>
               )}
@@ -1960,19 +2098,35 @@ function ProjectPickerControl({
           <div className="repo-chooser-search">
             <IconSearch size={13} />
             <input
+              aria-label="Search repositories"
+              onChange={e => setSearch(e.target.value)}
               placeholder="Search repositories…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              aria-label="Search repositories"
             />
           </div>
           <div className="repo-chooser-list">
-            {loading && projects.length === 0 ? (
+            {(!search.trim() || 'default'.includes(search.toLowerCase())) && (
+              <button
+                className={cn('repo-chooser-row', !currentProjectId && 'selected')}
+                onClick={() => void chooseProject(undefined)}
+                type="button"
+              >
+                <span className="repo-chooser-main">
+                  <span className="repo-chooser-name flex items-center gap-1.5">
+                    <span className="size-2 rounded-full shrink-0 bg-aro-ink-4" />
+                    <span>Default</span>
+                  </span>
+                  <span className="repo-chooser-sub">
+                    {configuredDefault ? `Default: ${configuredDefault}` : 'No project (standalone chat)'}
+                  </span>
+                </span>
+                {!currentProjectId ? <IconCheck className="repo-chooser-check" size={13} /> : null}
+              </button>
+            )}
+            {loading && explicitProjects.length === 0 ? (
               <div className="p-3 text-center text-xs text-aro-ink-3">Loading projects…</div>
-            ) : filteredProjects.length === 0 ? (
-              <p className="repo-chooser-empty">
-                {search ? `No repositories match “${search}”.` : 'No repositories attached yet.'}
-              </p>
+            ) : filteredProjects.length === 0 && search.trim() && !'default'.includes(search.toLowerCase()) ? (
+              <p className="repo-chooser-empty">{`No repositories match “${search}”.`}</p>
             ) : (
               filteredProjects.map(project => {
                 const isSelected = project.id === currentProjectId
@@ -1981,9 +2135,9 @@ function ProjectPickerControl({
 
                 return (
                   <button
+                    className={cn('repo-chooser-row', isSelected && 'selected')}
                     key={project.id}
                     onClick={() => void chooseProject(project.id)}
-                    className={cn('repo-chooser-row', isSelected && 'selected')}
                     type="button"
                   >
                     <span className="repo-chooser-main">
@@ -1994,72 +2148,38 @@ function ProjectPickerControl({
                         />
                         <span>{project.label}</span>
                       </span>
-                      {root ? (
-                        <span className="repo-chooser-sub">{root}</span>
-                      ) : null}
+                      {root ? <span className="repo-chooser-sub">{root}</span> : null}
                     </span>
                     {isDemo ? <span className="repo-chooser-demo">DEMO</span> : null}
-                    {isSelected ? <IconCheck size={13} className="repo-chooser-check" /> : null}
+                    {isSelected ? <IconCheck className="repo-chooser-check" size={13} /> : null}
                   </button>
                 )
               })
             )}
           </div>
-          <button
-            onClick={() => {
-              setOpen(false)
-              if (isDesktopFsRemoteMode()) {
-                notifyError(new Error('Cloning is available in a local Aro connection. Switch to Local before cloning onto this computer.'), 'Could not clone repository')
-                return
-              }
-
-              const repositoryUrl = window.prompt('Enter a Git repository URL (HTTPS or SSH)')
-              if (!repositoryUrl?.trim()) return
-
-              void (async () => {
-                try {
-                  const cloned = await window.hermesDesktop.cloneRepository?.(repositoryUrl.trim())
-                  if (!cloned) return
-                  await openFolderAsProject(cloned.path)
-                } catch (error) {
-                  notifyError(error, 'Could not clone repository')
-                }
-              })()
-            }}
-            className="repo-chooser-add"
-            type="button"
-          >
-            <Codicon name="repo-clone" size="0.875rem" /> Clone repository…
-          </button>
-          <button
-            onClick={() => {
-              setOpen(false)
-              void openFolderAsProject().catch(error => notifyError(error, 'Could not open project'))
-            }}
-            className="repo-chooser-add"
-            type="button"
-          >
-            <FolderOpen className="size-3.5 shrink-0 text-aro-ink-3" /> Open local project…
-          </button>
-          <button
-            onClick={() => {
-              setOpen(false)
-              openProjectCreate()
-            }}
-            className="repo-chooser-add"
-            type="button"
-          >
-            <IconPlus size={12} /> Add repositories…
-          </button>
-          {currentProjectId ? (
+          <div className="flex items-center justify-between border-t border-aro-line-soft/60 px-2.5 py-1.5">
             <button
-              onClick={() => void chooseProject(undefined)}
-              className="repo-chooser-add repo-chooser-clear"
+              className="repo-chooser-add"
+              onClick={() => {
+                setOpen(false)
+                openProjectCreate()
+              }}
               type="button"
             >
-              <IconX size={11} /> Continue without a project
+              <IconPlus size={12} /> New project…
             </button>
-          ) : null}
+            <button
+              className="text-[11px] text-aro-ink-3 hover:text-aro-ink flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-aro-hover"
+              onClick={() => {
+                setOpen(false)
+                void chooseAndSetDefaultWorkspaceDir()
+              }}
+              title="Set default workspace directory for chats without a project"
+              type="button"
+            >
+              <IconFolder size={12} /> Default workspace…
+            </button>
+          </div>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

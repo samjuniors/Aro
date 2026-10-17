@@ -1,14 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+
+import { $projectScope, ALL_PROJECTS } from '@/store/project-scope'
+import { $activeProjectId } from '@/store/projects'
+import { $configuredDefaultProjectDir, $currentCwd, $sessions } from '@/store/session'
+import type { ProjectInfo, SessionInfo } from '@/types/hermes'
+
 import {
   $aroDraftProjectId,
   $aroSessionProjectMap,
   assignSessionToProject,
+  clearAroProjectAndRevertToDefault,
   removeProjectFromMap,
+  resolveAroDraftProjectId,
   resolveAroSessionProjectId,
   setAroDraftProject,
   unassignSessionFromProject
 } from './project-session-map'
-import type { ProjectInfo, SessionInfo } from '@/types/hermes'
 
 describe('project-session-map', () => {
   const dummyProjects: ProjectInfo[] = [
@@ -80,8 +87,34 @@ describe('project-session-map', () => {
   it('tracks draft project intent', () => {
     setAroDraftProject('p_alpha')
     expect($aroDraftProjectId.get()).toBe('p_alpha')
+    expect(resolveAroDraftProjectId($aroDraftProjectId.get(), ALL_PROJECTS)).toBe('p_alpha')
 
     setAroDraftProject(null)
     expect($aroDraftProjectId.get()).toBeNull()
+  })
+
+  it('keeps a renderer-only draft association local until the first send', async () => {
+    await assignSessionToProject('draft_123', 'p_alpha')
+
+    expect($aroSessionProjectMap.get()['draft_123']).toBe('p_alpha')
+    expect(JSON.parse(localStorage.getItem('aro.session.projectMap') || '{}')['draft_123']).toBe('p_alpha')
+  })
+
+  it('clears project and reverts session and workspace to default location', async () => {
+    $configuredDefaultProjectDir.set('/workspace/default')
+    $aroDraftProjectId.set('p_alpha')
+    $projectScope.set('p_alpha')
+    $activeProjectId.set('p_alpha')
+    $sessions.set([{ id: 's_101', cwd: '/projects/alpha' } as SessionInfo])
+    $aroSessionProjectMap.set({ s_101: 'p_alpha' })
+
+    await clearAroProjectAndRevertToDefault('s_101')
+
+    expect($aroDraftProjectId.get()).toBeNull()
+    expect($projectScope.get()).toBe(ALL_PROJECTS)
+    expect($activeProjectId.get()).toBeNull()
+    expect($aroSessionProjectMap.get()['s_101']).toBeUndefined()
+    expect($currentCwd.get()).toBe('/workspace/default')
+    expect($sessions.get().find(s => s.id === 's_101')?.cwd).toBe('/workspace/default')
   })
 })

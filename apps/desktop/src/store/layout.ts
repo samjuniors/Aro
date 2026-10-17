@@ -84,7 +84,7 @@ export const FILES_PANE_ID = 'files'
 export type RightRailTabId = `artifact:${string}` | `file:${string}` | `url:${string}`
 
 ensurePaneRegistered(CHAT_SIDEBAR_PANE_ID, { open: true })
-ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: true })
+ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: false })
 
 export const $sidebarOpen: ReadableAtom<boolean> = computed(
   $paneStates,
@@ -672,6 +672,23 @@ export function toggleRightSide() {
   }
 
   const group = rightSideGroup()
+
+  const isAro = typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true'
+  if (isAro) {
+    if (group && group.minimized) {
+      setTreeGroupMinimized(group.id, false)
+    }
+    const currentlyShown = group ? rightSideShown(group) : $fileBrowserOpen.get()
+    const nextOpen = !currentlyShown
+    setFileBrowserOpen(nextOpen)
+    if (nextOpen && group) {
+      const pane = group.active ?? group.panes[0]
+      if (pane) {
+        restoreTreePane(pane)
+      }
+    }
+    return
+  }
 
   if (!group) {
     // No foldable column on the right (terminal-on-bottom, a nested right
