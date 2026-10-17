@@ -936,7 +936,7 @@ export function ListRow({
   onClick,
   className,
   ...rest
-}: HTMLAttributes<HTMLDivElement> & {
+}: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   title: ReactNode
   description?: ReactNode
   icon?: ComponentType<{ size?: number; className?: string }> | ReactNode

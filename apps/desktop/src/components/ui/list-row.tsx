@@ -2,7 +2,7 @@ import type { ComponentType, HTMLAttributes, ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
-export interface ListRowProps extends HTMLAttributes<HTMLDivElement> {
+export interface ListRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   action?: ReactNode
   badge?: ReactNode
   description?: ReactNode
@@ -10,6 +10,7 @@ export interface ListRowProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ComponentType<{ className?: string; size?: number }> | ReactNode
   title: ReactNode
 }
+
 
 /**
  * Standard list row primitive for settings, preferences, and selection lists.
