@@ -53,7 +53,7 @@ export function ContextMenu({
             <Button
               aria-label={state.tools.label}
               className={cn(
-                'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink data-[state=open]:bg-aro-hover data-[state=open]:text-aro-ink'
+                'h-[30px] w-[30px] shrink-0 rounded-control p-0 text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink data-[state=open]:bg-aro-hover data-[state=open]:text-aro-ink'
               )}
               disabled={!state.tools.enabled}
               size="icon"

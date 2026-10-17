@@ -18,7 +18,7 @@ import { $defaultReasoningEffort } from '@/store/session'
 import type { ChatBarState } from './types'
 
 const PILL = cn(
-  'h-[28px] shrink-0 gap-1 rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-xs font-normal shadow-sm transition-all',
+  'h-[28px] shrink-0 gap-1 rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-xs font-normal shadow-(--aro-shadow-e1) transition-colors',
   'text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink'
 )
 

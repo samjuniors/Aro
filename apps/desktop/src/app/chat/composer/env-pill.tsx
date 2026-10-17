@@ -46,7 +46,7 @@ export function EnvPill({
           <button
             aria-label={`Environment: ${label}`}
             className={cn(
-              'inline-flex h-(--composer-control-size) cursor-pointer items-center gap-1.5 rounded-[7px] border border-aro-line-soft bg-aro-raise px-2 font-aro-mono text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
+              'inline-flex h-(--composer-control-size) cursor-pointer items-center gap-1.5 rounded-control border border-aro-line-soft bg-aro-raise px-2 font-aro-mono text-xs text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
               isWorktree && 'text-aro-iris-soft border-aro-iris/30',
               disabled && 'pointer-events-none opacity-50'
             )}
@@ -66,13 +66,13 @@ export function EnvPill({
         </DropdownMenuTrigger>
       </Tip>
       <DropdownMenuContent align="end" className="w-[240px] p-1.5">
-        <div className="px-2 py-1 font-aro-mono text-[10px] font-semibold tracking-wide uppercase text-aro-ink-4">
+        <div className="px-2 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wide uppercase text-aro-ink-4">
           Environment & Worktrees
         </div>
 
         <DropdownMenuItem
           className={cn(
-            'flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] transition-colors',
+            'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-[11.5px] transition-colors',
             !isWorktree && 'bg-aro-hover text-aro-ink'
           )}
           onClick={() => {
@@ -95,7 +95,7 @@ export function EnvPill({
               return (
                 <DropdownMenuItem
                   className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] transition-colors',
+                    'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-xs transition-colors',
                     active && 'bg-aro-hover text-aro-ink font-medium'
                   )}
                   key={wt.path}
@@ -118,7 +118,7 @@ export function EnvPill({
           <>
             <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
             <DropdownMenuItem
-              className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
+              className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-xs text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
               onClick={onBranchOff}
             >
               <IconPlus className="shrink-0" size={11} />

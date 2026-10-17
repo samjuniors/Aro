@@ -137,7 +137,7 @@ export function ApprovalModePill({
           <button
             aria-label={`Approval mode: ${activeMeta.label}${yoloActive ? ' (YOLO bypass on)' : ''}`}
             className={cn(
-              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal shadow-sm transition-all text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink-2',
+              'permission-control inline-flex h-[28px] cursor-pointer items-center gap-[5px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal shadow-(--aro-shadow-e1) transition-colors text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink-2',
               activeMeta.id === 'off' && 'text-aro-amber font-medium',
               disabled && 'pointer-events-none opacity-50'
             )}
@@ -153,7 +153,7 @@ export function ApprovalModePill({
         </DropdownMenuTrigger>
       </Tip>
       <DropdownMenuContent align="start" className="w-[280px] p-1.5">
-        <div className="px-2 py-1 font-aro-mono text-[10px] font-semibold tracking-wide uppercase text-aro-ink-4">
+        <div className="px-2 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wide uppercase text-aro-ink-4">
           Approval Mode
         </div>
         {APPROVAL_MODES.map(m => {
@@ -163,7 +163,7 @@ export function ApprovalModePill({
           return (
             <DropdownMenuItem
               className={cn(
-                'flex cursor-pointer items-start gap-2.5 rounded-[7px] px-2 py-2 text-left transition-colors',
+                'flex cursor-pointer items-start gap-2.5 rounded-control px-2 py-2 text-left transition-colors',
                 isSelected && 'bg-aro-hover'
               )}
               key={m.id}
@@ -171,14 +171,14 @@ export function ApprovalModePill({
             >
               <span
                 className={cn(
-                  'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-well',
+                  'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-well',
                   m.tone
                 )}
               >
                 <ItemIcon size={12} />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-medium text-aro-ink">{m.label}</div>
+                <div className="text-xs font-medium text-aro-ink">{m.label}</div>
                 <div className="text-[10.5px] leading-snug text-aro-ink-3">{m.desc}</div>
               </div>
               {isSelected && <IconCheck className="mt-1 shrink-0 text-aro-iris" size={12} />}
@@ -192,14 +192,14 @@ export function ApprovalModePill({
             config key), not a fourth approvals.mode value. Grammar mirrors the
             Aro model menu's Thinking row: label + description + Switch. */}
         <div className="model-thinking-row" data-aro-yolo-row="">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-well text-aro-rose">
+          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-well text-aro-rose">
             <IconZap size={12} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[12px] font-medium text-aro-ink-2">
+            <span className="block text-xs font-medium text-aro-ink-2">
               YOLO bypass{sessionId ? '' : ' (next session)'}
             </span>
-            <span className="block text-[10px] leading-tight text-aro-ink-4">
+            <span className="block text-[var(--aro-text-2xs,10px)] leading-tight text-aro-ink-4">
               Skip approval prompts for this session
             </span>
           </span>
@@ -216,7 +216,7 @@ export function ApprovalModePill({
             (tools/approval.py `_floor_block` runs BEFORE the yolo bypass:
             catastrophic commands, interpreter self-delete, sudo-stdin, and the
             user's approvals.deny rules are never bypassable). */}
-        <p className="mt-1 border-t border-aro-line-soft px-2 pt-2 pb-1 text-[10px] leading-relaxed text-aro-ink-4">
+        <p className="mt-1 border-t border-aro-line-soft px-2 pt-2 pb-1 text-[var(--aro-text-2xs,10px)] leading-relaxed text-aro-ink-4">
           Hardline deny rules and your deny list always apply — even with YOLO on.
         </p>
       </DropdownMenuContent>

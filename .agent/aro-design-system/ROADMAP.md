@@ -111,7 +111,7 @@ statusbar, window glass. **Check:** resize, glass, tray, drag/drop, focus.
 model controls, status stack, approvals/toasts. **Check:** send, stream,
 approve/deny, queue, attach, dictation, pop-out composer, long transcript.
 - [x] 11. Transcript  - [x] 12. Tool rows/widgets
-- [ ] 13. Composer, model menu, status stack, CardStack
+- [x] 13. Composer, model menu, status stack, CardStack
 - [ ] 🛑 **GATE C2**
 
 **C3 Overlays (A11, shared):** Settings (19 categories), Command Center,

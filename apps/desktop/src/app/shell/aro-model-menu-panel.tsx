@@ -271,7 +271,7 @@ function EffortSliderRow({
           <i aria-hidden className="effort-level-dot" />
           <span>{effortLevel.label}</span>
           {!thinkingOn && supportsReasoning && (
-            <span className="ml-1 text-[10px] font-normal text-aro-ink-4 italic">(Paused)</span>
+            <span className="ml-1 text-[var(--aro-text-2xs,10px)] font-normal text-aro-ink-4 italic">(Paused)</span>
           )}
         </span>
       </div>
@@ -385,14 +385,14 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
         onClick={() => setExpanded(value => !value)}
         type="button"
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-[7px] border border-aro-line-soft bg-aro-raise font-aro-mono text-[10px] font-semibold text-aro-ink-3">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold text-aro-ink-3">
           {monogram}
         </span>
         <span className="min-w-0 flex-1 text-left">
           <span className="flex items-center gap-1.5">
             <span className="truncate text-[12.5px] font-medium text-aro-ink">{model}</span>
             {supportsReasoning && thinkingOn && (
-              <span className="shrink-0 rounded px-1 text-[9px] font-semibold uppercase tracking-wider text-aro-iris bg-aro-iris/10 border border-aro-iris/20">
+              <span className="shrink-0 rounded px-1 text-[var(--aro-text-2xs,9px)] font-semibold uppercase tracking-wider text-aro-iris bg-aro-iris/10 border border-aro-iris/20">
                 {EFFORTS.find(e => e.id === effortValue)?.short ?? 'Think'}
               </span>
             )}
@@ -425,13 +425,13 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
               <button
                 aria-expanded={controlsOpen}
                 aria-label={`Reasoning controls: ${thinkingOn ? (EFFORTS.find(item => item.id === effortValue)?.label ?? 'Medium') : 'Off'}`}
-                className="flex h-7 w-full items-center gap-2 rounded-[6px] px-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+                className="flex h-7 w-full items-center gap-2 rounded-control px-1.5 text-xs text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
                 onClick={() => setControlsOpen(value => !value)}
                 type="button"
               >
                 <IconBrain className="size-[13px] shrink-0 text-aro-plum" size={13} />
                 <span className="min-w-0 flex-1 text-left">{copy.thinking}</span>
-                <span className="text-[10px] text-aro-ink-4">
+                <span className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   {thinkingOn ? (EFFORTS.find(item => item.id === effortValue)?.label ?? 'Medium') : 'Off'}
                 </span>
                 <IconChevronDown
@@ -474,7 +474,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
               )}
             </>
           ) : (
-            <div className="flex items-center justify-between gap-2 px-1 py-1 text-[10px] text-aro-ink-4">
+            <div className="flex items-center justify-between gap-2 px-1 py-1 text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
               <span>Direct response model</span>
               <button
                 className="shrink-0 text-aro-iris hover:text-aro-iris-soft"

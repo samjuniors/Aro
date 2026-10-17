@@ -32,7 +32,7 @@ export function ContextPill({
     <Tip label={tipLabel}>
       <div
         aria-label={tipLabel}
-        className="hidden cursor-default items-center gap-1 rounded-[6px] px-1.5 py-0.5 font-aro-mono text-[10px] text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink-2 sm:flex"
+        className="hidden cursor-default items-center gap-1 rounded-control px-1.5 py-0.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink-2 sm:flex"
       >
         <Ring
           size={16}
