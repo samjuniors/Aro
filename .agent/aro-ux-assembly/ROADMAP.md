@@ -73,9 +73,9 @@ journey scorecard "before" numbers recorded; fix order proposed.
 **Founder check:** read `FRICTION.md`; pick what to fix via the interview.
 
 - [x] 6. Walk every route and all 19 settings categories live; log rows
-- [ ] 7. Walk the 10 default journeys (`LAYOUT-UX.md` section 8); record
+- [x] 7. Walk the 10 default journeys (`LAYOUT-UX.md` section 8); record
       steps, shifts, focus losses, time to first feedback
-- [ ] 8. Keyboard-only pass and focus-order pass; log rows
+- [~] 8. Keyboard-only pass and focus-order pass; log rows
 - [ ] 9. Propose fix order and any `NEEDS-BEHAVIOR` items as selectable
       options (recommended order: P0, then P1 on core journeys)
 - [ ] 🛑 **GATE B** (founder selects scope; decisions recorded)
