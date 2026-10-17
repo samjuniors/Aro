@@ -51,7 +51,7 @@ the Layout sections, resize the window, flip themes.
       (`PAGE_INSET_X`), header heights, row heights, pane widths, collapse
       behavior. Propose additive tokens for measures and width classes
       (report, then add)
-- [ ] 2. Layout primitives (reuse what exists, add what's missing, spacing
+- [x] 2. Layout primitives (reuse what exists, add what's missing, spacing
       scale only): `PageShell`, `PageHeader`, `Section`, `FormRow`, `Stack`,
       `Inline`, `Toolbar`, `ActionBar`; align `OverlaySplitLayout`,
       `SectionHeading`, `ListRow`, `PanelEmpty` to the same anatomy
