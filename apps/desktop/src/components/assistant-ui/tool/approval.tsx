@@ -211,7 +211,7 @@ export function ApprovalQueue({
           })
       }}
       surfaceClassName={cn(
-        'rounded-[10px] border border-aro-amber/40 bg-aro-well shadow-aro-e2 overflow-hidden',
+        'rounded-panel border border-aro-amber/40 bg-aro-well shadow-aro-e2 overflow-hidden',
         floating ? 'border-aro-iris/40 shadow-aro-e3' : 'border-aro-amber/40'
       )}
       swipeDirections={['left']}
@@ -341,13 +341,13 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
           {request.smartDenied ? 'smart-denied' : 'approval required'}
         </span>
         {total > 1 && (
-          <span className="ml-auto font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+          <span className="ml-auto font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
             {position} / {total}
           </span>
         )}
       </div>
       {details.length > 0 && (
-        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-[11.5px] leading-relaxed text-aro-ink-2">
+        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-control border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-[11.5px] leading-relaxed text-aro-ink-2">
           {details}
         </pre>
       )}

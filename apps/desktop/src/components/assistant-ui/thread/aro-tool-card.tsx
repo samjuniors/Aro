@@ -237,7 +237,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
       data-aro-tool-card=""
       data-tool-name={toolName}
     >
-      <div className="overflow-hidden rounded-[9px] border border-aro-line-soft bg-aro-well">
+      <div className="overflow-hidden rounded-panel border border-aro-line-soft bg-aro-well">
         {expandable ? (
           <button
             aria-expanded={open}
@@ -248,7 +248,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             <span
               aria-hidden="true"
               className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-raise',
+                'flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise',
                 meta.tone
               )}
             >
@@ -269,13 +269,13 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
               </span>
             )}
             {!isPending && diffStats && (
-              <span className="flex shrink-0 items-center gap-1 font-aro-mono text-[10px] tabular-nums">
+              <span className="flex shrink-0 items-center gap-1 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums">
                 {diffStats.added > 0 && <span className="text-aro-mint">+{diffStats.added}</span>}
                 {diffStats.removed > 0 && <span className="text-aro-rose">−{diffStats.removed}</span>}
               </span>
             )}
             {!isPending && !diffStats && view.durationLabel && (
-              <span className="shrink-0 font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+              <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
                 {view.durationLabel}
               </span>
             )}
@@ -290,7 +290,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             <span
               aria-hidden="true"
               className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-raise',
+                'flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise',
                 meta.tone
               )}
             >
@@ -311,7 +311,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
               </span>
             )}
             {!isPending && view.durationLabel && (
-              <span className="ml-auto shrink-0 font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+              <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
                 {view.durationLabel}
               </span>
             )}
