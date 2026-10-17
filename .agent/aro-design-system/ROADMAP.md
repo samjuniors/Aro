@@ -112,12 +112,12 @@ model controls, status stack, approvals/toasts. **Check:** send, stream,
 approve/deny, queue, attach, dictation, pop-out composer, long transcript.
 - [x] 11. Transcript  - [x] 12. Tool rows/widgets
 - [x] 13. Composer, model menu, status stack, CardStack
-- [ ] 🛑 **GATE C2**
+- [x] 🛑 **GATE C2**
 
 **C3 Overlays (A11, shared):** Settings (19 categories), Command Center,
 cmdk pickers, model/session pickers, dialogs, notifications. **Check:** each
 settings category opens, saves, resets; Esc behavior.
-- [ ] 14. Settings  - [ ] 15. Command Center + pickers
+- [~] 14. Settings  - [ ] 15. Command Center + pickers
 - [ ] 16. Dialogs/confirm/notifications
 - [ ] 🛑 **GATE C3**
 
