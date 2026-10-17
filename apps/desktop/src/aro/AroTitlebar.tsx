@@ -314,7 +314,7 @@ export function AroTitlebar() {
         {(titleContext || (!isDraftSession && product === 'code')) && (
           <div className="selected-project-title flex items-center gap-2">
             <span
-              className="size-2 rounded-full shrink-0 shadow-sm"
+              className="size-2 rounded-full shrink-0 shadow-(--aro-shadow-e1)"
               style={{
                 backgroundColor: product === 'bots' ? '#35d6c4' : activeProject?.color || '#10b981'
               }}
@@ -350,7 +350,7 @@ export function AroTitlebar() {
             <Tip label="Open folder as project · ⌘O" side="bottom">
               <button
                 aria-label="Open project folder"
-                className="hidden items-center gap-1.5 rounded-[7px] border border-aro-line bg-aro-raise px-2 py-[2.5px] text-aro-ink-2 hover:border-aro-line-strong hover:bg-aro-hover transition-colors cursor-pointer text-[11px] sm:flex"
+                className="hidden items-center gap-1.5 rounded-control border border-aro-line bg-aro-raise px-2 py-[2.5px] text-aro-ink-2 hover:border-aro-line-strong hover:bg-aro-hover transition-colors cursor-pointer text-xs sm:flex"
                 onClick={() => void openFolderAsProject()}
                 type="button"
               >
@@ -411,28 +411,28 @@ export function AroTitlebar() {
           </Tip>
           <PopoverContent
             align="end"
-            className="w-68 p-1.5 bg-aro-overlay border border-aro-line text-aro-ink shadow-aro-e4 rounded-[11px]"
+            className="w-68 p-1.5 bg-aro-overlay border border-aro-line text-aro-ink shadow-aro-e4 rounded-overlay"
             side="bottom"
             sideOffset={6}
           >
             {/* Identity Card */}
-            <div className="flex items-center gap-2.5 rounded-[8px] bg-aro-sunken p-2">
+            <div className="flex items-center gap-2.5 rounded-panel bg-aro-sunken p-2">
               <span
-                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white shadow-sm"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-(--aro-shadow-e1)"
                 style={{ backgroundColor: botAvatarColor }}
               >
                 {botInitials}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="truncate text-[13px] font-semibold text-aro-ink">
+                  <span className="truncate text-sm font-semibold text-aro-ink">
                     {profileDisplayName || botName}
                   </span>
-                  <span className="rounded-[4px] bg-aro-iris-soft/15 px-1 py-0.5 font-mono text-[8.5px] font-bold text-aro-iris uppercase">
+                  <span className="rounded-[var(--aro-radius-sm,4px)] bg-aro-iris-soft/15 px-1 py-0.5 font-mono text-[8.5px] font-bold text-aro-iris uppercase">
                     Agent
                   </span>
                 </div>
-                <span className="block truncate text-[11px] text-aro-ink-4">
+                <span className="block truncate text-xs text-aro-ink-4">
                   {matchedProfile?.role || 'Aro Agent Bot'}
                 </span>
               </div>
@@ -441,7 +441,7 @@ export function AroTitlebar() {
             {/* Profile / Bot Roster */}
             {profiles.length > 0 && (
               <>
-                <div className="px-2 pt-2 pb-1 font-mono text-[9px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
+                <div className="px-2 pt-2 pb-1 font-mono text-[var(--aro-text-2xs,9px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
                   Switch Bot Profile
                 </div>
                 <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -496,11 +496,11 @@ export function AroTitlebar() {
           </PopoverTrigger>
           <PopoverContent
             align="end"
-            className="w-64 p-1.5 bg-aro-overlay border border-aro-line text-aro-ink shadow-aro-e4 rounded-[11px]"
+            className="w-64 p-1.5 bg-aro-overlay border border-aro-line text-aro-ink shadow-aro-e4 rounded-overlay"
             side="bottom"
             sideOffset={6}
           >
-            <div className="px-2 pt-1 pb-1 font-mono text-[9px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
+            <div className="px-2 pt-1 pb-1 font-mono text-[var(--aro-text-2xs,9px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">
               Themes
             </div>
 
@@ -526,7 +526,7 @@ export function AroTitlebar() {
             <button className="quick-toggle-row" onClick={() => toggleRightSide()} type="button">
               <span className="quick-toggle-box">{fileBrowserOpen && <IconCheck size={9} />}</span>
               <span className="flex-1">Workspace panel</span>
-              <span className="font-mono text-[10px] text-aro-ink-4">⌘L</span>
+              <span className="font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">⌘L</span>
             </button>
 
             <button className="quick-toggle-row" onClick={handleToggleTerminal} type="button">
@@ -534,7 +534,7 @@ export function AroTitlebar() {
                 <IconTerminal size={9} />
               </span>
               <span className="flex-1">Terminal</span>
-              <span className="font-mono text-[10px] text-aro-ink-4">⌘J</span>
+              <span className="font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">⌘J</span>
             </button>
 
             <button className="quick-toggle-row" onClick={handleToggleStatusbar} type="button">

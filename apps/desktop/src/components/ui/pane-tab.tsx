@@ -33,7 +33,7 @@ const TAB_ACTIVE = 'h-full text-foreground [--tab-bg:var(--pane-tab-active-bg,va
 // Horizontal only: the active tab is the sole seam on the strip — a
 // theme-primary underline drawn as an inset shadow in its own last pixel row,
 // so it costs no layout and can't shift the tab.
-const TAB_ACTIVE_UNDERLINE = 'shadow-[inset_0_-2px_0_var(--pane-tab-active-accent,var(--theme-primary))]'
+const TAB_ACTIVE_UNDERLINE = 'shadow-[inset_0_-2px_0_var(--pane-tab-active-accent,var(--aro-primary,var(--theme-primary)))]'
 
 // Inactive = gutter, defaulting to the shared chrome surface so a strip that
 // sets no vars still matches the sidebar/titlebar instead of falling through to
