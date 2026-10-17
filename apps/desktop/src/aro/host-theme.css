@@ -17,13 +17,13 @@
 :root[data-aro-ui='true'] {
   color-scheme: dark;
 
-  /* Typography: prototype uses Inter for reading and Space Grotesk for identity. */
-  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  /* Typography: Geist Sans for reading/tabs/buttons/chat, Inter for form inputs, JetBrains Mono for editor, Cascadia Code for terminal, Monaspace Neon for code blocks. */
+  --font-display: 'Space Grotesk', 'Geist Sans', 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist Sans', 'Geist', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', 'Noto Sans Mono', 'Noto Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
 
   --dt-font-sans:
-    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Geist Sans', 'Geist', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
     system-ui, sans-serif;
   --dt-font-mono:
     'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', 'DejaVu Sans Mono',
@@ -3323,6 +3323,242 @@
 :root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main select:focus {
   border-color: color-mix(in srgb, var(--aro-iris) 60%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro-iris) 20%, transparent);
+}
+
+/* ============================================================================
+   ARO TYPOGRAPHY & TYPESETTING SYSTEM
+   ----------------------------------------------------------------------------
+   - File Tree / Tabs: Geist Sans, 400 (Regular), 12px, -0.01em
+   - Buttons & Badges: Geist Sans, 500 (Medium), 12px / 13px, 0
+   - Form Inputs / Labels: Inter, 400 / 500, 13px, 0
+   - Code Editor Workspace: JetBrains Mono, 400, 14px, 0 (Line-height: 1.5)
+   - Terminal Output: Cascadia Code, 400, 12px, 0
+   - Agent Chat Text: Geist Sans, 400, 14px, -0.005em
+   - Agent Code Blocks: Monaspace Neon, 400, 13px, 0
+   ============================================================================ */
+
+/* 1. File Tree / Workspace Tabs */
+:root[data-aro-ui='true'] .file-tree,
+:root[data-aro-ui='true'] [aria-label='file-tree'],
+:root[data-aro-ui='true'] .group\/row,
+:root[data-aro-ui='true'] [role='treeitem'],
+:root[data-aro-ui='true'] .file-tree-item,
+:root[data-aro-ui='true'] [data-slot='file-tree-row'] {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em !important;
+}
+
+:root[data-aro-ui='true'] .workspace-tabstrip,
+:root[data-aro-ui='true'] .workspace-tab,
+:root[data-aro-ui='true'] .workspace-tab-main,
+:root[data-aro-ui='true'] .workspace-tab-title,
+:root[data-aro-ui='true'] [data-slot='tabs-trigger'],
+:root[data-aro-ui='true'] [role='tab'],
+:root[data-aro-ui='true'] .pane-tab,
+:root[data-aro-ui='true'] [data-slot='pane-tab'] {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 2. Buttons & Badges */
+:root[data-aro-ui='true'] button:not(.workspace-tab-main):not([role='tab']):not([role='treeitem']),
+:root[data-aro-ui='true'] [role='button']:not(.workspace-tab-main):not([role='tab']):not([role='treeitem']),
+:root[data-aro-ui='true'] .btn,
+:root[data-aro-ui='true'] [data-slot='button'] {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+:root[data-aro-ui='true'] [data-slot='badge'],
+:root[data-aro-ui='true'] .badge {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* 3. Form Inputs & Labels */
+:root[data-aro-ui='true'] input:not([type='checkbox']):not([type='radio']):not([type='range']),
+:root[data-aro-ui='true'] textarea,
+:root[data-aro-ui='true'] select,
+:root[data-aro-ui='true'] .desktop-input-chrome,
+:root[data-aro-ui='true'] [data-slot='input'],
+:root[data-aro-ui='true'] [data-slot='textarea'] {
+  font-family: 'Inter', var(--dt-font-sans) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45;
+}
+
+:root[data-aro-ui='true'] label,
+:root[data-aro-ui='true'] .field-label,
+:root[data-aro-ui='true'] [data-slot='label'] {
+  font-family: 'Inter', var(--dt-font-sans) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+/* 4. Code Editor Workspace */
+:root[data-aro-ui='true'] .cm-editor,
+:root[data-aro-ui='true'] .cm-scroller,
+:root[data-aro-ui='true'] .cm-content,
+:root[data-aro-ui='true'] .cm-line,
+:root[data-aro-ui='true'] .cm-gutters {
+  font-family: 'JetBrains Mono', var(--dt-font-mono), monospace !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* 5. Terminal Output */
+:root[data-aro-ui='true'] .xterm,
+:root[data-aro-ui='true'] .xterm-screen,
+:root[data-aro-ui='true'] .xterm-viewport,
+:root[data-aro-ui='true'] .xterm-rows,
+:root[data-aro-ui='true'] .terminal-pane,
+:root[data-aro-ui='true'] [data-slot='terminal-output'],
+:root[data-aro-ui='true'] [data-slot='terminal-view'] {
+  font-family: 'Cascadia Code', 'JetBrains Mono', monospace !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.25 !important;
+}
+
+/* 6. Agent Chat Text, Paragraphs, Headings, and Typesetting */
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'],
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md,
+:root[data-aro-ui='true'] [data-slot='aui_user-inline-text'],
+:root[data-aro-ui='true'] [data-slot='composer-rich-input'] {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.62;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md p {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.62;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md ul {
+  padding-left: 1.35rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
+  list-style-type: disc;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md ol {
+  padding-left: 1.35rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
+  list-style-type: decimal;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md li {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.58;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md blockquote {
+  font-family: 'Geist Sans', 'Geist', var(--dt-font-sans);
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  line-height: 1.6;
+  border-left: 3px solid var(--aro-iris-soft);
+  background: color-mix(in srgb, var(--aro-well) 35%, transparent);
+  border-radius: 0 6px 6px 0;
+  padding: 0.4rem 0.85rem 0.4rem 1rem;
+  margin: 0.85rem 0;
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md :where(h1, h2, h3, h4) {
+  font-family: 'Geist Sans', 'Geist', var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--aro-ink);
+  margin-top: 1.25rem;
+  margin-bottom: 0.45rem;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md h1 {
+  font-size: 1.28rem;
+  line-height: 1.35;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md h2 {
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md h3 {
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md h4 {
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+/* 7. Agent Code Blocks */
+:root[data-aro-ui='true'] [data-slot='code-card'],
+:root[data-aro-ui='true'] .prose-code,
+:root[data-aro-ui='true'] [data-streamdown='code-block'] {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] pre,
+:root[data-aro-ui='true'] .prose-code pre,
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md [data-streamdown='code-block'] pre,
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md .aui-shiki pre {
+  font-family: 'Monaspace Neon', 'JetBrains Mono', 'Cascadia Code', monospace !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.55 !important;
+}
+
+:root[data-aro-ui='true'] [data-slot='code-card'] pre code,
+:root[data-aro-ui='true'] .prose-code pre code,
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md [data-streamdown='code-block'] code,
+:root[data-aro-ui='true'] [data-slot='aui_assistant-message-content'] .aui-md .aui-shiki code {
+  font-family: 'Monaspace Neon', 'JetBrains Mono', 'Cascadia Code', monospace !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.55 !important;
+}
+
+:root[data-aro-ui='true'] .aui-md :not(pre) > code,
+:root[data-aro-ui='true'] [data-slot='aui_user-inline-code'] {
+  font-family: 'Monaspace Neon', 'JetBrains Mono', monospace !important;
+  font-size: 12.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  padding: 0.15em 0.35em !important;
+  border-radius: 4px !important;
 }
 
 

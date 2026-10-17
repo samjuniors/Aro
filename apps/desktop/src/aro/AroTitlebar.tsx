@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router'
 
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { SETTINGS_ROUTE } from '@/app/routes'
+import { useTheme } from '@/themes/context'
 import { useWindowControlsOverlayWidth } from '@/app/shell/hooks/use-window-controls-overlay-width'
 import { titlebarControlsPosition, titlebarToolsRightCss } from '@/app/shell/titlebar'
 import { $workspaceOwnerLabels } from '@/components/pane-shell/workspace-scope'
@@ -75,7 +76,8 @@ export const ARO_THEMES: AroThemeOption[] = [
   { id: 'daylight', label: 'Daylight', swatch: ['#f8f9fb', '#ffffff', '#6366f1'] },
   { id: 'nord', label: 'Nord', swatch: ['#242933', '#2e3440', '#88c0d0'] },
   { id: 'ember', label: 'Ember', swatch: ['#120d0a', '#1a130e', '#f97316'] },
-  { id: 'paper', label: 'Paper', swatch: ['#f4efe6', '#faf7f2', '#d97706'] }
+  { id: 'paper', label: 'Paper', swatch: ['#f4efe6', '#faf7f2', '#d97706'] },
+  { id: 'ink', label: 'Ink', swatch: ['#14110d', '#1c1813', '#e8663a'] } // design-allow: prototype theme swatches
 ]
 
 function getAvatarColor(name: string): string {
@@ -124,14 +126,23 @@ export function AroTitlebar() {
   // Shared product mode (Code = Sessions vs Bots = Agents)
   const product = useStore($aroProductMode)
 
+  const { themeName, setTheme } = useTheme()
+
   // Active theme
   const [activeTheme, setActiveTheme] = useState<string>(() => {
     return (
       (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) ||
+      themeName ||
       document.documentElement.dataset.theme ||
       'obsidian'
     )
   })
+
+  useEffect(() => {
+    if (themeName && themeName !== activeTheme) {
+      setActiveTheme(themeName)
+    }
+  }, [themeName, activeTheme])
 
   const handleSetTheme = (themeId: string) => {
     setActiveTheme(themeId)
@@ -142,10 +153,13 @@ export function AroTitlebar() {
 
     try {
       localStorage.setItem('aro.theme', themeId)
+      localStorage.setItem('conductor.theme', themeId)
+      localStorage.setItem('hermes-desktop-theme-v2', themeId)
       window.dispatchEvent(new CustomEvent('aro:theme', { detail: themeId }))
     } catch {
       // ignore
     }
+    setTheme(themeId)
   }
 
   useEffect(() => {

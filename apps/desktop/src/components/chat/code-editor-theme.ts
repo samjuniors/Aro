@@ -88,7 +88,15 @@ export function githubEditorTheme(dark: boolean): Extension {
   return [
     EditorView.theme(
       {
-        '&': { backgroundColor: 'transparent', color: p.fg },
+        '&': {
+          backgroundColor: 'transparent',
+          color: p.fg,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '14px',
+          fontWeight: '400',
+          letterSpacing: '0',
+          lineHeight: '1.5'
+        },
         '&.cm-focused .cm-selectionBackground, .cm-content ::selection, .cm-selectionBackground': {
           backgroundColor: dark ? 'rgba(56,139,253,0.25)' : 'rgba(84,174,255,0.28)'
         },

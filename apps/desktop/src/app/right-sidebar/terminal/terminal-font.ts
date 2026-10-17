@@ -1,6 +1,6 @@
 import { atom } from 'nanostores'
 
-export const DEFAULT_TERMINAL_FONT_FAMILY = "'JetBrains Mono', 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace"
+export const DEFAULT_TERMINAL_FONT_FAMILY = "'Cascadia Code', 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace"
 
 export const TERMINAL_FONT_SUGGESTIONS = [
   'MesloLGS NF',

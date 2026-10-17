@@ -97,7 +97,7 @@ const DESIGN_PROFILE_ITEMS: readonly DesignProfileItem[] = [
     source: 'Editorial Reference',
     summary: 'Magazine rhythm: serif display, squared panels, hard rules, high contrast.',
     swatch: ['#f8f3ea', '#fffdf8', '#17130e', '#df5e2e'],
-    recommendedTheme: 'nous'
+    recommendedTheme: 'ink'
   },
   {
     id: 'cursor',
@@ -109,7 +109,7 @@ const DESIGN_PROFILE_ITEMS: readonly DesignProfileItem[] = [
   }
 ]
 
-export const PROTOTYPE_THEMES = [
+const PROTOTYPE_THEMES = [
   { id: 'obsidian', label: 'Obsidian', desc: 'Deep neutral dark · violet accent', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
   { id: 'daylight', label: 'Daylight', desc: 'Clean light · high legibility', swatch: ['#ffffff', '#f4f5f8', '#5b4ce6', '#0f9f90'] },
   { id: 'nord', label: 'Nord', desc: 'Arctic blue-grey · frost accent', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
@@ -190,7 +190,8 @@ export function AroAppearanceSettings() {
       setDesignProfile(profile)
       triggerHaptic('selection')
 
-      const recommended = RECOMMENDED_THEMES[profile]
+      const rawRecommended = RECOMMENDED_THEMES[profile]
+      const recommended = rawRecommended === 'nous' ? 'ink' : rawRecommended
 
       if (syncTheme && recommended && recommended !== themeName) {
         setTheme(recommended)

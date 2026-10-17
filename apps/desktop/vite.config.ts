@@ -249,6 +249,9 @@ export default defineConfig(({ command }) => ({
     strictPort: true,
     fs: {
       allow: fsAllow
+    },
+    watch: {
+      ignored: ['**/src/fonts/**', '**/*.woff2', '**/*.woff', '**/*.ttf']
     }
   },
   preview: {

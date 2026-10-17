@@ -921,19 +921,24 @@ export function useGatewayBoot({
 
     let bootSnapshotSuperseded = false
 
-    const offBootProgress = desktop.onBootProgress(payload => {
-      bootSnapshotSuperseded = true
-      onBootProgress(payload)
-    })
+    const offBootProgress =
+      typeof desktop?.onBootProgress === 'function'
+        ? desktop.onBootProgress(payload => {
+            bootSnapshotSuperseded = true
+            onBootProgress(payload)
+          })
+        : () => undefined
 
-    void desktop
-      .getBootProgress()
-      .then(snapshot => {
-        if (!bootSnapshotSuperseded && !gatewayOpen()) {
-          onBootProgress(snapshot)
-        }
-      })
-      .catch(() => undefined)
+    if (typeof desktop?.getBootProgress === 'function') {
+      void desktop
+        .getBootProgress()
+        .then(snapshot => {
+          if (!bootSnapshotSuperseded && !gatewayOpen()) {
+            onBootProgress(snapshot)
+          }
+        })
+        .catch(() => undefined)
+    }
 
     setDesktopBootStep({
       phase: 'renderer.boot',

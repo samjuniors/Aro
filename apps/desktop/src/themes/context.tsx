@@ -101,12 +101,18 @@ export const modePref = profilePref(PROFILE_MODES_KEY, MODE_KEY, normalizeMode)
 const readBootProfileKey = () => normalizeProfileKey(storedString(LAST_PROFILE_KEY))
 const BOOT_PROFILE_KEY = typeof window === 'undefined' ? 'default' : (localDisplaySkinProfile ?? readBootProfileKey())
 
-// Provider state keeps the raw pick so a name nothing resolves YET (a backend
-// skin the gateway hasn't seeded on this launch) isn't flattened to the default
-// for the rest of the session — it paints as soon as the registry can resolve it.
-const storedSkin = (profile: string): string =>
-  skinPref.stored(profile) ??
-  (profile === BOOT_PROFILE_KEY ? (localDisplaySkinName ?? DEFAULT_SKIN_NAME) : DEFAULT_SKIN_NAME)
+const storedSkin = (profile: string): string => {
+  if (typeof window !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+    const aroTheme = localStorage.getItem('aro.theme')
+    if (aroTheme && resolveTheme(aroTheme)) {
+      return aroTheme
+    }
+  }
+  return (
+    skinPref.stored(profile) ??
+    (profile === BOOT_PROFILE_KEY ? (localDisplaySkinName ?? DEFAULT_SKIN_NAME) : DEFAULT_SKIN_NAME)
+  )
+}
 
 /** Everything a peer window could change that this one has to repaint for. */
 const APPEARANCE_KEYS = new Set([SKIN_KEY, PROFILE_SKINS_KEY, MODE_KEY, PROFILE_MODES_KEY])
@@ -235,19 +241,22 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
   const midground = c.midground ?? c.ring
   const skinName = theme.name.endsWith(`-${mode}`) ? theme.name.slice(0, -mode.length - 1) : theme.name
 
-  root.style.setProperty('color-scheme', rendered)
-  root.dataset.hermesTheme = skinName
-  root.dataset.hermesMode = rendered
-  root.classList.toggle('dark', isDark)
-
   const isAro = root.dataset.aroUi === 'true'
-  if (isAro && typeof window !== 'undefined') {
-    const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
-    const effectiveTheme = isProtoTheme ? skinName : (localStorage.getItem('aro.theme') || 'obsidian')
-    root.dataset.theme = effectiveTheme
-  } else {
-    root.dataset.theme = skinName
-  }
+  const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
+  const effectiveTheme = isAro
+    ? (isProtoTheme ? skinName : (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) || 'obsidian')
+    : skinName
+
+  const isAroLight = effectiveTheme === 'daylight' || effectiveTheme === 'paper'
+  const isAroDark = !isAroLight
+  const actualDark = isAro ? isAroDark : isDark
+  const actualRendered = isAro ? (actualDark ? 'dark' : 'light') : rendered
+
+  root.style.setProperty('color-scheme', actualRendered)
+  root.dataset.hermesTheme = effectiveTheme
+  root.dataset.hermesMode = actualRendered
+  root.classList.toggle('dark', actualDark)
+  root.dataset.theme = effectiveTheme
 
   // Translucency is tuned per appearance, and "appearance" means the palette
   // actually painted — a skin that keeps a bright surface in "dark" wants
@@ -462,6 +471,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // remember it for the next boot's first paint.
   useEffect(() => {
     rememberActiveProfileKey(profileKey)
+    if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+      return
+    }
     setThemeNameState(storedSkin(profileKey))
     setModeState(modePref.resolve(profileKey))
   }, [profileKey])
@@ -472,7 +484,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // the OTHER windows, which is exactly the set that needs to catch up.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key && !APPEARANCE_KEYS.has(event.key)) {
+      if (event.key && !APPEARANCE_KEYS.has(event.key) && event.key !== 'aro.theme') {
+        return
+      }
+
+      if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+        const aroTheme = localStorage.getItem('aro.theme') || DEFAULT_SKIN_NAME
+        setThemeNameState(aroTheme)
         return
       }
 
@@ -482,9 +500,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setModeState(modePref.resolve(live))
     }
 
-    window.addEventListener('storage', onStorage)
+    const onAroTheme = (event: Event) => {
+      const customEvent = event as CustomEvent<string>
+      if (customEvent.detail) {
+        setThemeNameState(customEvent.detail)
+      }
+    }
 
-    return () => window.removeEventListener('storage', onStorage)
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('aro:theme', onAroTheme)
+
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('aro:theme', onAroTheme)
+    }
   }, [])
 
   const systemDark = useMediaQuery('(prefers-color-scheme: dark)')
@@ -554,7 +583,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('aro.theme', next)
         localStorage.setItem('conductor.theme', next)
+        persistString(SKIN_KEY, next)
         document.documentElement.dataset.theme = next
+        const isLight = next === 'daylight' || next === 'paper'
+        document.documentElement.classList.toggle('dark', !isLight)
+        document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
         window.dispatchEvent(new CustomEvent('aro:theme', { detail: next }))
       }
     } catch {}

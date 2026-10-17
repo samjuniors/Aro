@@ -478,13 +478,15 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   // backend) for anything not already installed.
   const needle = normalize(query)
 
+  const WORKING_THEME_IDS = new Set(['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'])
   const filteredThemes = availableThemes
     .filter(
       theme =>
-        !needle ||
-        theme.label.toLowerCase().includes(needle) ||
-        theme.name.toLowerCase().includes(needle) ||
-        theme.description.toLowerCase().includes(needle)
+        WORKING_THEME_IDS.has(theme.name) &&
+        (!needle ||
+          theme.label.toLowerCase().includes(needle) ||
+          theme.name.toLowerCase().includes(needle) ||
+          theme.description.toLowerCase().includes(needle))
     )
     // Active theme first; stable sort keeps the rest in their original order.
     .sort((a, b) => Number(b.name === themeName) - Number(a.name === themeName))
@@ -700,7 +702,6 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                         })}
                       </div>
                     )}
-                    <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
                   </div>
                   {showProfileNote && (
                     <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">

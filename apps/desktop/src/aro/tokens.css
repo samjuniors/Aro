@@ -69,6 +69,34 @@
   font-display: swap;
   src: url('../fonts/JetBrainsMono-Regular.woff2') format('woff2');
 }
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Geist-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Geist-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/CascadiaCode-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Monaspace Neon';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/MonaspaceNeon-Regular.woff2') format('woff2');
+}
 
 /* The prototype's next/font CSS variables, bound to the bundled families so
    the `var(--f-…, "Family")` indirection in the design profiles resolves to a
@@ -80,6 +108,9 @@
   --f-newsreader: 'Newsreader';
   --f-dmsans: 'DM Sans';
   --f-jbmono: 'JetBrains Mono';
+  --f-geist: 'Geist Sans';
+  --f-cascadia: 'Cascadia Code';
+  --f-monaspace: 'Monaspace Neon';
 }
 
 /* ============================================================================

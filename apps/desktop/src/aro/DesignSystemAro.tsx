@@ -212,7 +212,15 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
 
 /* ============================ main view ============================ */
 export function AroDesignSystemPage() {
-  const [theme, setTheme] = useState<ThemeId>('obsidian')
+  const [theme, setTheme] = useState<ThemeId>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aro.theme') as ThemeId
+      if (['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(saved)) {
+        return saved
+      }
+    }
+    return 'obsidian'
+  })
   const [glass, setGlass] = useState(false)
   const [rtl, setRtl] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
@@ -339,7 +347,14 @@ export function AroDesignSystemPage() {
                   theme === t.id ? 'border-aro-iris/60 shadow-aro-glow' : 'border-aro-line-soft hover:border-aro-line-strong',
                 )}
                 key={t.id}
-                onClick={() => setTheme(t.id)}
+                onClick={() => {
+                  setTheme(t.id)
+                  try {
+                    localStorage.setItem('aro.theme', t.id)
+                    localStorage.setItem('conductor.theme', t.id)
+                    window.dispatchEvent(new CustomEvent('aro:theme', { detail: t.id }))
+                  } catch {}
+                }}
               >
                 <div className="relative h-[92px] p-2.5" style={{ background: t.swatch[0] }}>
                   <div className="h-full rounded-control p-2" style={{ background: t.swatch[1], boxShadow: `inset 0 0 0 1px ${t.swatch[2]}33` }}>
