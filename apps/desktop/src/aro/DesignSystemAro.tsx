@@ -13,6 +13,25 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
+import {
+  ActionBar,
+  FormRow,
+  Inline,
+  PageHeader,
+  PageShell,
+  Section as LayoutSection,
+  Stack,
+  Toolbar,
+} from '@/components/ui/layout'
+import {
+  DialogTemplate,
+  FormPageTemplate,
+  ListPageTemplate,
+  MasterDetailOverlayTemplate,
+  PageTemplate,
+  SettingsSubpageTemplate,
+  StateBox,
+} from '@/components/ui/templates'
 
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import {
@@ -205,6 +224,11 @@ export function AroDesignSystemPage() {
   const [tog, setTog] = useState(true)
   const [tog2, setTog2] = useState(false)
   const [modal, setModal] = useState(false)
+  const [layoutWidth, setLayoutWidth] = useState<'narrow' | 'standard' | 'wide'>('standard')
+  const [layoutState, setLayoutState] = useState<'idle' | 'loading' | 'empty' | 'error'>('idle')
+  const [layoutTemplate, setLayoutTemplate] = useState<'list' | 'form' | 'overlay' | 'dialog' | 'page'>('list')
+  const [demoSearch, setDemoSearch] = useState('')
+  const [demoNav, setDemoNav] = useState('models')
   const [toasts, setToasts] = useState<{ id: number; msg: string; tone: string }[]>([])
 
   const toast = (msg: string, tone = 'iris') => {
@@ -896,6 +920,201 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
             <Badge mono tone="neutral">
               min target 22×22px
             </Badge>
+          </div>
+        </DS>
+
+        <DS
+          body="Standard page templates, layout primitives, and zero-shift state boxes on the 4px spacing scale with container query collapse."
+          eyebrow="Phase 9 UX-ASM"
+          id="layout-templates"
+          title="Layout & Templates"
+        >
+          {/* Interactive controls: Width preview, template selector, and state toggle */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-3.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                Container width:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'narrow', label: 'Narrow (420px)' },
+                  { value: 'standard', label: 'Standard (768px)' },
+                  { value: 'wide', label: 'Wide (1024px)' },
+                ]}
+                onChange={setLayoutWidth as any}
+                value={layoutWidth}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                State:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'idle', label: 'Idle' },
+                  { value: 'loading', label: 'Loading' },
+                  { value: 'empty', label: 'Empty' },
+                  { value: 'error', label: 'Error' },
+                ]}
+                onChange={setLayoutState as any}
+                value={layoutState}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                Template:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'list', label: 'List Page' },
+                  { value: 'form', label: 'Form Page' },
+                  { value: 'overlay', label: 'Master/Detail' },
+                  { value: 'page', label: 'Standard Page' },
+                  { value: 'dialog', label: 'Dialog' },
+                ]}
+                onChange={setLayoutTemplate as any}
+                value={layoutTemplate}
+              />
+            </div>
+          </div>
+
+          {/* Interactive container preview box */}
+          <div className="mt-4 flex justify-center rounded-panel border border-dashed border-aro-line-soft bg-aro-sunken/40 p-4 overflow-hidden">
+            <div
+              className={cn(
+                'w-full transition-[max-width] duration-200 border border-aro-line rounded-panel bg-aro-bg overflow-hidden shadow-aro-e2',
+                layoutWidth === 'narrow' && 'max-w-[420px]',
+                layoutWidth === 'standard' && 'max-w-[768px]',
+                layoutWidth === 'wide' && 'max-w-[1024px]'
+              )}
+            >
+              {layoutTemplate === 'list' && (
+                <ListPageTemplate
+                  actions={<Button size="xs" variant="primary">New item</Button>}
+                  description="Container queries collapse filters to drawer at narrow widths."
+                  emptyAction={<Button size="xs" variant="primary">Add item</Button>}
+                  emptyDescription="No search results matching your query"
+                  emptyTitle="No results found"
+                  items={[
+                    {
+                      title: 'Project Aro Desktop',
+                      description: 'Native Electron client with calm, keyboard-first workbench',
+                      badge: <Badge mono tone="mint">Active</Badge>,
+                    },
+                    {
+                      title: 'Aro Harness & Runner',
+                      description: 'Orchestration for autonomous subagents and cron tasks',
+                      badge: <Badge mono tone="iris">Runner</Badge>,
+                    },
+                    {
+                      title: 'Design System Primitives',
+                      description: 'Role-based tokens and zero-shift layout components',
+                      badge: <Badge mono tone="neutral">Ready</Badge>,
+                    },
+                  ]}
+                  onSearchChange={setDemoSearch}
+                  searchValue={demoSearch}
+                  state={layoutState}
+                  title="Projects List"
+                />
+              )}
+
+              {layoutTemplate === 'form' && (
+                <FormPageTemplate
+                  breadcrumb={<span>Preferences / Workspace</span>}
+                  description="Form fields align horizontally at standard width and stack on narrow."
+                  onReset={() => toast('Form reset to defaults', 'neutral')}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    toast('Workspace settings saved', 'mint')
+                  }}
+                  primaryActionLabel="Save Workspace"
+                  title="Workspace Configuration"
+                >
+                  <LayoutSection title="Repository Settings" variant="card">
+                    <FormRow
+                      description="Root directory for local project discovery and git operations"
+                      label="Workspace Path"
+                      required
+                    >
+                      <Input defaultValue="E:/Projects/Aro" />
+                    </FormRow>
+                    <FormRow
+                      description="Automatically reload changed files and skills"
+                      label="Auto-watch file changes"
+                    >
+                      <Checkbox checked={checkboxVal} onChange={setCheckboxVal} />
+                    </FormRow>
+                    <FormRow
+                      description="Controls when terminal tools require explicit confirmation"
+                      label="Tool execution safety"
+                    >
+                      <Select
+                        onChange={setSel}
+                        options={[
+                          { value: 'opus-4.6', label: 'Strict manual approvals' },
+                          { value: 'gpt-5.4', label: 'Smart checkpoint verification' },
+                        ]}
+                        value={sel}
+                      />
+                    </FormRow>
+                  </LayoutSection>
+                </FormPageTemplate>
+              )}
+
+              {layoutTemplate === 'overlay' && (
+                <div className="h-[460px]">
+                  <MasterDetailOverlayTemplate
+                    detailActions={<Button size="xs" variant="primary">Add key</Button>}
+                    detailDescription="Provider API keys are securely stored in your local vault."
+                    detailTitle={demoNav === 'models' ? 'Provider Keys' : 'Global Settings'}
+                    navItems={[
+                      { id: 'models', label: 'Provider Keys', icon: IconBolt, active: demoNav === 'models', onClick: () => setDemoNav('models') },
+                      { id: 'settings', label: 'Global Settings', icon: IconPlug, active: demoNav === 'settings', onClick: () => setDemoNav('settings') },
+                    ]}
+                  >
+                    <StateBox state={layoutState}>
+                      <Stack dividers gap={2}>
+                        <ListRow description="Key configured · valid through 2027" title="Nous Portal API Key" />
+                        <ListRow description="Key configured · local hardware acceleration" title="Local LM Studio Server" />
+                      </Stack>
+                    </StateBox>
+                  </MasterDetailOverlayTemplate>
+                </div>
+              )}
+
+              {layoutTemplate === 'page' && (
+                <PageTemplate
+                  actions={<Button size="xs" variant="secondary">Refresh</Button>}
+                  description="Standard PageShell with structured Section and FormRow primitives."
+                  title="Diagnostics & Health"
+                >
+                  <StateBox state={layoutState}>
+                    <LayoutSection title="System Resources" variant="card">
+                      <FormRow label="Memory Usage"><Badge mono tone="mint">142 MB</Badge></FormRow>
+                      <FormRow label="Process Latency"><Badge mono tone="cyan">12 ms</Badge></FormRow>
+                    </LayoutSection>
+                  </StateBox>
+                </PageTemplate>
+              )}
+
+              {layoutTemplate === 'dialog' && (
+                <div className="p-6 flex justify-center">
+                  <DialogTemplate
+                    description="This operation cannot be undone. Workspace files will not be deleted."
+                    destructiveAction={<Button size="sm" variant="danger">Delete session</Button>}
+                    onClose={() => toast('Dialog dismissed', 'neutral')}
+                    primaryAction={<Button onClick={() => toast('Session archived', 'mint')} size="sm" variant="primary">Archive</Button>}
+                    secondaryAction={<Button size="sm" variant="ghost">Cancel</Button>}
+                    title="Archive Conversation"
+                  >
+                    <p className="text-xs text-aro-ink-2 leading-relaxed">
+                      Archiving will move this session from your active sidebar into history storage.
+                    </p>
+                  </DialogTemplate>
+                </div>
+              )}
+            </div>
           </div>
         </DS>
       </div>

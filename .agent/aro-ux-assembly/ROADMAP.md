@@ -59,7 +59,7 @@ the Layout sections, resize the window, flip themes.
       overlay, Settings subpage, Dialog, Empty/Loading/Error (no shift)
 - [x] 4. Container-query width classes and collapse order implemented in the
       templates (right panes, then sidebar to rail, then toolbar to menu)
-- [ ] 5. Gallery "Layout" sections + screenshots at 3 widths (or BLOCKED)
+- [x] 5. Gallery "Layout" sections + screenshots at 3 widths (or BLOCKED)
 - [ ] 🛑 **GATE A**
 
 ---
