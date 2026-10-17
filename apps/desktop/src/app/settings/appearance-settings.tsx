@@ -584,6 +584,54 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
               }
               below={
                 <>
+                  {/* Aro Canonical Palettes quick picker */}
+                  <div className="mb-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[length:var(--conversation-caption-font-size)] font-medium text-(--ui-text-tertiary)">
+                        Aro Canonical Palettes
+                      </span>
+                      <span className="font-mono text-[10.5px] text-(--ui-text-quaternary) capitalize">
+                        Active: {themeName}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: 'obsidian', label: 'Obsidian', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
+                        { id: 'daylight', label: 'Daylight', swatch: ['#ffffff', '#f4f5f8', '#5b4ce6', '#0f9f90'] },
+                        { id: 'nord', label: 'Nord', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
+                        { id: 'ember', label: 'Ember', swatch: ['#171210', '#1f1815', '#ff8a4c', '#4fd1b5'] },
+                        { id: 'paper', label: 'Paper', swatch: ['#faf7f0', '#f4f0e6', '#8a5cf6', '#0f8f86'] },
+                        { id: 'ink', label: 'Ink', swatch: ['#14110d', '#1c1813', '#e2e8e0', '#e8663a'] },
+                      ].map(item => {
+                        const active = themeName === item.id
+                        return (
+                          <button
+                            className={cn(
+                              'flex min-w-[110px] items-center gap-2 rounded-[8px] border px-2.5 py-1.5 text-xs font-medium transition-all select-none',
+                              active
+                                ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary shadow-xs'
+                                : 'border-(--ui-border-soft) bg-(--ui-bg-card) text-(--ui-text-secondary) hover:border-border hover:bg-(--ui-bg-elevated) hover:text-foreground'
+                            )}
+                            key={item.id}
+                            onClick={() => {
+                              triggerHaptic('crisp')
+                              setTheme(item.id)
+                            }}
+                            type="button"
+                          >
+                            <span className="flex overflow-hidden rounded-[3px] border border-black/15 dark:border-white/10 shrink-0">
+                              {item.swatch.map(color => (
+                                <i className="h-3.5 w-1.5" key={color} style={{ background: color }} />
+                              ))}
+                            </span>
+                            <span className="truncate">{item.label}</span>
+                            {active && <Check className="ml-auto size-3 shrink-0 text-primary" />}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                   {/* One search box: filters your installed themes (the grid)
                       and live-searches the VS Code Marketplace below. */}
                   <SearchField

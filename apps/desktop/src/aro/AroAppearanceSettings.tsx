@@ -109,6 +109,53 @@ const DESIGN_PROFILE_ITEMS: readonly DesignProfileItem[] = [
   }
 ]
 
+export const PROTOTYPE_THEMES = [
+  { id: 'obsidian', label: 'Obsidian', desc: 'Deep neutral dark · violet accent', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
+  { id: 'daylight', label: 'Daylight', desc: 'Clean light · high legibility', swatch: ['#ffffff', '#f4f5f8', '#5b4ce6', '#0f9f90'] },
+  { id: 'nord', label: 'Nord', desc: 'Arctic blue-grey · frost accent', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
+  { id: 'ember', label: 'Ember', desc: 'Warm charcoal · copper accent', swatch: ['#171210', '#1f1815', '#ff8a4c', '#4fd1b5'] },
+  { id: 'paper', label: 'Paper', desc: 'Warm light · ink on paper', swatch: ['#faf7f0', '#f4f0e6', '#8a5cf6', '#0f8f86'] },
+  { id: 'ink', label: 'Ink', desc: 'Editorial dark · serif on near-black', swatch: ['#14110d', '#1c1813', '#e2e8e0', '#e8663a'] },
+] as const
+
+const DESIGN_SPECS: Record<DesignProfile, {
+  label: string
+  type: { display: string; body: string; meta: string; mono: string }
+  panels: { sidebar: number; context: number }
+  shape: { radiusPanel: string; radiusControl: string }
+}> = {
+  aro: {
+    label: 'Aro',
+    type: { display: 'Space Grotesk · 23–30px', body: 'Inter · 13.5px', meta: 'Inter · 11–12px', mono: 'JetBrains Mono · 11–11.5px' },
+    panels: { sidebar: 272, context: 368 },
+    shape: { radiusPanel: '10px', radiusControl: '7px' }
+  },
+  codex: {
+    label: 'Codex',
+    type: { display: 'Inter · 19–22px', body: 'Inter · 13px', meta: 'Inter · 11.5px', mono: 'JetBrains Mono · 11px' },
+    panels: { sidebar: 292, context: 400 },
+    shape: { radiusPanel: '8px', radiusControl: '6px' }
+  },
+  claude: {
+    label: 'Claude Code',
+    type: { display: 'Inter · 21–26px', body: 'Inter · 13.5px', meta: 'Inter · 12px', mono: 'JetBrains Mono · 11.5px' },
+    panels: { sidebar: 284, context: 382 },
+    shape: { radiusPanel: '12px', radiusControl: '8px' }
+  },
+  editorial: {
+    label: 'Editorial',
+    type: { display: 'Newsreader · 34–44px', body: 'DM Sans · 13.5px', meta: 'DM Sans · 11.5px', mono: 'JetBrains Mono · 11.5px' },
+    panels: { sidebar: 304, context: 420 },
+    shape: { radiusPanel: '4px', radiusControl: '3px' }
+  },
+  cursor: {
+    label: 'Cursor',
+    type: { display: 'Inter · 17–20px', body: 'Inter · 12.5px', meta: 'Inter · 11px', mono: 'JetBrains Mono · 10.5px' },
+    panels: { sidebar: 248, context: 352 },
+    shape: { radiusPanel: '6px', radiusControl: '5px' }
+  }
+}
+
 export function AroAppearanceSettings() {
   const navigate = useNavigate()
   const { themeName, setTheme } = useTheme()
@@ -381,7 +428,48 @@ export function AroAppearanceSettings() {
         </div>
       </section>
 
-      {/* 2. Density & Motion Controls */}
+      {/* 2. Color Themes (Prototype canonical palette) */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Color Theme
+          </h4>
+          <span className="font-mono text-[11px] text-muted-foreground">
+            Active: <strong className="text-foreground capitalize">{themeName}</strong>
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5">
+          {PROTOTYPE_THEMES.map(item => {
+            const isActive = themeName === item.id
+
+            return (
+              <button
+                aria-pressed={isActive}
+                className={cn(
+                  'flex min-w-[130px] items-center gap-2.5 rounded-[9px] border px-3 py-2 text-xs font-medium transition-all select-none',
+                  isActive
+                    ? 'border-accent bg-accent/10 text-foreground ring-1 ring-accent shadow-xs'
+                    : 'border-(--ui-border-soft) bg-card/50 text-muted-foreground hover:border-border hover:bg-card/80 hover:text-foreground'
+                )}
+                key={item.id}
+                onClick={() => handleApplyRecommendedTheme(item.id)}
+                type="button"
+              >
+                <span className="flex overflow-hidden rounded-[3px] border border-black/20 dark:border-white/10 shrink-0">
+                  {item.swatch.map(color => (
+                    <i className="h-4 w-2" key={color} style={{ background: color }} />
+                  ))}
+                </span>
+                <span className="truncate">{item.label}</span>
+                {isActive && <IconCheck className="ml-auto size-3 shrink-0 text-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 3. Density & Motion Controls */}
       <section className="divide-y divide-(--ui-border-soft) rounded-xl border border-(--ui-border-soft) bg-card/40">
         {/* Density */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-4">
@@ -567,6 +655,39 @@ export function AroAppearanceSettings() {
             </div>
             <ChevronRight className="size-3 text-muted-foreground" />
           </button>
+        </div>
+      </section>
+
+      {/* 4. Specifications */}
+      <section className="border-t border-(--ui-border-soft) pt-4">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {DESIGN_SPECS[currentProfile]?.label ?? selectedItem.label} Specifications
+        </h4>
+        <div className="mt-2.5 grid gap-x-6 gap-y-1.5 font-mono text-[10.5px] text-muted-foreground sm:grid-cols-2">
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Display</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.type.display}</span>
+          </div>
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Body</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.type.body}</span>
+          </div>
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Meta</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.type.meta}</span>
+          </div>
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Mono</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.type.mono}</span>
+          </div>
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Sidebar / Context</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.panels.sidebar}px / {DESIGN_SPECS[currentProfile]?.panels.context}px</span>
+          </div>
+          <div className="flex justify-between border-b border-(--ui-border-soft)/40 pb-1">
+            <span>Panel / Control Radius</span>
+            <span className="text-foreground">{DESIGN_SPECS[currentProfile]?.shape.radiusPanel} / {DESIGN_SPECS[currentProfile]?.shape.radiusControl}</span>
+          </div>
         </div>
       </section>
     </div>

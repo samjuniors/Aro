@@ -3287,4 +3287,154 @@
   }
 }
 
+/* ============================================================================
+   ARO SETTINGS & CONTROLS POLISH (Prototype parity)
+   ----------------------------------------------------------------------------
+   Card containers with rounded-[11px] geometry, hairline dividers, Apple-style
+   pill switches, prototype segmented control pills, and refined navigation.
+   ============================================================================ */
+
+/* Settings Navigation Sidebar */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] {
+  background: var(--aro-sunken);
+  border-right: 1px solid var(--aro-line-soft);
+  padding-top: 10px;
+  padding-inline: 8px;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'] {
+  height: 29px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  gap: 8px;
+  padding-inline: 8px;
+  color: var(--aro-ink-3);
+  border-color: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-']:hover {
+  background: color-mix(in srgb, var(--aro-hover) 60%, transparent);
+  color: var(--aro-ink-2);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'][aria-current='page'],
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] button[data-tour^='nav-'].bg-\(--ui-bg-tertiary\) {
+  background: var(--aro-hover) !important;
+  color: var(--aro-ink) !important;
+  font-weight: 500;
+}
+
+/* Settings Main View & Headers */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main {
+  background: var(--aro-bg);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main h1,
+:root[data-aro-ui='true'] .settings-view h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--aro-ink);
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main p,
+:root[data-aro-ui='true'] .settings-view p {
+  color: var(--aro-ink-3);
+}
+
+/* Settings Group Cards (Prototype 11px radius, hairline border, raise surface) */
+:root[data-aro-ui='true'] .settings-group,
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main section.overflow-hidden.rounded-\[11px\],
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main div.grid.gap-1 > div.rounded-lg {
+  border-radius: 11px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-raise);
+  overflow: hidden;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main div.grid.gap-1 > div.rounded-lg {
+  padding-inline: 14px;
+}
+
+/* Apple-style Pill Switches */
+:root[data-aro-ui='true'] button[data-slot='switch'],
+:root[data-aro-ui='true'] [role='switch']:not([data-seg]) {
+  border-radius: 9999px !important;
+  height: 22px;
+  width: 38px;
+  padding: 2px;
+  transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease;
+}
+
+:root[data-aro-ui='true'] button[data-slot='switch'][data-state='checked'],
+:root[data-aro-ui='true'] [role='switch'][aria-checked='true'] {
+  background-color: var(--aro-iris) !important;
+  border-color: transparent !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-aro-ui='true'] button[data-slot='switch'][data-state='unchecked'],
+:root[data-aro-ui='true'] [role='switch'][aria-checked='false'] {
+  background-color: color-mix(in srgb, var(--aro-ink-4) 30%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--aro-line-strong) 80%, transparent) !important;
+}
+
+:root[data-aro-ui='true'] span[data-slot='switch-thumb'],
+:root[data-aro-ui='true'] [role='switch'] > span {
+  border-radius: 9999px !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26), 0 1px 1px rgba(0, 0, 0, 0.12) !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Segmented Controls (Prototype smooth pill track) */
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr {
+  border-radius: 8px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  padding: 2px;
+  gap: 2px;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button {
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='true'] {
+  background: var(--aro-raise) !important;
+  color: var(--aro-ink) !important;
+  box-shadow: var(--shadow-e1) !important;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='false'] {
+  color: var(--aro-ink-3) !important;
+}
+
+:root[data-aro-ui='true'] .inline-grid.auto-cols-fr button[aria-pressed='false']:hover {
+  color: var(--aro-ink-2) !important;
+}
+
+/* Settings Inputs & Selects */
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main input:not([type='checkbox']):not([type='radio']),
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main select {
+  border-radius: 7px;
+  border: 1px solid var(--aro-line);
+  background: var(--aro-sunken);
+  color: var(--aro-ink);
+  font-size: 12px;
+}
+
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main input:focus,
+:root[data-aro-ui='true'] [data-tour='overlay-nav'] ~ main select:focus {
+  border-color: color-mix(in srgb, var(--aro-iris) 60%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--aro-iris) 20%, transparent);
+}
+
+
 

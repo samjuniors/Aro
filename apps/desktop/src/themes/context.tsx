@@ -242,8 +242,9 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
 
   const isAro = root.dataset.aroUi === 'true'
   if (isAro && typeof window !== 'undefined') {
-    const savedAroTheme = localStorage.getItem('aro.theme')
-    root.dataset.theme = savedAroTheme || (['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName) ? skinName : 'obsidian')
+    const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
+    const effectiveTheme = isProtoTheme ? skinName : (localStorage.getItem('aro.theme') || 'obsidian')
+    root.dataset.theme = effectiveTheme
   } else {
     root.dataset.theme = skinName
   }
@@ -549,6 +550,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setPreview(null)
     setThemeNameState(next)
     skinPref.assign(liveProfile(), next)
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aro.theme', next)
+        localStorage.setItem('conductor.theme', next)
+        document.documentElement.dataset.theme = next
+        window.dispatchEvent(new CustomEvent('aro:theme', { detail: next }))
+      }
+    } catch {}
   }, [])
 
   const setMode = useCallback((next: ThemeMode) => {
