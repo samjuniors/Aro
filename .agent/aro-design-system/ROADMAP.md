@@ -104,7 +104,7 @@ Map each item to `port/AREA_PLAN.md` areas; list routes from Step 0.
 
 **C1 Shell (A1):** titlebar/tabs, sidebar + profile rail, panes chrome,
 statusbar, window glass. **Check:** resize, glass, tray, drag/drop, focus.
-- [x] 8. Titlebar/tabs  - [x] 9. Sidebar/rail  - [ ] 10. Panes/statusbar
+- [x] 8. Titlebar/tabs  - [x] 9. Sidebar/rail  - [x] 10. Panes/statusbar
 - [ ] 🛑 **GATE C1**
 
 **C2 Chat (A2, A3):** transcript, tool rows/cards, inline widgets, composer,

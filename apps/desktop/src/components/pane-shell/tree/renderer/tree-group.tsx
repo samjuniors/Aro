@@ -862,7 +862,7 @@ export function TreeGroup({
                     </PaneGroupContext.Provider>
                   ) : (
                     isActive && (
-                      <div className="p-3 font-mono text-[11px] text-(--ui-text-quaternary)">
+                      <div className="p-3 font-mono text-xs text-(--ui-text-quaternary)">
                         {t.zones.missingPane(paneId)}
                       </div>
                     )
@@ -1050,7 +1050,7 @@ function ZoneDropOverlay({ node }: { node: GroupNode }) {
       <div
         className={cn(
           DROP_SHEET_CLASS,
-          // Transition ONLY the box + colors. `transition-all` also animated
+          // Transition ONLY the box + colors. Blanket transitions also animated
           // backdrop-filter, and a blur interpolating while the insets glide
           // re-blurs half a zone every frame — the single most expensive
           // paint in the whole drag.
