@@ -49,9 +49,9 @@ sidebar (`/aro-design`), switch themes, look at every section.
 - [x] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
       value-to-role map (in the report, not DESIGN.md); decide hex-scan
       exclusions (theme/palette/shiki data files)
-- [~] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
+- [x] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
       JSON (ratchet: counts only shrink; `design-allow:` lines ignored)
-- [ ] 3. Tokens (additive only; parity test must stay green): add
+- [~] 3. Tokens (additive only; parity test must stay green): add
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
       a `prefers-reduced-motion` block
   - [ ] 3.1 Contrast table, every role pair, all 6 themes
