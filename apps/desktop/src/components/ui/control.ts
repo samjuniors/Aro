@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 // chrome (background, border tint, hover, focus glow, invalid state) comes from
 // the `desktop-input-chrome` CSS so every control shares one exact look.
 export const controlVariants = cva(
-  'desktop-input-chrome w-full min-w-0 rounded-[2.5px] border text-xs leading-4 text-foreground outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+  'desktop-input-chrome w-full min-w-0 rounded-control border text-xs leading-4 text-foreground outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       size: {
