@@ -114,11 +114,11 @@ Artifacts, Cron, Profiles, Agents, Starmap, Aro pages. **Check:** each route,
 empty/loading/error, narrow and wide.
 - [x] 19. Workspace and projects  - [x] 20. Capabilities and system views
 - [x] 21. Aro pages and remaining overlays
-- [ ] 🛑 **GATE C4**
+- [x] 🛑 **GATE C4**
 
 **C5 Boot and first run:** install, onboarding, connecting, boot failure,
 reauth, update, error boundary, guide startup. Recovery semantics unchanged.
-- [ ] 22. First-run and boot surfaces
+- [x] 22. First-run and boot surfaces
 - [ ] 🛑 **GATE C5**
 
 ---
