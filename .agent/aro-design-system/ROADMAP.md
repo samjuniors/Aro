@@ -151,7 +151,7 @@ non-English locale.
 - [x] 22. Perf (long transcript, several panes, live stream)
 - [x] 23. A11y (keyboard-only, contrast, roles, reduced motion)
 - [x] 24. Prod build check + `DESIGN.md` sync
-- [ ] 25. Extensibility proof: add one throwaway component using only
+- [x] 25. Extensibility proof: add one throwaway component using only
       `.agent/aro-design-system/EXTENDING.md` (gallery section, test, ratchet
       stays clean), fix any gap in EXTENDING.md, then remove the throwaway
 - [ ] 🛑 **GATE D: release candidate on `ui-port`**
