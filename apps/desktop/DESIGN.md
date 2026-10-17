@@ -183,6 +183,12 @@ values)*:
 | `--aro-text-xl` | 18 / 26 | Page headings |
 | `--aro-text-mono` | 12 / 18 | Logs, code, paths |
 
+Tailwind utilities: `text-aro-xs|sm|md|lg|xl|mono` (font-size only, so existing
+leading is inherited; set `leading-*` explicitly where a row needs the
+`--aro-text-*-lh` value). Every new radius, text or shadow theme key must also
+be added to the `extendTailwindMerge` theme in `src/lib/utils.ts`, otherwise
+`cn()` mis-merges it (a size class next to a color class silently disappears).
+
 Numbers that change (counts, timers, diffs) use `tabular-nums`. Chat text size
 is governed by *Chat typography* (section 10) and the UI Scale zoom; do not
 multiply global tokens or nest CSS zoom.
@@ -517,6 +523,12 @@ lowered in the same change. The baseline only shrinks. A line with
 
 A removed class such as `rounded-md` emits nothing and silently renders
 square, which is why the reset is last and the test catches stragglers first.
+
+`node scripts/design/codemod.mjs <radius|type|all> [--write]` re-applies the
+migrations (legacy and arbitrary radii to role classes, hand-picked text sizes
+to `text-aro-*`). It is idempotent; use it instead of hand-resolving a patch
+conflict. The ratchet is per file and tight: raise nothing, and lower the
+baseline in the same change with `UPDATE_RATCHET=1 npx vitest run no-raw-visuals`.
 
 Additional gates for this phase: typecheck, lint, existing unit tests, the
 no-native-title test, and the visual gallery check (section 14).

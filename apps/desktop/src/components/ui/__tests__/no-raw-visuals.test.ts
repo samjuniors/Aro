@@ -1,49 +1,106 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import baseline from './no-raw-visuals.baseline.json' with { type: 'json' }
-
-// Static-analysis ratchet guard: prevents addition of raw/arbitrary visual values
-// in the desktop renderer. As screens and host primitives are migrated to the
-// unified Aro design system, counts in baseline.json are ratcheted down and must
-// never grow.
+// Per-file ratchet for raw visual values in the desktop renderer (DESIGN.md 13).
 //
-// Ignored:
-// - Lines containing `design-allow:` comments for intentional, documented exceptions
-// - Theme definition files and token bridges
+//  - A file may never gain a hit for any metric.
+//  - A count that drops MUST be lowered in no-raw-visuals.baseline.json in the
+//    same change (so the baseline can only shrink and never hides new debt).
+//  - `UPDATE_RATCHET=1 npx vitest run no-raw-visuals` rewrites the baseline, but
+//    only when nothing grew (or on the very first run, `generated: false`).
+//  - A line carrying `design-allow: <reason>` is not counted.
+//
+// The patterns are deliberately broad (px, rem, decimals, any side variant):
+// an earlier version only matched `text-[10px]`-style integers and reported 0
+// while hundreds of `text-[0.6875rem]` uses went unseen.
 
 const SRC_ROOT = resolve(__dirname, '../../..')
+const BASELINE_PATH = resolve(__dirname, 'no-raw-visuals.baseline.json')
 
-const EXCLUDED_RELATIVE_PATHS = [
+const EXCLUDED_RELATIVE_PATHS = new Set([
   'aro/tokens.css',
   'aro/host-theme.css',
+  'styles.css',
   'themes/presets.ts',
-  'themes/palettes.ts'
-]
+  'themes/palettes.ts',
+  'components/brand-mark.tsx'
+])
+
+const SIDE = '(?:-(?:t|r|b|l|tl|tr|bl|br|s|e|ss|se|es|ee))?'
+
+type Metric =
+  | 'hexLiterals'
+  | 'rawShadows'
+  | 'roundedArbitrary'
+  | 'roundedLegacy'
+  | 'textArbitrary'
+  | 'transitionAll'
+  | 'zArbitrary'
+
+interface Counter {
+  codeOnly?: boolean
+  hint: string
+  line?: (line: string) => boolean
+  re: RegExp
+}
+
+const COUNTERS: Record<Metric, Counter> = {
+  roundedLegacy: {
+    // Stock sizes resolve to the legacy 0.2 scalar (2 to 5px), and bare `rounded`
+    // is a fixed 0.25rem: both are a different shape language from the roles.
+    re: new RegExp(`\\brounded${SIDE}-(?:xs|sm|md|lg|xl|2xl|3xl|aro-[a-z0-9]+)(?![\\w-])`, 'g'),
+    hint: 'use rounded-control / rounded-panel / rounded-overlay (DESIGN.md 3.1)'
+  },
+  roundedArbitrary: {
+    re: new RegExp(`\\brounded${SIDE}-\\[(?!inherit\\])[^\\]]+\\]`, 'g'),
+    hint: 'use a role radius, never rounded-[...]'
+  },
+  textArbitrary: {
+    re: /\btext-\[\d*\.?\d+(?:px|rem)\]/g,
+    hint: 'use text-aro-xs|sm|md|lg|xl (DESIGN.md 3.6)'
+  },
+  transitionAll: {
+    re: /\btransition-all\b/g,
+    hint: 'name the properties; use --aro-dur-* / --aro-ease-*'
+  },
+  rawShadows: {
+    re: /\bshadow-(?:sm|md|lg|xl|2xl|inner|\[[^\]]+\])(?![\w-])/g,
+    hint: 'use --aro-shadow-* / shadow-nous roles'
+  },
+  zArbitrary: {
+    re: /\bz-\[[^\]]+\]/g,
+    hint: 'use the z ladder (DESIGN.md 3.8)'
+  },
+  hexLiterals: {
+    codeOnly: true,
+    re: /#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\b/g,
+    line: line => !/^\s*(\/\/|\*|\/\*)/.test(line),
+    hint: 'use a color token'
+  }
+}
+
+const METRICS = Object.keys(COUNTERS) as Metric[]
+
+type FileCounts = Partial<Record<Metric, number>>
 
 function collectSourceFiles(dir: string): string[] {
   const results: string[] = []
 
   for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'dist' || entry === '__tests__' || entry === 'build') {
+    if (['node_modules', 'dist', '__tests__', 'build', 'fonts'].includes(entry)) {
       continue
     }
 
     const fullPath = join(dir, entry)
-    const stat = statSync(fullPath)
 
-    if (stat.isDirectory()) {
+    if (statSync(fullPath).isDirectory()) {
       results.push(...collectSourceFiles(fullPath))
-    } else if (
-      (entry.endsWith('.tsx') || entry.endsWith('.ts') || entry.endsWith('.css')) &&
-      !entry.endsWith('.test.ts') &&
-      !entry.endsWith('.test.tsx')
-    ) {
+    } else if (/\.(ts|tsx|css)$/.test(entry) && !/\.test\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
       const rel = fullPath.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
 
-      if (!EXCLUDED_RELATIVE_PATHS.includes(rel)) {
+      if (!EXCLUDED_RELATIVE_PATHS.has(rel)) {
         results.push(fullPath)
       }
     }
@@ -52,84 +109,123 @@ function collectSourceFiles(dir: string): string[] {
   return results
 }
 
-describe('no-raw-visuals ratchet test', () => {
-  it('enforces that raw visual counts do not exceed the recorded baseline', () => {
-    const files = collectSourceFiles(SRC_ROOT)
+function scan(): Record<string, FileCounts> {
+  const out: Record<string, FileCounts> = {}
 
-    let roundedArbitrary = 0
-    let textArbitrary = 0
-    let transitionAll = 0
-    let rawShadows = 0
+  for (const file of collectSourceFiles(SRC_ROOT)) {
+    const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
+    const isCode = /\.tsx?$/.test(file)
+    const counts: FileCounts = {}
 
-    const violations: string[] = []
+    for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
+      if (line.includes('design-allow:')) {
+        continue
+      }
 
-    for (const file of files) {
-      const content = readFileSync(file, 'utf8')
-      const lines = content.split(/\r?\n/)
-      const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
+      for (const metric of METRICS) {
+        const counter = COUNTERS[metric]
 
-      lines.forEach((line, lineIdx) => {
-        if (line.includes('design-allow:')) {
-          return
+        if (counter.codeOnly && !isCode) {
+          continue
         }
 
-        const rMatches = line.match(/\brounded-\[\d+px\]/g)
-
-        if (rMatches) {
-          roundedArbitrary += rMatches.length
-          violations.push(`${rel}:${lineIdx + 1} arbitrary radius: ${rMatches.join(', ')}`)
+        if (counter.line && !counter.line(line)) {
+          continue
         }
 
-        const tMatches = line.match(/\btext-\[\d+px\]/g)
+        const hits = line.match(counter.re)
 
-        if (tMatches) {
-          textArbitrary += tMatches.length
-          violations.push(`${rel}:${lineIdx + 1} arbitrary text: ${tMatches.join(', ')}`)
+        if (hits) {
+          counts[metric] = (counts[metric] ?? 0) + hits.length
         }
+      }
 
-        const trMatches = line.match(/\btransition-all\b/g)
+      // Tailwind v4's bare `rounded` is a fixed 0.25rem. Class-string lines only.
+      if (isCode && !/^\s*(\/\/|\*|\/\*)/.test(line) && /["'`]/.test(line)) {
+        const bare = line.match(/(?:^|[\s"'`:{(])rounded(?=[\s"'`})\]]|$)/g)
 
-        if (trMatches) {
-          transitionAll += trMatches.length
-          violations.push(`${rel}:${lineIdx + 1} transition-all`)
+        if (bare) {
+          counts.roundedLegacy = (counts.roundedLegacy ?? 0) + bare.length
         }
-
-        const shMatches = line.match(/\bshadow-(sm|md|lg|xl|2xl|inner|\[[^\]]+\])\b/g)
-
-        if (shMatches) {
-          rawShadows += shMatches.length
-          violations.push(`${rel}:${lineIdx + 1} raw shadow: ${shMatches.join(', ')}`)
-        }
-      })
+      }
     }
 
-    const current = {
-      roundedArbitrary,
-      textArbitrary,
-      transitionAll,
-      rawShadows
+    if (Object.keys(counts).length > 0) {
+      out[rel] = counts
+    }
+  }
+
+  return out
+}
+
+interface Baseline {
+  description: string
+  files: Record<string, FileCounts>
+  // false only for the first run after the file is created; then
+  // `UPDATE_RATCHET=1` may record the starting counts. Always true afterwards.
+  generated: boolean
+  version: number
+}
+
+function readBaseline(): Baseline {
+  return JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) as Baseline
+}
+
+function sortedFiles(files: Record<string, FileCounts>): Record<string, FileCounts> {
+  return Object.fromEntries(
+    Object.keys(files)
+      .sort()
+      .map(path => [
+        path,
+        Object.fromEntries(Object.keys(files[path]!).sort().map(m => [m, files[path]![m as Metric]]))
+      ])
+  )
+}
+
+describe('no-raw-visuals ratchet', () => {
+  it('never grows, and the baseline never hides shrinkage', () => {
+    const current = scan()
+    const baseline = readBaseline()
+
+    if (!baseline.generated && process.env.UPDATE_RATCHET === '1') {
+      writeFileSync(
+        BASELINE_PATH,
+        `${JSON.stringify({ ...baseline, generated: true, files: sortedFiles(current) }, null, 2)}\n`
+      )
+
+      return
     }
 
-    const { ratchet } = baseline
+    const grew: string[] = []
+    const shrank: string[] = []
+
+    for (const path of new Set([...Object.keys(current), ...Object.keys(baseline.files)])) {
+      for (const metric of METRICS) {
+        const now = current[path]?.[metric] ?? 0
+        const before = baseline.files[path]?.[metric] ?? 0
+
+        if (now > before) {
+          grew.push(`${path}: ${metric} ${before} -> ${now} (${COUNTERS[metric].hint})`)
+        } else if (now < before) {
+          shrank.push(`${path}: ${metric} ${before} -> ${now}`)
+        }
+      }
+    }
+
+    expect(grew, `Raw visual values grew:\n${grew.join('\n')}`).toEqual([])
+
+    if (shrank.length > 0 && process.env.UPDATE_RATCHET === '1') {
+      writeFileSync(
+        BASELINE_PATH,
+        `${JSON.stringify({ ...baseline, files: sortedFiles(current) }, null, 2)}\n`
+      )
+
+      return
+    }
 
     expect(
-      current.roundedArbitrary,
-      `rounded-[Npx] count grew (${current.roundedArbitrary} > ${ratchet.roundedArbitrary}). Migrations must only reduce arbitrary radii.`
-    ).toBeLessThanOrEqual(ratchet.roundedArbitrary)
-
-    expect(
-      current.textArbitrary,
-      `text-[Npx] count grew (${current.textArbitrary} > ${ratchet.textArbitrary}). Migrations must only reduce arbitrary text sizes.`
-    ).toBeLessThanOrEqual(ratchet.textArbitrary)
-
-    expect(
-      current.transitionAll,
-      `transition-all count grew (${current.transitionAll} > ${ratchet.transitionAll}). Use targeted transitions with --aro-dur/ease.`
-    ).toBeLessThanOrEqual(ratchet.transitionAll)
-
-    expect(
-      current.rawShadows,
-      `raw shadow count grew (${current.rawShadows} > ${ratchet.rawShadows}). Use --aro-shadow-* tokens.`
-    ).toBeLessThanOrEqual(ratchet.rawShadows)
+      shrank,
+      `Counts dropped. Lower the baseline in this change: UPDATE_RATCHET=1 npx vitest run no-raw-visuals\n${shrank.join('\n')}`
+    ).toEqual([])
   })
 })
