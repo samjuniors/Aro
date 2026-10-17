@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useEffect } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useRef } from 'react'
 
 import { TITLEBAR_HEIGHT } from '@/app/shell/titlebar'
 import { TitlebarIcon } from '@/app/shell/titlebar-icon'
@@ -42,6 +42,18 @@ export function OverlayView({
   rootClassName,
   titlebarActions
 }: OverlayViewProps) {
+  const triggerRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+    return () => {
+      if (triggerRef.current && document.contains(triggerRef.current)) {
+        triggerRef.current.focus()
+      }
+    }
+  }, [])
+
   const closeOverlay = () => {
     triggerHaptic('close')
     onClose()

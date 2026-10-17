@@ -100,13 +100,13 @@ its controls, status stack, approvals. **Check:** send, stream, stop,
 approve, queue, attach, long transcript, no jump while streaming.
 - [x] 13. Transcript  - [x] 14. Tool rows and widgets
 - [x] 15. Composer, status stack, approvals
-- [ ] 🛑 **GATE C2**
+- [x] 🛑 **GATE C2**
 
 **C3 Overlays and settings:** Settings (19 categories) on Form page template,
 Command Center and pickers, dialogs, notifications. **Check:** each category
 opens, saves, resets; focus in/out; Esc.
-- [ ] 16. Settings  - [ ] 17. Command Center and pickers
-- [ ] 18. Dialogs, confirm, notifications
+- [x] 16. Settings  - [x] 17. Command Center and pickers
+- [x] 18. Dialogs, confirm, notifications
 - [ ] 🛑 **GATE C3**
 
 **C4 Pages:** workspace and projects, capabilities, Skills, Messaging,
