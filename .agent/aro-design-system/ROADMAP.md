@@ -89,8 +89,8 @@ app behaves as before.
 **Founder check:** run the app; buttons, inputs, menus, dialogs look
 consistent on 6 existing screens; smoke test.
 
-- [~] 6. One primitive per commit, baseline lowered each commit
-- [ ] 7. Smoke test + before/after screenshots of 6 existing screens
+- [x] 6. One primitive per commit, baseline lowered each commit
+- [x] 7. Smoke test + before/after screenshots of 6 existing screens
 - [ ] 🛑 **GATE B**
 
 ---
