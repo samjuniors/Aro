@@ -127,12 +127,12 @@ Skills/Messaging/Artifacts/Cron/Profiles/Agents/Starmap, Aro pages
 route opened; empty/loading/error states.
 - [x] 17. Workspace/projects  - [x] 18. Capabilities + system views
 - [x] 19. Aro pages + remaining overlays
-- [ ] 🛑 **GATE C4**
+- [x] 🛑 **GATE C4**
 
 **C5 Boot/onboarding/update/error:** install, onboarding, connecting, boot
 failure, reauth, update, error boundary, guide startup. Recovery semantics
 unchanged. **Check:** force each state.
-- [ ] 20. Boot surfaces
+- [x] 20. Boot surfaces
 - [ ] 🛑 **GATE C5**
 
 ---

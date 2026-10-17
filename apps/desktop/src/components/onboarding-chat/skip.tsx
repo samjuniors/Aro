@@ -11,7 +11,7 @@ export function OnboardingSkip() {
 
   return (
     <button
-      className="ml-auto text-[11px] text-(--ui-text-quaternary) transition-colors hover:text-(--ui-text-secondary)"
+      className="ml-auto text-xs text-(--ui-text-quaternary) transition-colors hover:text-(--ui-text-secondary)"
       onClick={skipChatOnboarding}
       type="button"
     >
