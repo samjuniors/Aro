@@ -107,13 +107,13 @@ Command Center and pickers, dialogs, notifications. **Check:** each category
 opens, saves, resets; focus in/out; Esc.
 - [x] 16. Settings  - [x] 17. Command Center and pickers
 - [x] 18. Dialogs, confirm, notifications
-- [ ] 🛑 **GATE C3**
+- [x] 🛑 **GATE C3**
 
 **C4 Pages:** workspace and projects, capabilities, Skills, Messaging,
 Artifacts, Cron, Profiles, Agents, Starmap, Aro pages. **Check:** each route,
 empty/loading/error, narrow and wide.
-- [ ] 19. Workspace and projects  - [ ] 20. Capabilities and system views
-- [ ] 21. Aro pages and remaining overlays
+- [x] 19. Workspace and projects  - [x] 20. Capabilities and system views
+- [x] 21. Aro pages and remaining overlays
 - [ ] 🛑 **GATE C4**
 
 **C5 Boot and first run:** install, onboarding, connecting, boot failure,
