@@ -148,7 +148,7 @@ verified; a11y pass; `DESIGN.md` matches code; no new failures vs baseline;
 non-English locale.
 
 - [x] 21. Theme radius reset (`--radius-*: initial`) + straggler fixes
-- [ ] 22. Perf (long transcript, several panes, live stream)
+- [x] 22. Perf (long transcript, several panes, live stream)
 - [ ] 23. A11y (keyboard-only, contrast, roles, reduced motion)
 - [ ] 24. Prod build check + `DESIGN.md` sync
 - [ ] 25. Extensibility proof: add one throwaway component using only
