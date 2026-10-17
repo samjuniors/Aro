@@ -33,7 +33,11 @@ Every 🛑 GATE: agent stops and waits for "continue".
    visible.
 Record answers as D-UI-008..010 below.
 
-(Answers and later decisions are appended here.)
+- D-UI-008 Radius and elevation language: **keep code tokens (7/10/14px, role shadows)** (2026-10-17).
+- D-UI-009 Visual direction: **polish for consistency only, keep the prototype look** (2026-10-17).
+- D-UI-010 `/aro-design` in production builds: **dev-only (hidden in prod)** (2026-10-17).
+
+(Later decisions appended here.)
 
 ## PHASE A: Design system (additive; no screen/primitive edits)
 
@@ -44,32 +48,32 @@ RTL, reduced motion; ratchet test in place; no new check failures.
 **Founder check:** `npm run dev` in `apps/desktop`, open **Aro Design** in the
 sidebar (`/aro-design`), switch themes, look at every section.
 
-- [ ] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
+- [x] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
       failing lists, boot smoke); list the 21 fixed routes + 19 settings
       categories; list the document conflicts named in AGENT.md section 4
       and propose a resolution for each; explain how Aro themes reach the host app
       (`host-theme.css`, `src/themes`); confirm two-kit default (AGENT.md)
-- [ ] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
+- [x] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
       value-to-role map (in the report, not DESIGN.md); hex-scan
       exclusions start at `src/themes/**`, `*.test.*`, `src/lib/mcp-brands.tsx`,
       `src/app/right-sidebar/terminal/selection.ts`, gallery swatches
       (`design-allow`); confirm by counting
-- [ ] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
+- [x] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
       JSON (ratchet: counts only shrink; `design-allow:` lines ignored)
-- [ ] 3. Tokens (additive only; parity test must stay green): add
+- [x] 3. Tokens (additive only; parity test must stay green): add
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
       a `prefers-reduced-motion` block
-  - [ ] 3.1 Contrast table, every role pair, all 6 themes
-- [ ] 4. Components on the contract, host primitives first: `Button`,
+  - [x] 3.1 Contrast table, every role pair, all 6 themes
+- [x] 4. Components on the contract, host primitives first: `Button`,
       `Input`, `Textarea`, `Select`, `DropdownMenu`, `Popover`, `Tooltip`,
       `Dialog`, `ConfirmDialog`, `Tabs`, `SegmentedControl`, `Switch`,
       `Checkbox`, `Badge`, `ListRow`, `Loader`, `EmptyState`, `ErrorState`,
       `LogView`, `Skeleton`, `Kbd`, `FieldMessage` (new), `CardStack`/toast
       look. Built beside the current ones; existing props unchanged
-- [ ] 5. Extend `/aro-design`: sections for each component x variant x size x
+- [x] 5. Extend `/aro-design`: sections for each component x variant x size x
       state, theme switcher (6), glass toggle, RTL, reduced motion;
       fixtures only (no stores/backend)
-  - [ ] 5.1 Screenshots per section (or BLOCKED with reason)
+  - [x] 5.1 Screenshots per section (or BLOCKED with reason)
 - [ ] 🛑 **GATE A**
 
 ---
