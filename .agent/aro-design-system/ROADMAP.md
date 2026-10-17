@@ -46,10 +46,10 @@ sidebar (`/aro-design`), switch themes, look at every section.
       failing lists, boot smoke); list the 21 fixed routes + 19 settings
       categories; explain how Aro themes reach the host app
       (`host-theme.css`, `src/themes`); confirm two-kit default (AGENT.md)
-- [~] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
+- [x] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
       value-to-role map (in the report, not DESIGN.md); decide hex-scan
       exclusions (theme/palette/shiki data files)
-- [ ] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
+- [~] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
       JSON (ratchet: counts only shrink; `design-allow:` lines ignored)
 - [ ] 3. Tokens (additive only; parity test must stay green): add
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
