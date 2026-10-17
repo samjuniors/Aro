@@ -19,7 +19,12 @@
   align-items: start;
   gap: var(--status-gap);
   padding: 0.25rem 0.625rem 0.25rem var(--status-inset);
-  border-radius: 0;
+  border-radius: var(--aro-radius-control, 7px);
+  transition: background-color var(--aro-dur-fast, 140ms) var(--aro-ease-standard, ease);
+}
+
+[data-slot='composer-status-stack'] .status-row:hover {
+  background: var(--aro-hover);
 }
 
 [data-slot='composer-status-stack'] .status-row-icon {
@@ -47,6 +52,15 @@
   width: 1rem;
   height: 1rem;
   margin: 0;
+  border-radius: var(--aro-radius-control, 7px);
+  color: var(--aro-ink-3);
+  transition: color var(--aro-dur-fast, 140ms) var(--aro-ease-standard, ease),
+    background-color var(--aro-dur-fast, 140ms) var(--aro-ease-standard, ease);
+}
+
+.status-dismiss-button:hover {
+  color: var(--aro-ink);
+  background: var(--aro-hover);
 }
 
 .status-dismiss-button > .codicon {
@@ -105,3 +119,11 @@
 [data-slot='composer-status-stack'] .status-subagent-detail {
   padding-left: calc(0.5rem + var(--status-nest) * 2 + var(--status-action-width) + var(--status-icon-width) + var(--status-gap) * 2);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='composer-status-stack'] .status-row,
+  .status-dismiss-button {
+    transition: none !important;
+  }
+}
+
