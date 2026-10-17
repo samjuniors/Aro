@@ -166,6 +166,9 @@
   --radius-2xl: calc(var(--radius-scalar) * 1.5rem);
   --radius-3xl: calc(var(--radius-scalar) * 2rem);
   --radius-4xl: calc(var(--radius-scalar) * 2.5rem);
+  --radius-control: var(--aro-radius-control, 7px);
+  --radius-panel: var(--aro-radius-panel, 10px);
+  --radius-overlay: var(--aro-radius-overlay, 14px);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -202,6 +205,8 @@
     0 0 0 0.0625rem color-mix(in srgb, var(--dt-foreground) 8%, transparent),
     0 0.75rem 2rem color-mix(in srgb, #000 12%, transparent);
   --shadow-composer: 0 0.0625rem 0.125rem color-mix(in srgb, #000 5%, transparent);
+  --shadow-menu: var(--aro-shadow-menu);
+  --shadow-panel: var(--aro-shadow-panel);
 }
 
 @layer base {

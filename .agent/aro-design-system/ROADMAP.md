@@ -74,7 +74,7 @@ sidebar (`/aro-design`), switch themes, look at every section.
       state, theme switcher (6), glass toggle, RTL, reduced motion;
       fixtures only (no stores/backend)
   - [x] 5.1 Screenshots per section (or BLOCKED with reason)
-- [ ] 🛑 **GATE A**
+- [x] 🛑 **GATE A**
 
 ---
 
@@ -89,7 +89,7 @@ app behaves as before.
 **Founder check:** run the app; buttons, inputs, menus, dialogs look
 consistent on 6 existing screens; smoke test.
 
-- [ ] 6. One primitive per commit, baseline lowered each commit
+- [~] 6. One primitive per commit, baseline lowered each commit
 - [ ] 7. Smoke test + before/after screenshots of 6 existing screens
 - [ ] 🛑 **GATE B**
 

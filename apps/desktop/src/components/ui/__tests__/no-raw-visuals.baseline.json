@@ -2,9 +2,9 @@
   "version": 1,
   "description": "Ratchet baseline for raw visual classes in apps/desktop/src. Counts must only shrink over time.",
   "ratchet": {
-    "roundedArbitrary": 243,
+    "roundedArbitrary": 238,
     "textArbitrary": 373,
-    "transitionAll": 35,
-    "rawShadows": 52
+    "transitionAll": 34,
+    "rawShadows": 50
   }
 }
