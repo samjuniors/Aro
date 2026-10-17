@@ -43,3 +43,30 @@ export function FieldHint({ children, error }: { children: ReactNode; error?: bo
     <p className={cn('text-[0.66rem] leading-4', error ? 'text-destructive' : 'text-muted-foreground')}>{children}</p>
   )
 }
+
+export function FieldMessage({
+  children,
+  className,
+  tone = 'error'
+}: {
+  children: ReactNode
+  className?: string
+  tone?: 'error' | 'warn' | 'success' | 'info'
+}) {
+  const toneMap = {
+    error: 'text-destructive',
+    warn: 'text-amber-500',
+    success: 'text-emerald-500',
+    info: 'text-muted-foreground'
+  }
+
+  return (
+    <p
+      className={cn('flex items-center gap-1.5 text-xs leading-4', toneMap[tone], className)}
+      role={tone === 'error' ? 'alert' : 'status'}
+    >
+      {children}
+    </p>
+  )
+}
+

@@ -55,13 +55,13 @@ sidebar (`/aro-design`), switch themes, look at every section.
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
       a `prefers-reduced-motion` block
   - [x] 3.1 Contrast table, every role pair, all 6 themes
-- [~] 4. Components on the contract, host primitives first: `Button`,
+- [x] 4. Components on the contract, host primitives first: `Button`,
       `Input`, `Textarea`, `Select`, `DropdownMenu`, `Popover`, `Tooltip`,
       `Dialog`, `ConfirmDialog`, `Tabs`, `SegmentedControl`, `Switch`,
       `Checkbox`, `Badge`, `ListRow`, `Loader`, `EmptyState`, `ErrorState`,
       `LogView`, `Skeleton`, `Kbd`, `FieldMessage` (new), `CardStack`/toast
       look. Built beside the current ones; existing props unchanged
-- [ ] 5. Extend `/aro-design`: sections for each component x variant x size x
+- [~] 5. Extend `/aro-design`: sections for each component x variant x size x
       state, theme switcher (6), glass toggle, RTL, reduced motion;
       fixtures only (no stores/backend)
   - [ ] 5.1 Screenshots per section (or BLOCKED with reason)

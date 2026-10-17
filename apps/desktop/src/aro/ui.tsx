@@ -11,7 +11,14 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  ComponentType,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  TextareaHTMLAttributes,
+} from 'react'
 import { createPortal } from 'react-dom'
 
 import { cn } from '@/lib/utils'
@@ -810,3 +817,267 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
     </div>
   )
 }
+
+export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...rest}
+      className={cn(
+        'w-full rounded-control border border-aro-line bg-aro-well px-3 py-2 text-sm text-aro-ink placeholder:text-aro-ink-4 outline-none transition-[border-color,background-color,box-shadow] duration-150 focus:border-aro-line-strong focus:bg-aro-bg focus:ring-1 focus:ring-aro-iris disabled:pointer-events-none disabled:opacity-40',
+        className,
+      )}
+    />
+  )
+}
+
+export function Checkbox({
+  checked,
+  onChange,
+  label,
+  className,
+  disabled = false,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label?: ReactNode
+  className?: string
+  disabled?: boolean
+}) {
+  return (
+    <label
+      className={cn(
+        'inline-flex cursor-pointer select-none items-center gap-2 text-sm text-aro-ink',
+        disabled && 'pointer-events-none opacity-40',
+        className,
+      )}
+    >
+      <input
+        checked={checked}
+        className="sr-only"
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        type="checkbox"
+      />
+      <span
+        className={cn(
+          'flex size-4 shrink-0 items-center justify-center rounded-sm border transition-colors duration-150',
+          checked
+            ? 'border-aro-iris bg-aro-iris text-aro-on-iris'
+            : 'border-aro-line bg-aro-well hover:border-aro-line-strong',
+        )}
+      >
+        {checked && (
+          <svg className="size-3 stroke-current stroke-2 fill-none" viewBox="0 0 16 16">
+            <polyline points="3.5 8 6.5 11 12.5 5" />
+          </svg>
+        )}
+      </span>
+      {label && <span>{label}</span>}
+    </label>
+  )
+}
+
+export function Skeleton({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      {...rest}
+      className={cn('animate-pulse rounded-control bg-aro-line/50', className)}
+    />
+  )
+}
+
+export function Loader({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      className={cn('animate-spin text-aro-ink-3', className)}
+      fill="none"
+      style={{ width: size, height: size }}
+      viewBox="0 0 24 24"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+      <path className="opacity-75" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function FieldMessage({
+  children,
+  className,
+  tone = 'error',
+}: {
+  children: ReactNode
+  className?: string
+  tone?: 'error' | 'warn' | 'success' | 'info'
+}) {
+  const toneMap = {
+    error: 'text-aro-rose',
+    warn: 'text-aro-amber',
+    success: 'text-aro-mint',
+    info: 'text-aro-ink-3',
+  }
+
+  return (
+    <p
+      className={cn('flex items-center gap-1.5 text-xs leading-4', toneMap[tone], className)}
+      role={tone === 'error' ? 'alert' : 'status'}
+    >
+      {children}
+    </p>
+  )
+}
+
+export function ListRow({
+  title,
+  description,
+  icon: Icon,
+  action,
+  badge,
+  disabled = false,
+  onClick,
+  className,
+  ...rest
+}: HTMLAttributes<HTMLDivElement> & {
+  title: ReactNode
+  description?: ReactNode
+  icon?: ComponentType<{ size?: number; className?: string }> | ReactNode
+  action?: ReactNode
+  badge?: ReactNode
+  disabled?: boolean
+}) {
+  const isInteractive = Boolean(onClick) && !disabled
+
+  return (
+    <div
+      {...rest}
+      aria-disabled={disabled || undefined}
+      className={cn(
+        'group flex items-center justify-between gap-3 rounded-panel border border-transparent px-3 py-2.5 transition-colors duration-150',
+        isInteractive &&
+          'cursor-pointer hover:bg-aro-hover/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-aro-iris',
+        disabled && 'pointer-events-none opacity-40',
+        className,
+      )}
+      onClick={disabled ? undefined : onClick}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        {Icon && (
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-control bg-aro-well text-aro-ink-3 group-hover:text-aro-ink">
+            {typeof Icon === 'function' ? <Icon size={14} /> : Icon}
+          </div>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium text-aro-ink">{title}</span>
+            {badge}
+          </div>
+          {description && (
+            <p className="truncate text-xs text-aro-ink-3">{description}</p>
+          )}
+        </div>
+      </div>
+      {action && <div className="shrink-0 pl-2">{action}</div>}
+    </div>
+  )
+}
+
+export function ErrorState({
+  title = 'Something went wrong',
+  description,
+  retry,
+  className,
+}: {
+  title?: string
+  description?: string
+  retry?: () => void
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col items-center justify-center p-8 text-center', className)}>
+      <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-aro-rose/10 text-aro-rose">
+        <svg className="size-5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" x2="12" y1="8" y2="12" />
+          <line x1="12" x2="12.01" y1="16" y2="16" />
+        </svg>
+      </div>
+      <h3 className="text-sm font-semibold text-aro-ink">{title}</h3>
+      {description && <p className="mt-1 max-w-sm text-xs text-aro-ink-3">{description}</p>}
+      {retry && (
+        <div className="mt-4">
+          <Button onClick={retry} size="sm" variant="secondary">
+            Try again
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function LogView({
+  lines,
+  className,
+}: {
+  lines: string[]
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'aro-scroll-thin max-h-[300px] overflow-auto rounded-control border border-aro-line bg-aro-code p-3 font-mono text-xs leading-relaxed text-aro-ink-2',
+        className,
+      )}
+    >
+      {lines.map((l, i) => (
+        <div className="whitespace-pre-wrap" key={i}>
+          {l}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function ConfirmDialog({
+  open,
+  title,
+  description,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  danger = false,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean
+  title: string
+  description?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  danger?: boolean
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  return (
+    <Modal onClose={onClose} open={open} title={title} width={420}>
+      <div className="p-4">
+        {description && <p className="mb-4 text-xs leading-relaxed text-aro-ink-3">{description}</p>}
+        <div className="flex items-center justify-end gap-2 border-t border-aro-line-soft pt-2">
+          <Button onClick={onClose} size="sm" variant="ghost">
+            {cancelLabel}
+          </Button>
+          <Button
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+            size="sm"
+            variant={danger ? 'danger' : 'primary'}
+          >
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
