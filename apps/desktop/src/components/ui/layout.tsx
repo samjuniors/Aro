@@ -255,17 +255,17 @@ export function FormRow({
           {aside}
         </div>
         {description && (
-          <p className="mt-0.5 text-[0.6875rem] text-muted-foreground leading-normal">
+          <p className="mt-0.5 text-aro-xs text-muted-foreground leading-normal">
             {description}
           </p>
         )}
         {error && (
-          <p className="mt-1 text-[0.6875rem] font-medium text-destructive leading-normal">
+          <p className="mt-1 text-aro-xs font-medium text-destructive leading-normal">
             {error}
           </p>
         )}
         {hint && !error && (
-          <p className="mt-0.5 text-[0.6875rem] text-muted-foreground/80 leading-normal">
+          <p className="mt-0.5 text-aro-xs text-muted-foreground/80 leading-normal">
             {hint}
           </p>
         )}
