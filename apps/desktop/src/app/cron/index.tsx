@@ -814,7 +814,7 @@ function CronJobDetail({ busy, c, job, onEdit, onOpenSession, onPauseResume, onT
       <header className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h3 className="text-[0.95rem] font-semibold tracking-tight text-foreground">{jobTitle(job)}</h3>
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">{jobTitle(job)}</h3>
             {scriptOnly && <PanelPill tone="muted">{c.scriptBadge}</PanelPill>}
             <PanelPill tone={STATE_TONE[state] ?? 'muted'}>{c.states[state] ?? state}</PanelPill>
           </div>
@@ -842,7 +842,7 @@ function CronJobDetail({ busy, c, job, onEdit, onOpenSession, onPauseResume, onT
         />
 
         {job.last_error ? (
-          <div className="space-y-1.5 rounded bg-destructive/10 p-2 text-[0.7rem] text-destructive">
+          <div className="space-y-1.5 rounded-control bg-destructive/10 p-2 text-[var(--aro-text-2xs,10px)] text-destructive">
             <div className="flex items-start gap-1.5">
               <AlertTriangle className="mt-px size-3 shrink-0" />
               <span className="min-w-0 break-words" title={job.last_error}>
@@ -974,11 +974,11 @@ function CronJobRuns({
             isSyntheticCronOutputRun(run) ? (
               // Output-doc rows have no backing session to open; show the
               // recorded output preview without a chat-navigation affordance.
-              <div className="flex items-center justify-between gap-3 rounded-md px-2 py-1 text-xs" key={run.id}>
+              <div className="flex items-center justify-between gap-3 rounded-control px-2 py-1 text-xs" key={run.id}>
                 <span className="truncate text-foreground/85">
                   {run.title?.trim() || run.preview?.trim() || run.id}
                 </span>
-                <span className="shrink-0 text-[0.62rem] text-muted-foreground/55 tabular-nums">
+                <span className="shrink-0 text-[var(--aro-text-2xs,10px)] text-muted-foreground/55 tabular-nums">
                   {formatRunTime(run.last_active || run.started_at)}
                 </span>
               </div>
@@ -986,7 +986,7 @@ function CronJobRuns({
               // One click to the run's transcript; a run the scheduler never
               // closed opens view-only (see `openCronRun`, #88443).
               <button
-                className="row-hover flex items-center justify-between gap-3 rounded-md px-2 py-1 text-left text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                className="row-hover flex items-center justify-between gap-3 rounded-control px-2 py-1 text-left text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                 key={run.id}
                 onClick={onOpenSession ? () => openCronRun(run, onOpenSession) : undefined}
                 type="button"
@@ -994,7 +994,7 @@ function CronJobRuns({
                 <span className="truncate text-foreground/85">
                   {run.title?.trim() || run.preview?.trim() || run.id}
                 </span>
-                <span className="shrink-0 text-[0.62rem] text-muted-foreground/55 tabular-nums">
+                <span className="shrink-0 text-[var(--aro-text-2xs,10px)] text-muted-foreground/55 tabular-nums">
                   {formatRunTime(run.last_active || run.started_at)}
                 </span>
               </button>

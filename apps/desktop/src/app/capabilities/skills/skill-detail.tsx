@@ -72,9 +72,9 @@ export function SkillDetail({
         </div>
       )}
       {parsed && parsed.meta.length > 0 && (
-        <div className="grid gap-1 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
+        <div className="grid gap-1 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
           {parsed.meta.map(([key, value]) => (
-            <div className="flex gap-2 text-[0.68rem] leading-4" key={key}>
+            <div className="flex gap-2 text-[var(--aro-text-2xs,10px)] leading-4" key={key}>
               <span className="w-24 shrink-0 font-medium text-(--ui-text-tertiary)">{key}</span>
               <span className="min-w-0 whitespace-pre-wrap break-words text-(--ui-text-secondary)">{value}</span>
             </div>
@@ -85,7 +85,7 @@ export function SkillDetail({
         <CountSkeleton />
       ) : parsed ? (
         <pre
-          className="overflow-auto whitespace-pre-wrap wrap-break-word rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3 font-mono text-[0.68rem] leading-relaxed"
+          className="overflow-auto whitespace-pre-wrap wrap-break-word rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3 font-mono text-[var(--aro-text-2xs,10px)] leading-relaxed"
           data-selectable-text="true"
         >
           {parsed.body.trim() || t.skills.noDescription}

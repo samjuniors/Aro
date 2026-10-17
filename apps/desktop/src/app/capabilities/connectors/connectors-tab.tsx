@@ -340,7 +340,7 @@ function HostedNotice({ hasGuest, phase }: { hasGuest: boolean; phase: HostedPha
 
   if (phase === 'signedOut') {
     return (
-      <p className="flex shrink-0 items-center gap-1 text-[0.7rem] text-(--ui-text-tertiary)">
+      <p className="flex shrink-0 items-center gap-1 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
         {copy.signInLine}
         <Button onClick={() => openFreeTierSignIn()} size="xs" variant="text">
           {copy.signIn}
@@ -350,10 +350,10 @@ function HostedNotice({ hasGuest, phase }: { hasGuest: boolean; phase: HostedPha
   }
 
   if (phase === 'unavailable') {
-    return <p className="shrink-0 text-[0.7rem] text-(--ui-text-tertiary)">{copy.managedUnavailable}</p>
+    return <p className="shrink-0 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">{copy.managedUnavailable}</p>
   }
 
-  return hasGuest ? <p className="shrink-0 text-[0.7rem] text-(--ui-text-tertiary)">{copy.freeTierNote}</p> : null
+  return hasGuest ? <p className="shrink-0 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">{copy.freeTierNote}</p> : null
 }
 
 function useOpenFromRoute(cards: readonly ConnectorCardModel[], open: (key: string) => void): void {

@@ -232,12 +232,12 @@ function ProfileDetail({ profile }: { profile: ProfileInfo }) {
       <header className="space-y-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[0.95rem] font-semibold tracking-tight text-foreground">{profileLabel(profile)}</h3>
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">{profileLabel(profile)}</h3>
             {profile.is_default && <PanelPill tone="good">{p.defaultBadge}</PanelPill>}
             {profile.has_env && <PanelPill tone="muted">.env</PanelPill>}
           </div>
           <p
-            className="mt-1 truncate font-mono text-[0.66rem] text-muted-foreground/55"
+            className="mt-1 truncate font-mono text-[var(--aro-text-2xs,10px)] text-muted-foreground/55"
             title={displayPath(profile.path)}
           >
             {displayPath(profile.path)}
@@ -330,10 +330,10 @@ function SoulEditor({ profileName }: { profileName: string }) {
     <section className="space-y-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <PanelSectionLabel className="text-[0.7rem] tracking-[0.14em]">SOUL.md</PanelSectionLabel>
+          <PanelSectionLabel className="text-[var(--aro-text-2xs,10px)] tracking-[0.14em]">SOUL.md</PanelSectionLabel>
           <p className="text-xs text-muted-foreground">{missing ? p.soulMissing : p.soulDesc}</p>
         </div>
-        {dirty && <span className="text-[0.65rem] text-muted-foreground">{p.unsavedChanges}</span>}
+        {dirty && <span className="text-[var(--aro-text-2xs,10px)] text-muted-foreground">{p.unsavedChanges}</span>}
       </div>
 
       {loading ? (

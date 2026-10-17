@@ -198,7 +198,7 @@ export function SessionHeader({
                           : 'bg-aro-line-strong'
                     )}
                   />
-                  <span className="truncate font-aro-sans text-[13px] font-medium text-aro-ink">{title}</span>
+                  <span className="truncate font-aro-sans text-sm font-medium text-aro-ink">{title}</span>
                   <IconChevronDown
                     className="shrink-0 text-aro-ink-4 opacity-70 transition-transform group-hover:translate-y-px"
                     size={11}
@@ -211,20 +211,20 @@ export function SessionHeader({
                   <IconSearch className="pointer-events-none absolute top-1/2 left-3 size-3 -translate-y-1/2 text-aro-ink-4" />
                   <input
                     autoFocus
-                    className="h-7 w-full rounded-[6px] border border-aro-line-soft bg-aro-sunken pr-2 pl-7 font-aro-mono text-[11px] text-aro-ink placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:outline-none"
+                    className="h-7 w-full rounded-control border border-aro-line-soft bg-aro-sunken pr-2 pl-7 font-aro-mono text-xs text-aro-ink placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:outline-none"
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search history…"
                     value={search}
                   />
                 </div>
 
-                <div className="px-2 py-1 font-aro-mono text-[9.5px] font-semibold tracking-wider text-aro-ink-4 uppercase">
+                <div className="px-2 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider text-aro-ink-4 uppercase">
                   Recent Sessions
                 </div>
 
                 <div className="aro-scroll-thin max-h-[280px] overflow-y-auto">
                   {filteredSessions.length === 0 ? (
-                    <div className="px-3 py-4 text-center font-aro-mono text-[11px] text-aro-ink-4">
+                    <div className="px-3 py-4 text-center font-aro-mono text-xs text-aro-ink-4">
                       No sessions found
                     </div>
                   ) : (
@@ -239,7 +239,7 @@ export function SessionHeader({
                       return (
                         <DropdownMenuItem
                           className={cn(
-                            'flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[12px] transition-colors',
+                            'flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-xs transition-colors',
                             isActive
                               ? 'bg-aro-raise text-aro-ink font-medium'
                               : 'text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink'
@@ -257,7 +257,7 @@ export function SessionHeader({
                             )}
                           />
                           <span className="min-w-0 flex-1 truncate">{sTitle}</span>
-                          {time && <span className="shrink-0 font-aro-mono text-[10px] text-aro-ink-4">{time}</span>}
+                          {time && <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{time}</span>}
                         </DropdownMenuItem>
                       )
                     })
@@ -267,7 +267,7 @@ export function SessionHeader({
                 <DropdownMenuSeparator className="my-1 bg-aro-line-soft" />
 
                 <DropdownMenuItem
-                  className="flex cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11.5px] text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
+                  className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-xs text-aro-iris-soft transition-colors hover:bg-aro-hover hover:text-aro-iris"
                   onClick={() => {
                     setDropdownOpen(false)
                     navigate(NEW_CHAT_ROUTE)
@@ -275,14 +275,14 @@ export function SessionHeader({
                 >
                   <IconPlus className="shrink-0" size={12} />
                   <span className="flex-1 font-medium">New session</span>
-                  <span className="font-aro-mono text-[10px] text-aro-ink-4 opacity-70">⌘N</span>
+                  <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 opacity-70">⌘N</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
 
           {branch && (
-            <span className="hidden items-center gap-1 font-aro-mono text-[10px] text-aro-ink-4 lg:flex">
+            <span className="hidden items-center gap-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 lg:flex">
               <IconBranch size={10} />
               <span className="truncate max-w-[120px]">{branch}</span>
             </span>
@@ -320,7 +320,7 @@ export function SessionHeader({
                 sideOffset={6}
                 variant="menu"
               >
-                <div className="flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-aro-ink-3 tracking-wider">
+                <div className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-aro-ink-3 tracking-wider">
                   <span>Overview</span>
                   <IconMore size={12} className="text-aro-ink-4 hover:text-aro-ink-2 cursor-pointer" />
                 </div>
@@ -332,7 +332,7 @@ export function SessionHeader({
                       if (!fileBrowserOpen) toggleRightSide()
                       setOverviewOpen(false)
                     }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
                   >
                     <IconGit size={13} className="text-aro-ink-3 shrink-0" />
                     <span>Changes</span>
@@ -345,7 +345,7 @@ export function SessionHeader({
                       if (!fileBrowserOpen) toggleRightSide()
                       setOverviewOpen(false)
                     }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
                   >
                     <IconFolder size={13} className="text-aro-ink-3 shrink-0" />
                     <span>Files</span>
@@ -357,7 +357,7 @@ export function SessionHeader({
                       if (!fileBrowserOpen) toggleRightSide()
                       setOverviewOpen(false)
                     }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
                   >
                     <IconTerminal size={13} className="text-aro-ink-3 shrink-0" />
                     <span>Terminal</span>
@@ -369,7 +369,7 @@ export function SessionHeader({
                       if (!fileBrowserOpen) toggleRightSide()
                       setOverviewOpen(false)
                     }}
-                    className="flex items-center justify-between w-full py-1.5 px-2 text-[12px] text-aro-ink rounded-[6px] cursor-pointer hover:bg-aro-hover transition-colors text-left"
+                    className="flex items-center justify-between w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
                   >
                     <div className="flex items-center gap-2.5">
                       <IconBrain size={13} className="text-aro-ink-3 shrink-0" />
@@ -379,9 +379,9 @@ export function SessionHeader({
                   </button>
                 </div>
                 <div className="my-1 border-t border-aro-line-soft" />
-                <div className="flex items-center justify-between px-2 py-1 text-[11px] text-aro-ink-3">
+                <div className="flex items-center justify-between px-2 py-1 text-xs text-aro-ink-3">
                   <span>Background Tasks</span>
-                  <span className="font-mono text-[11px] font-medium text-aro-ink-3">{backgroundTasksCount}</span>
+                  <span className="font-mono text-xs font-medium text-aro-ink-3">{backgroundTasksCount}</span>
                 </div>
               </PopoverContent>
             </Popover>

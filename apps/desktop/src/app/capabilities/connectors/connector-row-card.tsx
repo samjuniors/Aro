@@ -91,14 +91,14 @@ export function ConnectorRowCard({
       onPointerEnter={onPrefetch}
     >
       <ConnectorLogo
-        className="size-9 shrink-0 rounded-[9px]"
+        className="size-9 shrink-0 rounded-control"
         connector={{ iconUrl: local ? undefined : connectorIconUrl(card.slug), name: card.slug, title: card.name }}
       />
 
       <div className="grid min-w-0 flex-1 gap-0.5">
         <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
           <button
-            className="min-w-0 truncate text-[0.8125rem] font-semibold text-(--ui-text-primary) outline-none after:absolute after:inset-0 after:rounded-lg focus-visible:after:ring-[0.1875rem] focus-visible:after:ring-ring/50"
+            className="min-w-0 truncate text-xs font-semibold text-(--ui-text-primary) outline-none after:absolute after:inset-0 after:rounded-lg focus-visible:after:ring-2 focus-visible:after:ring-ring/50"
             onClick={onOpen}
             type="button"
           >
@@ -106,7 +106,7 @@ export function ConnectorRowCard({
             <span className="sr-only">{` — ${copy.open(card.name)}`}</span>
           </button>
 
-          <span className="shrink-0 text-[0.6875rem] text-(--ui-text-tertiary)">{connectorKindWord(card, copy)}</span>
+          <span className="shrink-0 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">{connectorKindWord(card, copy)}</span>
 
           {showsCatalogMark(card) ? <CatalogMark /> : null}
 
@@ -154,7 +154,7 @@ function CardLane({
 
   return (
     <div className="relative z-10 flex w-[7.75rem] shrink-0 flex-col items-end gap-1">
-      <span className="flex items-center gap-1.5 text-[0.6875rem] text-(--ui-text-secondary)">
+      <span className="flex items-center gap-1.5 text-[var(--aro-text-2xs,10px)] text-(--ui-text-secondary)">
         {withDot ? (
           <span aria-hidden className={cn('size-[5px] shrink-0 rounded-full', STATE_DOT[card.state])} />
         ) : null}
@@ -183,7 +183,7 @@ function CardLane({
       ) : null}
 
       {card.verb === undefined && fact !== null ? (
-        <span className="truncate text-[0.6875rem] text-(--ui-text-tertiary)">{fact}</span>
+        <span className="truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">{fact}</span>
       ) : null}
     </div>
   )
@@ -191,10 +191,10 @@ function CardLane({
 
 function SecondLine({ card, reason }: { card: ConnectorCardModel; reason?: string }) {
   if (reason) {
-    return <p className={cn('truncate text-[0.72rem]', REASON_TONE[card.state])}>{reason}</p>
+    return <p className={cn('truncate text-xs', REASON_TONE[card.state])}>{reason}</p>
   }
 
   return card.description ? (
-    <p className="line-clamp-2 text-[0.72rem] leading-snug text-(--ui-text-secondary)">{card.description}</p>
+    <p className="line-clamp-2 text-xs leading-snug text-(--ui-text-secondary)">{card.description}</p>
   ) : null
 }
