@@ -1,592 +1,619 @@
-# Desktop Design System
+# Aro Desktop Design System
 
-Conventions for the Electron desktop app (`apps/desktop`). Read this before
-adding a component, overlay, or style. The rule of thumb: **one source per
-concern, tokens over literals, flat over boxed.** If you reach for a raw color,
-a one-off shadow, a bespoke button, or a hardcoded `px-*` on a control — stop,
-there's already a primitive for it.
+Contract for the Electron desktop app (`apps/desktop`). Read this before adding
+a component, overlay, or style. Read [`AGENTS.md`](./AGENTS.md) for
+architecture, state, resolver, transport and testing rules; this file owns the
+visual and interaction contract only.
 
-This file owns the visual and interaction contract. Read
-[`AGENTS.md`](./AGENTS.md) for architecture, state, resolver, transport, and
-testing rules.
+**Rule of thumb: one source per concern, tokens over literals, flat over
+boxed, motion follows state.** If you reach for a raw color, a one-off shadow,
+a bespoke button, or a hardcoded `px-*` on a control, stop: a primitive exists.
 
-This doc contains two kinds of content, maintained differently:
+Repo reality (checked against the repo): `src/aro/tokens.css` already has `--aro-radius-*`, `--aro-shadow-panel|menu|composer`, `--aro-focus-ring`, `--aro-dur-*` and `--aro-ease-*`, six themes (obsidian, daylight, nord, ember, paper, ink) and a parity test against `prototype/`; **never change an existing token value, only add**. `kbd.tsx`, `skeleton.tsx`, `checkbox.tsx`, `field.tsx` and `/aro-design` (`DesignSystemAro.tsx`) already exist: polish, do not rebuild. Where this file says "new" for something that exists, treat it as "polish onto this contract".
 
-- **Principles** (flatness, intent, feedback, motion, cancellation) are durable.
-  They hold as components come and go.
-- **Named contracts** (tokens, `Button` variants, primitive names) are the
-  design system's current API. They are maintained *with* the code: if you
-  change a primitive, token, or variant, update its entry here **in the same
-  change** — a stale name in this file is a bug, exactly like a stale type.
+Status of this document: v2 (consolidated). It replaces the previous
+`DESIGN.md`. Where v2 and the code disagree, fix whichever is wrong, in the
+same change, rather than forking a one-off at the call site.
 
-When a rule and the code disagree, fix whichever is wrong rather than forking a
-one-off at the call site.
+---
 
-## Principles
+## 0. How this document is maintained
+
+- **Principles** (section 2) are durable.
+- **Named contracts** (tokens, variants, primitives; sections 3 to 9) are the
+  API of the design system. Changing a primitive, token or variant means
+  updating its entry here **in the same change**. A stale name is a bug.
+- **Founder or product additions mid-phase** never edit this file directly.
+  They go into `docs/adr/NNNN-title.md` (template in section 16). The ADR is
+  scheduled, then implemented in its own change, then folded into this file.
+  Work in progress follows the roadmap in section 15 and does not deviate.
+- **Token values live in `src/aro/tokens.css` and are authoritative.** Numbers
+  in this file marked *(default)* are the shipped starting values. Changing a
+  number changes it everywhere; that is the intended way to restyle the app.
+
+---
+
+## 1. Look and feel
+
+Aro is a **calm, dense, keyboard-first workbench for talking to agents**. The
+conversation is the product; chrome should recede.
+
+| Quality | Meaning in practice |
+| --- | --- |
+| **Calm** | Low contrast chrome, one accent, no decorative gradients, no sparkle icons. Color is reserved for state and the single primary action per view. |
+| **Flat** | Structure from whitespace and one hairline. Elevation only for things that float. |
+| **Precise** | Everything on a 4px grid, one radius per role, optical alignment of icons to the first text line. |
+| **Fast** | Feedback in the current frame. Motion is short, functional, and never delays state. |
+| **Quiet confidence** | Neutral surfaces, tight type, tabular numbers, no shouting (bold used sparingly). |
+| **Keyboard-first** | Every action reachable by keyboard; focus always visible; shortcuts shown where hover teaches them. |
+
+### Benchmarks: what we take, what we fix
+
+| Product | Take | Avoid / improve |
+| --- | --- | --- |
+| **Linear** | Density, crisp 1px hairlines, instant hover, command palette as primary navigation, subtle status color | Dense does not mean cramped: keep 32px default control height and 4px steps. Avoid low-contrast disabled text that fails AA. |
+| **Raycast** | Menu and list feel: single-line rows, keyboard hints right-aligned, strong selected row, tiny exit animation | Their heavy glow and gradients; we stay flat. |
+| **Cursor / Zed** | Dev-tool flat panes, glass sidebar, panes that read as working context, diff-friendly mono | Panels that all look identical; we differentiate Pane vs Surface vs Menu by role. |
+| **Arc** | Friendly rounded controls, tasteful sidebar translucency | Playful color overload and pill everything; pills only for dots, avatars, counts, switch thumbs. |
+| **Claude / ChatGPT desktop** | Transcript typography, readable measure, calm composer | Cluttered composer toolbars; we use `FanMenu` for rarely touched toggles. |
+| **Notion / Things** | Empty states with one clear action, generous whitespace | Heavy iconography in lists. |
+
+Every new component is compared against the closest benchmark in the PR
+description (one sentence: "matches X on Y, deliberately differs on Z").
+
+---
+
+## 2. Principles
 
 1. **Flat, not boxed.** No card-in-card, no divider borders inside a panel.
-   Group with whitespace and a single hairline, never nested rounded boxes.
-2. **Borderless elevation for floating panels.** Overlays float on
-   `shadow-nous` + a `--stroke-nous` hairline, not thick framed boxes. In-panel
-   structure may use token hairlines sparingly.
-3. **One primitive per concern.** One `Button`, one set of control variants,
-   one `SearchField`, one `Loader`, one `ErrorState`. Migrate onto them; don't
-   fork.
-4. **Tokens, not literals.** Reference CSS vars (`--ui-*`, `--shadow-nous`,
-   `--theme-*`), never raw hex / ad-hoc rgba in components.
+   Group with whitespace and at most one hairline.
+2. **Borderless elevation for floating layers.** Floating panels use the role
+   shadow plus the layer hairline, not framed boxes.
+3. **One primitive per concern.** One `Button`, one `SearchField`, one
+   `Loader`, one `ErrorState`. Migrate onto them; do not fork.
+4. **Tokens, not literals.** Reference CSS vars. Never raw hex, rgba, px
+   radii, shadows, z-indexes or arbitrary spacing in components.
 5. **Style lives in the primitive.** Variants and sizes own padding, radius,
-   color, chrome. Call sites pass a `variant`/`size`, not `className` overrides
-   that re-specify those.
-6. **Intent before automation.** Surface useful actions and previews, but do not
-   open panes, move focus, or navigate because a tool happened to produce
-   something.
-7. **Immediate feedback.** Direct manipulation updates the view first. Network
-   or disk persistence reconciles afterward and rolls back visibly on failure.
+   color, chrome. Call sites pass `variant` / `size`, never `className`
+   overrides that re-specify them.
+6. **Intent before automation.** Surface useful actions and previews; never
+   open panes, move focus, or navigate because a background event happened.
+7. **Immediate feedback.** Direct manipulation paints first; persistence
+   reconciles after and rolls back visibly on failure.
+8. **Motion follows state, never delays it.** Selection, drag, cancel and
+   pressed feedback paint in the current frame.
+9. **Accessible by construction.** Contrast, focus, roles, reduced motion and
+   hit areas are properties of primitives, not of call sites.
+10. **Scalable by role.** A surface has exactly one role; the role decides
+    radius, elevation and hairline.
 
-## Information architecture
+---
 
-- **Chat is the home surface.** The transcript and composer stay primary; tools,
-  previews, files, review, and terminal complement the conversation.
-- **Pages are durable destinations.** Chat, Skills, Messaging, and Artifacts
-  remain in shell chrome. Do not hide a distinct product noun inside an
-  unrelated page.
-- **Route overlays are short tasks.** Settings, Command Center, Cron, Profiles,
-  Agents, and Starmap render as `OverlayView` cards and return to the previous
-  route on close. Model/session pickers and dialogs layer above the current
-  surface; they are not navigation stacks.
-- **Panes are working context.** Preview, files, review, and terminal remain
-  attached to the current task. Their state survives temporary hiding and chat
-  switches where the underlying tool is meant to persist.
-- **One action, one home.** A command may have keyboard, palette, and visible
-  affordances, but they invoke the same action and state. Do not fork behavior
-  per entry point.
-- **Projects own workspace cwd.** Use Sidebar → Projects for local folders and
-  worktrees; do not reintroduce a per-session/right-sidebar folder-picker flow.
+## 3. Tokens
 
-Profile icons and condensed profile rows offer **Open in new window** and
-**Set as default** in their existing context menus. Opening a profile creates a
-full peer window without switching the source window. The desktop default
-applies at startup and to generic new chats; explicit profile/project actions
-and profile-specific windows keep their own destinations. Changing the default
-does not move existing sessions or replace the active conversation.
-Ordinary **New Window** (`⌘⇧N` / `Ctrl+Shift+N`) inherits its opener's device and
-profile only at startup, not as a window-specific default. Later device/profile
-selections remain authoritative for new chats unless a desktop default is set.
+All tokens live in `src/aro/tokens.css` (Aro-owned, `--aro-*`) and
+`src/aro/host-theme.css` (theme bridge). Legacy `nous` / `Hermes` names
+(`shadow-nous`, `--stroke-nous`) are upstream; do not rename them
+opportunistically, add new tokens as `--aro-*` and point legacy ones at them.
 
-Navigation must preserve context. A background session finishing, a tool result
-arriving, or a project refresh may update badges and cached data; it must not
-replace the foreground transcript or steal focus.
+### 3.1 Radius (by role)
 
-## Surfaces & elevation
+| Token | Default | Role |
+| --- | --- | --- |
+| `--aro-radius-control` | 7px | Control |
+| `--aro-radius-panel` | 10px | Surface, Pane, Menu |
+| `--aro-radius-overlay` | 14px | Overlay |
 
-Floating panels (base `Dialog`, route overlays, boot/install/update surfaces,
-model-picker, onboarding, prompt overlays, notifications) use:
+Tailwind classes after the theme reset: `rounded-control`, `rounded-panel`,
+`rounded-overlay`. Never `rounded-sm|md|lg|xl|2xl` or `rounded-[Npx]`
+(`--radius-scalar: 0.2` makes them 2 to 5px, a different shape language).
+`rounded-full` only for dots, avatars, count badges, switch thumbs.
 
-```
-shadow-nous           /* downward-weighted, layered contact→ambient falloff */
-border-(--stroke-nous) /* currentColor hairline, theme-adaptive */
-```
+**Concentric rule:** inner radius = outer radius minus padding between them,
+never below `--aro-radius-control`. Never put a larger radius inside a smaller
+one.
 
-Both are CSS vars in `src/styles.css` — tune in one place, everything inherits.
-Don't add per-overlay `shadow-[…]` or `border-(--ui-stroke-secondary)`
-one-offs; if elevation needs to change, change the token.
+### 3.2 Elevation
 
-Menus and popovers use their own shared `shadow-md` +
-`--ui-stroke-secondary` primitive treatment. Every floating list —
-`DropdownMenu`, `Select`, and Popover + cmdk pickers
-(`<PopoverContent variant="menu">` + `<Command variant="menu">`) — paints
-through `src/components/ui/menu.ts`, so a list reads the same wherever it
-opens. Typed fields with suggestions use `ComboboxInput`, never
-`<input list>` + `<datalist>` (Chromium paints that as its own OS popup).
+| Token | Role | Notes |
+| --- | --- | --- |
+| none | Control, Surface | Flat. |
+| `--aro-shadow-panel` | Pane | Soft, wide, low opacity. |
+| `--aro-shadow-composer` | Composer | Pane shadow plus slightly stronger lift. |
+| `--aro-shadow-menu` | Menu | Tight contact shadow plus short ambient. |
+| `shadow-nous` | Overlay | Downward-weighted, layered contact to ambient falloff. |
 
-Drag affordances may use tokenized
-dashed targets and local blur. These are semantic surface classes, not licenses
-for call-site shadow or border inventions.
+No `shadow-[…]`, no raw `shadow-sm|md|lg|xl`. Menus and `Button floating`
+migrate to `--aro-shadow-menu` (this supersedes any `shadow-md` mention).
 
-**Queued cards:** `CardStack` (`src/components/ui/card-stack.tsx`) consumes a live,
-keyed list, retaining the current item when more arrive. Inline and floating
-approvals and both toast placements share its gesture handling and geometry.
-The Cursor-reference treatment uses one 96%-scale silhouette 7px above the
-front, 220ms promotion, and 180ms upward clearance; no rotation or lateral throw
-on button/keyboard decisions. Consumers supply the existing surface tokens and
-own the exact-request response. Gestures never grant approval. Departing cards
-are immediately inert; toasts can expand to the full live list. One persistent
-transcript-level host owns approvals, independent of tool rows and assistant
-message boundaries. Prepared approvals can precede tool.start: execution must
-not relocate or remount the stack. While approvals remain, a real activity line
-above the cards changes from awaiting approval to current-turn command status;
-represented execution rows appear only when explicitly expanded. Empty text
-continuations must not introduce paragraph gaps. Keep inline approvals beside
-the conversation and let genuine content scroll normally; do not inject padding
-or write scroll offsets to pin the decision. Preview this order with delayed
-start and completion events, not pre-created tool rows. Final approval removal
-retires both the painted card and its measured layout footprint; restoring tool
-rows must not insert their full height before the outgoing stack can settle.
-No completion callback may clear the measurement of a newly arrived card.
-Reduced motion settles immediately without retaining empty clearance.
-
-## Window background behavior
-
-Settings → Appearance → Window layout offers **Minimize to tray**, off by default and
-local to this desktop installation. When enabled, minimizing ordinary windows
-hides them without stopping their work. Close, Alt+F4, and Cmd+Q keep their
-normal behavior. The tray's **Show Hermes** restores hidden windows;
-**Quit Hermes** keeps the ordinary active-work confirmation and teardown.
-On macOS the tray lives in the menu bar; the Dock icon hides only when no normal
-window remains visible and returns on restore. If the tray is unavailable,
-ordinary minimize/close behavior is retained rather than hiding an unreachable app.
-
-## Window glass
-
-Glass defaults to **29% Tint, Sidebar only** in both light and dark appearances.
-Fade defaults to zero so the content column and text stay opaque. Native frost
-keeps its platform/appearance defaults. Explicitly saved settings take precedence;
-changing defaults must not overwrite a user's existing choices. The shared
-`apps/shared/src/translucency.ts` resolver owns these defaults for both the
-renderer and Electron's first window paint.
-
-## Stroke & color tokens
+### 3.3 Hairlines
 
 | Token | Use |
 | --- | --- |
-| `--ui-stroke-primary…quaternary` | hairlines, in descending strength |
-| `--ui-stroke-tertiary` | the default in-panel divider / list hairline — and every bordered surface in the transcript |
-| `--stroke-nous` | the overlay hairline (pairs with `shadow-nous`) |
-| `--ui-text-primary / -secondary / -tertiary` | text hierarchy |
-| `--ui-bg-quaternary` | soft control fill (secondary button) |
-| `--ui-widget-surface-background` | fill for inline chat widgets (`WIDGET_SHELL_CLASS`) |
-| `--chrome-action-hover` | hover fill for quiet controls |
-| `--theme-primary`, `--ui-accent` | brand/accent |
+| `--ui-stroke-tertiary` | Default in-pane divider and every bordered Surface (tables, fences, callouts, attachments, widgets) |
+| `--stroke-nous` | Every floating layer (Menu, Overlay), pairs with the role shadow |
+| `--ui-stroke-primary…quaternary` | Strength ladder, descending; primary/secondary are for emphasis states only, not default chrome |
 
-Never hardcode `border-gray-*`, `bg-white`, `text-black`, etc. The two tiles in
-`BrandMark` (white in light mode, `#0d1117` in dark) are the sanctioned literals
-(the mark needs a fixed backdrop).
+One hairline per layer. Menus migrate off `--ui-stroke-secondary`.
+`outline` controls use a 1px **inset ring** in `--ui-stroke-tertiary`.
 
-## Buttons — one component
+### 3.4 Color roles
 
-`src/components/ui/button.tsx` is the single source. Pick a `variant` + `size`;
-do **not** pass `h-*`, `px-*`, `py-*`, or icon-size overrides.
+Components reference roles, never theme colors directly.
 
-**Variants:** `default` (primary), `destructive`, `secondary` (soft fill —
-the default non-primary look), `outline` (transparent + 1px inset ring, no
-fill/shadow), `ghost`, `floating` (a control loose from any surface — opaque
-popover fill + `shadow-md`, hover lifts the glyph only), `link`, `text`
-(boxless quiet inline — "Cancel", "Clear"), `textStrong` (bold underlined
-inline affordance — "Change", "Open logs").
-`grip` is the quiet, fill-free drawer handle; pair it with size `grip` for a
-48×16 hit area around a small horizontal ridge.
+| Role token | Use |
+| --- | --- |
+| `--ui-text-primary / -secondary / -tertiary` | Text hierarchy. Tertiary is metadata only and must still meet 4.5:1 on its surface. |
+| `--ui-bg-quaternary` | Soft control fill (secondary button) |
+| `--ui-widget-surface-background` | Inline chat widgets |
+| `--chrome-action-hover` | Hover fill for quiet controls |
+| `--theme-primary`, `--ui-accent` | Brand and the one primary action |
+| `--aro-focus-ring` | Focus ring (the only focus style) |
+| `--aro-status-success / -warn / -danger / -info` *(new)* | Status foreground. Tinted fills are `color-mix(in oklab, var(--aro-status-x) 12%, transparent)`, never a separate raw color. |
 
-**Sizes:** `default`, `xs`, `sm`, `lg`, `inline` (flush, zero box — for buttons
-that sit inside a heading/sentence; replaces `h-auto px-0 py-0`), `micro`
-(status-stack/table-footers), and the icon family `icon` / `icon-xs` /
-`icon-sm` / `icon-lg` / `icon-titlebar`.
+Rules:
+- Destructive red is reserved for explicit failures and destructive actions.
+  Neutral notices for missing reads or ambiguous exit codes.
+- One accent. A view shows at most one `default` (primary) button.
+- Contrast: text 4.5:1, large text and UI boundaries 3:1, in all six Aro themes and
+  glass on and off. Disabled state is exempt but must remain legible (at least
+  3:1 for labels) and must not rely on opacity alone.
+- Never hardcode `border-gray-*`, `bg-white`, `text-black`. Sanctioned
+  literals: `BrandMark` tiles only.
 
-**Tooltips only when hover teaches something new.** `<Tip>` is for discovery,
-not a tax on every icon. Ask: does hover reveal something the user cannot
-already see or infer? If not, skip the tip; keep an `aria-label` for a11y.
+### 3.5 Spacing
 
-Tip unlabeled chrome when the job (or a keybind / truncated path / host /
-other detail) is not already on screen — toolbar / titlebar / statusbar icons,
-`TipKeybindLabel` shortcuts, ownership chips, unlabeled icon grids.
+4px scale, Tailwind steps `1, 2, 3, 4, 6, 8` (4 to 32px). No arbitrary
+`p|m|gap|space-*-[…]`. Control padding comes from `Button` / `controlVariants`
+sizes only. Page gutters from `PAGE_INSET_X` / `PAGE_INSET_NEG_X`.
 
-Do **not** tip:
+### 3.6 Typography
 
-- Menu triggers (kebabs / ⋯ / `ActionsMenu` / `DropdownMenuTrigger`) — the
-  affordance is "open menu"; verbs live in the menu. Never tip
-  `"Actions for ${row title}"` / `"Project actions"` / `"Actions"`.
-- Close / dismiss X buttons — the glyph is the label (`aria-label` only).
-- Controls whose visible label already says what the tip would ("click to…",
-  paraphrases of the same words, timer labels restating "Running").
+Use the existing scale; no `text-[Npx]`. Weights: regular, medium, semibold
+only. Add the following named steps as `--aro-text-*` tokens *(new, default
+values)*:
 
-Never use native HTML `title=` on buttons — unstyled, ~500ms OS delay, clashes
-with the themed `Tip`. `src/components/ui/__tests__/no-native-title.test.ts`
-fails on any `<button>` / `<Button>` that still carries `title=`.
+| Token | Size / line height | Use |
+| --- | --- | --- |
+| `--aro-text-xs` | 11 / 16 | Badges, kbd, micro metadata |
+| `--aro-text-sm` | 12 / 16 | Secondary text, tips, table cells |
+| `--aro-text-md` | 13 / 20 | Default UI text |
+| `--aro-text-lg` | 15 / 22 | Section headings, dialog titles |
+| `--aro-text-xl` | 18 / 26 | Page headings |
+| `--aro-text-mono` | 12 / 18 | Logs, code, paths |
 
-**Tooltip timing.** A hover is not a click — the cursor crosses triggers on
-the way somewhere else. `Tip` waits 200ms before the first open so a sweep
-does not flash a trail. After a tip has opened the page is warm: the next
-trigger within 300ms opens instantly. The cooldown starts on close, so a
-hover a second later waits again. Once triggered, entrance has no animation.
-Exit fades over 100ms and moves 0.125rem toward the anchor; reduced motion
-disables the exit animation. `OverflowTip` stays on its own longer delay
-(list titles must not trail while scanning). Bubbles use a 0.25rem radius.
+Numbers that change (counts, timers, diffs) use `tabular-nums`. Chat text size
+is governed by *Chat typography* (section 10) and the UI Scale zoom; do not
+multiply global tokens or nest CSS zoom.
 
-**Tooltip placement.** Choose intent through `placement`: `control` above (default), `toolbar` below, `row` to the right, and `left-rail` / `right-rail` inward. Explicit `side` and `align` override the preference. Radix flips and shifts for collisions, keeps the arrow attached, and hides detached triggers. Controls and toolbars use their owning pane as a boundary; row descriptions and rails may extend into the window. Use `boundary="viewport"` for an intentional escape. Short labels size to content; descriptions wrap within 24rem and the available space, in one rounded bubble.
+### 3.7 Motion (reuse the existing `--aro-dur-*` / `--aro-ease-*`; the values below are the intended scale, verify against `tokens.css` and add only what is missing, plus a `prefers-reduced-motion` block)
 
-**Slash descriptions.** Keep autocomplete rows single-line and ellipsized, but reveal the complete catalog description to the right of the hovered row. Use the shared bounded tooltip, collision padding, and word wrapping; it must not intercept row selection. Catalog and completion producers preserve the full author-supplied description.
+| Token | Default | Use |
+| --- | --- | --- |
+| `--aro-dur-instant` | 0ms | State that must not animate (selection, pressed) |
+| `--aro-dur-fast` | 100ms | Hover, focus, control state |
+| `--aro-dur-base` | 160ms | Menus, popovers, tooltips (enter), tab switch |
+| `--aro-dur-slow` | 240ms | Dialogs, drawers, card promotion |
+| `--aro-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
+| `--aro-ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | Enter / settle |
+| `--aro-ease-in` | `cubic-bezier(0.4, 0, 1, 1)` | Exit |
 
-**Model search.** Model filters and their highlighted labels treat hyphens, dots, underscores and spaces equivalently. Preserve original label spelling inside marks. The shared highlighter remains literal for other surfaces such as the command palette; model callers explicitly opt in. Model identifier search does not use dictionary spellcheck.
+Rules:
+- Animate only `opacity`, `transform`, `background-color`, `color`,
+  `box-shadow`, `filter` with **named properties**. Never `transition-all`.
+- Enter is longer than exit (exit is `--aro-dur-fast`).
+- Tooltips: 200ms open delay, 300ms warm window, no entrance animation, 100ms
+  exit.
+- Stagger only choreographed surfaces (onboarding); the outer fade is delayed
+  so it does not swallow inner motion.
+- Respect `prefers-reduced-motion`: anything beyond an opacity fade becomes
+  instant, and no empty clearance is retained.
+- No backdrop-filter repaints during movement. Remove animation before
+  masking a performance problem.
+- Hot interactions (drag, resize, streaming scroll) use transform/opacity only
+  and coalesce pointer work per frame.
 
-**Keybind hints in tooltips.** On a tipped button bound to a rebindable hotkey,
-use `<TipKeybindLabel actionId="..." />` — it reads the i18n label and the
-current combo from `$bindings`. Pass `text={...}` only when the label is
-context-dependent (e.g. "Show" / "Hide"). Never hardcode combos; always use
-`useKeybindHint` or `TipKeybindLabel`.
+### 3.8 Z ladder
 
-Notes:
-- Text buttons are square (no radius) and sized by padding + line-height (no
-  fixed heights). Only icon buttons carry the shared 4px radius.
-- SVGs inherit `size-3.5` (`size-3` at `xs`). Don't re-set icon size.
-- Polymorph with `asChild` when the button must render as a link/Slot.
+Use only the ladder in `styles.css`: `--z-modal-backdrop`, `--z-modal`,
+`--z-modal-popover`, `--z-over-modal`, `--z-over-modal-content`,
+`--z-switcher-backdrop`, `--z-switcher`, then the boot chain `--z-connecting`
+to `--z-onboarding` to `--z-setup` to `--z-crash`. Plain `z-10` / `z-20` only
+for stacking within one component. No `z-[…]`.
 
-## Badges — one component
+---
 
-`src/components/ui/badge.tsx`. Variants: `default` (tinted primary), `muted`,
-`warn`, `destructive`, `outline`, `solid` (primary fill — icon-corner counts).
-Sizes: `default`, `xs`, `overlay` (titlebar glyph counts).
+## 4. Roles, not values (shape, elevation, hairline)
 
-## Profile rail
+Every visible surface has exactly one role. The role decides radius,
+elevation and hairline. **Call sites never choose any of the three.**
 
-The profile rail keeps its create/import actions outside the scrolling squares.
-Clipped horizontal edges reuse `edgeMask(edges, 'x')` from `fade-scroll.tsx`;
-the default axis remains vertical for `FadeScroll`. Fitting content is unmasked,
-and profile drag gestures temporarily remove the mask so the dragged square stays legible.
+| Role | Examples | Radius | Elevation | Hairline |
+| --- | --- | --- | --- | --- |
+| **Control** | `Button` (boxed), icon buttons, `Input`, `Textarea`, `SelectTrigger`, `Badge`, tabs, `Tip` bubble | control | none | none (`outline` = inset ring tertiary) |
+| **Surface** | inline widgets (`WIDGET_SHELL_CLASS`), status card, user bubble, transcript tables / fences / callouts / attachments | panel | none | tertiary, or none where the fill carries it |
+| **Pane** | shell panes, sidebar, context panes, composer | panel | panel (composer: composer) | none |
+| **Menu** | `DropdownMenu`, `Select` list, `PopoverContent variant="menu"`, cmdk pickers, `floating` Button | panel | menu | `--stroke-nous` |
+| **Overlay** | `Dialog`, route `OverlayView`, onboarding / boot / update, notifications, floating approvals | overlay | `shadow-nous` | `--stroke-nous` |
 
-## Context-sensitive dialogs
+Rules:
+1. **Boxed controls share one radius.** Every `Button` variant that paints a
+   box (`default`, `destructive`, `secondary`, `outline`, `floating`) and every
+   icon button uses control radius. Boxless variants (`text`, `textStrong`,
+   `link`, `inline`, `grip`) have no radius because they have no box. (This
+   supersedes any earlier statement that text buttons are "square".)
+2. **Concentric nesting**, never same-role boxes nested.
+3. **Elevation only from the role table.** Surfaces inside a pane have no
+   shadow.
+4. **Adjacent controls share a size.** One row, one `size`.
+5. **One state language.** Hover `--chrome-action-hover`, focus
+   `--aro-focus-ring`, pressed and disabled owned by the primitive.
+6. **Embedded third-party chrome** (terminal, editor, webview, markdown
+   renderers) keeps its interior but is clipped to the owning pane's radius
+   and adds no shadow or outer border.
+7. **Sanctioned exceptions:** `BrandMark` tiles, generated brand assets,
+   tokenized dashed drag targets. Anything else needs an inline
+   `design-allow: <reason>` comment a reviewer can accept or reject.
 
-Sudo password dialogs keep the backdrop unblurred (`DialogContent`'s
-`blurBackdrop={false}`) and show the complete, selectable command before the
-password field. Long commands wrap and scroll; missing backend context is
-explicit, never inferred from another tool row. Other dialogs retain the shared
-blurred backdrop.
+---
 
-## Form controls
+## 5. Interaction states (all primitives)
 
-- **`controlVariants`** (`src/components/ui/control.ts`) is the shared shape for
-  `Input` / `Textarea` / `SelectTrigger`. New text-entry controls compose it.
-- **`SearchField`** — borderless, underline-on-focus, auto-width. The only
-  search input. Don't build boxed search bars; don't wrap it in a bordered tile.
-  Empty lists hide their search field.
-- **`SegmentedControl`** — the choice control for small mutually-exclusive sets
-  (color mode, tool-call display, usage period). Replaces radio piles and
-  pill rows.
-- **`Switch`** (`size="xs"`) — bare, with `aria-label`. No bordered text wrapper.
-- **`FanMenu`** (`src/components/ui/fan-menu.tsx`) — one hub control that
-  fans sibling toggles out on hover: `direction` `vertical` | `horizontal`
-  (split around the hub) | `arc`. Discs are `Button` `floating` off /
-  `default` on; tips face outside the fan according to its geometry. Use it where a row of rarely
-  touched toggles is costing input width (the composer's voice controls).
+Every interactive primitive implements and the gallery shows:
 
-## Layout
+`rest, hover, focus-visible, pressed, selected/on, disabled, loading (where
+async), error (inputs)`.
 
-- **Gutters:** `PAGE_INSET_X` (`src/app/layout-constants.ts`) for page side
-  padding; `PAGE_INSET_NEG_X` to bleed a child to the edge. Don't hardcode
-  `px-6`/`px-8` on pages.
-- **Master/detail overlays:** `OverlaySplitLayout` + `OverlaySidebar` /
-  `OverlayMain`. Cron, profiles, etc. ride this — don't rebuild a titlebar
-  shell.
-- **Settings subpages:** `OverlayNav` keeps navigation and disclosure separate:
-  labels navigate; the shared `DisclosureCaret` button opens a branch without
-  changing the page. Active paths reveal automatically, inactive paths stay
-  folded unless manually opened. General comes first wherever present; parent
-  labels and parent URLs open the first ordered subpage, never an overview or
-  the last visited child. Explicit child links retain their destination;
-  every parent and child uses the same Settings breadcrumb, without a duplicate
-  icon-and-title heading. Page-level `SectionHeading page` retains actions and
-  counts under breadcrumb-owned chrome; embedded callers keep their headings.
-  Narrow windows keep every destination available in the shared navigation dropdown.
-  Search and saved field links resolve to the owning child before highlighting.
-- **Rows:** `ListRow` (settings `primitives.tsx`) for label/description/action
-  rows. Flat, flush-left; no per-row indentation that fights flush headers.
-- **No dividers between rows** unless the list genuinely needs them; prefer
-  spacing. When you do need one, it's a single `--ui-stroke-tertiary` hairline.
+- Focus: `--aro-focus-ring` via `:focus-visible` only; never removed, never
+  re-styled at call sites. Ring must not be clipped by `overflow: hidden`
+  parents (use outline-offset or inset ring variants where clipped).
+- Hit area: at least 24x24 CSS px for any control (icon-xs may visually be
+  smaller but extends its hit area); 32px preferred in toolbars.
+- Disabled: `aria-disabled` / `disabled`, no hover, `cursor-default`.
+- Loading: replace the label glyph with the shared `Loader` at the same size;
+  width must not jump (reserve width).
+- Pressed: instant (0ms) background step, no scale transform on text buttons.
+- `cursor-pointer` set in the primitive, never at call sites.
+- All trigger buttons are `type="button"`.
 
-## Panel titlebars
+---
 
-Top-edge panels extend into the native titlebar band. Their tab strips remain
-inside their own zones so tab drops, focus, and split boundaries use the same
-geometry. Panels without room beside the measured window controls place their
-tabs on a full-width row below the controls. Minimized row groups use vertical
-restore rails, including groups with multiple tabs. Sidebar buttons and shortcuts
-restore minimized or fully hidden side groups without changing the selected tab.
-Lower panels keep local headers. Empty header space moves the window;
-tabs and actions remain no-drag, with native-control space reserved from the
-existing traffic-light and Window Controls Overlay measurements.
+## 6. Components (the usable kit)
 
-The left cluster shows sidebar, settings, layout editor, and HUD controls. Flip
-and the right-sidebar toggle sit on the right; haptics remain in settings.
-In Simple interface mode only sidebar, settings and the layout editor render,
-and the reserved cluster width shrinks with them (`TITLEBAR_FIXED_TOOLS` is the
-one table both the buttons and the width reservation read).
-Holding Cmd (Ctrl off macOS) reveals small slot numbers over the target strip's
-status dots after 400ms, without changing tab widths. Hints follow the same
-binding and hovered/focused-zone resolver as the number shortcuts.
+Home: Aro-owned kit in `src/aro/ui.tsx`; shared primitives in
+`src/components/ui/*`. **New = not yet in the codebase; build it. Existing =
+polish onto this contract without changing its public props.**
 
-Tab close buttons fade the label with a content mask, not a painted gradient.
-The tab reads its surface token directly so glass tint is painted only once.
+### 6.1 Buttons: one component (`button.tsx`)
 
-Sticky user messages clip covered scrolling content, including the gap above
-them. Their wrappers stay unpainted; only the rounded user bubble owns a fill.
-Clipping follows the pinned prompt and its live height without changing layout,
-so glass and message-bubble transparency do not reveal scrolling text.
+- **Variants:** `default` (primary), `destructive`, `secondary` (soft fill,
+  the default non-primary look), `outline` (transparent + 1px inset ring),
+  `ghost`, `floating` (loose control: opaque popover fill + menu shadow, hover
+  lifts the glyph only), `link`, `text` (boxless quiet inline), `textStrong`
+  (bold underlined inline), `grip` (fill-free drawer handle).
+- **Sizes:** `default`, `xs`, `sm`, `lg`, `inline` (flush zero box), `micro`
+  (status-stack, table footers), icon family `icon`, `icon-xs`, `icon-sm`,
+  `icon-lg`, `icon-titlebar`, and `grip` (48x16 hit area).
+- Padding plus line-height size text buttons; target heights *(default)*:
+  xs 24, sm 28, default 32, lg 36. Icons inherit `size-3.5` (`size-3` at `xs`);
+  do not re-set icon size.
+- Call sites never pass `h-*`, `px-*`, `py-*`, icon-size or radius overrides.
+- Polymorph with `asChild`.
 
-## Feedback & empty/error/loading states
+### 6.2 Tooltips (`Tip`)
 
-- **Loading:** `Loader` (`src/components/ui/loader.tsx`) — animated math/ascii
-  curves (`lemniscate-bloom` for long ops). Never ship the literal text
-  "Loading…".
-- **Errors:** `ErrorState` + the canonical `ErrorIcon` (no bg chip). One look
-  for the React boundary, in-dialog errors, and the boot-failure banner. Pass
-  nodes for title/description so Radix `DialogTitle`/`Description` can flow
-  through for a11y.
-- **Logs:** `LogView` — no bg, hairline border, tight padding, small mono.
-  Every place we surface raw logs uses it.
-- **Empty:** `EmptyState` for plain page bodies; `PanelEmpty` for overlay
-  master/detail empties with an icon and action. Don't hand-roll a third
-  centered empty.
-- **Confirmation:** `ConfirmDialog` is the only way we ask "are you sure". It
-  opens focused on Confirm, so `Enter` confirms and `Esc` cancels, and it owns
-  the pending → done → close beat and the inline error — a call site passes an
-  async `onConfirm` and nothing else. A third way out (e.g. "Remove from
-  sidebar" beside "Delete worktree") goes in the one `secondaryAction` slot.
-  Never `window.confirm`: it's an unstyled blocking Chromium modal. A handler
-  that wants the answer inline instead of a mounted dialog calls `confirm()`
-  from `src/store/confirm.ts`, which renders this same primitive through the
-  single `ConfirmHost` at the shell — the way `notify()` backs notifications.
+Only where hover teaches something new. Tip unlabeled chrome, keybind labels,
+truncated paths, ownership chips, unlabeled icon grids. Do **not** tip menu
+triggers, close X buttons, or controls whose label already says it. Keep
+`aria-label` always. Never native `title=` on buttons (test enforces).
+Placement by intent: `control` above (default), `toolbar` below, `row` right,
+`left-rail` / `right-rail` inward; Radix flips and shifts; short labels size to
+content, descriptions wrap within 24rem. Keybind hints via `TipKeybindLabel` /
+`useKeybindHint`, never hardcoded combos. Bubble radius 0.25rem (a sanctioned
+Control-role exception; migrate to control radius only via ADR).
 
-## Chat typography
+### 6.3 Form controls
 
-Appearance → Typography keeps **UI Scale** as whole-window zoom (90% by
-default). **Chat Text Size** is a separate desktop-local multiplier (110% by
-default) on conversation text and the composer editor, including floating and
-inline-edit composers.
-It does not resize the sidebar, settings, toolbars, media, or pane geometry.
-Conversation size and line-height tokens are derived inside the transcript/editor
-from their root base tokens; do not multiply the global tokens or nest CSS zoom.
+- `controlVariants` (`control.ts`) is the one shape for `Input`, `Textarea`,
+  `SelectTrigger`; new text-entry controls compose it. Error state = inset ring
+  in `--aro-status-danger` plus message text below, not a red box.
+- `SearchField`: borderless, underline-on-focus, auto-width; the only search
+  input; hidden when the list is empty.
+- `SegmentedControl`: small mutually exclusive sets (replaces radio piles and
+  pill rows). Selected thumb slides with `--aro-dur-base` / `--aro-ease-out`.
+- `Switch` (`size="xs"`): bare with `aria-label`, no bordered wrapper.
+- `ComboboxInput`: typed fields with suggestions; never `<input list>` +
+  `<datalist>`.
+- `FanMenu`: one hub control fanning sibling toggles (`vertical`,
+  `horizontal`, `arc`); discs are `floating` off / `default` on.
+- Existing, polish onto the contract: `Checkbox`, `Kbd` (keycap chip: control
+  radius, `--aro-text-xs`, no border). **New:** `FieldMessage` (helper/error text).
 
-## Chat, tools & boot surfaces
+### 6.4 Menus and pickers
 
-- The transcript and composer are built on `@assistant-ui/react`. Extend the
-  existing components under `src/components/assistant-ui` and
-  `src/app/chat/composer`; do not fork a second markdown, message, tool-call, or
-  approval renderer for one feature.
-- **Inline widgets** — a tool result that renders as a panel the user reads or
-  acts on (clarify, artifact card) wears `WIDGET_SHELL_CLASS`
-  (`src/components/chat/widget-shell.ts`): shared radius, the
-  `--ui-widget-surface-background` fill, no border. Its actions sit *outside*
-  the panel, below it. Don't give one widget its own radius or fill.
-- Bordered surfaces in the transcript (tables, fences, callouts, attachments)
-  use `--ui-stroke-tertiary`. Not `border-border` — that's the app-wide
-  default and reads too hot against the thread.
-- Interactive directive chips in the composer expose their action on hover.
-  The action stays visible for a 500ms grace period while the pointer crosses
-  from the chip to the floating pill; leaving both dismisses it.
-- A tool result may expose an inline action that opens a preview. It must not
-  open the rail automatically.
-- Tool rows reserve destructive red for explicit failures. Missing read paths and
-  ambiguous exit-1 results use neutral notices, with details still available.
-  Errors described inside returned data are not tool failures. Expanded failures
-  show the actual explanation; supporting output keeps its normal text color.
-- Nested transcript scrollers keep their height caps and hand vertical scrolling
-  back to the thread at either edge (`overscroll-behavior-y: auto`), even when
-  their content fits. Only the outer thread contains vertical overscroll;
-  horizontal code/output boundaries may remain contained. Thinking previews
-  follow new tokens only while near the bottom, preserving the user's reading
-  position until they scroll back down.
-- Composer status groups start collapsed except todos. Progress updates and queue
-  pause/resume preserve the user's disclosure choice. Error banners meet the
-  stack's top edge without a blank padding strip. File and preview links remain
-  visible at the bottom of the stack, below the queue and all status groups.
-  A centered ridge on the composer's top edge hides/reveals the entire stack,
-  including the git row, with a short downward/upward drawer slide. Its choice
-  persists per conversation and owner, not globally. Hidden sections stay
-  mounted but inert so their disclosure choices survive; reduced motion is instant.
-- Popping out a composer makes it the window's only visible composer. It keeps
-  its viewport placement while hover or keyboard focus selects a chat pane;
-  moving back into the editor retains that recipient. Drafts, attachments and
-  queues stay session-owned. Docking restores the individual pane composers.
-  In either placement, moving into a chat pane gives its editor typing focus
-  immediately and preserves its caret. Layout-only hover events and delayed
-  focus callbacks cannot replace that choice, and a live transcript selection
-  is never cleared by focus-follow. Movement within the same pane
-  must not flush React; deliberate Tab navigation and clicked controls still work.
-  An inline message edit is a typing target of its own: opening one keeps focus
-  in the edit editor, and neither its mount-time focus nor mouse movement while
-  it is open hands the caret back to the pane composer.
-  Active dictation or voice conversation pins the recipient until capture ends,
-  keeping the microphone's stop controls and shortcut attached to its owner.
-- Status-stack rows use `StatusRow` with a leading `dismiss` action, a state
-  icon and optional trailing actions. `StatusDismissButton` owns the Codicon
-  close button for previews, background tasks and queued prompts; do not swap
-  it for a trash icon or a CSS glyph. Icons and controls align to the first text
-  line, including messages with attachment metadata.
-- `status-stack.css` owns the shared columns and `0.25rem` nesting step. Rows
-  own their padding and full-width hover fill. `StatusControlRow` uses the same
-  columns for goal/loop/heartbeat details; `StatusPendingIcon` supplies the
-  dashed marker for tasks and criteria. The first row keeps its normal padding;
-  the stack adds no extra top inset.
-- Keep the rounded status card stationary, with the bounded scroll viewport
-  inside it. The outer scroll boundary uses `overscroll-behavior-y: contain`;
-  nested rosters and transcripts use `auto` so wheel input can hand off at an
-  edge without trapping it or scrolling the chat behind the stack.
-- Install, onboarding, connecting, boot failure, and reauthentication are
-  distinct states with shared visual primitives. Preserve their recovery
-  semantics when unifying appearance.
-- Guide startup has a dedicated landing screen with the shared long-operation
-  Loader and a localized startup label. It remains active until the guide's
-  saved conversation is loaded. No greeting, composer, Skip setup, or statusbar
-  appears early. Reduced motion uses a static BrandMark and the same label.
-  On readiness, reveal the real conversation and fade controls in over 100ms.
-  Never fabricate progress, delay readiness for motion, or replace a resumed
-  conversation with a new greeting.
-- Respect `AppShell` overlay ownership. Persistent terminal/content layers,
-  route overlays, dialogs, and boot surfaces must not compete through ad-hoc
-  z-index literals. Pick a rung of the ladder in `styles.css` instead —
-  `--z-modal-backdrop` / `--z-modal` / `--z-modal-popover`, `--z-over-modal`
-  (toasts, tooltips, command surfaces) and `--z-over-modal-content`,
-  `--z-switcher-backdrop` / `--z-switcher`, then the boot chain
-  `--z-connecting` → `--z-onboarding` → `--z-setup` → `--z-crash`. Plain
-  `z-10`/`z-20` are still right for stacking *within* one component.
+`DropdownMenu`, `Select`, `PopoverContent variant="menu"` +
+`Command variant="menu"` all paint through `src/components/ui/menu.ts` (Menu
+role). Rows: single line, ellipsized, 28px target, icon column fixed, trailing
+`Kbd`. Selected row uses `--chrome-action-hover` stronger step plus check
+glyph; keyboard highlight and hover are the same visual. Enter animation
+`--aro-dur-base` opacity + 2px translate; exit `--aro-dur-fast`.
+Roles: `role="menu"` / `menuitem`.
 
-## Iconography & brand
+### 6.5 Overlays and dialogs
 
-- **Tabler** is the default component/chrome set. Import its curated aliases and
-  `iconSize` scale from `src/lib/icons.ts`; do not import icon packages directly
-  in feature code.
-- **`Codicon`** is the compact editor/tool/status vocabulary. Use
-  `src/components/ui/codicon.tsx`, including `codiconIcon()` where a
-  Tabler-shaped component is required.
-- Pick the vocabulary by semantic context and reuse the existing icon for an
-  action. Do not introduce a third icon set or mix styles within one control
-  group.
-- **`BrandMark`** (`src/components/brand-mark.tsx`) is the brand glyph — the
-  `nous-girl` mark on a fixed tile, theme-aware: black girl on white in light
-  mode, white girl on the `#0d1117` dark tile in dark mode (keyed off
-  `renderedMode` so bright surfaces in dark skins stay on the light mark).
-  The marks are generated by `scripts/generate_icons.py` from the girl SVGs
-  + squircle backgrounds (`assets/nous-girl-*.svg` × `assets/backgrounds/`).
-  It replaced scattered Sparkles glyphs in updates / onboarding / about. Use it
-  for hero/brand moments; don't reintroduce decorative star/sparkle icons.
+`Dialog`, `OverlayView`, `ConfirmDialog`. Overlay role. Esc closes (except
+install/onboarding/destructive-confirm which state it explicitly). `ConfirmDialog`
+opens focused on Confirm, owns pending to done to close and the inline error;
+one `secondaryAction` slot. Never `window.confirm`. Close is an x icon with
+`aria-label`, not the word "Close". Focus trapped, restored to the trigger on
+close. Backdrop blur is the shared default (`blurBackdrop={false}` only for
+the sudo dialog).
 
-## Motion
+### 6.6 Navigation and layout
 
-- Visible windows keep animating when another app takes focus. Hidden/minimized
-  windows and inactive panes may pause; background polling stays focus-gated.
-- Animated integer counts reuse `AnimatedInt` in `src/components/ui/diff-count.tsx`.
-  Its spring updates the DOM directly without per-frame React renders.
-- Quick, functional transitions (~100ms on controls). Respect
-  `prefers-reduced-motion` for anything beyond a fade.
-- Choreographed exits (e.g. onboarding's "matrix" fade-down) stagger per-element
-  then settle the surface — the outer container's fade is *delayed* so it
-  doesn't swallow the inner animation. Don't let a global fade race the detail.
-- Motion follows state; it never delays state. Selection, drag targets, cancel,
-  and pressed feedback paint in the current frame.
-- Do not animate layout geometry with `transition-all` on a hot interaction.
-  Name the properties, avoid backdrop-filter repaints during movement, and
-  remove animation before masking a performance problem.
+`OverlaySplitLayout` with `OverlaySidebar` / `OverlayMain`; `OverlayNav`
+(labels navigate, `DisclosureCaret` toggles); tabs (Control role, tab
+semantics); panel titlebars (drag region on empty space, tabs/actions
+no-drag, reserved native-control space). `ListRow` for label/description/action
+rows: flat, flush-left, no dividers unless genuinely needed (single tertiary
+hairline).
 
-### Aro shell polish tokens
+### 6.7 Feedback and states
 
-The Aro renderer layer (`src/aro/tokens.css` + `src/aro/host-theme.css`) adds a
-small shared contract on top of the desktop tokens: `--aro-radius-control`,
-`--aro-radius-panel`, `--aro-radius-overlay`, `--aro-focus-ring`,
-`--aro-shadow-panel`, `--aro-shadow-menu`, and `--aro-shadow-composer`.
-Shell, sidebar, context panes, popovers, and the composer use these derived
-tokens instead of inventing per-surface focus rings or elevations. The active
-theme remains the source of all color values.
+- `Loader`: animated math/ascii curves; never the text "Loading…".
+- `Skeleton` (exists, polish): flat `--ui-bg-quaternary` block, control or panel
+  radius per role, opacity pulse (not shimmer gradient) at 1.2s, disabled under
+  reduced motion. Use only where layout is known; otherwise `Loader`.
+- `ErrorState` + canonical `ErrorIcon` (no bg chip); nodes for title and
+  description so Radix a11y flows through.
+- `EmptyState` (plain page bodies), `PanelEmpty` (overlay master/detail with
+  icon and one action). One clear action, one sentence; no third hand-rolled
+  empty.
+- `LogView`: no bg, hairline, tight padding, small mono.
+- `Badge`: `default`, `muted`, `warn`, `destructive`, `outline`, `solid`;
+  sizes `default`, `xs`, `overlay`.
+- `CardStack` (toasts, approvals) and `StatusRow` / `StatusDismissButton` /
+  `StatusControlRow` / `StatusPendingIcon` keep their documented geometry and
+  timing (section 9).
 
-The Aro primitive kit in `src/aro/ui.tsx` is the single home for Aro-owned
-buttons, icon buttons, menus, segmented controls, tabs, toggles, and tooltips.
-Menus expose `role="menu"` / `role="menuitem"`, tabs expose tab semantics,
-and all trigger buttons are explicit `type="button"` controls so embedding a
-primitive in a form cannot submit it accidentally.
+### 6.8 Brand and icons
 
-## Direct manipulation & performance
+`BrandMark` for hero/brand moments only (theme-aware fixed tile). Icons:
+**Tabler** for chrome (via `src/lib/icons.ts`, `iconSize` scale), **Codicon**
+for editor/tool/status vocabulary. Never a third set, never mix styles in one
+control group, no sparkle/star decoration. Icons align optically to the first
+text line.
 
-The app should feel instant under real load — long transcripts, several panes,
-live streams. Design toward that:
+---
 
-- Direct manipulation paints first; persistence reconciles after and rolls back
-  visibly on failure.
-- Keep interaction feedback cheap: hot-path state stays local or narrowly
-  derived, not wired into heavy trees; pointer work coalesces per frame.
-- One drop region has one visual owner, and drop targets speak one affordance
-  language across files, sessions, tabs, and panes. Overlapping targets resolve
-  to the active one instead of stacking overlays.
-- Forgiving geometry beats pixel-perfect triggers; edge actions live near their
-  edge, not clustered in the center.
-- Expensive stateful surfaces stay mounted when hidden. Visibility is not
-  lifecycle.
+## 7. Surfaces: glass, density, theming
 
-Prove speed with realistic content. A fast empty-state demo says nothing about a
-long transcript or a busy terminal.
+- Glass defaults to **29% Tint, Sidebar only**, fade zero, both appearances;
+  `apps/shared/src/translucency.ts` owns defaults. Saved user settings always
+  win.
+- Every primitive must read correctly in **all six Aro themes, glass on and off**.
+  Opaque text surfaces never sit directly on translucent fills without a
+  readable backing.
+- Theme colors come from the active theme through `host-theme.css`; components
+  never read theme colors directly.
+- Density: one density (comfortable-compact). Do not add a density switch
+  without an ADR.
 
-## Keyboard & cancellation
+---
 
-- Keyboard ownership follows focus. The focused surface wins its keys; shell
-  shortcuts must not steal a terminal's or editor's bindings.
-- Focusing the Sessions sidebar preserves the last active chat's visual emphasis.
-  Dimming still distinguishes session panes; sidebar navigation must not desaturate
-  the chat or transfer its active highlight to a hidden primary tab.
-- Focused and hovered chat panes both retain full color and opacity. Only panes
-  that are neither focused nor hovered recede, with 20% desaturation.
-- Register global shortcuts through the shared layer, not ad-hoc listeners.
-- One cancel gesture does one thing: cancel the active interaction, or close the
-  topmost dismissable surface — never both, never the control underneath.
-- Cancellation is synchronous in the UI even if cleanup is async: overlays,
-  cursors, and pending gesture state clear at once.
-- Flows that deliberately cannot be dismissed (install/onboarding, destructive
-  confirmation) must make that explicit.
+## 8. Layout principles
 
-## i18n
+- Chat is the home surface; panes (preview, files, review, terminal) are
+  working context attached to the task; route overlays are short tasks that
+  return to the previous route; pages are durable destinations.
+- Readable measure for transcript text; page gutters from `PAGE_INSET_X`.
+- Whitespace groups; one hairline separates; never nested rounded boxes.
+- Edge actions live near their edge; forgiving geometry beats pixel-perfect
+  triggers.
+- Expensive stateful surfaces stay mounted when hidden (visibility is not
+  lifecycle).
+- Navigation preserves context: a background finish, tool result or refresh may
+  update badges and caches but must not replace the foreground transcript or
+  steal focus.
 
-- Every user-facing string goes through `useI18n()` (`src/i18n/context.tsx`).
-  No literals in JSX.
-- **Update all locales together** — every catalog registered in
-  `src/i18n/catalog.ts`. A string change in `en.ts` that skips the others is a
-  regression (drifted punctuation, stale labels). Keep trailing-punctuation and
-  tone consistent across all of them. `fr`, `de`, and `es` are complete
-  `Translations` objects, so a key missing there fails the type check; the
-  `defineLocale()` overlays fall back to English instead.
-- **Sparse locales** (`ar`, `ru`) override the English base through
-  `defineLocale()`. Large catalogs are split by topic: the Arabic source lives
-  in `src/i18n/ar_<topic>.ts`, recomposed by `src/i18n/ar.ts`.
+---
 
-## State (TypeScript)
+## 9. Behavior contracts carried forward (do not regress)
 
-The detailed state contract lives in the scoped
-[`AGENTS.md`](./AGENTS.md). Visual code follows these essentials:
+These are behavior, not styling. The design-system work must not alter them:
 
-- Shared/cross-component state → small **nanostores**, not prop-drilling.
-  Each feature owns its atoms; shared atoms live in `src/store`.
-- Rendering components subscribe with `useStore`; non-render actions read with
-  `$atom.get()`.
-- Subscribe to derived coarse facts instead of high-frequency source atoms when
-  the component does not render the full value.
-- Colocated action modules over god hooks. A hook owns one narrow job.
-- Keep persistence beside the atom that owns it. Route roots stay thin.
-- Prefer `interface` for public props; extend React primitives
+- Queued cards (`CardStack`): single 96%-scale silhouette 7px above the front,
+  220ms promotion, 180ms upward clearance, no rotation or lateral throw on
+  button/keyboard decisions, gestures never grant approval, departing cards
+  are inert, one persistent transcript-level host owns approvals.
+- Tooltip timing and placement (section 6.2).
+- Sticky user messages clip covered scrolling content; wrappers unpainted,
+  only the rounded bubble owns a fill.
+- Composer: status groups collapsed except todos, ridge toggle persists per
+  conversation, popped-out composer focus rules, dictation pins recipient.
+- Status stack: stationary rounded card, bounded inner scroll, outer
+  `overscroll-behavior-y: contain`, nested `auto`.
+- Window layout: Minimize to tray, window glass defaults, titlebar clusters
+  (`TITLEBAR_FIXED_TOOLS`).
+- Keyboard: focus owns keys; one cancel gesture does one thing; cancellation is
+  synchronous in the UI.
+
+---
+
+## 10. Chat typography
+
+Appearance has **UI Scale** (whole-window zoom, 90% default) and **Chat Text
+Size** (desktop-local multiplier, 110% default) for conversation text and the
+composer editor (including floating and inline-edit composers). It does not
+resize sidebar, settings, toolbars, media or pane geometry. Conversation size
+and line-height tokens derive inside the transcript/editor from root base
+tokens; never multiply global tokens or nest CSS zoom.
+
+---
+
+## 11. i18n and state
+
+- Every user-facing string goes through `useI18n()`. No literals in JSX.
+  Update **all** registered locales together (`fr`, `de`, `es` are complete
+  `Translations`; `ar`, `ru` overlay via `defineLocale()`; Arabic source in
+  `src/i18n/ar_<topic>.ts`). Layout must survive RTL and 40% longer strings:
+  use logical properties (`ms-*`, `ps-*`, `start`/`end`), never fixed widths on
+  labels.
+- State: shared state in small **nanostores**; render with `useStore`;
+  non-render reads use `$atom.get()`; colocated action modules; persistence
+  beside the owning atom. Design-system primitives are **stateless/presentational**
+  and take props; they do not import feature stores.
+- Public props use `interface` and extend React primitives
   (`React.ComponentProps<'button'>`, `Omit<…>`).
 
-## Affordances
+---
 
-- `cursor-pointer` at the primitive level (Button, dropdown/select) — don't
-  hardcode it per call site.
-- Global focus-ring reset; titlebar actions have no active-background state.
-- `Esc` closes every dismissable overlay/dialog (install/onboarding excluded);
-  close is an x-icon, not the word "Close".
+## 12. Accessibility baseline
 
-## Before you add something — checklist
+- WCAG 2.2 AA for text and UI contrast in all four theme modes.
+- Visible `:focus-visible` ring everywhere; logical tab order; no keyboard traps
+  except modals (focus trapped, restored).
+- Roles and names: menus, tabs, dialogs, switches, segmented controls expose
+  correct roles, `aria-selected` / `aria-checked` / `aria-expanded`; every
+  icon-only control has `aria-label`.
+- `prefers-reduced-motion` honored globally; `prefers-contrast: more`
+  strengthens hairlines one step.
+- Status never conveyed by color alone (icon or text accompanies it).
+- Target size at least 24x24.
 
-- [ ] Reuse a primitive (`Button`, `SearchField`, `SegmentedControl`,
-      `ListRow`, `Loader`, `ErrorState`, `LogView`, `ConfirmDialog`) instead of
-      forking one?
-- [ ] Tokens (`--ui-*`, `shadow-nous`, `--stroke-nous`) — zero raw colors /
-      one-off shadows?
-- [ ] No `className` overriding a primitive's padding / size / radius / chrome?
-- [ ] Tips only where hover teaches something new (no kebab / menu-trigger
-      tips; unlabeled chrome that needs discovery gets `<Tip>` + `aria-label`)?
-- [ ] No native `title=` on buttons?
-- [ ] Keybind hints on tipped buttons use `useKeybindHint` / `TipKeybindLabel`?
-- [ ] Overlay uses `shadow-nous` + `border-(--stroke-nous)`, no hard border?
-- [ ] Flat — no card-in-card, no gratuitous row dividers?
+---
+
+## 13. Enforcement
+
+`src/components/ui/__tests__/no-raw-visuals.test.ts` (modeled on
+`no-native-title.test.ts`) scans `src/**/*.{ts,tsx,css}`, excluding
+`src/styles.css`, `src/aro/tokens.css`, `src/aro/host-theme.css`,
+`brand-mark.tsx` and generated assets, and fails on:
+
+- `rounded-[…]` (and `rounded-(sm|md|lg|xl|2xl|3xl)` after the theme reset)
+- `shadow-[…]` and raw `shadow-(sm|md|lg|xl|2xl)`
+- hex, `rgb(a)(`, `hsl(a)(` literals in `.ts` / `.tsx`
+- `bg-white`, `text-black`, `border-(gray|slate|zinc|neutral)-*`
+- `z-[…]`, `transition-all`
+- arbitrary `p|m|gap|space-*` values and `text-[Npx]`
+
+Existing violations are grandfathered by a **ratchet**
+(`no-raw-visuals.baseline.json`, per-file counts): the test fails if a count
+rises, a clean file gains a hit, or a count drops without the baseline being
+lowered in the same change. The baseline only shrinks. A line with
+`design-allow: <reason>` is not counted.
+
+**Make the wrong thing impossible** (land **last**, after migration):
+
+```css
+@theme {
+  --radius-*: initial;
+  --radius-control: var(--aro-radius-control);
+  --radius-panel: var(--aro-radius-panel);
+  --radius-overlay: var(--aro-radius-overlay);
+}
+```
+
+A removed class such as `rounded-md` emits nothing and silently renders
+square, which is why the reset is last and the test catches stragglers first.
+
+Additional gates for this phase: typecheck, lint, existing unit tests, the
+no-native-title test, and the visual gallery check (section 14).
+
+---
+
+## 14. Visual gate: the gallery
+
+The gallery is the **existing `/aro-design` route** (self-themed wrapper, fixtures only), extended so it renders every primitive in every role, variant,
+size and state, in all six Aro themes, glass on and off, LTR and RTL, normal and
+reduced motion. It reads no backend and no feature store (fixtures only).
+
+- Screenshot before and after each migration step; a primitive that looks
+  different from its role siblings is a bug.
+- Each component entry shows: anatomy, variants x sizes grid, all states,
+  long-text and truncation case, keyboard path, and its role.
+- The gallery is excluded from production bundles.
+
+---
+
+## 15. Roadmap for phase 1 (do not deviate)
+
+| Step | Deliverable | Gate |
+| --- | --- | --- |
+| 0 | Audit (commands below), distinct-value counts, value-to-role map in the PR description | Counts reported |
+| 1 | Land `no-raw-visuals` test plus baseline | Test green, baseline recorded |
+| 2 | Tokens: add `--aro-text-*`, `--aro-dur-*`, `--aro-ease-*`, `--aro-status-*`; point legacy at `--aro-*` | Gallery token page |
+| 3 | Primitives: `button`, `control`, `menu`, `badge`, base `Dialog`, `OverlayView`, `widget-shell`, `status-stack.css`, `src/aro/ui.tsx` | Gallery before/after, a11y checks |
+| 4 | Polish `Kbd`, `Skeleton`, `Checkbox`; add `FieldMessage` | Gallery, contract entry in this file |
+| 5 | `/aro-design` complete across theme matrix | Screenshots attached |
+| 6 | Call-site migration, largest offender first, baseline lowered each change | Ratchet only shrinks |
+| 7 | Theme reset (`--radius-*: initial`) | No straggler regressions |
+| 8 | Update this file; delete the migration notes it supersedes | Doc matches code |
+
+Audit commands:
+
+```
+rg -o --no-filename "rounded-(\[[^\]]+\]|[a-z0-9]+)" src | sort | uniq -c | sort -rn
+rg -o --no-filename "shadow-(\[[^\]]+\]|[a-z0-9]+)" src | sort | uniq -c | sort -rn
+rg -o --no-filename "#[0-9a-fA-F]{3,8}\b" src --glob "*.{ts,tsx}" | sort | uniq -c | sort -rn
+rg -o --no-filename "(p|m|gap)[xytrbl]?-\[[^\]]+\]" src | sort | uniq -c | sort -rn
+```
+
+More than three radii or three shadows in use confirms the drift.
+
+**Hard boundaries for phase 1 (do not touch):** backend, IPC and transport,
+resolvers, nanostore atoms and their persistence, routing and route wiring,
+`@assistant-ui/react` runtime wiring, i18n key names (add keys, do not rename),
+public prop APIs of existing components (additive changes only), business
+logic in feature code. Visual and primitive layers only.
+
+---
+
+## 16. ADR template (founder or product additions)
+
+`docs/adr/NNNN-short-title.md`
+
+```
+# ADR NNNN: <title>
+Status: proposed | accepted | scheduled | implemented | rejected
+Date / Author:
+Context: what changed or was requested, and why now.
+Decision: what we will do.
+Alternatives considered: including the benchmark comparison.
+Impact: tokens, primitives, call sites, i18n, a11y, performance.
+Roadmap slot: which step or which later phase implements it.
+Acceptance: gallery screenshots, tests, contract entries updated.
+```
+
+An ADR is implemented in its own change when its slot arrives, never
+mid-step. Accepted ADRs are folded into this document in the implementing
+change.
+
+---
+
+## 17. Before you add something: checklist
+
+- [ ] Reused a primitive (`Button`, `SearchField`, `SegmentedControl`,
+      `ListRow`, `Loader`, `ErrorState`, `LogView`, `ConfirmDialog`, `Kbd`,
+      `Skeleton`)?
+- [ ] One role from the Shape table; radius, elevation and hairline come from
+      it?
+- [ ] Zero raw colors, shadows, radii, spacing, type, z values?
+- [ ] No `className` overriding a primitive's padding, size, radius or chrome?
+- [ ] Nested radii concentric; no same-role boxes nested; adjacent controls
+      share a size?
+- [ ] All states implemented and shown in the gallery (rest, hover, focus,
+      pressed, selected, disabled, loading, error)?
+- [ ] Motion uses tokens, named properties, no `transition-all`, reduced
+      motion honored?
+- [ ] Tips only where hover teaches something; no kebab tips; no native
+      `title=`; keybinds via `TipKeybindLabel`?
+- [ ] Contrast checked in all six themes, glass on and off?
+- [ ] Strings via `useI18n`, all locales updated, RTL and long strings OK?
 - [ ] No automatic navigation, focus steal, or pane opening from background
       events?
-- [ ] Direct manipulation paints immediately and rolls back cleanly on failure?
-- [ ] Hot interactions avoid broad subscriptions, layout thrash, and
-      `transition-all`?
-- [ ] Keyboard ownership and single-action `Esc` behavior are correct?
-- [ ] All registered locales updated for any new/changed string?
-- [ ] `cursor-pointer`, focus ring, and `Esc`-to-close behave?
-- [ ] Touched a primitive, token, or variant? Its named-contract entry in this
-      file is updated in the same change.
+- [ ] Direct manipulation paints immediately and rolls back on failure?
+- [ ] No new store imports inside a design-system primitive?
+- [ ] `no-raw-visuals` passes and the baseline did not grow?
+- [ ] Touched a primitive, token, variant or role? This file updated in the
+      same change.
