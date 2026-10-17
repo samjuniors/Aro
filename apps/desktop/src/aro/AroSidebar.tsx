@@ -708,7 +708,7 @@ export function AroSidebar({
         }}
       >
         <button
-          className="min-w-0 flex-1 truncate text-left text-[13px] text-aro-ink-2"
+          className="min-w-0 flex-1 truncate text-left text-sm text-aro-ink-2"
           onClick={() => handleSelectSession(session.id)}
           aria-label={title}
           type="button"
@@ -903,7 +903,7 @@ export function AroSidebar({
         >
           <button
             aria-label={`${isFolded ? 'Expand' : 'Collapse'} ${project.name}`}
-            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-1 py-0.5 text-left transition-colors hover:bg-aro-hover/60"
+            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-control px-1 py-0.5 text-left transition-colors hover:bg-aro-hover/60"
             onClick={() =>
               setFolds(prev => ({ ...prev, [project.id]: !prev[project.id] }))
             }
@@ -921,13 +921,13 @@ export function AroSidebar({
               size={14}
               style={{ color, fill: `${color}25` }}
             />
-            <span className="rail-label truncate text-[13px] font-medium text-aro-ink-2">
+            <span className="rail-label truncate text-sm font-medium text-aro-ink-2">
               {project.name}
             </span>
             {isPinned && (
               <IconPin className="text-aro-amber-soft shrink-0" size={10} />
             )}
-            <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 opacity-0 transition-opacity group-hover:opacity-100">
               {items.length || ''}
             </span>
           </button>
@@ -935,7 +935,7 @@ export function AroSidebar({
           <Tip label={`New session in ${project.name}`}>
             <button
               aria-label={`New session in ${project.name}`}
-              className="flex size-[20px] items-center justify-center rounded text-aro-ink-4 opacity-0 transition-all hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
+              className="flex size-[20px] items-center justify-center rounded text-aro-ink-4 opacity-0 transition-colors hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
               onClick={() => handleNewSession(project.id)}
               type="button"
             >
@@ -1011,7 +1011,7 @@ export function AroSidebar({
                       type="button"
                     >
                       {color === c.value && (
-                        <IconCheck className="text-white drop-shadow-sm" size={9} />
+                        <IconCheck className="text-white drop-shadow-(--aro-shadow-e1)" size={9} />
                       )}
                     </button>
                   ))}
@@ -1058,7 +1058,7 @@ export function AroSidebar({
         type="button"
       >
         <span>{auditDrawerOpen ? '[-] Audit Surfaces' : '[+] Hermes Surfaces (Audit)'}</span>
-        <span className="font-mono text-[9px] text-aro-ink-4">
+        <span className="font-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
           {cronJobs.length + messagingOpenIds.length + (connectionsRegistry?.connections?.length || 0)} items
         </span>
       </button>
@@ -1067,21 +1067,21 @@ export function AroSidebar({
         <div className="sidebar-audit-content">
           <div className="sidebar-audit-item">
             <span>Cron Tasks</span>
-            <span className="font-mono text-[10px]">{cronJobs.length} scheduled</span>
+            <span className="font-mono text-[var(--aro-text-2xs,10px)]">{cronJobs.length} scheduled</span>
           </div>
           <div className="sidebar-audit-item">
             <span>Messaging Gateways</span>
-            <span className="font-mono text-[10px]">{messagingOpenIds.length} open</span>
+            <span className="font-mono text-[var(--aro-text-2xs,10px)]">{messagingOpenIds.length} open</span>
           </div>
           <div className="sidebar-audit-item">
             <span>Remote Connections</span>
-            <span className="font-mono text-[10px]">
+            <span className="font-mono text-[var(--aro-text-2xs,10px)]">
               {connectionsRegistry?.connections?.length || 1} registered
             </span>
           </div>
           <div className="sidebar-audit-item">
             <span>PR & Branch Filters</span>
-            <span className="font-mono text-[10px]">
+            <span className="font-mono text-[var(--aro-text-2xs,10px)]">
               {filtersActive ? 'Active' : 'Idle'}
             </span>
           </div>
@@ -1095,7 +1095,7 @@ export function AroSidebar({
       {/* ── Brand Header: Logo + Collapse Button ── */}
       <div className="sidebar-brand">
         <LogoMark size={20} />
-        <span className="rail-label font-aro-display text-[15px] font-semibold tracking-[-.025em] text-aro-ink">
+        <span className="rail-label font-aro-display text-base font-semibold tracking-[-.025em] text-aro-ink">
           Aro
         </span>
         <IconButton
@@ -1223,7 +1223,7 @@ export function AroSidebar({
                 {visibleSessions.length > 0 ? (
                   visibleSessions.map(renderSessionRow)
                 ) : (
-                  <p className="py-6 text-center text-[11px] text-aro-ink-4">
+                  <p className="py-6 text-center text-xs text-aro-ink-4">
                     Nothing archived yet.
                   </p>
                 )}
@@ -1235,7 +1235,7 @@ export function AroSidebar({
                 <div className="mb-2">
                   <button
                     aria-label={`${isPinnedFolded ? 'Expand' : 'Collapse'} Pinned`}
-                    className="flex w-full min-w-0 items-center gap-1.5 rounded-[5px] px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
+                    className="flex w-full min-w-0 items-center gap-1.5 rounded-control px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
                     onClick={() =>
                       setFolds(prev => ({
                         ...prev,
@@ -1256,7 +1256,7 @@ export function AroSidebar({
                       Pinned
                     </span>
                     {totalPinnedCount > 0 && (
-                      <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4">
+                      <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                         {totalPinnedCount}
                       </span>
                     )}
@@ -1271,7 +1271,7 @@ export function AroSidebar({
                       {pinnedSessions.map(renderSessionRow)}
 
                       {totalPinnedCount === 0 && (
-                        <p className="py-1 px-3 text-[11px] text-aro-ink-4 italic">
+                        <p className="py-1 px-3 text-xs text-aro-ink-4 italic">
                           No pinned items yet.
                         </p>
                       )}
@@ -1284,7 +1284,7 @@ export function AroSidebar({
                   <div className="flex items-center justify-between">
                     <button
                       aria-label={`${isProjectsFolded ? 'Expand' : 'Collapse'} Projects`}
-                      className="flex min-w-0 flex-1 items-center gap-1.5 rounded-[5px] px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
+                      className="flex min-w-0 flex-1 items-center gap-1.5 rounded-control px-2 py-1 text-left transition-colors hover:bg-aro-hover/60 group/section"
                       onClick={() =>
                         setFolds(prev => ({
                           ...prev,
@@ -1304,7 +1304,7 @@ export function AroSidebar({
                       <span className="text-[10.5px] font-semibold uppercase tracking-wider text-aro-ink-4 group-hover/section:text-aro-ink-2 transition-colors">
                         Projects
                       </span>
-                      <span className="ml-auto shrink-0 font-aro-mono text-[10px] text-aro-ink-4">
+                      <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                         {effectiveProjects.length}
                       </span>
                     </button>
@@ -1376,10 +1376,10 @@ export function AroSidebar({
                         <section className="mt-3 border-t border-aro-line-soft pt-2">
                           <p className="sidebar-section-label">{t.sidebar.projects.autoDiscovered}</p>
                           {discoveredRepositories.map(project => (
-                            <div className="group flex min-w-0 items-center gap-1 rounded-[5px] px-1 py-1" key={project.id}>
+                            <div className="group flex min-w-0 items-center gap-1 rounded-control px-1 py-1" key={project.id}>
                               <IconFolder className="shrink-0 text-aro-ink-4" size={13} />
                               <div className="min-w-0 flex-1">
-                                <span className="block truncate text-[12px] text-aro-ink-2">{project.label}</span>
+                                <span className="block truncate text-xs text-aro-ink-2">{project.label}</span>
                                 <span className="block truncate font-aro-mono text-[9.5px] text-aro-ink-4">
                                   {project.path}
                                 </span>
@@ -1392,7 +1392,7 @@ export function AroSidebar({
                                   type="button"
                                 >
                                   <IconPlus size={12} />
-                                  <span className="text-[10px] font-medium">{t.sidebar.projects.newButton}</span>
+                                  <span className="text-[var(--aro-text-2xs,10px)] font-medium">{t.sidebar.projects.newButton}</span>
                                 </button>
                               </Tip>
                               <Tip label={`${t.sidebar.projects.removeFromSidebar}: ${project.label}`}>
@@ -1428,7 +1428,7 @@ export function AroSidebar({
                 )}
 
                 {search && !visibleSessions.length && (
-                  <p className="py-6 text-center text-[11px] text-aro-ink-4">
+                  <p className="py-6 text-center text-xs text-aro-ink-4">
                     No matching sessions.
                   </p>
                 )}
@@ -1503,7 +1503,7 @@ export function AroSidebar({
                     title={`Switch active bot to ${pLabel}`}
                   >
                     <span
-                      className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
+                      className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[var(--aro-text-2xs,10px)] font-bold text-white shadow-(--aro-shadow-e1)"
                       style={{ backgroundColor: pColor }}
                     >
                       {pInitials}
@@ -1520,12 +1520,12 @@ export function AroSidebar({
                           {pLabel}
                         </span>
                         {isActive && (
-                          <span className="rounded bg-aro-mint/15 px-1 py-0.2 text-[8px] font-bold uppercase tracking-wider text-aro-mint">
+                          <span className="rounded bg-aro-mint/15 px-1 py-0.2 text-[var(--aro-text-2xs,8px)] font-bold uppercase tracking-wider text-aro-mint">
                             Active
                           </span>
                         )}
                       </div>
-                      <span className="block truncate text-[10px] text-aro-ink-4">
+                      <span className="block truncate text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                         {pRole}
                       </span>
                     </div>
@@ -1533,7 +1533,7 @@ export function AroSidebar({
                 )
               })}
               {profiles.length === 0 && (
-                <p className="py-3 text-center text-[11px] text-aro-ink-4">
+                <p className="py-3 text-center text-xs text-aro-ink-4">
                   No bot profiles configured.
                 </p>
               )}
@@ -1554,12 +1554,12 @@ export function AroSidebar({
               </div>
             ) : (
               <div className="py-6 px-4 text-center">
-                <p className="text-[12px] font-medium text-aro-ink-3">No bot conversations yet</p>
-                <p className="mt-1 text-[11px] text-aro-ink-4">
+                <p className="text-xs font-medium text-aro-ink-3">No bot conversations yet</p>
+                <p className="mt-1 text-xs text-aro-ink-4">
                   Select a bot above or start a new chat.
                 </p>
                 <button
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-[6px] border border-aro-line bg-aro-raise px-3 py-1.5 text-[12px] font-medium text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink transition-colors cursor-pointer"
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-control border border-aro-line bg-aro-raise px-3 py-1.5 text-xs font-medium text-aro-ink-2 hover:bg-aro-hover hover:text-aro-ink transition-colors cursor-pointer"
                   onClick={() => handleNewSession()}
                   type="button"
                 >
@@ -1586,13 +1586,13 @@ export function AroSidebar({
               <button
                 aria-label={`Profile: ${profileDisplayName || botName}`}
                 className={cn(
-                  'group flex h-[36px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-aro-ink-2 transition-all hover:bg-aro-hover hover:text-aro-ink',
+                  'group flex h-[36px] w-full cursor-pointer items-center gap-2.5 rounded-panel px-2 text-xs text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink',
                   open && 'bg-aro-hover text-aro-ink'
                 )}
                 type="button"
               >
                 <span
-                  className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
+                  className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[var(--aro-text-2xs,10px)] font-bold text-white shadow-(--aro-shadow-e1)"
                   style={{ backgroundColor: botAvatarColor }}
                 >
                   {botInitials}
@@ -1602,7 +1602,7 @@ export function AroSidebar({
                   <span className="block truncate font-medium text-aro-ink leading-tight text-[12.5px]">
                     {profileDisplayName || botName}
                   </span>
-                  <span className="block truncate text-[10px] text-aro-ink-4 leading-tight">
+                  <span className="block truncate text-[var(--aro-text-2xs,10px)] text-aro-ink-4 leading-tight">
                     {matchedProfile?.role || 'Aro Agent Bot'}
                   </span>
                 </span>
@@ -1616,9 +1616,9 @@ export function AroSidebar({
           >
             {close => (
               <div className="p-1 space-y-1">
-                <div className="flex items-center gap-2 rounded-[7px] bg-aro-sunken p-2">
+                <div className="flex items-center gap-2 rounded-control bg-aro-sunken p-2">
                   <span
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white shadow-sm"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-(--aro-shadow-e1)"
                     style={{ backgroundColor: botAvatarColor }}
                   >
                     {botInitials}
@@ -1627,7 +1627,7 @@ export function AroSidebar({
                     <span className="block truncate text-[12.5px] font-semibold text-aro-ink">
                       {profileDisplayName || botName}
                     </span>
-                    <span className="block truncate text-[10px] text-aro-ink-4">
+                    <span className="block truncate text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                       {matchedProfile?.role || 'Aro Agent Bot'}
                     </span>
                   </div>

@@ -1602,7 +1602,7 @@ export function ChatSidebar({
         <div className="flex h-[38px] shrink-0 items-center justify-between border-b border-aro-line-soft px-1 pb-1 pt-1.5">
           <div className="flex items-center gap-2">
             <LogoMark size={20} />
-            <span className="font-display text-[15px] font-semibold tracking-tight text-aro-ink">Aro</span>
+            <span className="font-display text-base font-semibold tracking-tight text-aro-ink">Aro</span>
           </div>
           <ProfileSwitcher compact />
         </div>
@@ -2055,7 +2055,7 @@ export function ChatSidebar({
                     label={group.label}
                     labelIcon={
                       <PlatformAvatar
-                        className="size-4 rounded-[4px] text-[0.5625rem] [&_svg]:size-3"
+                        className="size-4 rounded-[var(--aro-radius-sm,4px)] text-[0.5625rem] [&_svg]:size-3"
                         platformId={group.sourceId}
                         platformName={group.label}
                       />
@@ -2104,11 +2104,11 @@ export function ChatSidebar({
         <button
           type="button"
           onClick={() => navigate('/settings')}
-          className="group flex h-[32px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground"
+          className="group flex h-[32px] w-full cursor-pointer items-center gap-2.5 rounded-panel px-2 text-xs text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground"
         >
           <Codicon name="settings-gear" className="size-3.5 text-(--ui-text-tertiary) shrink-0" />
           <span className="flex-1 text-left font-medium">Settings</span>
-          <kbd className="font-mono text-[9px] text-(--ui-text-quaternary)">⌘,</kbd>
+          <kbd className="font-mono text-[var(--aro-text-2xs,9px)] text-(--ui-text-quaternary)">⌘,</kbd>
         </button>
         <p className="px-2 pt-0.5 text-[9.5px] text-(--ui-text-quaternary) select-none">
           Code workspace · saved on this device

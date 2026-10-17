@@ -189,11 +189,11 @@ export function ProfileSwitcher({
           {isCard ? (
             <button
               aria-label={`Active profile: ${triggerLabel} — ${p.title}`}
-              className="group flex h-[38px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.99] data-[state=open]:bg-(--ui-control-hover-background) data-[state=open]:text-foreground"
+              className="group flex h-[38px] w-full cursor-pointer items-center gap-2.5 rounded-panel px-2 text-xs text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.99] data-[state=open]:bg-(--ui-control-hover-background) data-[state=open]:text-foreground"
               type="button"
             >
               <span
-                className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
+                className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[var(--aro-text-2xs,10px)] font-bold text-white shadow-(--aro-shadow-e1)"
                 style={{ backgroundColor: resolveProfileColor(active?.name ?? 'default', colors) ?? undefined }}
               >
                 {pendingRoute !== null ? (
@@ -207,7 +207,7 @@ export function ProfileSwitcher({
                 <span className="block truncate font-medium text-foreground leading-tight text-[12.5px]">
                   {triggerLabel}
                 </span>
-                <span className="block truncate text-[10px] text-(--ui-text-tertiary) leading-tight">
+                <span className="block truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary) leading-tight">
                   {active?.is_default ? 'Personal · local' : `${active?.name ?? 'user'}@local`}
                 </span>
               </span>
