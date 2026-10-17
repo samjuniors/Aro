@@ -19,19 +19,28 @@ import {
   Badge,
   Bar,
   Button,
+  Checkbox,
+  ConfirmDialog,
   Divider,
   EmptyState,
+  ErrorState,
+  FieldMessage,
   IconButton,
   Input,
   Kbd,
+  ListRow,
+  Loader,
+  LogView,
   Modal,
   Ring,
   SectionLabel,
   Segmented,
   Select,
+  Skeleton,
   Sparkline,
   Stat,
   Tabs,
+  Textarea,
   Tip,
   Toasts,
   Toggle,
@@ -39,7 +48,7 @@ import {
 } from './ui'
 
 /* ------------------------------ theme registry ---------------------------- */
-type ThemeId = 'obsidian' | 'daylight' | 'nord' | 'ember' | 'paper'
+type ThemeId = 'obsidian' | 'daylight' | 'nord' | 'ember' | 'paper' | 'ink'
 
 const THEMES: { id: ThemeId; label: string; desc: string; swatch: string[] }[] = [
   { id: 'obsidian', label: 'Obsidian', desc: 'Deep neutral dark · violet accent', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
@@ -47,6 +56,7 @@ const THEMES: { id: ThemeId; label: string; desc: string; swatch: string[] }[] =
   { id: 'nord', label: 'Nord', desc: 'Arctic blue-grey · frost accent', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
   { id: 'ember', label: 'Ember', desc: 'Warm charcoal · copper accent', swatch: ['#171210', '#1f1815', '#ff8a4c', '#4fd1b5'] },
   { id: 'paper', label: 'Paper', desc: 'Warm light · ink on paper', swatch: ['#faf7f0', '#f4f0e6', '#8a5cf6', '#0f8f86'] },
+  { id: 'ink', label: 'Ink', desc: 'Monochrome dark · high contrast', swatch: ['#000000', '#0a0a0a', '#ffffff', '#22c55e'] },
 ]
 
 /* ------------------------------ inline catalogue -------------------------- */
@@ -184,6 +194,11 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
 /* ============================ main view ============================ */
 export function AroDesignSystemPage() {
   const [theme, setTheme] = useState<ThemeId>('obsidian')
+  const [glass, setGlass] = useState(false)
+  const [rtl, setRtl] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [checkboxVal, setCheckboxVal] = useState(true)
   const [demoTab, setDemoTab] = useState<'a' | 'b' | 'c'>('a')
   const [seg, setSeg] = useState<'plan' | 'agent'>('plan')
   const [sel, setSel] = useState('opus-4.6')
@@ -201,7 +216,26 @@ export function AroDesignSystemPage() {
   return (
     // data-theme on the WRAPPER: the aro token layer resolves only inside
     // this subtree. Unmounting the page removes the attribute with it.
-    <div className="aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200" data-theme={theme}>
+    <div
+      className={cn(
+        'aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200',
+        glass && 'bg-aro-void/85 backdrop-blur-md',
+      )}
+      data-glass={glass ? 'true' : 'false'}
+      data-theme={theme}
+      dir={rtl ? 'rtl' : 'ltr'}
+      style={
+        reducedMotion
+          ? ({
+              '--aro-dur-instant': '0ms',
+              '--aro-dur-fast': '0ms',
+              '--aro-dur-mid': '0ms',
+              '--aro-dur-base': '0ms',
+              '--aro-dur-slow': '0ms',
+            } as any)
+          : undefined
+      }
+    >
       {/* hero */}
       <div className="relative overflow-hidden border-b border-aro-line-soft">
         <div className="aro-grid-bg pointer-events-none absolute inset-0 opacity-60" />
@@ -244,6 +278,23 @@ export function AroDesignSystemPage() {
                 <p className="mt-1 text-[11px] leading-[1.55] text-aro-ink-3">{p.d}</p>
               </div>
             ))}
+          </div>
+
+          {/* Interactive display controls (Gate A contract) */}
+          <div className="mt-6 flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-raise/40 px-4 py-3">
+            <span className="text-xs font-semibold text-aro-ink">Live Controls:</span>
+            <div className="flex items-center gap-2">
+              <Toggle checked={glass} onChange={setGlass} size="sm" />
+              <span className="text-xs text-aro-ink-2">Glass Surface</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Toggle checked={rtl} onChange={setRtl} size="sm" />
+              <span className="text-xs text-aro-ink-2">RTL Layout</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Toggle checked={reducedMotion} onChange={setReducedMotion} size="sm" />
+              <span className="text-xs text-aro-ink-2">Reduced Motion</span>
+            </div>
           </div>
         </div>
       </div>
@@ -657,6 +708,9 @@ export function AroDesignSystemPage() {
                   <Button icon={IconBolt} onClick={() => setModal(true)} variant="secondary">
                     Open modal
                   </Button>
+                  <Button icon={IconWarning} onClick={() => setConfirmOpen(true)} variant="outline">
+                    Confirm dialog
+                  </Button>
                   <Button
                     onClick={() => {
                       toast('Patch applied · 3 files', 'mint')
@@ -693,8 +747,87 @@ export function AroDesignSystemPage() {
                 </div>
               </div>
             </Spec>
+
+            <Spec label="forms & field feedback">
+              <div className="space-y-3">
+                <Textarea placeholder="Multi-line reasoning or system instructions…" rows={2} />
+                <div className="space-y-1.5">
+                  <FieldMessage tone="error">Branch has uncommitted changes that would be overwritten</FieldMessage>
+                  <FieldMessage tone="warn">Rate limit threshold reached for Anthropic tier</FieldMessage>
+                  <FieldMessage tone="success">Runtime verified with zero regressions</FieldMessage>
+                  <FieldMessage tone="info">Press Shift+Tab to move focus back to prompt composer</FieldMessage>
+                </div>
+                <div className="flex items-center gap-4 pt-1">
+                  <Checkbox checked={checkboxVal} label="Include commit history in context" onChange={setCheckboxVal} />
+                  <Checkbox checked={false} disabled label="Auto-compact disabled" onChange={() => {}} />
+                </div>
+              </div>
+            </Spec>
+
+            <Spec label="list rows & items">
+              <div className="space-y-1 rounded-panel border border-aro-line-soft bg-aro-sunken/40 p-1.5">
+                <ListRow
+                  action={<Badge dot tone="mint">active</Badge>}
+                  description="Primary autonomous reasoning loop with tools"
+                  icon={IconBolt}
+                  onClick={() => toast('Row clicked: Autonomous agent')}
+                  title="Aro Core Turn Loop"
+                />
+                <ListRow
+                  action={<Toggle checked={tog} onChange={setTog} size="sm" />}
+                  description="Pre-checks tool permissions before dispatching"
+                  icon={IconShield}
+                  title="Approval Gate"
+                />
+                <ListRow
+                  action={<Kbd>⌥⌘T</Kbd>}
+                  description="Direct subshell inside workspace container"
+                  disabled
+                  icon={IconTerminal}
+                  title="Pty Terminal Bridge"
+                />
+              </div>
+            </Spec>
+
+            <Spec label="diagnostics, loaders & logs">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-xs text-aro-ink-3">
+                    <Loader size={16} /> <span>Thinking…</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-aro-ink-3">
+                    <Loader size={20} /> <span>Executing bash command</span>
+                  </div>
+                  <Skeleton className="h-6 w-32" />
+                </div>
+                <LogView
+                  lines={[
+                    '[2026-10-17 10:00:12] INFO  aro_bridge.engine: connecting to local runtime',
+                    '[2026-10-17 10:00:13] INFO  model_switch: resolved model to ornith-1.5:9b',
+                    '[2026-10-17 10:00:14] WARN  rate_limit: bucket at 85% capacity (cooldown 12s)',
+                    '[2026-10-17 10:00:15] PASS  vitest: 14 test files passed, 0 errors'
+                  ]}
+                />
+                <div className="rounded-panel border border-aro-line-soft bg-aro-raise/30">
+                  <ErrorState
+                    description="Could not establish websocket connection to backend RPC daemon."
+                    retry={() => toast('Retrying connection…', 'cyan')}
+                    title="Gateway Daemon Offline"
+                  />
+                </div>
+              </div>
+            </Spec>
           </div>
         </DS>
+
+        <ConfirmDialog
+          danger
+          description="This will cancel the active background turn and roll back any unstaged file edits."
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => toast('Turn cancelled', 'rose')}
+          open={confirmOpen}
+          title="Cancel Active Turn?"
+        />
 
         {/* ---------------- TOKENS ---------------- */}
         <DS

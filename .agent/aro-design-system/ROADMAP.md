@@ -61,10 +61,10 @@ sidebar (`/aro-design`), switch themes, look at every section.
       `Checkbox`, `Badge`, `ListRow`, `Loader`, `EmptyState`, `ErrorState`,
       `LogView`, `Skeleton`, `Kbd`, `FieldMessage` (new), `CardStack`/toast
       look. Built beside the current ones; existing props unchanged
-- [~] 5. Extend `/aro-design`: sections for each component x variant x size x
+- [x] 5. Extend `/aro-design`: sections for each component x variant x size x
       state, theme switcher (6), glass toggle, RTL, reduced motion;
       fixtures only (no stores/backend)
-  - [ ] 5.1 Screenshots per section (or BLOCKED with reason)
+  - [x] 5.1 Screenshots per section (or BLOCKED with reason)
 - [ ] 🛑 **GATE A**
 
 ---
