@@ -347,7 +347,7 @@ export function CustomEndpointsSettings({ onConfigSaved, onMainModelChanged }: C
       <div className="space-y-6">
         <section>
           <SectionHeading icon={Globe} meta={`${endpoints.length}`} page title={t.settings.customEndpoints.title} />
-          <div className="divide-y divide-border/40 rounded-md border border-border/50">
+          <div className="divide-y divide-border/40 rounded-control border border-border/50">
             {endpoints.length ? (
               endpoints.map(endpoint => (
                 <div className="grid gap-3 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={endpoint.id}>
@@ -414,7 +414,7 @@ export function CustomEndpointsSettings({ onConfigSaved, onMainModelChanged }: C
 
         <section>
           <SectionHeading icon={Plus} title={form.id ? ce.editTitle : ce.addTitle} />
-          <div className="grid gap-3 rounded-md border border-border/50 p-3">
+          <div className="grid gap-3 rounded-control border border-border/50 p-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1.5 text-xs text-muted-foreground">
                 {ce.fields.name}

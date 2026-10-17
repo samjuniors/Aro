@@ -347,8 +347,8 @@ export function AroDesignSystemPage() {
                     <div className="mt-1.5 h-[4px] w-3/4 rounded-full opacity-40" style={{ background: t.swatch[3] }} />
                     <div className="mt-1 h-[4px] w-2/3 rounded-full opacity-25" style={{ background: t.swatch[3] }} />
                     <div className="mt-2.5 flex gap-1">
-                      <i className="h-[12px] w-[34px] rounded-xs" style={{ background: t.swatch[2] }} />
-                      <i className="h-[12px] w-[24px] rounded-xs opacity-50" style={{ background: t.swatch[3] }} />
+                      <i className="h-[12px] w-[34px] rounded-control" style={{ background: t.swatch[2] }} />
+                      <i className="h-[12px] w-[24px] rounded-control opacity-50" style={{ background: t.swatch[3] }} />
                     </div>
                   </div>
                   {theme === t.id && (
@@ -398,7 +398,7 @@ export function AroDesignSystemPage() {
                   { c: 'sky', m: 'Informational · reads · file access' },
                 ].map((x) => (
                   <div className="flex items-center gap-2" key={x.c}>
-                    <i className={cn('size-[10px] shrink-0 rounded-xs', toneBg[x.c as keyof typeof toneBg])} />
+                    <i className={cn('size-[10px] shrink-0 rounded-control', toneBg[x.c as keyof typeof toneBg])} />
                     <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2">{x.c}</span>
                     <span className="min-w-0 flex-1 truncate text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{x.m}</span>
                   </div>
@@ -488,7 +488,7 @@ export function AroDesignSystemPage() {
                   {DS_SPACING.map((s) => (
                     <div className="flex items-center gap-2.5" key={s}>
                       <span className="w-6 shrink-0 font-aro-mono text-[9.5px] text-aro-ink-4">{s}</span>
-                      <div className="h-[7px] rounded-xs bg-linear-to-r from-aro-iris to-aro-iris-soft" style={{ width: s * 4 }} />
+                      <div className="h-[7px] rounded-control bg-linear-to-r from-aro-iris to-aro-iris-soft" style={{ width: s * 4 }} />
                       <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{s % 4 === 0 ? `${s}px` : 'avoid'}</span>
                     </div>
                   ))}

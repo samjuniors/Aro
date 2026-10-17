@@ -183,13 +183,13 @@ export function PanelListRow({
   const row = (
     <div
       className={cn(
-        'group/row row-hover relative flex h-7 w-full items-center rounded-md text-xs hover:text-foreground',
+        'group/row row-hover relative flex h-7 w-full items-center rounded-control text-xs hover:text-foreground',
         active ? 'bg-(--ui-row-active-background) text-foreground' : 'text-(--ui-text-secondary)'
       )}
       data-panel-row={rowKey}
     >
       <RowButton
-        className="flex h-full min-w-0 flex-1 items-center gap-2 rounded-md pl-2 pr-1 text-left"
+        className="flex h-full min-w-0 flex-1 items-center gap-2 rounded-control pl-2 pr-1 text-left"
         onClick={onSelect}
       >
         {lead ??
@@ -340,7 +340,7 @@ export function PanelBlock({ children, className }: { children: ReactNode; class
   return (
     <pre
       className={cn(
-        'max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-foreground/5 p-2.5 text-xs leading-relaxed text-foreground/80',
+        'max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-control bg-foreground/5 p-2.5 text-xs leading-relaxed text-foreground/80',
         className
       )}
     >

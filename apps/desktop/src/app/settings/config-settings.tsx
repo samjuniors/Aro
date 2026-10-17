@@ -486,7 +486,7 @@ function ConfigSettingsInner({
       ) : visibleFields.length === 0 ? null : (
         <div className="grid gap-1">
           {visibleFields.map(([key, field]) => (
-            <div className="scroll-mt-6 rounded-lg" id={`setting-field-${key}`} key={key}>
+            <div className="scroll-mt-6 rounded-panel" id={`setting-field-${key}`} key={key}>
               <ConfigField
                 descriptionExtra={
                   key === 'memory.provider' && isExternalMemoryProvider(getNested(config, key)) ? (

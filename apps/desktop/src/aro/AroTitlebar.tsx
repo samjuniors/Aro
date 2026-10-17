@@ -428,7 +428,7 @@ export function AroTitlebar() {
                   <span className="truncate text-sm font-semibold text-aro-ink">
                     {profileDisplayName || botName}
                   </span>
-                  <span className="rounded-[var(--aro-radius-sm,4px)] bg-aro-iris-soft/15 px-1 py-0.5 font-mono text-[8.5px] font-bold text-aro-iris uppercase">
+                  <span className="rounded-control bg-aro-iris-soft/15 px-1 py-0.5 font-mono text-[8.5px] font-bold text-aro-iris uppercase">
                     Agent
                   </span>
                 </div>

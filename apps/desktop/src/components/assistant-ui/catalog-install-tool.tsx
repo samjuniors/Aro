@@ -147,7 +147,7 @@ export function CatalogRow({ request, target }: CatalogRowProps) {
       <div className="flex min-w-0 items-start gap-3">
         <span
           aria-hidden
-          className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--ui-bg-quaternary) text-(--ui-text-secondary)"
+          className="grid size-10 shrink-0 place-items-center rounded-overlay bg-(--ui-bg-quaternary) text-(--ui-text-secondary)"
         >
           <Glyph className="size-5" stroke={1.75} />
         </span>
@@ -317,7 +317,7 @@ function RowOutcome({
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
-      <span className="inline-flex h-6 items-stretch overflow-hidden rounded-md border border-primary/25 bg-primary/10 text-primary">
+      <span className="inline-flex h-6 items-stretch overflow-hidden rounded-control border border-primary/25 bg-primary/10 text-primary">
         <Button
           className="h-full rounded-none px-2 text-xs font-medium text-primary hover:bg-primary/15 hover:text-primary"
           onClick={onInstall}

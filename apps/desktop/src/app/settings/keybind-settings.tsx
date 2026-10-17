@@ -137,7 +137,7 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
           </p>
         </div>
         <button
-          className="flex shrink-0 items-center gap-1 rounded-md text-[0.72rem] text-muted-foreground hover:text-foreground"
+          className="flex shrink-0 items-center gap-1 rounded-control text-[0.72rem] text-muted-foreground hover:text-foreground"
           onClick={resetAllBindings}
           type="button"
         >
@@ -247,7 +247,7 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
     .find(Boolean)
 
   return (
-    <div className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1 transition-colors hover:bg-(--chrome-action-hover)">
+    <div className="group flex items-center gap-2.5 rounded-panel px-2.5 py-1 transition-colors hover:bg-(--chrome-action-hover)">
       <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/90">{label}</span>
 
       {conflict && (
@@ -260,7 +260,7 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
       <Tip label={k.rebind}>
         <button
           aria-label={k.rebind}
-          className="flex shrink-0 items-center gap-1 rounded-lg outline-none"
+          className="flex shrink-0 items-center gap-1 rounded-panel outline-none"
           onClick={() => (capturing ? endCapture() : beginCapture(action.id))}
           type="button"
         >
@@ -317,7 +317,7 @@ function ReadonlyRow({ shortcut }: { shortcut: KeybindReadonly }) {
   const label = k.actions[shortcut.id] ?? shortcut.id
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1">
+    <div className="flex items-center gap-2.5 rounded-panel px-2.5 py-1">
       <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/75">{label}</span>
       <div className="flex shrink-0 items-center gap-1">
         {shortcut.keys.map(key => (

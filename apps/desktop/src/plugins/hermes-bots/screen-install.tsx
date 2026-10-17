@@ -118,7 +118,7 @@ export function ScreenInstallCard({ bot, status, onInstalled }: ScreenInstallCar
         <div className="text-sm font-medium">{t.screen.notInstalledTitle}</div>
         <div className="text-xs text-muted-foreground">{t.screen.notInstalledBody}</div>
         {status.install_command ? (
-          <code className="select-text break-all rounded bg-muted px-2 py-1 text-left text-xs">
+          <code className="select-text break-all rounded-control bg-muted px-2 py-1 text-left text-xs">
             {status.install_command}
           </code>
         ) : (
@@ -131,7 +131,7 @@ export function ScreenInstallCard({ bot, status, onInstalled }: ScreenInstallCar
           </Button>
         ) : null}
         {log.length > 0 ? (
-          <pre className="max-h-48 overflow-auto rounded bg-black/80 p-2 text-left font-mono text-[0.65rem] leading-tight text-white/85">
+          <pre className="max-h-48 overflow-auto rounded-control bg-black/80 p-2 text-left font-mono text-[0.65rem] leading-tight text-white/85">
             {log.join('\n')}
             <div ref={logEnd} />
           </pre>

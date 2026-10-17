@@ -562,7 +562,7 @@ export function CommandCenterView({
                     )}
                   </div>
                   <LogTail
-                    className="flex-1 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)"
+                    className="flex-1 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)"
                     emptyLabel={cc.noLogs}
                     lines={systemLoading && logs.length === 0 ? null : logs}
                     search={logSearch}
@@ -658,10 +658,10 @@ function UsagePanel({ error, loading, onRefresh, period, usage }: UsagePanelProp
           </span>
           <span className="flex items-center gap-3 text-[0.65rem] text-(--ui-text-tertiary)">
             <span className="inline-flex items-center gap-1">
-              <span className="size-2 rounded-xs bg-[color:var(--dt-primary)]/60" /> {cc.input}
+              <span className="size-2 rounded-control bg-[color:var(--dt-primary)]/60" /> {cc.input}
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="size-2 rounded-xs bg-emerald-500/70" /> {cc.output}
+              <span className="size-2 rounded-control bg-emerald-500/70" /> {cc.output}
             </span>
           </span>
         </div>
@@ -683,7 +683,7 @@ function UsagePanel({ error, loading, onRefresh, period, usage }: UsagePanelProp
                     title={`${entry.day} · in ${compactNumber(entry.input_tokens)} · out ${compactNumber(entry.output_tokens)}`}
                   >
                     <div
-                      className="w-full rounded-t-[1px] bg-[color:var(--dt-primary)]/50"
+                      className="w-full rounded-t-control bg-[color:var(--dt-primary)]/50"
                       style={{ height: Math.max(inputH, entry.input_tokens > 0 ? 1 : 0) }}
                     />
                     <div

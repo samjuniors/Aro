@@ -115,7 +115,7 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
         </span>
       ) : null}
       {discount ? (
-        <span className="rounded bg-(--ui-green)/10 px-1 py-px font-medium text-(--ui-green)">−{discount}%</span>
+        <span className="rounded-control bg-(--ui-green)/10 px-1 py-px font-medium text-(--ui-green)">−{discount}%</span>
       ) : null}
     </span>
   )
@@ -1286,7 +1286,7 @@ function ModelFamilyRow({
             aria-label={favoriteLabel}
             aria-pressed={favorite}
             className={cn(
-              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-sm transition-colors duration-100 hover:text-foreground hover:transition-none',
+              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-control transition-colors duration-100 hover:text-foreground hover:transition-none',
               favorite
                 ? 'text-(--ui-text-secondary)'
                 : 'text-(--ui-text-quaternary) group-hover/model:text-(--ui-text-tertiary) group-hover/model:transition-none group-data-[kb-active]/model:text-(--ui-text-tertiary)'
@@ -1326,7 +1326,7 @@ function ModelFamilyRow({
           </span>
         ) : null}
         {isFree ? (
-          <span className="shrink-0 rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          <span className="shrink-0 rounded-control px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
             Free
           </span>
         ) : pricing ? (
@@ -1377,7 +1377,7 @@ function ModelFamilyRow({
             aria-label={favoriteLabel}
             aria-pressed={favorite}
             className={cn(
-              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-sm transition-colors duration-100 hover:text-foreground hover:transition-none',
+              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-control transition-colors duration-100 hover:text-foreground hover:transition-none',
               favorite
                 ? 'text-(--ui-text-secondary)'
                 : 'text-(--ui-text-quaternary) group-hover/model:text-(--ui-text-tertiary) group-hover/model:transition-none group-data-[kb-active]/model:text-(--ui-text-tertiary)'

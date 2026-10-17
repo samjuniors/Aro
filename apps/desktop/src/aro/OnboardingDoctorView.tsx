@@ -539,7 +539,7 @@ export function AroDoctorPage() {
               </div>
 
               {backendDoctorLogs.length > 0 && (
-                <pre className="max-h-48 overflow-y-auto rounded bg-aro-base p-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 leading-relaxed">
+                <pre className="max-h-48 overflow-y-auto rounded-control bg-aro-base p-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 leading-relaxed">
                   {backendDoctorLogs.join('\n')}
                 </pre>
               )}

@@ -45,7 +45,7 @@ export function FeaturedProviderRow({
       <span aria-hidden className="arc-border arc-reverse arc-nous" />
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <img alt="" className="size-5 shrink-0 rounded" src={assetPath('apple-touch-icon.png')} />
+          <img alt="" className="size-5 shrink-0 rounded-control" src={assetPath('apple-touch-icon.png')} />
           <span className="text-[length:var(--conversation-text-font-size)] font-semibold">
             {freeTier ? t.freeTier.providerRowTitle : providerTitle(provider)}
           </span>

@@ -234,7 +234,7 @@ export function ProjectDialog() {
                 {folders.map((folder, index) => (
                   <li
                     className={cn(
-                      'flex items-center gap-2 rounded-md bg-(--ui-control-hover-background) px-2 py-1 text-[0.75rem]'
+                      'flex items-center gap-2 rounded-control bg-(--ui-control-hover-background) px-2 py-1 text-[0.75rem]'
                     )}
                     key={folder}
                   >

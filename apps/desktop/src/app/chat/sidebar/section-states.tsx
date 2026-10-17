@@ -19,9 +19,9 @@ export function SidebarSessionSkeletons() {
   return (
     <SidebarRowStack aria-hidden="true">
       {['w-32', 'w-40', 'w-28', 'w-36', 'w-24'].map((width, i) => (
-        <SidebarRowShell actions={<Skeleton className="size-3.5 rounded-sm opacity-60" />} key={`${width}-${i}`}>
+        <SidebarRowShell actions={<Skeleton className="size-3.5 rounded-control opacity-60" />} key={`${width}-${i}`}>
           <SidebarRowCluster>
-            <Skeleton className={cn('h-3 rounded-sm', width)} />
+            <Skeleton className={cn('h-3 rounded-control', width)} />
           </SidebarRowCluster>
         </SidebarRowShell>
       ))}
@@ -51,7 +51,7 @@ export function SidebarPinnedEmptyState() {
   const { t } = useI18n()
 
   return (
-    <div className="flex min-h-7 items-center gap-1.5 rounded-lg pl-2 text-[0.75rem] text-(--ui-text-tertiary)">
+    <div className="flex min-h-7 items-center gap-1.5 rounded-panel pl-2 text-[0.75rem] text-(--ui-text-tertiary)">
       <span className="grid w-3.5 shrink-0 place-items-center text-(--ui-text-quaternary)">
         <Codicon name="pin" size="0.75rem" />
       </span>
@@ -67,7 +67,7 @@ export function SidebarLoadErrorState({ onRetry }: { onRetry: () => void }) {
   const { t } = useI18n()
 
   return (
-    <div className="grid min-h-16 place-items-center rounded-lg px-2 text-center">
+    <div className="grid min-h-16 place-items-center rounded-panel px-2 text-center">
       <div className="flex flex-col items-center gap-2">
         <Codicon className="text-(--ui-text-quaternary)" name="error" size="1rem" />
         <p className="text-xs text-(--ui-text-tertiary)">{t.sidebar.projectLoadFailed}</p>

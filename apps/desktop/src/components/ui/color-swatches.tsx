@@ -38,7 +38,7 @@ export function ColorSwatches({
         ))}
       </div>
       <button
-        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md py-1 text-xs text-(--ui-text-tertiary) transition hover:bg-(--ui-control-hover-background) hover:text-foreground"
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-control py-1 text-xs text-(--ui-text-tertiary) transition hover:bg-(--ui-control-hover-background) hover:text-foreground"
         onClick={() => onChange(null)}
         type="button"
       >

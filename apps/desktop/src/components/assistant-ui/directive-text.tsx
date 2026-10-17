@@ -385,7 +385,7 @@ export function DirectiveContent({ text }: { text: string }) {
           {images.map((src, index) => (
             <ZoomableImage
               alt=""
-              className="max-h-48 max-w-full rounded-lg border border-(--ui-stroke-tertiary) object-contain"
+              className="max-h-48 max-w-full rounded-panel border border-(--ui-stroke-tertiary) object-contain"
               draggable={false}
               key={`img-${index}`}
               slot="aui_embedded-image"
@@ -468,7 +468,7 @@ const DirectiveImage: FC<{ id: string; label: string }> = ({ id, label }) => {
     return (
       <span
         aria-hidden
-        className="inline-block size-12 shrink-0 animate-pulse rounded-md bg-[color-mix(in_srgb,currentColor_8%,transparent)]"
+        className="inline-block size-12 shrink-0 animate-pulse rounded-control bg-[color-mix(in_srgb,currentColor_8%,transparent)]"
       />
     )
   }
@@ -476,7 +476,7 @@ const DirectiveImage: FC<{ id: string; label: string }> = ({ id, label }) => {
   return (
     <ZoomableImage
       alt={label}
-      className="max-h-48 max-w-full rounded-lg border border-(--ui-stroke-tertiary) object-contain"
+      className="max-h-48 max-w-full rounded-panel border border-(--ui-stroke-tertiary) object-contain"
       draggable={false}
       slot="aui_directive-image"
       src={src}

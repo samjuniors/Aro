@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from 'clsx'
 import { extendTailwindMerge } from 'tailwind-merge'
 
 // tailwind-merge only knows Tailwind's built-in scales. Without these theme
-// extensions it treats `rounded-control` as unrelated to `rounded-md` /
+// extensions it treats `rounded-control` as unrelated to `rounded-control` /
 // `rounded-full`, and treats `text-aro-xs` as a text COLOR, so a following
 // `text-muted-foreground` silently deletes the size. Keep in sync with the
 // `--radius-*`, `--text-aro-*` and `--shadow-*` keys in styles.css / tokens.css.

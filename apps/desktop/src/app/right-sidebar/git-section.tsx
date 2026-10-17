@@ -24,7 +24,7 @@ export function GitSection() {
   if (!status) {
     return (
       <div className="flex h-full min-h-[240px] flex-col items-center justify-center p-6 text-center">
-        <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
+        <div className="flex size-10 items-center justify-center rounded-overlay border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconGit size={18} />
         </div>
         <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No Git Repository</h3>

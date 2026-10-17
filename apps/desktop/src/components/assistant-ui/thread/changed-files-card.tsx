@@ -60,7 +60,7 @@ export const ChangedFilesCard: FC<{ parts: readonly unknown[] }> = ({ parts }) =
         {files.map(file => (
           <Tip key={file.path} label={displayPath(file.path)}>
             <button
-              className="row-hover flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 text-left"
+              className="row-hover flex shrink-0 items-center gap-2 rounded-control px-1.5 py-1 text-left"
               onClick={() => void openReviewForPath(file.path, scopeCwd, composerScope.target)}
               type="button"
             >

@@ -76,7 +76,7 @@ function NoticeCard({ notice }: { notice: BillingNoticeView }) {
   const warn = notice.tone === 'warn'
 
   return (
-    <div className={cn('mb-6 rounded-xl p-4', warn ? 'bg-(--ui-yellow)/10' : 'bg-(--ui-bg-quaternary)')}>
+    <div className={cn('mb-6 rounded-overlay p-4', warn ? 'bg-(--ui-yellow)/10' : 'bg-(--ui-bg-quaternary)')}>
       <div
         className={cn(
           'text-[length:var(--conversation-text-font-size)] font-medium',

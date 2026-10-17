@@ -95,7 +95,7 @@ export function LanguageSwitcher({ className, collapsed = false, dropUp = false 
     return (
       <Sheet onOpenChange={setOpen} open={open}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>
-        <SheetContent className="max-h-[min(28rem,80vh)] rounded-t-xl" side="bottom">
+        <SheetContent className="max-h-[min(28rem,80vh)] rounded-t-overlay" side="bottom">
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>{t.language.description}</SheetDescription>

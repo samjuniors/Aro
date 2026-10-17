@@ -186,7 +186,7 @@ export function SidebarRowShell({
       className={cn(
         SIDEBAR_ROW_MIN_H,
         SIDEBAR_ROW_PAD_TRAIL,
-        'grid grid-cols-[minmax(0,1fr)_auto] items-stretch rounded-md',
+        'grid grid-cols-[minmax(0,1fr)_auto] items-stretch rounded-control',
         className
       )}
       {...props}

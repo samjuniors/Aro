@@ -114,7 +114,7 @@ export function QueuePanel({
                     <Button
                       aria-expanded={isExpanded}
                       aria-label={isExpanded ? c.queueCollapse : c.queueExpand}
-                      className="size-5 rounded-md"
+                      className="size-5 rounded-control"
                       onClick={() => toggleExpanded(entry.id)}
                       size="icon-xs"
                       type="button"
@@ -131,7 +131,7 @@ export function QueuePanel({
                 <Tip label={c.queueEdit}>
                   <Button
                     aria-label={c.queueEdit}
-                    className="size-5 rounded-md"
+                    className="size-5 rounded-control"
                     disabled={Boolean(editingId) && !isEditing}
                     onClick={() => onEdit(entry)}
                     size="icon-xs"
@@ -145,7 +145,7 @@ export function QueuePanel({
                   <Tip label={c.queueSteer}>
                     <Button
                       aria-label={c.queueSteer}
-                      className="size-5 rounded-md"
+                      className="size-5 rounded-control"
                       disabled={isEditing}
                       onClick={() => onSteerNow?.(entry.id)}
                       size="icon-xs"
@@ -159,7 +159,7 @@ export function QueuePanel({
                 <Tip label={busy ? c.queueSendNext : c.queueSend}>
                   <Button
                     aria-label={busy ? c.queueSendNext : c.queueSend}
-                    className="size-5 rounded-md"
+                    className="size-5 rounded-control"
                     disabled={isEditing}
                     onClick={() => onSendNow(entry.id)}
                     size="icon-xs"

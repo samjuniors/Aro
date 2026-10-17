@@ -297,7 +297,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                       <Button
                         aria-haspopup="menu"
                         aria-label={ctrl.goalActions}
-                        className="size-6 rounded-md text-muted-foreground/70 hover:text-foreground/90"
+                        className="size-6 rounded-control text-muted-foreground/70 hover:text-foreground/90"
                         disabled={isBusy}
                         onClick={event => {
                           // Radix opens pointer interactions from pointerdown. Keyboard,
@@ -417,7 +417,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                                 <Tip label={ctrl.copyCriterion(index)}>
                                   <Button
                                     aria-label={ctrl.copyCriterion(index)}
-                                    className="size-6 rounded text-muted-foreground/60 hover:text-foreground/90"
+                                    className="size-6 rounded-control text-muted-foreground/60 hover:text-foreground/90"
                                     onClick={() => void copyCriterionText(subgoal)}
                                     size="icon-xs"
                                     type="button"
@@ -428,7 +428,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                                 </Tip>
                                 <Button
                                   aria-label={ctrl.removeCriterion(index)}
-                                  className="size-6 rounded text-muted-foreground/60 hover:text-destructive"
+                                  className="size-6 rounded-control text-muted-foreground/60 hover:text-destructive"
                                   disabled={isBusy}
                                   onClick={() => confirmRemoveCriterion(index)}
                                   size="icon-xs"
@@ -492,7 +492,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
               <textarea
                 aria-label={ctrl.criterionLabel}
                 autoFocus
-                className="w-full rounded-md border border-(--ui-stroke-secondary) bg-transparent p-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-control border border-(--ui-stroke-secondary) bg-transparent p-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
                 disabled={isBusy}
                 onChange={e => setNewCriterionText(e.target.value)}
                 placeholder={ctrl.addCriterionPlaceholder}
@@ -600,7 +600,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                 <div className="mt-1 space-y-1.5">
                   {goal.gates.map((gate, i) => (
                     <div
-                      className="rounded border border-(--ui-stroke-tertiary)/60 bg-(--ui-control-active-background)/20 p-2"
+                      className="rounded-control border border-(--ui-stroke-tertiary)/60 bg-(--ui-control-active-background)/20 p-2"
                       key={`${i}-${gate.command}`}
                     >
                       <div className="font-mono text-[0.7rem] text-foreground/95">{gate.command}</div>

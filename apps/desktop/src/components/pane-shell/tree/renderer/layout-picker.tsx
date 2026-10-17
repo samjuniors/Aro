@@ -53,7 +53,7 @@ function TreeThumbnail({ node, resting }: { node: LayoutNode; resting: ReadonlyS
       // light — legible everywhere without leaning on the accent. A ghost is
       // an outlined empty slot, not a fainter block.
       <div
-        className="min-h-0 min-w-0 flex-1 rounded-xs"
+        className="min-h-0 min-w-0 flex-1 rounded-control"
         style={
           ghost
             ? { border: '1px dashed color-mix(in srgb, currentColor 30%, transparent)' }
@@ -119,7 +119,7 @@ function PresetCard({ preset }: { preset: Contribution }) {
           aria-label={t.zones.deletePreset(preset.title ?? preset.id)}
           // Hover-reveal (opacity, not display) — stays laid out + clickable,
           // appears on card hover or keyboard focus.
-          className="absolute right-1 top-1 z-10 grid size-5 place-items-center rounded-md bg-(--ui-bg-elevated) text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/preset:opacity-100"
+          className="absolute right-1 top-1 z-10 grid size-5 place-items-center rounded-control bg-(--ui-bg-elevated) text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/preset:opacity-100"
           onClick={() => deleteUserPreset(preset.id)}
           onPointerDown={e => e.stopPropagation()}
           type="button"

@@ -676,7 +676,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                   }}
                   value={targetConnection || activeConnectionId || 'local'}
                 >
-                  <SelectTrigger className="h-8 rounded-md">
+                  <SelectTrigger className="h-8 rounded-control">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -725,7 +725,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
             {b.bot.advanced}
           </Button>
           {advanced ? (
-            <div className="grid gap-3 rounded-md border border-(--ui-stroke-secondary) p-3">
+            <div className="grid gap-3 rounded-control border border-(--ui-stroke-secondary) p-3">
               <SegmentedControl
                 onChange={id => {
                   setAdvTab(id)
@@ -769,7 +769,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                       }}
                       value={remoteTarget && cloneFrom !== '__none__' ? 'default' : cloneFrom}
                     >
-                      <SelectTrigger className="h-8 rounded-md">
+                      <SelectTrigger className="h-8 rounded-control">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1005,7 +1005,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
             </div>
           ) : null}
           {error ? (
-            <div className="rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
+            <div className="rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
               {error}
             </div>
           ) : null}
@@ -1077,7 +1077,7 @@ export function GroupDialog({ bot, onClose }: GroupDialogProps) {
 
               return (
                 <label
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-(--chrome-action-hover)"
+                  className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-sm hover:bg-(--chrome-action-hover)"
                   key={group}
                 >
                   <Checkbox checked={enabled} onCheckedChange={checked => setMembership(group, checked === true)} />
@@ -1290,7 +1290,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
                 return (
                   <label
                     className={cn(
-                      'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-(--chrome-action-hover)',
+                      'flex min-w-0 cursor-pointer items-center gap-2 rounded-control px-1.5 py-1 transition-colors hover:bg-(--chrome-action-hover)',
                       disabled && 'cursor-not-allowed opacity-50'
                     )}
                     key={botRosterKey(bot)}

@@ -221,7 +221,7 @@ export function BrowserSection() {
                 </button>
                 <button
                   aria-label={`Close ${t.title || 'tab'}`}
-                  className="flex size-3.5 shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-rose"
+                  className="flex size-3.5 shrink-0 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-rose"
                   onClick={e => {
                     e.stopPropagation()
                     handleCloseTab(t.id)
@@ -288,7 +288,7 @@ export function BrowserSection() {
                 aria-label={`${v.label} viewport`}
                 aria-pressed={viewport === v.id}
                 className={cn(
-                  'flex size-6 items-center justify-center rounded-xs text-aro-ink-4 transition-colors',
+                  'flex size-6 items-center justify-center rounded-control text-aro-ink-4 transition-colors',
                   viewport === v.id ? 'bg-aro-raise text-aro-ink shadow-aro-e1' : 'hover:text-aro-ink-2'
                 )}
                 onClick={() => handleSetViewport(v.id)}
@@ -332,7 +332,7 @@ export function BrowserSection() {
                   'relative h-full transition-[width,transform]',
                   viewport === 'desktop'
                     ? 'w-full'
-                    : 'max-w-full rounded-xl border border-aro-line-strong bg-white shadow-aro-e3 overflow-hidden'
+                    : 'max-w-full rounded-overlay border border-aro-line-strong bg-white shadow-aro-e3 overflow-hidden'
                 )}
                 style={
                   viewport !== 'desktop'
@@ -354,7 +354,7 @@ export function BrowserSection() {
           </div>
         ) : (
           <div className="flex h-full min-h-[220px] flex-col items-center justify-center p-6 text-center">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
+            <div className="flex size-10 items-center justify-center rounded-overlay border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
               <IconEye size={18} />
             </div>
             <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No page open</h3>

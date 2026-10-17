@@ -146,7 +146,7 @@ function ScreenHeroContent({ bot, meta }: { bot: RosterRow; meta?: BotMeta | nul
   return (
     <button
       aria-label={`${t.screen.portalTitle}: ${caption}`}
-      className={`group relative block w-full overflow-hidden rounded-lg border border-(--ui-stroke-secondary) bg-black text-left ${TONE_RING[tone] ?? ''}`}
+      className={`group relative block w-full overflow-hidden rounded-panel border border-(--ui-stroke-secondary) bg-black text-left ${TONE_RING[tone] ?? ''}`}
       onClick={() => openBotScreen(bot, meta ?? null)}
       ref={boxRef}
       style={{ aspectRatio: '16 / 10' }}
@@ -181,7 +181,7 @@ function ScreenHeroContent({ bot, meta }: { bot: RosterRow; meta?: BotMeta | nul
           <span className="block truncate text-[0.65rem] text-white/70">{caption}</span>
         </span>
         {cta ? (
-          <span className="flex shrink-0 items-center gap-1 rounded-md bg-white/15 px-2 py-1 text-[0.65rem] font-medium backdrop-blur-sm transition-colors group-hover:bg-white/25">
+          <span className="flex shrink-0 items-center gap-1 rounded-control bg-white/15 px-2 py-1 text-[0.65rem] font-medium backdrop-blur-sm transition-colors group-hover:bg-white/25">
             {cta} <Codicon name="arrow-right" />
           </span>
         ) : null}

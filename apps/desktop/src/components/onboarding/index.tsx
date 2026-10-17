@@ -432,7 +432,7 @@ export function DesktopOnboardingOverlay({
           'relative w-full max-w-[45rem] transition-[opacity,transform,filter] duration-500 ease-out',
           bare
             ? ''
-            : 'overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous',
+            : 'overflow-hidden rounded-overlay border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous',
           // Bare confirm screen orchestrates its own per-element exit; the
           // carded states use the simple lift/blur dissolve.
           leaving && !bare
@@ -541,7 +541,7 @@ function FreeTierReadyPanel({
 // upstream), so it never shows the generic "no provider configured" noise.
 function ReasonNotice({ reason }: { reason: string }) {
   return (
-    <div className="rounded-2xl border border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary)/40 px-4 py-3 text-sm text-muted-foreground">
+    <div className="rounded-overlay border border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary)/40 px-4 py-3 text-sm text-muted-foreground">
       {reason}
     </div>
   )
@@ -875,7 +875,7 @@ export function ApiKeyForm({
         {options.map(o => (
           <button
             className={cn(
-              'rounded-2xl border bg-background/60 p-3 text-left transition hover:bg-accent/50',
+              'rounded-overlay border bg-background/60 p-3 text-left transition hover:bg-accent/50',
               option.envKey === o.envKey ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'
             )}
             key={o.envKey}

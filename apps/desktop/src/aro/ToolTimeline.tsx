@@ -240,7 +240,7 @@ function Checkpoint({ step }: { step: Extract<Step, { type: 'checkpoint' }> }) {
       <span className="flex items-center gap-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
         <IconUndo size={10} />checkpoint <span className="text-aro-ink-3">{step.hash}</span> · {step.label}
       </span>
-      <button className="cursor-pointer rounded px-1 text-[var(--aro-text-2xs,10px)] text-aro-iris-soft opacity-0 transition-opacity group-hover:opacity-100 hover:underline">restore</button>
+      <button className="cursor-pointer rounded-control px-1 text-[var(--aro-text-2xs,10px)] text-aro-iris-soft opacity-0 transition-opacity group-hover:opacity-100 hover:underline">restore</button>
       <span className="h-px flex-1 bg-aro-line-soft" />
     </div>
   )
@@ -263,7 +263,7 @@ export function StepView({ step, agentId = 'aro' }: { step: Step; agentId?: stri
               <span className="inline-flex items-center gap-1 rounded-control border border-aro-line bg-aro-raise px-1.5 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3" key={x}><IconFile size={9} /> {x}</span>
             ))}
           </div>
-          <div className="rounded-panel rounded-tl-xs border border-aro-line-soft bg-aro-raise px-3.5 py-2.5"><Prose text={step.text} /></div>
+          <div className="rounded-panel rounded-tl-control border border-aro-line-soft bg-aro-raise px-3.5 py-2.5"><Prose text={step.text} /></div>
         </div>
       </div>
     )}

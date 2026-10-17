@@ -57,7 +57,7 @@ function Section({ children, title }: { children: ReactNode; title: string }) {
 
 function Row({ description, keyLabel, mono = false }: { description: string; keyLabel: string; mono?: boolean }) {
   return (
-    <div className="flex min-w-0 items-baseline gap-2 rounded-md px-2.5 py-1 text-xs">
+    <div className="flex min-w-0 items-baseline gap-2 rounded-control px-2.5 py-1 text-xs">
       <span
         className={
           mono ? 'shrink-0 truncate font-mono font-medium text-foreground/85' : 'shrink-0 truncate text-foreground/85'
@@ -72,7 +72,7 @@ function Row({ description, keyLabel, mono = false }: { description: string; key
 
 function HotkeyRow({ combos, description }: { combos: string[]; description: string }) {
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-md px-2.5 py-1 text-xs">
+    <div className="flex min-w-0 items-center gap-2 rounded-control px-2.5 py-1 text-xs">
       <span className="flex shrink-0 items-center gap-1">
         {combos.map(combo => (
           <KbdCombo combo={combo} key={combo} size="sm" />

@@ -152,7 +152,7 @@ export function AvatarPicker({ shape, color, image, onShape, onColor, onImage, g
                       <RowButton
                         aria-label={k || b.editor.autoHint}
                         className={cn(
-                          'flex size-11 items-center justify-center rounded-md transition-colors hover:bg-(--chrome-action-hover)',
+                          'flex size-11 items-center justify-center rounded-control transition-colors hover:bg-(--chrome-action-hover)',
                           k === kind && !image && 'ring-1 ring-(--ui-accent)'
                         )}
                         onClick={() => {
@@ -220,7 +220,7 @@ export function AvatarPicker({ shape, color, image, onShape, onColor, onImage, g
                   <RowButton
                     aria-label={s === 'blobatar' ? b.avatar.blobFromName : s}
                     className={cn(
-                      'flex size-11 items-center justify-center rounded-md transition-colors hover:bg-(--chrome-action-hover)',
+                      'flex size-11 items-center justify-center rounded-control transition-colors hover:bg-(--chrome-action-hover)',
                       s === shape && !image && 'ring-1 ring-(--ui-accent)'
                     )}
                     onClick={() => {

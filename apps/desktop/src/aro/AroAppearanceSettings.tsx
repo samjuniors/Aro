@@ -277,7 +277,7 @@ export function AroAppearanceSettings() {
           </p>
         </div>
         <button
-          className="inline-flex items-center gap-1.5 rounded-md border border-(--ui-border-soft) bg-card/60 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent/10 hover:text-accent transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-control border border-(--ui-border-soft) bg-card/60 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent/10 hover:text-accent transition-colors"
           onClick={() => navigate(ARO_DESIGN_ROUTE)}
           type="button"
         >
@@ -306,7 +306,7 @@ export function AroAppearanceSettings() {
               <button
                 aria-pressed={isSelected}
                 className={cn(
-                  'group flex flex-col overflow-hidden rounded-xl border text-left transition-colors',
+                  'group flex flex-col overflow-hidden rounded-overlay border text-left transition-colors',
                   isSelected
                     ? 'border-accent bg-accent/5 ring-1 ring-accent shadow-(--aro-shadow-e1)'
                     : 'border-(--ui-border-soft) bg-card/40 hover:border-border hover:bg-card/70'
@@ -321,7 +321,7 @@ export function AroAppearanceSettings() {
                   style={{ background: item.swatch[0], color: item.swatch[2] }}
                 >
                   <div
-                    className="flex h-full gap-1.5 rounded-md border p-1.5"
+                    className="flex h-full gap-1.5 rounded-control border p-1.5"
                     style={{ background: item.swatch[1], borderColor: `${item.swatch[2]}33` }}
                   >
                     {/* Mini Sidebar */}
@@ -338,7 +338,7 @@ export function AroAppearanceSettings() {
                         <div className="h-0.5 w-full rounded-full bg-current opacity-25" />
                         <div className="h-0.5 w-4/5 rounded-full bg-current opacity-20" />
                       </div>
-                      <div className="flex h-3.5 items-center justify-end gap-1 rounded border border-current/20 px-1">
+                      <div className="flex h-3.5 items-center justify-end gap-1 rounded-control border border-current/20 px-1">
                         <div className="h-0.5 w-5 rounded-full bg-current opacity-40" />
                         <span
                           className="size-1.5 rounded-full shrink-0"
@@ -381,7 +381,7 @@ export function AroAppearanceSettings() {
         </div>
 
         {/* Theme Coupling Resolution & Recommendation */}
-        <div className="rounded-lg border border-(--ui-border-soft) bg-card/50 p-3 text-xs">
+        <div className="rounded-panel border border-(--ui-border-soft) bg-card/50 p-3 text-xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export function AroAppearanceSettings() {
             <div className="flex items-center gap-3">
               {!isRecommendedActive && (
                 <button
-                  className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground shadow-xs hover:bg-accent/90 transition-colors"
+                  className="rounded-control bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground shadow-xs hover:bg-accent/90 transition-colors"
                   onClick={() => handleApplyRecommendedTheme(selectedItem.recommendedTheme)}
                   type="button"
                 >
@@ -411,7 +411,7 @@ export function AroAppearanceSettings() {
               <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
                 <input
                   checked={syncTheme}
-                  className="size-3.5 rounded border-(--ui-border-soft) text-accent focus:ring-accent"
+                  className="size-3.5 rounded-control border-(--ui-border-soft) text-accent focus:ring-accent"
                   onChange={e => handleToggleSyncTheme(e.target.checked)}
                   type="checkbox"
                 />
@@ -456,7 +456,7 @@ export function AroAppearanceSettings() {
                 onClick={() => handleApplyRecommendedTheme(item.id)}
                 type="button"
               >
-                <span className="flex overflow-hidden rounded-xs border border-black/20 dark:border-white/10 shrink-0">
+                <span className="flex overflow-hidden rounded-control border border-black/20 dark:border-white/10 shrink-0">
                   {item.swatch.map(color => (
                     <i className="h-4 w-2" key={color} style={{ background: color }} />
                   ))}
@@ -470,7 +470,7 @@ export function AroAppearanceSettings() {
       </section>
 
       {/* 3. Density & Motion Controls */}
-      <section className="divide-y divide-(--ui-border-soft) rounded-xl border border-(--ui-border-soft) bg-card/40">
+      <section className="divide-y divide-(--ui-border-soft) rounded-overlay border border-(--ui-border-soft) bg-card/40">
         {/* Density */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-4">
           <div className="space-y-0.5">
@@ -479,14 +479,14 @@ export function AroAppearanceSettings() {
               Adjusts sidebar navigation item heights (28px vs 34px), padding, and transcript row spacing.
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-(--ui-border-soft) bg-background/80 p-0.5">
+          <div className="inline-flex rounded-panel border border-(--ui-border-soft) bg-background/80 p-0.5">
             {DENSITY_VALUES.map(density => {
               const active = currentDensity === density
 
               return (
                 <button
                   className={cn(
-                    'rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors',
+                    'rounded-control px-3 py-1 text-xs font-medium capitalize transition-colors',
                     active
                       ? 'bg-accent text-accent-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -510,14 +510,14 @@ export function AroAppearanceSettings() {
               Follow system accessibility preferences or suppress non-essential animations.
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-(--ui-border-soft) bg-background/80 p-0.5">
+          <div className="inline-flex rounded-panel border border-(--ui-border-soft) bg-background/80 p-0.5">
             {MOTION_VALUES.map(motion => {
               const active = currentMotion === motion
 
               return (
                 <button
                   className={cn(
-                    'rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors',
+                    'rounded-control px-3 py-1 text-xs font-medium capitalize transition-colors',
                     active
                       ? 'bg-accent text-accent-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -566,14 +566,14 @@ export function AroAppearanceSettings() {
               Default branch integration strategy (local preference record in conductor.pref.merge).
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-(--ui-border-soft) bg-background/80 p-0.5">
+          <div className="inline-flex rounded-panel border border-(--ui-border-soft) bg-background/80 p-0.5">
             {MERGE_STRATEGIES.map(strategy => {
               const active = mergeStrategy === strategy
 
               return (
                 <button
                   className={cn(
-                    'rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors',
+                    'rounded-control px-2.5 py-1 text-xs font-medium capitalize transition-colors',
                     active
                       ? 'bg-accent text-accent-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -597,7 +597,7 @@ export function AroAppearanceSettings() {
         </h4>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
+            className="flex items-center justify-between gap-2 rounded-panel border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_RULES_ROUTE)}
             type="button"
           >
@@ -612,7 +612,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
+            className="flex items-center justify-between gap-2 rounded-panel border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_AGENTS_ROUTE)}
             type="button"
           >
@@ -627,7 +627,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
+            className="flex items-center justify-between gap-2 rounded-panel border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_DOCTOR_ROUTE)}
             type="button"
           >
@@ -642,7 +642,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
+            className="flex items-center justify-between gap-2 rounded-panel border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_DESIGN_ROUTE)}
             type="button"
           >

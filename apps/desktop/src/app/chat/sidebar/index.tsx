@@ -1633,7 +1633,7 @@ export function ChatSidebar({
                       // resolved region has been observed to swallow clicks on the
                       // top rows. Same carve-out as USER_BUBBLE_BASE_CLASS in
                       // thread.tsx.
-                      'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
+                      'flex h-7 w-full justify-start gap-2 rounded-control border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
                       active &&
                         'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-none hover:border-(--ui-stroke-tertiary)!',
                       !isInteractive &&
@@ -1769,7 +1769,7 @@ export function ChatSidebar({
                   searchPending ? (
                     <SidebarSessionSkeletons />
                   ) : (
-                    <div className="wrap-anywhere grid min-h-24 place-items-center rounded-lg px-2 text-center text-xs text-(--ui-text-tertiary)">
+                    <div className="wrap-anywhere grid min-h-24 place-items-center rounded-panel px-2 text-center text-xs text-(--ui-text-tertiary)">
                       {s.noMatch(trimmedQuery)}
                     </div>
                   )
@@ -1798,7 +1798,7 @@ export function ChatSidebar({
                 // included, so one column never mixes card and inline
                 // geometry at the section boundary.
                 card={cardRows}
-                contentClassName="flex flex-col gap-px rounded-lg pb-2 pt-1"
+                contentClassName="flex flex-col gap-px rounded-panel pb-2 pt-1"
                 dndSensors={dndSensors}
                 emptyState={<SidebarPinnedEmptyState />}
                 label={s.pinned}
@@ -1850,7 +1850,7 @@ export function ChatSidebar({
                   ) : !inProject && sessionsLoadError ? (
                     <SidebarLoadErrorState onRetry={() => void onRetrySessions()} />
                   ) : (
-                    <div className="grid min-h-16 place-items-center rounded-lg px-2 text-center text-xs text-(--ui-text-tertiary)">
+                    <div className="grid min-h-16 place-items-center rounded-panel px-2 text-center text-xs text-(--ui-text-tertiary)">
                       {inProject
                         ? s.projectEmpty
                         : filtersActive
@@ -2055,7 +2055,7 @@ export function ChatSidebar({
                     label={group.label}
                     labelIcon={
                       <PlatformAvatar
-                        className="size-4 rounded-[var(--aro-radius-sm,4px)] text-[0.5625rem] [&_svg]:size-3"
+                        className="size-4 rounded-control text-[0.5625rem] [&_svg]:size-3"
                         platformId={group.sourceId}
                         platformName={group.label}
                       />

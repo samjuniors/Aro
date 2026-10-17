@@ -276,7 +276,7 @@ function Card({
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'group relative flex cursor-grab flex-col gap-2 rounded-md border border-(--ui-stroke-tertiary) border-l-2 bg-(--ui-bg-elevated) p-2.5',
+            'group relative flex cursor-grab flex-col gap-2 rounded-control border border-(--ui-stroke-tertiary) border-l-2 bg-(--ui-bg-elevated) p-2.5',
             // Hover matches the provider-picker rows: a quiet primary fill;
             // selected = the theme's focus color (same as a focused input).
             'transition-colors hover:bg-primary/[0.06] active:cursor-grabbing',
@@ -430,7 +430,7 @@ function Column({
         {...dragHandlers}
         aria-label={k.expand(label)}
         className={cn(
-          'flex h-full w-8 shrink-0 flex-col items-center gap-1.5 rounded-lg p-2 transition-colors hover:bg-(--ui-bg-quinary)',
+          'flex h-full w-8 shrink-0 flex-col items-center gap-1.5 rounded-panel p-2 transition-colors hover:bg-(--ui-bg-quinary)',
           wash
         )}
         onClick={onToggle}
@@ -452,7 +452,7 @@ function Column({
   return (
     <div
       {...dragHandlers}
-      className={cn('group/col flex h-full w-64 shrink-0 flex-col rounded-lg p-2 transition-colors', wash)}
+      className={cn('group/col flex h-full w-64 shrink-0 flex-col rounded-panel p-2 transition-colors', wash)}
     >
       <header className="mb-1.5 flex h-5 items-center gap-1.5 px-1">
         <span className="size-1.5 rounded-full" style={{ backgroundColor: meta.tone }} />
@@ -464,7 +464,7 @@ function Column({
         <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
         <button
           aria-label={k.collapse(label)}
-          className="ml-auto grid size-5 place-items-center rounded text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
+          className="ml-auto grid size-5 place-items-center rounded-control text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
           onClick={onToggle}
           type="button"
         >
@@ -512,7 +512,7 @@ function Column({
         {!locked && (
           <button
             aria-label={k.newTaskIn(label)}
-            className="flex shrink-0 items-center justify-center rounded-md border border-dashed border-(--ui-stroke-secondary) py-1.5 text-(--ui-text-tertiary) opacity-0 transition-[opacity,color,border-color] group-hover/col:opacity-100 hover:border-(--ui-text-quaternary) hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100"
+            className="flex shrink-0 items-center justify-center rounded-control border border-dashed border-(--ui-stroke-secondary) py-1.5 text-(--ui-text-tertiary) opacity-0 transition-[opacity,color,border-color] group-hover/col:opacity-100 hover:border-(--ui-text-quaternary) hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100"
             onClick={() => onAdd(column.name)}
             type="button"
           >
@@ -862,7 +862,7 @@ function Intro() {
 
   return (
     <div
-      className="mx-4 mb-2 flex flex-col items-start gap-1.5 rounded-lg bg-(--ui-bg-quinary) px-3 py-2.5 text-[0.75rem] leading-relaxed text-(--ui-text-secondary)"
+      className="mx-4 mb-2 flex flex-col items-start gap-1.5 rounded-panel bg-(--ui-bg-quinary) px-3 py-2.5 text-[0.75rem] leading-relaxed text-(--ui-text-secondary)"
       data-selectable-text="true"
     >
       <p className="min-w-0">{k.introBody}</p>
@@ -1020,7 +1020,7 @@ function SelectionBar({
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
       {/* Flat overlay: stroke + elevated surface do the separating, no shadow. */}
-      <div className="pointer-events-auto flex items-center gap-1 rounded-lg border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 pr-1 pl-3">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-panel border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 pr-1 pl-3">
         <span className="mr-1 text-xs tabular-nums text-(--ui-text-secondary)">{k.nSelected(selected.size)}</span>
 
         <DropdownMenu onOpenChange={open => setMenu(open ? 'move' : null)} open={menu === 'move'}>

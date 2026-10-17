@@ -290,7 +290,7 @@ export function WorktreeDialog() {
 
         {convertMode ? (
           <Command
-            className="rounded-md border border-(--ui-stroke-tertiary)"
+            className="rounded-control border border-(--ui-stroke-tertiary)"
             filter={(value, search) => (value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0)}
           >
             <CommandInput autoFocus disabled={pending} placeholder={p.convertBranchPlaceholder} />

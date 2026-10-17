@@ -177,7 +177,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
     <div
       aria-live="polite"
       className={cn(
-        'flex h-8 items-center gap-2 rounded-xl border border-border/55 bg-muted/55 px-2.5 text-xs text-muted-foreground',
+        'flex h-8 items-center gap-2 rounded-overlay border border-border/55 bg-muted/55 px-2.5 text-xs text-muted-foreground',
         'shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm'
       )}
       data-slot="composer-voice-activity"
@@ -224,7 +224,7 @@ export function VoicePlaybackActivity() {
     <div
       aria-live="polite"
       className={cn(
-        'flex h-8 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-2.5 text-xs text-primary',
+        'flex h-8 items-center gap-2 rounded-overlay border border-primary/20 bg-primary/10 px-2.5 text-xs text-primary',
         'shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm'
       )}
       role="status"

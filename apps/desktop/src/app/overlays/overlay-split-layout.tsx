@@ -118,7 +118,7 @@ export const OverlayNavItem = memo(function OverlayNavItem({
     <button
       aria-current={current ? 'page' : undefined}
       className={cn(
-        'flex h-7 w-full items-center justify-start gap-2 rounded-md border px-2 text-left text-[length:var(--conversation-text-font-size)] font-normal transition-colors',
+        'flex h-7 w-full items-center justify-start gap-2 rounded-control border px-2 text-left text-[length:var(--conversation-text-font-size)] font-normal transition-colors',
         nested
           ? active
             ? 'border-transparent bg-(--chrome-action-hover) font-medium text-foreground'

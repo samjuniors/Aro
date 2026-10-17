@@ -193,7 +193,7 @@ export function GroupMemberPicker({ group, members, open, onClose }: GroupMember
               <RowButton
                 aria-checked={checked}
                 className={cn(
-                  'flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-(--chrome-action-hover)',
+                  'flex items-center gap-2 rounded-control px-1.5 py-1 hover:bg-(--chrome-action-hover)',
                   disabled && 'cursor-not-allowed opacity-50'
                 )}
                 disabled={disabled}

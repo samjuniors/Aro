@@ -14,7 +14,7 @@ export function ToolsWash({ label, rows = 8 }: { label?: string; rows?: number }
       {Array.from({ length: rows }, (_, index) => (
         <span
           aria-hidden
-          className="h-3 rounded-sm bg-(--ui-bg-quaternary)"
+          className="h-3 rounded-control bg-(--ui-bg-quaternary)"
           key={index}
           style={{ width: `${68 - (index % 4) * 9}%` }}
         />

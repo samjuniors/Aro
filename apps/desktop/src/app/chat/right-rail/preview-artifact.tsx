@@ -24,7 +24,7 @@ const SOURCE_LANGUAGE_BY_KIND: Record<ArtifactKind, string | undefined> = {
 }
 
 const HEADER_BUTTON_CLASS =
-  'flex items-center gap-1 rounded-md px-1.5 text-[0.625rem] font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40'
+  'flex items-center gap-1 rounded-control px-1.5 text-[0.625rem] font-bold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40'
 
 /** Wrap an HTML fragment in a minimal document shell; full documents pass
  *  through untouched. Keeps generated fragments (no <html>/<body>) rendering

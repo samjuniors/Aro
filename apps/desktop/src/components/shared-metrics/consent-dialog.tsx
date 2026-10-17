@@ -129,7 +129,7 @@ export function SharedMetricsConsentDialog({ enabled, profile, requestGateway }:
           </button>
           {expanded ? (
             <div
-              className="grid gap-2 rounded-lg bg-(--ui-bg-tertiary)/40 px-3 py-2.5 text-[0.8125rem] leading-5 text-(--ui-text-secondary)"
+              className="grid gap-2 rounded-panel bg-(--ui-bg-tertiary)/40 px-3 py-2.5 text-[0.8125rem] leading-5 text-(--ui-text-secondary)"
               id={detailsId}
             >
               <p>{copy.collectedIntro}</p>

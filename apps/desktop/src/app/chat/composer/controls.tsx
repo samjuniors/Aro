@@ -199,7 +199,7 @@ export function ComposerControls({
                 isAro ? (
                   <IconStop size={12} />
                 ) : (
-                  <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
+                  <span className="block size-2.5 rounded-control bg-current" />
                 )
               ) : // Aro: the prototype's send glyph (IconArrowUp 16) instead of
               // the host codicon.

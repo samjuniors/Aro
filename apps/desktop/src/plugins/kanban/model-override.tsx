@@ -116,7 +116,7 @@ export function ModelOverrideField({
             {!isInherited(value) && (
               <span
                 aria-label={k.modelClear}
-                className="grid size-4 place-items-center rounded text-(--ui-text-tertiary) hover:text-foreground"
+                className="grid size-4 place-items-center rounded-control text-(--ui-text-tertiary) hover:text-foreground"
                 onClick={event => {
                   // Clear without opening the menu.
                   event.preventDefault()

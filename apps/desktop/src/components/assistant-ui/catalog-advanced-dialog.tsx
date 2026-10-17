@@ -266,7 +266,7 @@ interface InstallControlsProps {
 function InstallControls(props: InstallControlsProps) {
   const scope = props.plugin ? (
     <Section title={props.m.includesHeading}>
-      <div className="grid gap-2 rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2">
+      <div className="grid gap-2 rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2">
         <label className="flex items-start gap-3">
           <Checkbox checked={props.agentHalf} onCheckedChange={value => props.onAgentHalfChange(value === true)} />
           <span className="font-medium text-foreground">{props.m.agentLabel}</span>
@@ -277,7 +277,7 @@ function InstallControls(props: InstallControlsProps) {
         </label>
       </div>
       {props.hasDesktopHalf ? (
-        <label className="flex items-start gap-3 rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2">
+        <label className="flex items-start gap-3 rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2">
           <Checkbox checked={props.desktopHalf} onCheckedChange={value => props.onDesktopHalfChange(value === true)} />
           <span className="font-medium text-foreground">{props.m.desktopLabel}</span>
         </label>

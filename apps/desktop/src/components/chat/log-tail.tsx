@@ -29,7 +29,7 @@ const SEVERITY_RULE: Record<LogSeverity, string> = {
 }
 
 const HOVER_CONTROL =
-  'h-5 rounded-md px-1 opacity-5 transition-opacity group-hover/logs:opacity-100 hover:opacity-100 focus-visible:opacity-100'
+  'h-5 rounded-control px-1 opacity-5 transition-opacity group-hover/logs:opacity-100 hover:opacity-100 focus-visible:opacity-100'
 
 /** The shared terminal-log surface: CodeCardBody typography, hover-reveal copy
  *  and jump controls, follow-the-tail scrolling (releases when the user scrolls
@@ -162,7 +162,7 @@ export function LogTail({ className, emptyLabel, lines, search }: LogTailProps) 
                           ) : (
                             <mark
                               className={cn(
-                                'rounded-xs text-inherit',
+                                'rounded-control text-inherit',
                                 segment.hit === active ? 'bg-(--ui-yellow)/55 text-foreground' : 'bg-(--ui-yellow)/30'
                               )}
                               data-log-hit={segment.hit === active ? 'active' : 'match'}

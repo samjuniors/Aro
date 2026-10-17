@@ -232,7 +232,7 @@ export function AroReviewPage() {
                 <div aria-label={`Open ${f.path}`} className={cn('flex cursor-pointer items-start gap-2 rounded-control px-2 py-2 transition-colors', on ? 'bg-aro-raise shadow-aro-e1' : 'hover:bg-aro-raise/60')} key={f.path} onClick={() => setActive(i)} onKeyDown={(e) => e.key === 'Enter' && setActive(i)} role="button" tabIndex={0}>
                   <button
                     aria-label={s ? `Unstage ${f.path}` : `Stage ${f.path}`}
-                    className={cn('mt-[2px] flex size-[15px] shrink-0 cursor-pointer items-center justify-center rounded-xs border', s ? 'border-aro-iris bg-aro-iris text-aro-on-iris' : 'border-aro-line-strong')}
+                    className={cn('mt-[2px] flex size-[15px] shrink-0 cursor-pointer items-center justify-center rounded-control border', s ? 'border-aro-iris bg-aro-iris text-aro-on-iris' : 'border-aro-line-strong')}
                     onClick={(e) => {
                       e.stopPropagation()
                       onToggleStaged(f.path)

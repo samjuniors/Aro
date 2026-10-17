@@ -170,7 +170,7 @@ function KindBadge({ kind }: { kind: PackageKind }) {
   const p = t.skills.plugins
 
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-(--ui-stroke-tertiary) px-1.5 py-px text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
+    <span className="inline-flex items-center gap-1 rounded-control border border-(--ui-stroke-tertiary) px-1.5 py-px text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
       {kind !== 'desktop' && <Package aria-hidden className="size-3" />}
       {kind !== 'agent' && <Monitor aria-hidden className="size-3" />}
       {kind === 'both' ? p.kindBoth : kind === 'agent' ? p.kindAgent : p.kindDesktop}

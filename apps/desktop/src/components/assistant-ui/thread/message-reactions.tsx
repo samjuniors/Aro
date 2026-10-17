@@ -65,7 +65,7 @@ const FullEmojiPicker: FC<{ onSelect: (emoji: string) => void }> = ({ onSelect }
           ),
           Emoji: ({ emoji, ...props }) => (
             <button
-              className={cn('grid size-8 shrink-0 place-items-center rounded-md text-lg', cellTint(emoji.emoji))}
+              className={cn('grid size-8 shrink-0 place-items-center rounded-control text-lg', cellTint(emoji.emoji))}
               {...props}
             >
               {emoji.emoji}

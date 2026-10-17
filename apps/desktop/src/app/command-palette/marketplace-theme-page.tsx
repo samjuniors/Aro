@@ -103,7 +103,7 @@ export function MarketplaceThemePage({ search, onPickTheme }: MarketplaceThemePa
         return (
           <button
             className={cn(
-              'flex w-full items-start rounded-md text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60 aria-disabled:opacity-60',
+              'flex w-full items-start rounded-control text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60 aria-disabled:opacity-60',
               HUD_ITEM,
               HUD_TEXT
             )}

@@ -229,7 +229,7 @@ export function PetTab({ image, onImage }: PetTabProps) {
             {visible.map(pet => (
               <RowButton
                 className={cn(
-                  'grid justify-items-center gap-1 rounded-md p-1.5 transition-colors hover:bg-(--chrome-action-hover)',
+                  'grid justify-items-center gap-1 rounded-control p-1.5 transition-colors hover:bg-(--chrome-action-hover)',
                   selectedSlug === pet.slug && 'ring-1 ring-(--ui-accent)'
                 )}
                 key={pet.slug}

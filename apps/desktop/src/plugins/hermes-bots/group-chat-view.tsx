@@ -883,11 +883,11 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
       {room.image ? (
         <img
           alt=""
-          className="size-6 shrink-0 rounded-md object-cover ring-1 ring-(--ui-stroke-secondary)"
+          className="size-6 shrink-0 rounded-control object-cover ring-1 ring-(--ui-stroke-secondary)"
           src={room.image}
         />
       ) : (
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-(--chrome-action-hover) text-(--ui-text-tertiary)">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-control bg-(--chrome-action-hover) text-(--ui-text-tertiary)">
           <Codicon name="organization" />
         </span>
       )}
@@ -1139,7 +1139,7 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
       <div className="flex flex-wrap items-center gap-1.5 px-1 pb-1">
         {images.map((img, index) => (
           <div
-            className="flex items-center gap-1 rounded-md border border-(--ui-stroke-secondary) bg-(--ui-bg-secondary) px-1 py-0.5"
+            className="flex items-center gap-1 rounded-control border border-(--ui-stroke-secondary) bg-(--ui-bg-secondary) px-1 py-0.5"
             key={`${img.name || 'img'}:${index}`}
           >
             {img.kind === 'pdf' || img.kind === 'file' ? (
@@ -1148,7 +1148,7 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
                 name={img.kind === 'pdf' ? 'file-pdf' : 'file'}
               />
             ) : (
-              <img alt="" className="size-6 rounded object-cover" src={img.data} />
+              <img alt="" className="size-6 rounded-control object-cover" src={img.data} />
             )}
             <span className="max-w-32 truncate text-[0.65rem] text-(--ui-text-tertiary)">{img.name || 'image'}</span>
             <Tip label={b.group.removeAttachment}>
@@ -1266,7 +1266,7 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
       <div
         className={cn(
           'group flex items-start gap-2',
-          isUser ? 'rounded-md bg-(--chrome-action-hover) px-2 py-1.5' : 'px-2 py-1'
+          isUser ? 'rounded-control bg-(--chrome-action-hover) px-2 py-1.5' : 'px-2 py-1'
         )}
         key={entryKey}
       >
@@ -1341,7 +1341,7 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
               {entry.images.map((img, imgIndex) =>
                 img.kind === 'pdf' || img.kind === 'file' ? (
                   <div
-                    className="flex items-center gap-1 rounded-md border border-(--ui-stroke-secondary) px-1.5 py-1 text-[0.65rem] text-(--ui-text-tertiary)"
+                    className="flex items-center gap-1 rounded-control border border-(--ui-stroke-secondary) px-1.5 py-1 text-[0.65rem] text-(--ui-text-tertiary)"
                     key={`${entryKey}:img:${imgIndex}`}
                     title={img.name || 'attached file'}
                   >
@@ -1351,7 +1351,7 @@ export function GroupChatWorkspace({ group, members, onBack, visible = true }: G
                 ) : (
                   <img
                     alt={img.name || 'attached image'}
-                    className="max-h-40 max-w-60 rounded-md border border-(--ui-stroke-secondary) object-contain"
+                    className="max-h-40 max-w-60 rounded-control border border-(--ui-stroke-secondary) object-contain"
                     key={`${entryKey}:img:${imgIndex}`}
                     src={img.data}
                     title={img.name || 'attached image'}

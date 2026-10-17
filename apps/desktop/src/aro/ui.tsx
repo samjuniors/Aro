@@ -40,10 +40,10 @@ const variantMap: Record<Variant, string> = {
 }
 
 const sizeMap: Record<Size, string> = {
-  xs: 'h-[24px] px-2 text-xs gap-1 rounded-aro-sm',
-  sm: 'h-[30px] px-3 text-xs gap-1.5 rounded-aro-md',
-  md: 'h-[34px] px-3.5 text-xs gap-2 rounded-aro-md',
-  lg: 'h-[40px] px-5 text-sm gap-2 rounded-aro-lg',
+  xs: 'h-[24px] px-2 text-xs gap-1 rounded-control',
+  sm: 'h-[30px] px-3 text-xs gap-1.5 rounded-control',
+  md: 'h-[34px] px-3.5 text-xs gap-2 rounded-control',
+  lg: 'h-[40px] px-5 text-sm gap-2 rounded-panel',
 }
 
 export function Button({
@@ -96,7 +96,7 @@ export function IconButton({
       {...rest}
       aria-label={label}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-aro-md text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
@@ -179,7 +179,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
   return (
     <kbd
       className={cn(
-        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-aro-xs border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none font-medium text-aro-ink-3',
+        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-control border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none font-medium text-aro-ink-3',
         className,
       )}
     >
@@ -191,7 +191,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
 /* ================================ SURFACES ================================ */
 export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className={cn('rounded-aro-lg border border-aro-line-soft bg-aro-raise', className)}>
+    <div {...rest} className={cn('rounded-panel border border-aro-line-soft bg-aro-raise', className)}>
       {children}
     </div>
   )
@@ -216,7 +216,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
     <input
       {...rest}
       className={cn(
-        'h-[32px] w-full rounded-aro-md border border-aro-line bg-aro-sunken px-2.5 text-xs text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
+        'h-[32px] w-full rounded-control border border-aro-line bg-aro-sunken px-2.5 text-xs text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
         className,
       )}
     />
@@ -333,7 +333,7 @@ export function Menu({
           <div
             aria-label="Menu"
             className={cn(
-              'fixed z-[99999] overflow-hidden rounded-aro-lg border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
+              'fixed z-[99999] overflow-hidden rounded-panel border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
               coords.opensAbove
                 ? 'origin-bottom animate-aro-slide-up -translate-y-full'
                 : 'origin-top animate-aro-slide-down',
@@ -376,7 +376,7 @@ export function MenuItem({
   return (
     <button
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2.5 rounded-aro-md px-2 py-[7px] text-left text-xs transition-colors',
+        'flex w-full cursor-pointer items-center gap-2.5 rounded-control px-2 py-[7px] text-left text-xs transition-colors',
         active
           ? 'bg-aro-iris-tint text-aro-iris-soft'
           : danger
@@ -430,7 +430,7 @@ export function Select({
           aria-expanded={open}
           aria-haspopup="menu"
           className={cn(
-            'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-aro-md text-aro-ink-2 transition-colors hover:text-aro-ink',
+            'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-control text-aro-ink-2 transition-colors hover:text-aro-ink',
             !bare && 'border border-aro-line bg-aro-raise hover:border-aro-line-strong',
             size === 'xs' ? 'h-[24px] px-1.5 text-xs' : 'h-[30px] px-2 text-xs',
           )}
@@ -524,7 +524,7 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md'
 }) {
   return (
-    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-aro-md border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
+    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-control border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
       {items.map((it) => {
         const on = it.value === value
 
@@ -532,7 +532,7 @@ export function Segmented<T extends string>({
           <button
             aria-pressed={on}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-1.5 rounded-aro-sm font-medium transition-[background-color,color,box-shadow,transform] duration-150',
+              'inline-flex cursor-pointer items-center gap-1.5 rounded-control font-medium transition-[background-color,color,box-shadow,transform] duration-150',
               size === 'md' ? 'px-3 py-[6px] text-xs' : 'px-2.5 py-[4px] text-xs',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
@@ -569,7 +569,7 @@ export function Tabs<T extends string>({
           <button
             aria-selected={on}
             className={cn(
-              'relative cursor-pointer rounded-aro-sm px-2.5 py-[6px] text-xs font-medium transition-colors',
+              'relative cursor-pointer rounded-control px-2.5 py-[6px] text-xs font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
@@ -685,7 +685,7 @@ export function Stat({
   chart?: number[]
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-aro-lg border border-aro-line-soft bg-aro-raise p-3">
+    <div className="flex flex-col gap-1 rounded-panel border border-aro-line-soft bg-aro-raise p-3">
       <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
       <div className="flex items-end justify-between gap-2">
         <span className={cn('text-xl leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
@@ -703,7 +703,7 @@ export function Tip({ label, children, side = 'top' }: { label: string; children
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-aro-sm border border-aro-line-strong bg-aro-overlay px-2 py-1 text-xs whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
+          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-control border border-aro-line-strong bg-aro-overlay px-2 py-1 text-xs whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
           side === 'top' ? 'bottom-[calc(100%+7px)]' : 'top-[calc(100%+7px)]',
         )}
       >
@@ -726,7 +726,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-8 py-14 text-center">
-      <div className="flex size-11 items-center justify-center rounded-aro-lg border border-aro-line bg-aro-raise text-aro-ink-3">
+      <div className="flex size-11 items-center justify-center rounded-panel border border-aro-line bg-aro-raise text-aro-ink-3">
         <Icon size={19} />
       </div>
       <div className="space-y-1">
@@ -771,7 +771,7 @@ export function Modal({
       <div
         aria-label={title}
         aria-modal="true"
-        className="relative max-h-[78vh] animate-aro-pop overflow-hidden rounded-aro-xl border border-aro-line-strong bg-aro-bg shadow-aro-e4"
+        className="relative max-h-[78vh] animate-aro-pop overflow-hidden rounded-overlay border border-aro-line-strong bg-aro-bg shadow-aro-e4"
         role="dialog"
         style={{ width, maxWidth: '94vw' }}
       >
@@ -799,7 +799,7 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
       {items.map((t) => (
         <div
           className={cn(
-            'animate-aro-slide-up rounded-aro-md border bg-aro-overlay px-3 py-2 text-xs text-aro-ink shadow-aro-e3',
+            'animate-aro-slide-up rounded-control border bg-aro-overlay px-3 py-2 text-xs text-aro-ink shadow-aro-e3',
             t.tone === 'mint'
               ? 'border-aro-mint/30'
               : t.tone === 'rose'
@@ -860,7 +860,7 @@ export function Checkbox({
       />
       <span
         className={cn(
-          'flex size-4 shrink-0 items-center justify-center rounded-sm border transition-colors duration-150',
+          'flex size-4 shrink-0 items-center justify-center rounded-control border transition-colors duration-150',
           checked
             ? 'border-aro-iris bg-aro-iris text-aro-on-iris'
             : 'border-aro-line bg-aro-well hover:border-aro-line-strong',

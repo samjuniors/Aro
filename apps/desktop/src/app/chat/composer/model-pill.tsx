@@ -160,7 +160,7 @@ export function ModelPill({
   // padding, sized to match the other composer icon buttons.
   const pillClass = compact
     ? cn(
-        'size-(--composer-control-size) shrink-0 justify-center gap-0 rounded-md p-0',
+        'size-(--composer-control-size) shrink-0 justify-center gap-0 rounded-control p-0',
         'text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
       )
     : PILL

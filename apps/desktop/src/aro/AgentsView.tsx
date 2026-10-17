@@ -372,7 +372,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
                   <div className="flex shrink-0 items-center gap-3 font-aro-mono text-xs text-aro-ink-4">
                     {sub.currentTool && (
-                      <span className="rounded bg-aro-hover px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
+                      <span className="rounded-control bg-aro-hover px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                         tool: {sub.currentTool}
                       </span>
                     )}
@@ -614,7 +614,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
                         <div className="flex items-center gap-1">
                           <span
-                            className="flex items-center gap-1 rounded bg-aro-hover px-1.5 py-0.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3 uppercase"
+                            className="flex items-center gap-1 rounded-control bg-aro-hover px-1.5 py-0.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3 uppercase"
                             title={`Kind: ${agent.kind}`}
                           >
                             <KindIcon size={11} />
@@ -640,7 +640,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                           <div className="flex flex-wrap gap-1">
                             {agent.strengths.map((str, idx) => (
                               <span
-                                className="rounded bg-aro-sunken px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3"
+                                className="rounded-control bg-aro-sunken px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3"
                                 key={idx}
                               >
                                 {str}

@@ -66,7 +66,7 @@ interface CreatedWebhook {
 // there is a single copyable-value chrome in this file.
 function CopyValueRow({ copyLabel, mono = true, value }: { copyLabel: string; mono?: boolean; value: string }) {
   return (
-    <div className="flex items-center gap-1 rounded bg-foreground/5 px-2.5 py-1.5 text-[0.7rem]">
+    <div className="flex items-center gap-1 rounded-control bg-foreground/5 px-2.5 py-1.5 text-[0.7rem]">
       <span className={cn('min-w-0 flex-1 truncate text-foreground/80', mono && 'font-mono')}>{value}</span>
       <CopyButton appearance="icon" buttonSize="icon-sm" label={copyLabel} text={value} />
     </div>
@@ -493,7 +493,7 @@ export function WebhooksView({ onClose }: WebhooksViewProps) {
               <div className="grid items-start gap-4 sm:grid-cols-2">
                 <Field htmlFor="webhook-deliver" label={w.fieldDeliver}>
                   <Select onValueChange={setDeliver} value={deliver}>
-                    <SelectTrigger className="h-9 rounded-md" id="webhook-deliver">
+                    <SelectTrigger className="h-9 rounded-control" id="webhook-deliver">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

@@ -123,7 +123,7 @@ export function PetSettings() {
       </p>
 
       {staleBackend && (
-        <p className="mt-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
+        <p className="mt-2 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
           {copy.restartHint}
         </p>
       )}
@@ -148,7 +148,7 @@ export function PetSettings() {
                   <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                     {Array.from({ length: 6 }, (_, i) => (
                       <div className="flex items-center gap-2.5 px-2.5 py-2" key={i}>
-                        <Skeleton className="size-10 shrink-0 rounded-md" />
+                        <Skeleton className="size-10 shrink-0 rounded-control" />
                         <div className="min-w-0 flex-1 space-y-1.5">
                           <Skeleton className="h-3.5 w-24 max-w-full" />
                           <Skeleton className="h-3 w-16 max-w-full" />
@@ -363,7 +363,7 @@ function PetAction({
       <button
         aria-label={label}
         className={cn(
-          'grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) backdrop-blur-sm transition',
+          'grid size-6 place-items-center rounded-control bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) backdrop-blur-sm transition',
           danger ? 'hover:text-(--ui-red)' : 'hover:text-foreground'
         )}
         onClick={onClick}

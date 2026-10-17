@@ -262,7 +262,7 @@ export function LocalModelsBrowseSection(): ReactElement {
                     return (
                       <div
                         className={cn(
-                          'flex flex-col gap-1 rounded-md border border-(--ui-border) px-2.5 py-1.5',
+                          'flex flex-col gap-1 rounded-control border border-(--ui-border) px-2.5 py-1.5',
                           group.fit === 'too-big' && 'opacity-45'
                         )}
                         key={group.label}

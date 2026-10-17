@@ -56,7 +56,7 @@ export function TierArt({ className, name, size = 40 }: { className?: string; na
 
   return (
     <div
-      className={cn('relative shrink-0 overflow-hidden rounded-md', className)}
+      className={cn('relative shrink-0 overflow-hidden rounded-control', className)}
       style={{ background: NOUS_BLUE, height: size, width: size }}
     >
       <img

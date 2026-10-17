@@ -78,7 +78,7 @@ export function renderRosterToolbar({
             label={activityToasts ? 'Activity toasts on — click to silence' : 'Activity toasts off — click to enable'}
           >
             <Button
-              className="rounded-md text-(--ui-text-tertiary) hover:text-foreground"
+              className="rounded-control text-(--ui-text-tertiary) hover:text-foreground"
               onClick={() => setActivityToasts(!activityToasts)}
               size="icon-xs"
               variant="ghost"
@@ -91,7 +91,7 @@ export function renderRosterToolbar({
               <DropdownMenuTrigger asChild>
                 <Button
                   aria-label={b.roster.newBotOrGroup}
-                  className="rounded-md text-(--ui-text-tertiary) hover:text-foreground"
+                  className="rounded-control text-(--ui-text-tertiary) hover:text-foreground"
                   size="icon-xs"
                   variant="ghost"
                 >
@@ -144,7 +144,7 @@ export function renderRosterToolbar({
                   <Button
                     aria-label={activeFilterCount ? `Filter roster, ${activeFilterCount} active` : 'Filter roster'}
                     className={cn(
-                      'size-7 shrink-0 rounded-md text-(--ui-text-tertiary) hover:text-foreground',
+                      'size-7 shrink-0 rounded-control text-(--ui-text-tertiary) hover:text-foreground',
                       activeFilterCount && 'text-(--ui-accent)'
                     )}
                     size="icon-xs"

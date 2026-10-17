@@ -606,7 +606,7 @@ export function TreeGroup({
                     {minimizable && (
                       <button
                         aria-label={node.minimized ? t.zones.restore : minimizeLabel}
-                        className="mx-1 grid size-5 shrink-0 place-items-center self-center [-webkit-app-region:no-drag] rounded-md text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/pane-header:opacity-100"
+                        className="mx-1 grid size-5 shrink-0 place-items-center self-center [-webkit-app-region:no-drag] rounded-control text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/pane-header:opacity-100"
                         onClick={toggleCollapse}
                         onPointerDown={e => e.stopPropagation()}
                         type="button"
@@ -895,7 +895,7 @@ export function TreeGroup({
               outlineColor: 'color-mix(in srgb, var(--ui-accent) 55%, transparent)'
             }}
           >
-            <span className="flex max-w-[calc(100%-1rem)] items-center gap-1.5 rounded-md border border-(--ui-stroke-secondary) bg-popover px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-(--ui-text-secondary)">
+            <span className="flex max-w-[calc(100%-1rem)] items-center gap-1.5 rounded-control border border-(--ui-stroke-secondary) bg-popover px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-(--ui-text-secondary)">
               <Codicon className="shrink-0" name="gripper" size="0.8125rem" />
               <span className="min-w-0 truncate">{tabText(activeId)}</span>
             </span>

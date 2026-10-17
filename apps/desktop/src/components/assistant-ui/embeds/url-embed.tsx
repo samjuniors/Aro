@@ -70,7 +70,7 @@ export function UrlEmbed({ descriptor }: { descriptor: EmbedDescriptor }) {
   }
 
   return (
-    <span className="group/embed my-2 block overflow-hidden rounded-lg" data-slot="aui_embed-card" style={style}>
+    <span className="group/embed my-2 block overflow-hidden rounded-panel" data-slot="aui_embed-card" style={style}>
       <RichBoundary fallback={<EmbedFail label={descriptor.label} />} resetKey={descriptor.id}>
         {consented ? (
           <Suspense fallback={null}>

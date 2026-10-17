@@ -212,7 +212,7 @@ export function PreviewBrowserBar({
         />
         <CopyButton
           appearance="inline"
-          className="absolute right-1 top-1/2 -translate-y-1/2 rounded-sm p-1"
+          className="absolute right-1 top-1/2 -translate-y-1/2 rounded-control p-1"
           iconClassName="size-3"
           label={t.contextMenu.link.copyUrl}
           showLabel={false}

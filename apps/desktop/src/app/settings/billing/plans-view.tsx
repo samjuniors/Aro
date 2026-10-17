@@ -85,7 +85,7 @@ function DowngradeConfirm({ flow, tier }: { flow: DowngradeFlow; tier: BillingPl
   return (
     <div
       aria-live="polite"
-      className="flex min-w-0 flex-col gap-2 rounded-md bg-(--ui-bg-elevated) p-3 outline-none"
+      className="flex min-w-0 flex-col gap-2 rounded-control bg-(--ui-bg-elevated) p-3 outline-none"
       ref={panelRef}
       role="status"
       tabIndex={-1}
@@ -138,7 +138,7 @@ function PlanCard({ flow, tier }: { flow: DowngradeFlow; tier: BillingPlanTierVi
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col gap-3 rounded-lg p-4 outline-none',
+        'flex min-w-0 flex-col gap-3 rounded-panel p-4 outline-none',
         isCurrent ? 'bg-(--ui-green)/10' : 'bg-(--ui-bg-quaternary)'
       )}
       ref={cardRef}
@@ -230,7 +230,7 @@ export function BillingPlansView({ onBack, tiers }: { onBack: () => void; tiers:
           ))}
         </div>
       ) : (
-        <div className="rounded-xl bg-(--ui-bg-quaternary) p-4 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
+        <div className="rounded-overlay bg-(--ui-bg-quaternary) p-4 text-[length:var(--conversation-caption-font-size)] text-(--ui-text-tertiary)">
           {bp.empty}
         </div>
       )}

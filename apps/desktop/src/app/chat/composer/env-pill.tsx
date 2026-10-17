@@ -57,7 +57,7 @@ export function EnvPill({
             <Icon className="shrink-0" size={12} />
             <span className="max-w-[110px] truncate">{label}</span>
             {repoStatus?.changed && repoStatus.changed > 0 ? (
-              <span className="shrink-0 rounded px-1 text-[9.5px] font-mono font-medium text-amber-500 bg-amber-500/10">
+              <span className="shrink-0 rounded-control px-1 text-[9.5px] font-mono font-medium text-amber-500 bg-amber-500/10">
                 +{repoStatus.changed}
               </span>
             ) : null}

@@ -203,7 +203,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
           <Tip label="Run in terminal">
             <button
               aria-label="Run in terminal"
-              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-5 cursor-pointer items-center justify-center rounded-control text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={() => runInTerminal(copyableCodeText(content))}
               type="button"
             >
@@ -212,7 +212,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
           </Tip>
           <CopyButton
             appearance="inline"
-            className="h-5 gap-0 rounded-md px-1 text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+            className="h-5 gap-0 rounded-control px-1 text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
             iconClassName="size-3"
             label={t.assistant.tool.copyCode}
             showLabel={false}

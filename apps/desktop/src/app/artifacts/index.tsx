@@ -399,7 +399,7 @@ export function ArtifactsView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
                     total={visibleFileArtifacts.length}
                   />
                 </div>
-                <div className="overflow-x-auto rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)">
+                <div className="overflow-x-auto rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)">
                   <ArtifactTable artifacts={pagedFileArtifacts} ctx={cellCtx} filter={kindFilter} />
                 </div>
               </section>
@@ -500,7 +500,7 @@ function ArtifactImageCard({ artifact, failedImage, onImageError, onOpenChat }: 
 
   return (
     <article
-      className="group/artifact overflow-hidden rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)"
+      className="group/artifact overflow-hidden rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)"
       data-tour="artifact-card"
     >
       <div
@@ -512,7 +512,7 @@ function ArtifactImageCard({ artifact, failedImage, onImageError, onOpenChat }: 
         {!failedImage && src && (
           <ZoomableImage
             alt={artifact.label}
-            className="max-h-40 max-w-full cursor-zoom-in rounded-md object-contain"
+            className="max-h-40 max-w-full cursor-zoom-in rounded-control object-contain"
             containerClassName="max-h-full"
             decoding="async"
             loading="lazy"
@@ -600,7 +600,7 @@ const PrimaryCell = memo(function PrimaryCell({ artifact, ctx }: { artifact: Art
       onClick={isLink ? undefined : () => void ctx.onOpen(artifact)}
       title={label}
     >
-      <span className="mt-0.5 grid size-6 shrink-0 place-items-center self-start rounded-md bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)">
+      <span className="mt-0.5 grid size-6 shrink-0 place-items-center self-start rounded-control bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)">
         <Icon className="size-3.5" />
       </span>
       <span className={cn('min-w-0 flex-1', isLink ? 'wrap-anywhere' : 'truncate')}>

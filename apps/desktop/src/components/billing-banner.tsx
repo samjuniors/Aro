@@ -49,7 +49,7 @@ export function BillingBanner({ sessionId }: { sessionId: null | string }) {
           </Button>
           <Button
             aria-label={copy.dismiss}
-            className="size-4 rounded-md text-muted-foreground/60 hover:text-foreground/90"
+            className="size-4 rounded-control text-muted-foreground/60 hover:text-foreground/90"
             onClick={() => {
               recordFriction('notice_dismissed', 'billing_banner')
               clearBillingBlock(sessionId)

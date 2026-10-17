@@ -336,7 +336,7 @@ function CronJobSidebarRow({
                 <Tip label={c.triggerNow}>
                   <button
                     aria-label={c.triggerNow}
-                    className="grid size-5 place-items-center rounded-sm text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+                    className="grid size-5 place-items-center rounded-control text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground disabled:cursor-wait disabled:opacity-60"
                     disabled={busy}
                     onClick={onTrigger}
                     type="button"
@@ -351,7 +351,7 @@ function CronJobSidebarRow({
                 <Tip label={c.manage}>
                   <button
                     aria-label={c.manage}
-                    className="grid size-5 place-items-center rounded-sm text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
+                    className="grid size-5 place-items-center rounded-control text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground"
                     onClick={onManage}
                     type="button"
                   >
@@ -474,7 +474,7 @@ function CronJobSidebarRuns({
             isSyntheticCronOutputRun(run) ? (
               // Output-doc rows have no backing session to open.
               <div
-                className="truncate rounded-md px-1.5 py-0.5 text-[0.6875rem] text-(--ui-text-secondary) tabular-nums"
+                className="truncate rounded-control px-1.5 py-0.5 text-[0.6875rem] text-(--ui-text-secondary) tabular-nums"
                 key={run.id}
               >
                 {formatRunTime(run.last_active || run.started_at)}
@@ -484,7 +484,7 @@ function CronJobSidebarRuns({
               // closed (watchdog kill / crash) opens view-only (#88443).
               <button
                 className={cn(
-                  'truncate rounded-md px-1.5 py-0.5 text-left text-[0.6875rem] tabular-nums focus-visible:bg-(--chrome-action-hover) focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+                  'truncate rounded-control px-1.5 py-0.5 text-left text-[0.6875rem] tabular-nums focus-visible:bg-(--chrome-action-hover) focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
                   run.id === selectedSessionId
                     ? 'bg-(--ui-row-active-background) text-foreground'
                     : 'text-(--ui-text-secondary) hover:bg-(--chrome-action-hover) hover:text-foreground'

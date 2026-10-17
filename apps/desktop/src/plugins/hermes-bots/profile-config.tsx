@@ -317,7 +317,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
             model: state.model
           }}
         />
-        <div className="rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-text-tertiary)">
+        <div className="rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-text-tertiary)">
           {b.editor.remoteCapabilitiesHint}
         </div>
         {labeled(
@@ -356,7 +356,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
       />
       {labeled(
         b.editor.skillsEnabled(enabledSkills, state.skills.length),
-        <div className="grid gap-1.5 rounded-md border border-(--ui-stroke-secondary) p-2">
+        <div className="grid gap-1.5 rounded-control border border-(--ui-stroke-secondary) p-2">
           <Input
             className="h-7 text-xs"
             onChange={event => setSkillFilter(event.target.value)}
@@ -394,7 +394,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
       )}
       {labeled(
         b.editor.toolsetsEnabled(enabledToolsets, state.toolsets.length),
-        <div className="rounded-md border border-(--ui-stroke-secondary) p-2">
+        <div className="rounded-control border border-(--ui-stroke-secondary) p-2">
           <div
             className="overflow-y-auto overscroll-contain"
             style={{
@@ -403,7 +403,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
           >
             <div className="grid gap-1.5">
               {state.toolsets.map(tset => (
-                <div className="rounded-md border border-(--ui-stroke-secondary) p-2" key={tset.name}>
+                <div className="rounded-control border border-(--ui-stroke-secondary) p-2" key={tset.name}>
                   <label className="flex items-center gap-2 text-xs font-medium text-(--ui-text-secondary)">
                     <Checkbox
                       checked={!!tset.enabled}
@@ -427,7 +427,7 @@ export function AdvancedProfileConfig({ bot, state, setState }: AdvancedProfileC
       )}
       {labeled(
         b.editor.mcpServers,
-        <div className="overflow-hidden rounded-md border border-(--ui-stroke-secondary)">
+        <div className="overflow-hidden rounded-control border border-(--ui-stroke-secondary)">
           {ConnectorsTab && typeof host.getGateway === 'function' ? (
             <div
               className="overflow-y-auto overscroll-contain"

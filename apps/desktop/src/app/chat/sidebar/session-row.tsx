@@ -342,7 +342,7 @@ function SidebarSessionRowImpl({
         <Button
           aria-label={r.sessionActions}
           className={cn(
-            'size-5 rounded-xs bg-transparent text-transparent transition-colors duration-100 hover:bg-(--ui-control-active-background) hover:text-foreground focus-visible:bg-(--ui-control-active-background) focus-visible:text-foreground focus-visible:ring-0 data-[state=open]:bg-(--ui-control-active-background) data-[state=open]:text-foreground group-hover:text-(--ui-text-tertiary) [&_svg]:size-3.5!',
+            'size-5 rounded-control bg-transparent text-transparent transition-colors duration-100 hover:bg-(--ui-control-active-background) hover:text-foreground focus-visible:bg-(--ui-control-active-background) focus-visible:text-foreground focus-visible:ring-0 data-[state=open]:bg-(--ui-control-active-background) data-[state=open]:text-foreground group-hover:text-(--ui-text-tertiary) [&_svg]:size-3.5!',
             trailing.length > 0 && 'absolute right-0',
             pr && KEBAB_YIELDS
           )}
@@ -519,7 +519,7 @@ function SidebarSessionRowImpl({
               handoffSource && handoffLabel ? (
                 <Tip label={r.handoffOrigin(handoffLabel)}>
                   <PlatformAvatar
-                    className="-mt-px size-4 shrink-0 rounded-xs text-[0.5rem] [&_svg]:size-2.5"
+                    className="-mt-px size-4 shrink-0 rounded-control text-[0.5rem] [&_svg]:size-2.5"
                     platformId={handoffSource}
                     platformName={handoffLabel}
                   />

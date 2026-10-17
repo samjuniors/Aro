@@ -21,7 +21,7 @@ function PopoverAnchor({ ...props }: React.ComponentProps<typeof PopoverPrimitiv
 // Both variants are the same box, and `--popover-surface` is what the arrow
 // fills itself with — so a variant only ever has to restate the surface.
 const popoverContentVariants = cva(
-  'z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-lg p-2 outline-hidden data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+  'z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-panel p-2 outline-hidden data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
   {
     variants: {
       variant: {
@@ -53,7 +53,7 @@ interface PopoverContentProps
 
 function PopoverContent({
   align = 'center',
-  // Keeps the arrow clear of the rounded corners (rounded-lg = 8px): Radix
+  // Keeps the arrow clear of the rounded corners (rounded-panel = 8px): Radix
   // clamps the arrow this far from each edge and shifts the popover to
   // compensate, so the arrow never jams into a corner on start/end alignment.
   arrowPadding = 12,
@@ -93,7 +93,7 @@ function PopoverContent({
                   'absolute top-0 left-1/2 size-[11px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-(--popover-surface)',
                   variant === 'accent'
                     ? // Borderless and opaque: nothing to seam, nothing to blur.
-                      'rounded-xs'
+                      'rounded-control'
                     : 'border-r border-b border-(--ui-stroke-secondary) backdrop-blur-md'
                 )}
               />

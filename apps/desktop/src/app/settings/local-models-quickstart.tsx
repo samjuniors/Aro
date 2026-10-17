@@ -39,7 +39,7 @@ export function LocalModelsQuickstart({
     <SettingsContent>
       <div className="flex min-h-[60dvh] items-center justify-center">
         <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+          <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-overlay bg-primary/10">
             {qJob ? (
               qJob.status === 'paused' ? (
                 <Pause className="size-7 text-muted-foreground" />

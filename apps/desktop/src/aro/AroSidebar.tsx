@@ -935,7 +935,7 @@ export function AroSidebar({
           <Tip label={`New session in ${project.name}`}>
             <button
               aria-label={`New session in ${project.name}`}
-              className="flex size-[20px] items-center justify-center rounded text-aro-ink-4 opacity-0 transition-colors hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
+              className="flex size-[20px] items-center justify-center rounded-control text-aro-ink-4 opacity-0 transition-colors hover:bg-aro-hover hover:text-aro-ink group-hover:opacity-100"
               onClick={() => handleNewSession(project.id)}
               type="button"
             >
@@ -1313,7 +1313,7 @@ export function AroSidebar({
                       <Tip label="New project">
                         <button
                           aria-label="New project"
-                          className="flex size-[20px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors"
+                          className="flex size-[20px] shrink-0 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors"
                           onClick={() => openProjectCreate()}
                           type="button"
                         >
@@ -1327,7 +1327,7 @@ export function AroSidebar({
                           <button
                             aria-label="Session list options"
                             className={cn(
-                              'flex size-[20px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors',
+                              'flex size-[20px] shrink-0 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink transition-colors',
                               open && 'text-aro-ink'
                             )}
                             type="button"
@@ -1387,7 +1387,7 @@ export function AroSidebar({
                               <Tip label={`${t.sidebar.projects.newButton}: ${project.label}`}>
                                 <button
                                   aria-label={`${t.sidebar.projects.newButton}: ${project.label}`}
-                                  className="flex size-[22px] shrink-0 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+                                  className="flex size-[22px] shrink-0 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
                                   onClick={() => openProjectCreate({ folder: project.path!, name: project.label })}
                                   type="button"
                                 >
@@ -1398,7 +1398,7 @@ export function AroSidebar({
                               <Tip label={`${t.sidebar.projects.removeFromSidebar}: ${project.label}`}>
                                 <button
                                   aria-label={`${t.sidebar.projects.removeFromSidebar}: ${project.label}`}
-                                  className="flex size-[22px] shrink-0 items-center justify-center rounded text-aro-ink-4 opacity-60 hover:bg-aro-hover hover:text-aro-rose hover:opacity-100 focus:opacity-100"
+                                  className="flex size-[22px] shrink-0 items-center justify-center rounded-control text-aro-ink-4 opacity-60 hover:bg-aro-hover hover:text-aro-rose hover:opacity-100 focus:opacity-100"
                                   onClick={() => {
                                     dismissAutoProject(project.id)
 
@@ -1520,7 +1520,7 @@ export function AroSidebar({
                           {pLabel}
                         </span>
                         {isActive && (
-                          <span className="rounded bg-aro-mint/15 px-1 py-0.2 text-[var(--aro-text-2xs,8px)] font-bold uppercase tracking-wider text-aro-mint">
+                          <span className="rounded-control bg-aro-mint/15 px-1 py-0.2 text-[var(--aro-text-2xs,8px)] font-bold uppercase tracking-wider text-aro-mint">
                             Active
                           </span>
                         )}

@@ -73,7 +73,7 @@ export function renderRosterContent({
   return (
     <>
       {staleNotice ? (
-        <div className="mx-2.5 mb-1 rounded-md bg-(--chrome-action-hover) px-2 py-1.5 text-[0.6875rem] text-(--ui-text-tertiary)">
+        <div className="mx-2.5 mb-1 rounded-control bg-(--chrome-action-hover) px-2 py-1.5 text-[0.6875rem] text-(--ui-text-tertiary)">
           {staleNotice}
         </div>
       ) : null}
@@ -149,7 +149,7 @@ export function renderRosterContent({
                 ) : (
                   <RowButton
                     aria-expanded={hiddenExpanded}
-                    className="flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-left text-[0.6875rem] font-medium text-(--ui-text-tertiary) transition-colors hover:bg-(--chrome-action-hover) hover:text-foreground"
+                    className="flex w-full items-center gap-1 rounded-control px-2 py-1.5 text-left text-[0.6875rem] font-medium text-(--ui-text-tertiary) transition-colors hover:bg-(--chrome-action-hover) hover:text-foreground"
                     onClick={() => $showHiddenBots.set(!hiddenExpanded)}
                   >
                     <DisclosureCaret open={hiddenExpanded} />

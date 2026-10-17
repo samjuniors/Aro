@@ -78,7 +78,7 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
       {onGenerate && (
         <button
           className={cn(
-            'flex w-full items-center gap-2 rounded-md text-left text-foreground transition-colors hover:bg-(--chrome-action-hover)',
+            'flex w-full items-center gap-2 rounded-control text-left text-foreground transition-colors hover:bg-(--chrome-action-hover)',
             HUD_ITEM,
             HUD_TEXT
           )}
@@ -86,7 +86,7 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
           onMouseDown={event => event.preventDefault()}
           type="button"
         >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-(--chrome-action-hover)">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-(--chrome-action-hover)">
             <Egg className="size-4" />
           </span>
           <span className="font-medium">{t.commandCenter.generatePet.title}</span>
@@ -105,7 +105,7 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
           return (
             <button
               className={cn(
-                'flex w-full items-center gap-2 rounded-md text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60',
+                'flex w-full items-center gap-2 rounded-control text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60',
                 HUD_ITEM,
                 HUD_TEXT,
                 isActive && 'bg-(--chrome-action-hover)/70'
@@ -183,7 +183,7 @@ export function PetInlineToggle() {
       aria-label={enabled ? copy.turnOff : copy.turnOn}
       aria-pressed={enabled}
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-md p-1.5 transition-colors disabled:opacity-50',
+        'flex shrink-0 items-center justify-center rounded-control p-1.5 transition-colors disabled:opacity-50',
         enabled
           ? 'bg-(--chrome-action-hover) text-foreground'
           : 'text-muted-foreground hover:bg-(--chrome-action-hover)/60'

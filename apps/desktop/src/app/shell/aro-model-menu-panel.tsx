@@ -392,7 +392,7 @@ export function AroModelMenuPanel({ children, ...props }: ModelMenuHostProps & {
           <span className="flex items-center gap-1.5">
             <span className="truncate text-[12.5px] font-medium text-aro-ink">{model}</span>
             {supportsReasoning && thinkingOn && (
-              <span className="shrink-0 rounded px-1 text-[var(--aro-text-2xs,9px)] font-semibold uppercase tracking-wider text-aro-iris bg-aro-iris/10 border border-aro-iris/20">
+              <span className="shrink-0 rounded-control px-1 text-[var(--aro-text-2xs,9px)] font-semibold uppercase tracking-wider text-aro-iris bg-aro-iris/10 border border-aro-iris/20">
                 {EFFORTS.find(e => e.id === effortValue)?.short ?? 'Think'}
               </span>
             )}

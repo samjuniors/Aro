@@ -667,7 +667,7 @@ function PlatformRow({
   return (
     <button
       className={cn(
-        'row-hover flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:text-foreground',
+        'row-hover flex w-full items-center gap-2 rounded-control px-2 py-1.5 text-left hover:text-foreground',
         active ? 'bg-(--ui-row-active-background) text-foreground' : 'text-(--ui-text-secondary)'
       )}
       onClick={onSelect}

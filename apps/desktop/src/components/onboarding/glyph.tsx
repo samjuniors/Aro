@@ -127,7 +127,7 @@ export function DecodedLabel({ leaving, text }: { leaving?: boolean; text: strin
       <GlyphText text={decoded} />
       <span
         aria-hidden="true"
-        className="dither ml-1.5 -mr-[0.875rem] inline-block size-2 shrink-0 -translate-y-px rounded-xs text-primary decode-cursor-blink"
+        className="dither ml-1.5 -mr-[0.875rem] inline-block size-2 shrink-0 -translate-y-px rounded-control text-primary decode-cursor-blink"
       />
     </span>
   )
@@ -150,7 +150,7 @@ export function HackeryButton({
   return (
     <button
       className={cn(
-        'group inline-flex items-center gap-2 rounded-md border border-(--stroke-nous) px-6 py-2.5',
+        'group inline-flex items-center gap-2 rounded-control border border-(--stroke-nous) px-6 py-2.5',
         'font-mono text-xs font-semibold uppercase text-primary',
         'transition-colors duration-150 hover:border-primary/60 hover:bg-primary/[0.06]',
         'disabled:pointer-events-none disabled:opacity-50'

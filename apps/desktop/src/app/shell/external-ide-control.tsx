@@ -56,7 +56,7 @@ export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
       <Tip label={disabled ? 'No project folder attached' : `Open in ${currentIde.name}`} placement="control">
         <button
           aria-label={disabled ? 'No project folder attached' : `Open project in ${currentIde.name}`}
-          className="group inline-flex h-full cursor-pointer items-center gap-1 rounded-l-xs px-1.5 font-medium text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.98] disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent"
+          className="group inline-flex h-full cursor-pointer items-center gap-1 rounded-l-control px-1.5 font-medium text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground active:scale-[0.98] disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent"
           disabled={disabled}
           onClick={() => openInIde(preferredIde)}
           type="button"
@@ -72,7 +72,7 @@ export function ExternalIdeControl({ compact = false }: { compact?: boolean }) {
         <DropdownMenuTrigger asChild>
           <button
             aria-label="Switch external IDE"
-            className="flex h-full cursor-pointer items-center justify-center rounded-r-xs px-1 text-(--ui-text-quaternary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground"
+            className="flex h-full cursor-pointer items-center justify-center rounded-r-control px-1 text-(--ui-text-quaternary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground"
             type="button"
           >
             <Codicon className="size-2.5" name="chevron-down" />

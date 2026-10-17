@@ -177,7 +177,7 @@ const InterAgentCollapsedNotice: FC<{ sender: string }> = ({ sender }) => (
       <summary className="cursor-pointer select-none text-center text-muted-foreground/45 hover:text-muted-foreground/70">
         show reply
       </summary>
-      <div className="mt-1 max-w-[36rem] rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-[0.75rem] leading-5 text-foreground/85">
+      <div className="mt-1 max-w-[36rem] rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-[0.75rem] leading-5 text-foreground/85">
         {MESSAGE_PARTS}
       </div>
     </details>
@@ -339,7 +339,7 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
               <AssistantPreviewEmbeds />
               <MessagePrimitive.Error>
                 <ErrorPrimitive.Root
-                  className="mt-1.5 flex flex-col gap-1.5 rounded-lg border border-[color-mix(in_srgb,var(--dt-destructive)_35%,transparent)] bg-[color-mix(in_srgb,var(--dt-destructive)_7%,transparent)] px-3 py-2 text-[0.78rem] leading-5 text-[color-mix(in_srgb,var(--dt-destructive)_78%,var(--ui-text-secondary))]"
+                  className="mt-1.5 flex flex-col gap-1.5 rounded-panel border border-[color-mix(in_srgb,var(--dt-destructive)_35%,transparent)] bg-[color-mix(in_srgb,var(--dt-destructive)_7%,transparent)] px-3 py-2 text-[0.78rem] leading-5 text-[color-mix(in_srgb,var(--dt-destructive)_78%,var(--ui-text-secondary))]"
                   role="alert"
                 >
                   <div className="flex items-start gap-1.5">
@@ -1221,13 +1221,13 @@ const AssistantFooter: FC<MessageActionProps & { durationS?: number }> = ({ dura
         className="inline-flex h-6 items-center gap-1 text-xs text-muted-foreground"
         hideWhenSingleBranch
       >
-        <BranchPickerPrimitive.Previous className="grid size-6 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-35">
+        <BranchPickerPrimitive.Previous className="grid size-6 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-35">
           <Codicon name="chevron-left" size="0.875rem" />
         </BranchPickerPrimitive.Previous>
         <span className="tabular-nums">
           <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
         </span>
-        <BranchPickerPrimitive.Next className="grid size-6 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-35">
+        <BranchPickerPrimitive.Next className="grid size-6 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-35">
           <Codicon name="chevron-right" size="0.875rem" />
         </BranchPickerPrimitive.Next>
       </BranchPickerPrimitive.Root>

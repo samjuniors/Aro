@@ -81,7 +81,7 @@ function ConsoleRow({ copyText, log, onSend, onToggleSelect, selected }: Console
   return (
     <div
       className={cn(
-        'group/row grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-start gap-2 rounded-md border border-transparent px-1 py-1 transition-colors hover:bg-accent/40',
+        'group/row grid grid-cols-[3.25rem_minmax(0,1fr)_auto] items-start gap-2 rounded-control border border-transparent px-1 py-1 transition-colors hover:bg-accent/40',
         selected && 'border-border/60 bg-accent/40'
       )}
     >
@@ -111,7 +111,7 @@ function ConsoleRow({ copyText, log, onSend, onToggleSelect, selected }: Console
       <span className="opacity-0 transition-opacity group-hover/row:opacity-100">
         <CopyButton
           appearance="inline"
-          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="rounded-control p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           errorMessage={copy.copyFailed}
           iconClassName="size-3"
           label={copy.copyEntry}
@@ -120,7 +120,7 @@ function ConsoleRow({ copyText, log, onSend, onToggleSelect, selected }: Console
         />
         <Tip label={copy.sendEntry}>
           <button
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded-control p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             onClick={onSend}
             type="button"
           >
@@ -221,7 +221,7 @@ export function PreviewConsolePanel({
         </div>
         <div className="flex items-center gap-1">
           <button
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
             disabled={sendableLogs.length === 0}
             onClick={() => sendLogsToComposer(sendableLogs)}
             type="button"
@@ -231,7 +231,7 @@ export function PreviewConsolePanel({
           </button>
           <CopyButton
             appearance="inline"
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
             disabled={sendableLogs.length === 0}
             errorMessage={copy.copyFailed}
             iconClassName="size-3"
@@ -241,7 +241,7 @@ export function PreviewConsolePanel({
             {copy.copy}
           </CopyButton>
           <button
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[0.625rem] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
             disabled={logs.length === 0}
             onClick={consoleState.clear}
             type="button"

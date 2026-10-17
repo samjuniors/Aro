@@ -299,7 +299,7 @@ export function AroProjectDialog() {
       {pendingTrustFolder ? (
         <div className="p-5 pt-3 space-y-4">
           <div className="flex items-center gap-3 rounded-panel border border-aro-line-soft bg-aro-sunken/40 p-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-aro-iris/15 text-aro-iris">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-panel bg-aro-iris/15 text-aro-iris">
               <IconShield size={18} />
             </div>
             <div className="min-w-0 flex-1">
@@ -455,7 +455,7 @@ export function AroProjectDialog() {
                             </div>
                             <button
                               aria-label={`Remove ${base}`}
-                              className="flex size-5 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink cursor-pointer"
+                              className="flex size-5 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink cursor-pointer"
                               onClick={() => handleRemoveFolder(folder)}
                               type="button"
                             >

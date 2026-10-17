@@ -1507,7 +1507,7 @@ export function ChatBar({
           </StatusDrawerContent>
           <ComposerPrimitive.Root
             className={cn(
-              'group/composer relative w-full overflow-visible rounded-2xl',
+              'group/composer relative w-full overflow-visible rounded-overlay',
               poppedOut && 'bg-transparent',
               dragging && 'cursor-grabbing select-none touch-none',
               // Native Wayland HUD: setBounds cannot position a top-level
@@ -1668,13 +1668,13 @@ export function ChatBar({
                   <VoiceActivity state={voiceActivityState} />
                   <VoicePlaybackActivity />
                   {queueEdit && editingQueuedPrompt && (
-                    <div className="flex items-center justify-between gap-2 rounded-lg border border-[color-mix(in_srgb,var(--dt-composer-ring)_32%,transparent)] bg-accent/18 px-2 py-1">
+                    <div className="flex items-center justify-between gap-2 rounded-panel border border-[color-mix(in_srgb,var(--dt-composer-ring)_32%,transparent)] bg-accent/18 px-2 py-1">
                       <div className="min-w-0 text-[0.7rem] text-muted-foreground/88">
                         {t.composer.editingQueuedInComposer}
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <Button
-                          className="h-6 rounded-md px-2 text-[0.68rem]"
+                          className="h-6 rounded-control px-2 text-[0.68rem]"
                           onClick={() => exitQueuedEdit('cancel')}
                           type="button"
                           variant="ghost"
@@ -1682,7 +1682,7 @@ export function ChatBar({
                           {t.common.cancel}
                         </Button>
                         <Button
-                          className="h-6 rounded-md px-2 text-[0.68rem]"
+                          className="h-6 rounded-control px-2 text-[0.68rem]"
                           onClick={() => exitQueuedEdit('save')}
                           type="button"
                         >
@@ -1768,7 +1768,7 @@ export function ChatBarFallback() {
   return (
     <div
       className={cn(
-        'group/composer absolute bottom-0 left-1/2 z-30 w-[min(var(--composer-width),calc(100%-2rem))] max-w-full -translate-x-1/2 rounded-2xl pt-2 pb-[var(--composer-shell-pad-block-end)]',
+        'group/composer absolute bottom-0 left-1/2 z-30 w-[min(var(--composer-width),calc(100%-2rem))] max-w-full -translate-x-1/2 rounded-overlay pt-2 pb-[var(--composer-shell-pad-block-end)]',
         'bg-linear-to-b from-transparent to-background/55'
       )}
       data-slot="composer-root"
@@ -2082,7 +2082,7 @@ function ProjectPickerControl({
       <DropdownMenuContent align="start" className="w-[340px] p-0" side="top" sideOffset={8}>
         <div className="repo-chooser">
           {currentRoot && effectiveStatus ? (
-            <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-md border border-aro-line-soft bg-aro-bg/70 px-2.5 py-1.5 text-xs text-aro-ink-3">
+            <div className="mx-2.5 my-2 flex items-center gap-1.5 rounded-control border border-aro-line-soft bg-aro-bg/70 px-2.5 py-1.5 text-xs text-aro-ink-3">
               <IconBranch className="text-aro-iris-soft shrink-0" size={12} />
               <span className="min-w-0 flex-1 truncate font-mono">{effectiveStatus.branch || 'Detached HEAD'}</span>
               {effectiveStatus.changed > 0 ? (
@@ -2169,7 +2169,7 @@ function ProjectPickerControl({
             </button>
             <button
               aria-label="Set default workspace directory for chats without a project"
-              className="text-xs text-aro-ink-3 hover:text-aro-ink flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-aro-hover"
+              className="text-xs text-aro-ink-3 hover:text-aro-ink flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded-control hover:bg-aro-hover"
               onClick={() => {
                 setOpen(false)
                 void chooseAndSetDefaultWorkspaceDir()

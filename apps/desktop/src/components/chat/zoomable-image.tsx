@@ -187,7 +187,7 @@ export function ImageLightbox({
           <img
             alt={alt ?? ''}
             className={cn(
-              'block max-h-[calc(100vh-12rem)] max-w-[calc(100vw-12rem)] select-none rounded-lg object-contain shadow-aro-e4',
+              'block max-h-[calc(100vh-12rem)] max-w-[calc(100vw-12rem)] select-none rounded-panel object-contain shadow-aro-e4',
               panning && 'cursor-grabbing'
             )}
             onClick={onImageClick}

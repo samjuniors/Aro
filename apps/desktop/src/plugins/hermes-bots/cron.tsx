@@ -448,7 +448,7 @@ export function RoutineDetailDialog({ job, onClose, open }: RoutineDetailDialogP
         </DialogHeader>
         <div className="grid gap-3.5">
           {issue ? (
-            <div className="rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-accent)">
+            <div className="rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-accent)">
               {issue}
             </div>
           ) : null}
@@ -463,7 +463,7 @@ export function RoutineDetailDialog({ job, onClose, open }: RoutineDetailDialogP
           {instruction
             ? labeled(
                 b.cron.instruction,
-                <div className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-text-secondary)">
+                <div className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs leading-5 text-(--ui-text-secondary)">
                   {instruction}
                 </div>
               )
@@ -543,7 +543,7 @@ export function RoutineRow({ job, onOpen, owner }: RoutineRowProps) {
       // ellipsized (#91623). The chain has to be unbroken — one `auto` in it
       // re-pins the whole row.
       className={cn(
-        'group grid min-w-0 gap-1.5 rounded-lg border border-(--ui-stroke-secondary) p-2.5 transition-colors',
+        'group grid min-w-0 gap-1.5 rounded-panel border border-(--ui-stroke-secondary) p-2.5 transition-colors',
         'hover:border-(--ui-stroke-primary, var(--ui-stroke-secondary))'
       )}
     >
@@ -599,7 +599,7 @@ export function RoutineRow({ job, onOpen, owner }: RoutineRowProps) {
         </span>
       </div>
       {legacyUnsafe ? (
-        <div className="rounded-md border border-(--ui-stroke-secondary) px-2 py-1.5 text-[0.65rem] leading-4 text-(--ui-accent)">
+        <div className="rounded-control border border-(--ui-stroke-secondary) px-2 py-1.5 text-[0.65rem] leading-4 text-(--ui-accent)">
           {b.cron.legacyUnsafe}
         </div>
       ) : null}
@@ -744,7 +744,7 @@ function pickerSelect<T extends string>(
 ) {
   return (
     <Select onValueChange={onChange} value={value}>
-      <SelectTrigger className="h-8 rounded-md">
+      <SelectTrigger className="h-8 rounded-control">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -1107,7 +1107,7 @@ export function CreateRoutineDialog({ bot, open, onClose }: CreateRoutineDialogP
             {b.cron.continuity}
           </label>
           {error ? (
-            <div className="rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
+            <div className="rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
               {error}
             </div>
           ) : null}
@@ -1284,7 +1284,7 @@ export function RoutinesPane() {
       </div>
       <div className="mx-3 border-t border-(--ui-stroke-secondary)" />
       {staleNotice ? (
-        <div className="mx-3 mt-2 rounded-md bg-(--chrome-action-hover) px-2 py-1.5 text-[0.6875rem] text-(--ui-text-tertiary)">
+        <div className="mx-3 mt-2 rounded-control bg-(--chrome-action-hover) px-2 py-1.5 text-[0.6875rem] text-(--ui-text-tertiary)">
           {staleNotice}
         </div>
       ) : null}

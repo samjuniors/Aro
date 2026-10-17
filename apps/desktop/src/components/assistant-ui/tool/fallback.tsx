@@ -109,7 +109,7 @@ const TOOL_SECTION_LABEL_CLASS = 'mb-1 text-[0.65rem] font-medium uppercase trac
 const TOOL_SECTION_SURFACE_CLASS =
   'max-h-20 max-w-full overflow-auto bg-transparent px-2 py-1.5 text-(--ui-text-secondary)'
 
-const TOOL_EXPANDED_SHELL_CLASS = 'rounded-[0.3125rem] border border-(--ui-stroke-tertiary)'
+const TOOL_EXPANDED_SHELL_CLASS = 'rounded-control border border-(--ui-stroke-tertiary)'
 
 const TOOL_SECTION_PRE_CLASS = cn(TOOL_SECTION_SURFACE_CLASS, 'font-mono text-[0.7rem] leading-relaxed')
 
@@ -552,7 +552,7 @@ function ToolEntry({ part }: ToolEntryProps) {
     <Button
       aria-label={statusCopy.dismiss}
       className={cn(
-        'size-5 rounded-md text-(--ui-text-tertiary) transition-opacity hover:text-(--ui-text-primary) hover:opacity-100',
+        'size-5 rounded-control text-(--ui-text-tertiary) transition-opacity hover:text-(--ui-text-primary) hover:opacity-100',
         open
           ? 'opacity-80'
           : 'opacity-0 group-hover/disclosure-row:opacity-80 group-focus-within/disclosure-row:opacity-80'
@@ -655,7 +655,7 @@ function ToolEntry({ part }: ToolEntryProps) {
           {copyAction.text && (
             <CopyButton
               appearance="inline"
-              className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-md px-1 opacity-5 transition-opacity group-hover/tool-block:opacity-100 hover:opacity-100 focus-visible:opacity-100"
+              className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-control px-1 opacity-5 transition-opacity group-hover/tool-block:opacity-100 hover:opacity-100 focus-visible:opacity-100"
               iconClassName="size-3"
               label={copyAction.label}
               showLabel={false}
@@ -668,7 +668,7 @@ function ToolEntry({ part }: ToolEntryProps) {
             <TerminalTranscript command={view.terminalCommand} exitCode={view.terminalExitCode} />
           )}
           {view.imageUrl && (
-            <div className="max-w-72 overflow-hidden rounded-[0.25rem] border border-(--ui-stroke-tertiary)">
+            <div className="max-w-72 overflow-hidden rounded-control border border-(--ui-stroke-tertiary)">
               <MarkdownImage alt={copy.outputAlt} src={view.imageUrl} />
             </div>
           )}
@@ -776,7 +776,7 @@ function TerminalTranscript({ command, exitCode }: TerminalTranscriptProps) {
   }
 
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-[0.25rem] border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-2 py-1.5 font-mono text-[0.7rem] leading-relaxed">
+    <div className="flex min-w-0 items-center gap-2 rounded-control border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-2 py-1.5 font-mono text-[0.7rem] leading-relaxed">
       {command && (
         <code className="min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere text-(--ui-text-secondary)">
           <span aria-hidden className="select-none text-(--ui-accent-secondary)">
@@ -788,7 +788,7 @@ function TerminalTranscript({ command, exitCode }: TerminalTranscriptProps) {
       {exitCode !== undefined && (
         <span
           className={cn(
-            'shrink-0 rounded bg-(--ui-bg-tertiary) px-1 py-px text-[0.6rem] tabular-nums',
+            'shrink-0 rounded-control bg-(--ui-bg-tertiary) px-1 py-px text-[0.6rem] tabular-nums',
             exitCode === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
           )}
         >

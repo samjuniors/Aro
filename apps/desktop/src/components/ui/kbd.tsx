@@ -39,8 +39,8 @@ const kbdVariants = cva(
         ]
       },
       size: {
-        sm: 'rounded-[0.2rem] text-[0.625rem]',
-        md: 'rounded-[0.25rem] text-[0.6875rem]'
+        sm: 'rounded-control text-[0.625rem]',
+        md: 'rounded-control text-[0.6875rem]'
       }
     },
     defaultVariants: {

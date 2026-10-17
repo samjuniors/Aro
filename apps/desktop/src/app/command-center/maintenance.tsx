@@ -229,7 +229,7 @@ export function MaintenancePanel() {
         />
 
         {share && Object.keys(share.urls).length > 0 && (
-          <div className="mt-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
+          <div className="mt-2 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
             <div className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               {mm.debugShareLinks}
             </div>
@@ -260,7 +260,7 @@ export function MaintenancePanel() {
               {actionStatus.running && <span className="normal-case tracking-normal">{mm.running}</span>}
             </div>
             <pre
-              className="max-h-48 overflow-auto whitespace-pre-wrap wrap-break-word rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3 font-mono text-[0.65rem] leading-relaxed text-(--ui-text-tertiary)"
+              className="max-h-48 overflow-auto whitespace-pre-wrap wrap-break-word rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3 font-mono text-[0.65rem] leading-relaxed text-(--ui-text-tertiary)"
               data-selectable-text="true"
             >
               {actionStatus.lines.join('\n')}

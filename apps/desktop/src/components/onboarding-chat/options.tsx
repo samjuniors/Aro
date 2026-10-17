@@ -128,7 +128,7 @@ export const LAYOUTS: Array<{ description: string; id: string; mode: InterfaceMo
 
 export function MiniTree({ node }: { node: MiniNode }) {
   if (node === 1) {
-    return <div className="min-h-0 min-w-0 flex-1 rounded-xs bg-foreground/15" />
+    return <div className="min-h-0 min-w-0 flex-1 rounded-control bg-foreground/15" />
   }
 
   return (

@@ -101,7 +101,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
   if (!cwd) {
     return (
       <div className="flex h-full min-h-[240px] flex-col items-center justify-center p-6 text-center">
-        <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
+        <div className="flex size-10 items-center justify-center rounded-overlay border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconSearch size={18} />
         </div>
         <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No workspace open</h3>
@@ -128,7 +128,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
         {query.length > 0 && (
           <button
             aria-label="Clear search"
-            className="flex size-4 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+            className="flex size-4 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
             onClick={() => setQuery('')}
             type="button"
           >
@@ -152,7 +152,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
       <div className="min-h-0 flex-1 overflow-auto p-2.5">
         {query.trim().length < 2 ? (
           <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-2 p-6 text-center">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3">
+            <div className="flex size-9 items-center justify-center rounded-overlay border border-aro-line-soft bg-aro-raise text-aro-ink-3">
               <IconSearch size={16} />
             </div>
             <p className="max-w-[220px] text-xs leading-relaxed text-aro-ink-3">

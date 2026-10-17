@@ -222,7 +222,7 @@ export function NotificationDeck({
       onSwipe={(notification, _side, action) => {
         void action.depart(() => userDismiss(notification.id))
       }}
-      surfaceClassName={cn(STACK_SURFACE, 'rounded-lg')}
+      surfaceClassName={cn(STACK_SURFACE, 'rounded-panel')}
       swipeDirections={['left', 'right']}
     >
       {(notification, action) => <NotificationItem notification={notification} stack={action} />}
@@ -358,7 +358,7 @@ function NotificationDetail({ detail }: { detail: string }) {
   return (
     <details className="mt-2 text-xs text-muted-foreground">
       <summary className="select-none font-medium text-muted-foreground hover:text-foreground">{copy.details}</summary>
-      <div className="mt-1 rounded-md bg-background/65 p-2">
+      <div className="mt-1 rounded-control bg-background/65 p-2">
         <pre
           className="max-h-32 whitespace-pre-wrap wrap-break-word font-mono text-[0.6875rem] leading-relaxed"
           data-selectable-text="true"
@@ -367,7 +367,7 @@ function NotificationDetail({ detail }: { detail: string }) {
         </pre>
         <CopyButton
           appearance="inline"
-          className="mt-1 rounded px-1.5 py-0.5 text-[0.6875rem]"
+          className="mt-1 rounded-control px-1.5 py-0.5 text-[0.6875rem]"
           errorMessage={copy.copyDetailFailed}
           iconClassName="size-3"
           label={copy.copyDetail}

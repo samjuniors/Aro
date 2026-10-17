@@ -312,7 +312,7 @@ function AssigneeMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="-mx-1 inline-flex max-w-full items-center gap-1.5 rounded px-1 py-0.5 text-left transition-colors hover:bg-(--chrome-action-hover)"
+          className="-mx-1 inline-flex max-w-full items-center gap-1.5 rounded-control px-1 py-0.5 text-left transition-colors hover:bg-(--chrome-action-hover)"
           type="button"
         >
           {current ? (
@@ -668,7 +668,7 @@ function LinkChips({
           <Tip key={linked} label={label} placement="row">
             <button
               aria-label={label}
-              className="max-w-full truncate rounded bg-(--ui-bg-quaternary) px-1.5 py-0.5 text-[0.6875rem] text-(--ui-text-secondary) transition-colors hover:bg-(--chrome-action-hover) hover:text-foreground"
+              className="max-w-full truncate rounded-control bg-(--ui-bg-quaternary) px-1.5 py-0.5 text-[0.6875rem] text-(--ui-text-secondary) transition-colors hover:bg-(--chrome-action-hover) hover:text-foreground"
               onClick={() => onOpen(linked)}
               type="button"
             >
@@ -718,7 +718,7 @@ function FeedTabs({
 
   const help = (
     <Tip label={running ? k.commentsHelpRunning : k.commentsHelp}>
-      <span className="grid size-5 place-items-center rounded text-(--ui-text-quaternary) hover:text-(--ui-text-secondary)">
+      <span className="grid size-5 place-items-center rounded-control text-(--ui-text-quaternary) hover:text-(--ui-text-secondary)">
         <Codicon name="question" size="0.8rem" />
       </span>
     </Tip>

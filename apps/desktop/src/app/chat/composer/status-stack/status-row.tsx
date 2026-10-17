@@ -149,7 +149,7 @@ export const StatusItemRow = memo(function StatusItemRow({
           </span>
         )}
         {failed && typeof item.exitCode === 'number' && item.exitCode !== 0 && (
-          <span className="shrink-0 rounded bg-destructive/15 px-1 text-[0.58rem] font-semibold text-destructive tabular-nums">
+          <span className="shrink-0 rounded-control bg-destructive/15 px-1 text-[0.58rem] font-semibold text-destructive tabular-nums">
             {s.exit(item.exitCode)}
           </span>
         )}

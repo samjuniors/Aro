@@ -52,7 +52,7 @@ export function VersionDetails({ version }: { version: DesktopVersionInfo }) {
           : null
 
   return (
-    <dl className="grid gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-3 text-sm">
+    <dl className="grid gap-2 rounded-panel border border-border/70 bg-muted/20 px-3 py-3 text-sm">
       <div className="flex justify-between gap-4">
         <dt className="text-muted-foreground">{u.versionDetailsVersion}</dt>
         <dd>

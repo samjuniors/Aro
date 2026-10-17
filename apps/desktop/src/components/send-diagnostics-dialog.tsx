@@ -98,7 +98,7 @@ export function SendDiagnosticsHost() {
             </DialogHeader>
             {(state.result?.viewUrl || state.result?.uploadId) && (
               <div
-                className="flex items-center gap-2 rounded-md border border-(--ui-stroke-tertiary) px-3 py-2"
+                className="flex items-center gap-2 rounded-control border border-(--ui-stroke-tertiary) px-3 py-2"
                 data-selectable-text="true"
               >
                 {state.result.viewUrl ? (

@@ -35,7 +35,7 @@ export function PlanSection() {
   if (todos.length === 0) {
     return (
       <div className="flex h-full min-h-[240px] flex-col items-center justify-center p-6 text-center">
-        <div className="flex size-10 items-center justify-center rounded-xl border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
+        <div className="flex size-10 items-center justify-center rounded-overlay border border-aro-line-soft bg-aro-raise text-aro-ink-3 shadow-aro-e1">
           <IconList size={18} />
         </div>
         <h3 className="mt-3 font-aro-display text-sm font-semibold text-aro-ink">No active plan</h3>
@@ -89,7 +89,7 @@ export function PlanSection() {
               >
                 <span
                   className={cn(
-                    'mt-[1px] flex size-[16px] shrink-0 items-center justify-center rounded-xs border',
+                    'mt-[1px] flex size-[16px] shrink-0 items-center justify-center rounded-control border',
                     isDone
                       ? 'border-aro-mint/40 bg-aro-mint-tint text-aro-mint'
                       : isActive

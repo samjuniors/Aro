@@ -142,7 +142,7 @@ export function rosterSectionRenderers({
               ) : (
                 // Empty section: a quiet dashed slot that says what it is for,
                 // and doubles as a roomy drop target.
-                <div className="mx-1 mb-1 rounded-md border border-dashed border-(--ui-stroke-secondary) px-2 py-2 text-center text-[0.6875rem] text-(--ui-text-quaternary)">
+                <div className="mx-1 mb-1 rounded-control border border-dashed border-(--ui-stroke-secondary) px-2 py-2 text-center text-[0.6875rem] text-(--ui-text-quaternary)">
                   {b.sections.emptyHint}
                 </div>
               )}

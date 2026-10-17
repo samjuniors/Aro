@@ -20,7 +20,7 @@ const TAG_CLASSES = {
   li: 'marker:text-muted-foreground/60',
   ol: 'mb-2 list-decimal pl-5 last:mb-0',
   p: 'mb-1.5 leading-relaxed last:mb-0',
-  pre: 'mb-2 overflow-x-hidden whitespace-pre-wrap wrap-anywhere rounded-md border border-(--ui-stroke-tertiary) bg-background/70 p-2 font-mono text-[0.7rem] leading-[1.55] last:mb-0 [&>code]:block [&>code]:rounded-none [&>code]:bg-transparent [&>code]:p-0',
+  pre: 'mb-2 overflow-x-hidden whitespace-pre-wrap wrap-anywhere rounded-control border border-(--ui-stroke-tertiary) bg-background/70 p-2 font-mono text-[0.7rem] leading-[1.55] last:mb-0 [&>code]:block [&>code]:rounded-none [&>code]:bg-transparent [&>code]:p-0',
   td: 'px-2 py-1 align-top leading-snug',
   th: 'px-2 py-1 text-left text-[0.62rem] font-semibold uppercase tracking-[0.08em] whitespace-nowrap text-muted-foreground/80',
   thead: 'bg-muted/40',
@@ -58,7 +58,7 @@ function MarkdownAnchor({ children, className, href, ...rest }: ComponentProps<'
 function MarkdownCode({ className, ...rest }: ComponentProps<'code'>) {
   return (
     <code
-      className={cn('rounded bg-muted/80 px-1 py-px font-mono text-[0.86em] text-muted-foreground', className)}
+      className={cn('rounded-control bg-muted/80 px-1 py-px font-mono text-[0.86em] text-muted-foreground', className)}
       {...rest}
     />
   )
@@ -66,7 +66,7 @@ function MarkdownCode({ className, ...rest }: ComponentProps<'code'>) {
 
 function MarkdownTable({ className, ...rest }: ComponentProps<'table'>) {
   return (
-    <div className="mb-2 max-w-full overflow-x-auto rounded-md border border-(--ui-stroke-tertiary) last:mb-0">
+    <div className="mb-2 max-w-full overflow-x-auto rounded-control border border-(--ui-stroke-tertiary) last:mb-0">
       <table
         className={cn(
           'w-full border-collapse text-[0.72rem] [&_tr]:border-b [&_tr]:border-(--ui-stroke-tertiary) last:[&_tr]:border-0',

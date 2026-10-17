@@ -150,7 +150,7 @@ function AttachmentPill({ attachment, onRemove }: { attachment: ComposerAttachme
             aria-busy={isUploading || undefined}
             aria-label={canPreview ? c.previewLabel(attachment.label) : attachment.label}
             className={cn(
-              'flex max-w-56 items-center gap-2 rounded-2xl border bg-background/50 px-2 py-1.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors disabled:cursor-default',
+              'flex max-w-56 items-center gap-2 rounded-overlay border bg-background/50 px-2 py-1.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors disabled:cursor-default',
               hasUploadError
                 ? 'border-destructive/45 hover:border-destructive/60'
                 : 'border-border/60 hover:border-primary/35 hover:bg-accent/45'
@@ -159,7 +159,7 @@ function AttachmentPill({ attachment, onRemove }: { attachment: ComposerAttachme
             onClick={() => void openAttachment()}
             type="button"
           >
-            <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-border/55 bg-muted/35 text-muted-foreground">
+            <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-panel border border-border/55 bg-muted/35 text-muted-foreground">
               {(attachment.thumbnailUrl || attachment.previewUrl) && attachment.kind === 'image' ? (
                 <img
                   alt={attachment.label}

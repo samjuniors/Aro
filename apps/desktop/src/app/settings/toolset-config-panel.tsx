@@ -190,7 +190,7 @@ function EnvVarField({ envVar, isSet, onSaved, onCleared, profile }: EnvVarField
 
   return (
     <EnvVarContextMenu {...actionProps}>
-      <div className="grid gap-2 rounded-lg bg-background/55 p-2.5">
+      <div className="grid gap-2 rounded-panel bg-background/55 p-2.5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -212,7 +212,7 @@ function EnvVarField({ envVar, isSet, onSaved, onCleared, profile }: EnvVarField
         </div>
 
         {isSet && revealed !== null && (
-          <div className="rounded-md bg-background px-2.5 py-1.5 font-mono text-xs text-foreground">
+          <div className="rounded-control bg-background px-2.5 py-1.5 font-mono text-xs text-foreground">
             {revealed || '---'}
           </div>
         )}
@@ -355,7 +355,7 @@ function PostSetupRunner({ toolset, postSetupKey, installed = false, onComplete,
   }, [toolset, postSetupKey, onComplete, copy, profile])
 
   return (
-    <div className="grid gap-2 rounded-lg bg-background/55 p-2.5">
+    <div className="grid gap-2 rounded-panel bg-background/55 p-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[0.72rem] text-muted-foreground">
@@ -383,7 +383,7 @@ function PostSetupRunner({ toolset, postSetupKey, installed = false, onComplete,
 
       {status && (status.lines.length > 0 || status.running) && (
         <pre
-          className="max-h-48 overflow-y-auto rounded-md bg-background px-2.5 py-1.5 font-mono text-[0.7rem] leading-relaxed text-muted-foreground whitespace-pre-wrap"
+          className="max-h-48 overflow-y-auto rounded-control bg-background px-2.5 py-1.5 font-mono text-[0.7rem] leading-relaxed text-muted-foreground whitespace-pre-wrap"
           data-selectable-text="true"
         >
           {status.lines.length > 0 ? status.lines.join('\n') : copy.postSetupStarting}
@@ -488,7 +488,7 @@ function ModelCatalogPicker({ toolset, providerName, isActiveBackend, profile }:
             <button
               aria-pressed={isSelected}
               className={cn(
-                'grid gap-0.5 rounded-lg border px-2.5 py-2 text-left transition',
+                'grid gap-0.5 rounded-panel border px-2.5 py-2 text-left transition',
                 isSelected
                   ? 'border-(--ui-stroke-secondary) bg-(--ui-bg-tertiary)'
                   : 'border-transparent bg-background/55 hover:bg-accent/40',
@@ -794,7 +794,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
         const isExtractBackend = Boolean(provider.web_backend && cfg.active_extract_backend === provider.web_backend)
 
         return (
-          <div className="overflow-hidden rounded-xl bg-background/60" key={provider.name}>
+          <div className="overflow-hidden rounded-overlay bg-background/60" key={provider.name}>
             <button
               aria-expanded={isExpanded}
               className={cn(

@@ -57,7 +57,7 @@ export function SessionSwitcher() {
           return (
             <div
               className={cn(
-                'row-hover flex items-center rounded leading-tight',
+                'row-hover flex items-center rounded-control leading-tight',
                 HUD_ITEM,
                 HUD_TEXT,
                 selected ? 'bg-accent text-accent-foreground' : 'text-(--ui-text-secondary)'

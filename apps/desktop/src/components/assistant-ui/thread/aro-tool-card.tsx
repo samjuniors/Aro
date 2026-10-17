@@ -341,7 +341,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
                a11y tree in CSS-less environments); both write the same
                disclosure-store state. */
             aria-label="Dismiss tool"
-            className="absolute right-1 top-1 z-10 flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 opacity-0 transition-opacity group-hover/aro-tool:opacity-100 hover:bg-aro-hover hover:text-aro-ink focus-visible:opacity-100"
+            className="absolute right-1 top-1 z-10 flex size-5 cursor-pointer items-center justify-center rounded-control text-aro-ink-4 opacity-0 transition-opacity group-hover/aro-tool:opacity-100 hover:bg-aro-hover hover:text-aro-ink focus-visible:opacity-100"
             onClick={event => {
               event.stopPropagation()
               dismissToolRow(disclosureId)
