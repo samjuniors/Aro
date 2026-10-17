@@ -118,7 +118,7 @@ approve/deny, queue, attach, dictation, pop-out composer, long transcript.
 cmdk pickers, model/session pickers, dialogs, notifications. **Check:** each
 settings category opens, saves, resets; Esc behavior.
 - [x] 14. Settings  - [x] 15. Command Center + pickers
-- [~] 16. Dialogs/confirm/notifications
+- [x] 16. Dialogs/confirm/notifications
 - [ ] 🛑 **GATE C3**
 
 **C4 Pages (A4-A8, A10):** workspace panel, projects/git, capabilities,
