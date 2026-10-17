@@ -154,7 +154,7 @@ non-English locale.
 - [x] 25. Extensibility proof: add one throwaway component using only
       `.agent/aro-design-system/EXTENDING.md` (gallery section, test, ratchet
       stays clean), fix any gap in EXTENDING.md, then remove the throwaway
-- [ ] 🛑 **GATE D: release candidate on `ui-port`**
+- [x] 🛑 **GATE D: release candidate on `ui-port`**
 
 ---
 
