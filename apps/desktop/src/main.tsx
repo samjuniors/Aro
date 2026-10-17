@@ -27,6 +27,7 @@ import { HashRouter } from 'react-router'
 
 import App from './app'
 import { applyDesignAxes } from './aro/design-axes'
+import { AroDesignSystemPage } from './aro/DesignSystemAro'
 import { RootErrorBoundary } from './components/error-boundary'
 import { HapticsProvider } from './components/haptics-provider'
 import { RootTooltipProvider } from './components/ui/tooltip'
@@ -37,11 +38,41 @@ import { installRendererAnimationPauseState } from './lib/renderer-loop-pause'
 import { installSelectionCopyColorGuard } from './lib/selection-copy-colors'
 import { ThemeProvider } from './themes/context'
 
+const isOutsideElectron =
+  typeof window !== 'undefined' && (!window.hermesDesktop || window.location.port === '3000')
+
+if (isOutsideElectron) {
+  // Standalone browser mode: safe stub for ambient listeners outside Electron shell
+  window.hermesDesktop = {
+    api: async () => ({}),
+    desktopMetrics: { setEnabled: () => {} },
+    getAgentRoster: () => null,
+    getConnection: () => null,
+    getConnectionConfig: () => null,
+    getConnectionFor: () => null,
+    getMachineProfile: async () => null,
+    hud: { onChanged: () => () => {}, open: () => {}, resetLayout: () => {}, setSession: () => {} },
+    notify: () => {},
+    onFoundInPage: () => () => {},
+    onOpenFindBarRequested: () => () => {},
+    platform: 'win32',
+    profile: { set: async () => {} },
+    themes: { list: async () => [], setNativeTheme: () => {}, setTitleBarTheme: () => {} },
+    touchBackend: async () => {},
+  } as any
+
+  if (!window.location.hash || window.location.hash === '#/' || window.location.hash === '') {
+    window.location.hash = '#/aro-design'
+  }
+}
+
+
 installClipboardShim()
 // Chromium serializes selection copies (Cmd+C, right-click Copy) with the
 // theme's computed colors inlined; without this guard a dark-theme selection
 // pastes as near-white text into light-background targets.
 installSelectionCopyColorGuard()
+
 
 // The perf probe ships in dev, and in a production build ONLY when explicitly
 // opted in (VITE_PERF_PROBE=1) — this lets the perf harness measure a real,
@@ -107,37 +138,48 @@ if (winParam === 'overlay') {
   // animations stop producing frames when nobody can see them.
   installRendererAnimationPauseState()
 
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <RootErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <I18nProvider>
-            <ThemeProvider>
-              <HapticsProvider>
-                {/* ONE tooltip provider for the whole app. Every `Tip` used to
-                    carry its own, and with ~107 call sites those subtrees
-                    dominated unrelated interactions (52,784 TooltipProvider
-                    renders in a single sash drag). Radix's provider holds only
-                    refs and stable callbacks, so hoisting is what it's for. */}
-                <RootTooltipProvider>
-                  {/* useTransitions={false}: react-router v7's HashRouter wraps every
-                    route state update in React.startTransition() by default. In
-                    React 19's concurrent renderer, transitions are non-urgent — React
-                    can yield mid-render and resume later. When the app is under load
-                    (streaming token deltas, gateway events, store updates), those
-                    higher-priority updates keep interrupting the transition, starving
-                    the route change commit. The session sidebar highlight + main pane
-                    both freeze for seconds despite the main thread being free.
-                    Disabling transitions makes navigate() commit at default priority. */}
-                  <HashRouter useTransitions={false}>
-                    <App />
-                  </HashRouter>
-                </RootTooltipProvider>
-              </HapticsProvider>
-            </ThemeProvider>
-          </I18nProvider>
-        </QueryClientProvider>
-      </RootErrorBoundary>
-    </StrictMode>
-  )
+  if (isOutsideElectron && !window.location.search.includes('mode=app')) {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <RootTooltipProvider>
+          <AroDesignSystemPage />
+        </RootTooltipProvider>
+      </StrictMode>
+    )
+  } else {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <RootErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <I18nProvider>
+              <ThemeProvider>
+                <HapticsProvider>
+                  {/* ONE tooltip provider for the whole app. Every `Tip` used to
+                      carry its own, and with ~107 call sites those subtrees
+                      dominated unrelated interactions (52,784 TooltipProvider
+                      renders in a single sash drag). Radix's provider holds only
+                      refs and stable callbacks, so hoisting is what it's for. */}
+                  <RootTooltipProvider>
+                    {/* useTransitions={false}: react-router v7's HashRouter wraps every
+                      route state update in React.startTransition() by default. In
+                      React 19's concurrent renderer, transitions are non-urgent — React
+                      can yield mid-render and resume later. When the app is under load
+                      (streaming token deltas, gateway events, store updates), those
+                      higher-priority updates keep interrupting the transition, starving
+                      the route change commit. The session sidebar highlight + main pane
+                      both freeze for seconds despite the main thread being free.
+                      Disabling transitions makes navigate() commit at default priority. */}
+                    <HashRouter useTransitions={false}>
+                      <App />
+                    </HashRouter>
+                  </RootTooltipProvider>
+                </HapticsProvider>
+              </ThemeProvider>
+            </I18nProvider>
+          </QueryClientProvider>
+        </RootErrorBoundary>
+      </StrictMode>
+    )
+  }
 }
+
