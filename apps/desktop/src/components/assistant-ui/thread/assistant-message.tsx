@@ -314,7 +314,7 @@ const AssistantMessageBody: FC<AssistantMessageProps & { collapsedNotice?: null 
               live session state, same source the model pill reads. */}
           <div
             aria-hidden
-            className="aro-assistant-avatar flex size-7 shrink-0 items-center justify-center rounded-[8px] font-aro-mono text-[10px] font-bold text-aro-on-iris shadow-aro-e1"
+            className="aro-assistant-avatar flex size-7 shrink-0 items-center justify-center rounded-panel font-aro-mono text-[var(--aro-text-2xs,10px)] font-bold text-aro-on-iris shadow-aro-e1"
           >
             {sessionProvider?.trim().charAt(0).toUpperCase() || 'A'}
           </div>

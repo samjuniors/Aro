@@ -110,7 +110,7 @@ statusbar, window glass. **Check:** resize, glass, tray, drag/drop, focus.
 **C2 Chat (A2, A3):** transcript, tool rows/cards, inline widgets, composer,
 model controls, status stack, approvals/toasts. **Check:** send, stream,
 approve/deny, queue, attach, dictation, pop-out composer, long transcript.
-- [~] 11. Transcript  - [ ] 12. Tool rows/widgets
+- [x] 11. Transcript  - [ ] 12. Tool rows/widgets
 - [ ] 13. Composer, model menu, status stack, CardStack
 - [ ] 🛑 **GATE C2**
 

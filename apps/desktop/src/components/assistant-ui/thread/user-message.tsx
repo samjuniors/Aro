@@ -61,7 +61,7 @@ export function StickyHumanMessageContainer({
         {/* Prototype grammar: 28px monogram avatar, left-aligned row. */}
         <div
           aria-hidden
-          className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-aro-line-soft bg-aro-hover font-aro-mono text-[10.5px] font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
+          className="flex size-7 shrink-0 items-center justify-center rounded-panel border border-aro-line-soft bg-aro-hover font-aro-mono text-[10.5px] font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
         >
           Y
         </div>
@@ -83,7 +83,7 @@ export function StickyHumanMessageContainer({
 // so without the carve-out, clicking a stuck bubble drags the window instead of
 // opening the edit composer.
 export const USER_BUBBLE_BASE_CLASS =
-  'composer-human-message relative flex w-full min-w-0 max-w-full flex-col gap-1.5 overflow-y-auto rounded-[10px] rounded-tl-[3px] border border-aro-line-soft bg-aro-raise px-3.5 py-2.5 text-left shadow-aro-e1 [-webkit-app-region:no-drag]'
+  'composer-human-message relative flex w-full min-w-0 max-w-full flex-col gap-1.5 overflow-y-auto rounded-panel rounded-tl-[3px] border border-aro-line-soft bg-aro-raise px-3.5 py-2.5 text-left shadow-aro-e1 [-webkit-app-region:no-drag]'
 
 export const USER_ACTION_ICON_BUTTON_CLASS =
   'grid place-items-center rounded-md bg-transparent text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-active-background) hover:text-foreground disabled:cursor-default disabled:text-(--ui-text-quaternary) disabled:opacity-70'
@@ -436,7 +436,7 @@ export const UserMessage: FC<{
             <div className="mb-1.5 flex flex-wrap items-center gap-2 px-0.5">
               <span className="text-[12.5px] font-semibold text-aro-ink">{copy.you}</span>
               {createdAt !== undefined && (
-                <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
@@ -577,7 +577,7 @@ export const UserMessage: FC<{
             <MessageTimelineTimestamp className="self-end pr-1.5" />
             <BranchPickerPrimitive.Root
               className={cn(
-                'checkpoint-container mt-1.5 flex w-full items-center gap-2 font-aro-mono text-[10px] leading-none text-aro-ink-4',
+                'checkpoint-container mt-1.5 flex w-full items-center gap-2 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none text-aro-ink-4',
                 readOnly && 'hidden'
               )}
               hideWhenSingleBranch

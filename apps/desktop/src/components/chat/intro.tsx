@@ -240,7 +240,7 @@ export function Intro({ personality, seed }: IntroProps) {
       <div className="w-full min-w-0">
         {isAro ? (
           <>
-            <h1 className="m-0 font-display text-[26px] sm:text-[32px] font-medium tracking-tight text-aro-ink">
+            <h1 className="m-0 font-display text-2xl sm:text-3xl font-medium tracking-tight text-aro-ink">
               {activeProject ? `Let's work on ${activeProject.label}.` : 'What would you like to build?'}
             </h1>
             {!activeProject && (
@@ -289,7 +289,7 @@ export function Intro({ personality, seed }: IntroProps) {
         ) : (
           FRESH_IDEAS.map(idea => (
             <button
-              className="group inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise/80 px-3.5 py-1.5 text-xs font-medium text-aro-ink-2 shadow-sm backdrop-blur-md transition-all hover:border-aro-iris/50 hover:bg-aro-hover hover:text-aro-ink active:scale-[0.98]"
+              className="group inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise/80 px-3.5 py-1.5 text-xs font-medium text-aro-ink-2 shadow-(--aro-shadow-e1) backdrop-blur-md transition-colors hover:border-aro-iris/50 hover:bg-aro-hover hover:text-aro-ink active:scale-[0.98]"
               data-slot="fresh-suggestion-chip"
               key={idea.label}
               onClick={() => {
