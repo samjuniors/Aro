@@ -139,7 +139,7 @@ themes, glass on/off, RTL, one non-English locale, three window widths.
 - [x] 26. Extensibility proof: build a throwaway screen using only
       `LAYOUT-UX.md` section 9; fix any gap in the doc; remove it
 - [x] 27. Docs sync (`LAYOUT-UX.md`, `DESIGN.md` references)
-- [ ] 🛑 **GATE D: release candidate on `ui-port/2026-10-09`**
+- [x] 🛑 **GATE D: release candidate on `ui-port/2026-10-09`**
 
 ---
 
