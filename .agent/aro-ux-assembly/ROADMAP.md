@@ -55,9 +55,9 @@ the Layout sections, resize the window, flip themes.
       scale only): `PageShell`, `PageHeader`, `Section`, `FormRow`, `Stack`,
       `Inline`, `Toolbar`, `ActionBar`; align `OverlaySplitLayout`,
       `SectionHeading`, `ListRow`, `PanelEmpty` to the same anatomy
-- [ ] 3. Templates as fixtures: Page, List page, Form page, Master/detail
+- [x] 3. Templates as fixtures: Page, List page, Form page, Master/detail
       overlay, Settings subpage, Dialog, Empty/Loading/Error (no shift)
-- [ ] 4. Container-query width classes and collapse order implemented in the
+- [x] 4. Container-query width classes and collapse order implemented in the
       templates (right panes, then sidebar to rail, then toolbar to menu)
 - [ ] 5. Gallery "Layout" sections + screenshots at 3 widths (or BLOCKED)
 - [ ] 🛑 **GATE A**
