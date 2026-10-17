@@ -20,7 +20,8 @@ write extra docs except the ones the roadmap names.
 2. `apps/desktop/DESIGN.md` (the visual contract)
 3. `apps/desktop/AGENTS.md` (architecture/state/testing rules for the desktop)
 4. `port/AREA_PLAN.md` section 2 only (global rules: frozen files, wire discipline)
-5. Root `AGENTS.md`: headings first; read only sections about commits, tests,
+5. `docs/brand/BRAND.md` (identity: name, logo, color, type, voice)
+6. Root `AGENTS.md`: headings first; read only sections about commits, tests,
    or `apps/desktop`.
 
 **Read on demand, only when the step needs it**
@@ -28,6 +29,10 @@ write extra docs except the ones the roadmap names.
   `DesignSystemAro.tsx`, `register.tsx` (Phase A)
 - `apps/desktop/src/components/ui/*` (the primitive you are changing)
 - `apps/desktop/src/app/<area>/*` (the screen you are changing, Phase C)
+- `docs/research/03-redesign-plan.md` (P0-P7 design language) and
+  `01-competitive-analysis.md` (benchmarks: Codex app, Cursor, Zed, Claude
+  Code) at Step 1; `06-prototype-vs-hermes-integration.md` (R1-R7 status) and
+  `07-desktop-interaction-audit.md` before Phase C
 - `port/FEATURE_MAP.md` rows and `port/DECISIONS.md` entries for that area
 - `prototype/src/app/globals.css` and the matching prototype component, as a
   visual reference only
@@ -44,8 +49,11 @@ tools/ aro_bridge/ acp_adapter/ ...`), `tests-js/`, `scripts/` outside
 rules still apply via `port/AREA_PLAN.md` section 2.
 
 **Precedence if documents conflict:** founder's latest message >
-ROADMAP "Decisions" > this file > `apps/desktop/DESIGN.md` >
-`apps/desktop/AGENTS.md` > root `AGENTS.md` > `port/*`.
+ROADMAP "Decisions" > this file > `docs/brand/BRAND.md` (identity only:
+name, logo, accent, type, voice) > `apps/desktop/DESIGN.md` (visual
+contract) > `docs/research/*` (older intent) > `apps/desktop/AGENTS.md` >
+root `AGENTS.md` > `port/*`. The prototype (`prototype/`) wins on what the
+user sees unless a Decision says otherwise.
 Frozen files and wire names (section 3) always win.
 
 ## 3. Frozen (never edit)
@@ -75,6 +83,11 @@ right: mark `[!]`, stop, ask.
 - Baseline is not green (known failing tests, lint errors, headless boot
   smoke). Step 0 records the exact lists. Rule: **no new failures**; never say
   "green".
+- Known document conflicts (report at Step 0, resolve via Decisions, do not
+  silently pick): redesign plan says radius <= 8px and 1px borders over
+  shadows, tokens are 7/10/14px with role shadows; BRAND family accent is
+  emerald, Workbench UI accent is iris-violet; `BrandMark` is documented as
+  the upstream "nous-girl" mark, BRAND.md says the geometric A.
 - Windows dev machine. If a screenshot/live run is impossible, write BLOCKED
   + reason. Never claim verification you did not do.
 

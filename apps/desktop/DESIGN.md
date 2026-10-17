@@ -35,7 +35,7 @@ same change, rather than forking a one-off at the call site.
 
 ## 1. Look and feel
 
-Aro is a **calm, dense, keyboard-first workbench for talking to agents**. The
+Aro is a **calm, dense, keyboard-first workbench for talking to agents**, dark-first (see `docs/brand/BRAND.md`: zinc near-black, family accent emerald, Workbench accent iris, Inter / Space Grotesk, JetBrains Mono as a first-class voice). The
 conversation is the product; chrome should recede.
 
 | Quality | Meaning in practice |
@@ -53,6 +53,7 @@ conversation is the product; chrome should recede.
 | --- | --- | --- |
 | **Linear** | Density, crisp 1px hairlines, instant hover, command palette as primary navigation, subtle status color | Dense does not mean cramped: keep 32px default control height and 4px steps. Avoid low-contrast disabled text that fails AA. |
 | **Raycast** | Menu and list feel: single-line rows, keyboard hints right-aligned, strong selected row, tiny exit animation | Their heavy glow and gradients; we stay flat. |
+| **OpenAI Codex app** | The category reference: diff-first review, parallel task threads, native feel | Cloud-verbose, heavy footprint; we stay light and local-first |
 | **Cursor / Zed** | Dev-tool flat panes, glass sidebar, panes that read as working context, diff-friendly mono | Panels that all look identical; we differentiate Pane vs Surface vs Menu by role. |
 | **Arc** | Friendly rounded controls, tasteful sidebar translucency | Playful color overload and pill everything; pills only for dots, avatars, counts, switch thumbs. |
 | **Claude / ChatGPT desktop** | Transcript typography, readable measure, calm composer | Cluttered composer toolbars; we use `FanMenu` for rarely touched toggles. |

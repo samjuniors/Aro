@@ -19,19 +19,21 @@ Every 🛑 GATE: agent stops and waits for "continue".
 - D-UI-005 Every component works in all 6 themes + glass on/off.
 - D-UI-006 Success = no new failures vs the recorded baseline.
 
+- D-UI-007 Default look: dark-first, prototype-faithful, Zed/Linear
+  restraint; primary theme to perfect first is **obsidian**; accent follows
+  the current Workbench (iris), brand emerald stays for logo/CLI. (default)
+
 **Interview batch 1 (ask once at Step 0, selectable; defaults in bold):**
-1. Visual direction: **Cursor/Zed calm and flat** / Linear-Raycast dense and
-   crisp / Claude-Arc warm and soft.
-2. Primary theme to perfect first: **obsidian** / daylight / other.
+1. Radius and elevation language: **keep code tokens (7/10/14px, role
+   shadows)** / flatten per redesign plan (radius <= 8px, 1px borders over
+   shadows) / custom.
+2. Visual direction: **polish for consistency only, keep the prototype look**
+   / denser Linear-Raycast feel / warmer softer feel.
 3. `/aro-design` in production builds: **dev-only (hidden in prod)** / keep
    visible.
-Record answers as D-UI-007..009 below.
+Record answers as D-UI-008..010 below.
 
-- D-UI-007 Visual direction: **Cursor/Zed calm and flat** (2026-10-17).
-- D-UI-008 Primary theme to perfect first: **obsidian** (2026-10-17).
-- D-UI-009 `/aro-design` in production builds: **dev-only (hidden in prod)** (2026-10-17).
-
-(Later decisions appended below.)
+(Answers and later decisions are appended here.)
 
 ## PHASE A: Design system (additive; no screen/primitive edits)
 
@@ -42,29 +44,32 @@ RTL, reduced motion; ratchet test in place; no new check failures.
 **Founder check:** `npm run dev` in `apps/desktop`, open **Aro Design** in the
 sidebar (`/aro-design`), switch themes, look at every section.
 
-- [x] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
+- [ ] 0. Recon: confirm branch; run Interview batch 1; record baseline (typecheck, lint, vitest
       failing lists, boot smoke); list the 21 fixed routes + 19 settings
-      categories; explain how Aro themes reach the host app
+      categories; list the document conflicts named in AGENT.md section 4
+      and propose a resolution for each; explain how Aro themes reach the host app
       (`host-theme.css`, `src/themes`); confirm two-kit default (AGENT.md)
-- [x] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
-      value-to-role map (in the report, not DESIGN.md); decide hex-scan
-      exclusions (theme/palette/shiki data files)
-- [x] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
+- [ ] 1. Audit: distinct radius/shadow/color/spacing/type counts by file;
+      value-to-role map (in the report, not DESIGN.md); hex-scan
+      exclusions start at `src/themes/**`, `*.test.*`, `src/lib/mcp-brands.tsx`,
+      `src/app/right-sidebar/terminal/selection.ts`, gallery swatches
+      (`design-allow`); confirm by counting
+- [ ] 2. `src/components/ui/__tests__/no-raw-visuals.test.ts` + baseline
       JSON (ratchet: counts only shrink; `design-allow:` lines ignored)
-- [x] 3. Tokens (additive only; parity test must stay green): add
+- [ ] 3. Tokens (additive only; parity test must stay green): add
       `--aro-text-*`, `--aro-status-*`; reuse existing `--aro-dur/ease`; add
       a `prefers-reduced-motion` block
-  - [x] 3.1 Contrast table, every role pair, all 6 themes
-- [x] 4. Components on the contract, host primitives first: `Button`,
+  - [ ] 3.1 Contrast table, every role pair, all 6 themes
+- [ ] 4. Components on the contract, host primitives first: `Button`,
       `Input`, `Textarea`, `Select`, `DropdownMenu`, `Popover`, `Tooltip`,
       `Dialog`, `ConfirmDialog`, `Tabs`, `SegmentedControl`, `Switch`,
       `Checkbox`, `Badge`, `ListRow`, `Loader`, `EmptyState`, `ErrorState`,
       `LogView`, `Skeleton`, `Kbd`, `FieldMessage` (new), `CardStack`/toast
       look. Built beside the current ones; existing props unchanged
-- [x] 5. Extend `/aro-design`: sections for each component x variant x size x
+- [ ] 5. Extend `/aro-design`: sections for each component x variant x size x
       state, theme switcher (6), glass toggle, RTL, reduced motion;
       fixtures only (no stores/backend)
-  - [x] 5.1 Screenshots per section (or BLOCKED with reason)
+  - [ ] 5.1 Screenshots per section (or BLOCKED with reason)
 - [ ] 🛑 **GATE A**
 
 ---
