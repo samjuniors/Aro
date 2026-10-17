@@ -119,13 +119,13 @@ cmdk pickers, model/session pickers, dialogs, notifications. **Check:** each
 settings category opens, saves, resets; Esc behavior.
 - [x] 14. Settings  - [x] 15. Command Center + pickers
 - [x] 16. Dialogs/confirm/notifications
-- [ ] 🛑 **GATE C3**
+- [x] 🛑 **GATE C3**
 
 **C4 Pages (A4-A8, A10):** workspace panel, projects/git, capabilities,
 Skills/Messaging/Artifacts/Cron/Profiles/Agents/Starmap, Aro pages
 (Transcript, Review, Tasks, Rules, Agents, Doctor, Bridge). **Check:** each
 route opened; empty/loading/error states.
-- [ ] 17. Workspace/projects  - [ ] 18. Capabilities + system views
+- [~] 17. Workspace/projects  - [ ] 18. Capabilities + system views
 - [ ] 19. Aro pages + remaining overlays
 - [ ] 🛑 **GATE C4**
 
