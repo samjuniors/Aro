@@ -293,7 +293,7 @@ export function AroAppearanceSettings() {
           <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Design System Profile
           </h4>
-          <span className="font-mono text-[11px] text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             Active: <strong className="text-foreground">{selectedItem.label}</strong>
           </span>
         </div>
@@ -306,9 +306,9 @@ export function AroAppearanceSettings() {
               <button
                 aria-pressed={isSelected}
                 className={cn(
-                  'group flex flex-col overflow-hidden rounded-xl border text-left transition-all',
+                  'group flex flex-col overflow-hidden rounded-xl border text-left transition-colors',
                   isSelected
-                    ? 'border-accent bg-accent/5 ring-1 ring-accent shadow-sm'
+                    ? 'border-accent bg-accent/5 ring-1 ring-accent shadow-(--aro-shadow-e1)'
                     : 'border-(--ui-border-soft) bg-card/40 hover:border-border hover:bg-card/70'
                 )}
                 key={item.id}
@@ -365,12 +365,12 @@ export function AroAppearanceSettings() {
                     <p className="mt-0.5 text-[10.5px] text-muted-foreground line-clamp-1">
                       {item.source}
                     </p>
-                    <p className="mt-1 text-[11px] leading-relaxed text-(--ui-text-tertiary) line-clamp-2">
+                    <p className="mt-1 text-xs leading-relaxed text-(--ui-text-tertiary) line-clamp-2">
                       {item.summary}
                     </p>
                   </div>
 
-                  <div className="mt-2.5 flex items-center justify-between border-t border-(--ui-border-soft)/60 pt-2 text-[10px] text-muted-foreground">
+                  <div className="mt-2.5 flex items-center justify-between border-t border-(--ui-border-soft)/60 pt-2 text-[var(--aro-text-2xs,10px)] text-muted-foreground">
                     <span>Theme: {item.recommendedTheme}</span>
                     <span className="font-mono">data-design="{item.id}"</span>
                   </div>
@@ -393,7 +393,7 @@ export function AroAppearanceSettings() {
                   <Pill tone="muted">Active: {themeName}</Pill>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Hermes themes are preserved per-profile. Auto-sync is opt-in so your saved skin is never silently overwritten.
               </p>
             </div>
@@ -421,7 +421,7 @@ export function AroAppearanceSettings() {
           </div>
 
           {themeFeedback && (
-            <div className="mt-2 text-[11px] font-medium text-accent animate-aro-fade">
+            <div className="mt-2 text-xs font-medium text-accent animate-aro-fade">
               ✓ {themeFeedback}
             </div>
           )}
@@ -434,7 +434,7 @@ export function AroAppearanceSettings() {
           <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Color Theme
           </h4>
-          <span className="font-mono text-[11px] text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             Active: <strong className="text-foreground capitalize">{themeName}</strong>
           </span>
         </div>
@@ -447,7 +447,7 @@ export function AroAppearanceSettings() {
               <button
                 aria-pressed={isActive}
                 className={cn(
-                  'flex min-w-[130px] items-center gap-2.5 rounded-[9px] border px-3 py-2 text-xs font-medium transition-all select-none',
+                  'flex min-w-[130px] items-center gap-2.5 rounded-control border px-3 py-2 text-xs font-medium transition-colors select-none',
                   isActive
                     ? 'border-accent bg-accent/10 text-foreground ring-1 ring-accent shadow-xs'
                     : 'border-(--ui-border-soft) bg-card/50 text-muted-foreground hover:border-border hover:bg-card/80 hover:text-foreground'
@@ -456,7 +456,7 @@ export function AroAppearanceSettings() {
                 onClick={() => handleApplyRecommendedTheme(item.id)}
                 type="button"
               >
-                <span className="flex overflow-hidden rounded-[3px] border border-black/20 dark:border-white/10 shrink-0">
+                <span className="flex overflow-hidden rounded-xs border border-black/20 dark:border-white/10 shrink-0">
                   {item.swatch.map(color => (
                     <i className="h-4 w-2" key={color} style={{ background: color }} />
                   ))}
@@ -475,7 +475,7 @@ export function AroAppearanceSettings() {
         <div className="flex flex-wrap items-center justify-between gap-4 p-4">
           <div className="space-y-0.5">
             <span className="text-xs font-medium text-foreground">Layout Density</span>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Adjusts sidebar navigation item heights (28px vs 34px), padding, and transcript row spacing.
             </p>
           </div>
@@ -506,7 +506,7 @@ export function AroAppearanceSettings() {
         <div className="flex flex-wrap items-center justify-between gap-4 p-4">
           <div className="space-y-0.5">
             <span className="text-xs font-medium text-foreground">Animation Motion</span>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Follow system accessibility preferences or suppress non-essential animations.
             </p>
           </div>
@@ -540,7 +540,7 @@ export function AroAppearanceSettings() {
               <IconMic className="text-accent" size={14} />
               <span className="text-xs font-medium text-foreground">Voice Assistant Orb</span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Show the hands-free voice orb overlay on screen (Task 7 / Area 9 portal integration).
             </p>
           </div>
@@ -551,7 +551,7 @@ export function AroAppearanceSettings() {
               onChange={e => handleToggleVoiceOrb(e.target.checked)}
               type="checkbox"
             />
-            <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+            <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:bg-accent"></div>
           </label>
         </div>
 
@@ -562,7 +562,7 @@ export function AroAppearanceSettings() {
               <IconGit className="text-muted-foreground" size={14} />
               <span className="text-xs font-medium text-foreground">Preferred Git Merge Strategy</span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Default branch integration strategy (local preference record in conductor.pref.merge).
             </p>
           </div>
@@ -597,7 +597,7 @@ export function AroAppearanceSettings() {
         </h4>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-all"
+            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_RULES_ROUTE)}
             type="button"
           >
@@ -612,7 +612,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-all"
+            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_AGENTS_ROUTE)}
             type="button"
           >
@@ -627,7 +627,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-all"
+            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_DOCTOR_ROUTE)}
             type="button"
           >
@@ -642,7 +642,7 @@ export function AroAppearanceSettings() {
           </button>
 
           <button
-            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-all"
+            className="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border-soft) bg-card/30 p-3 text-left hover:border-border hover:bg-card/70 transition-colors"
             onClick={() => navigate(ARO_DESIGN_ROUTE)}
             type="button"
           >

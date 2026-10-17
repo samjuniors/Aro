@@ -117,7 +117,7 @@ approve/deny, queue, attach, dictation, pop-out composer, long transcript.
 **C3 Overlays (A11, shared):** Settings (19 categories), Command Center,
 cmdk pickers, model/session pickers, dialogs, notifications. **Check:** each
 settings category opens, saves, resets; Esc behavior.
-- [~] 14. Settings  - [ ] 15. Command Center + pickers
+- [x] 14. Settings  - [ ] 15. Command Center + pickers
 - [ ] 16. Dialogs/confirm/notifications
 - [ ] 🛑 **GATE C3**
 

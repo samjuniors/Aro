@@ -607,7 +607,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                         return (
                           <button
                             className={cn(
-                              'flex min-w-[110px] items-center gap-2 rounded-[8px] border px-2.5 py-1.5 text-xs font-medium transition-all select-none',
+                              'flex min-w-[110px] items-center gap-2 rounded-control border px-2.5 py-1.5 text-xs font-medium transition-colors select-none',
                               active
                                 ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary shadow-xs'
                                 : 'border-(--ui-border-soft) bg-(--ui-bg-card) text-(--ui-text-secondary) hover:border-border hover:bg-(--ui-bg-elevated) hover:text-foreground'
@@ -619,7 +619,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                             }}
                             type="button"
                           >
-                            <span className="flex overflow-hidden rounded-[3px] border border-black/15 dark:border-white/10 shrink-0">
+                            <span className="flex overflow-hidden rounded-xs border border-black/15 dark:border-white/10 shrink-0">
                               {item.swatch.map(color => (
                                 <i className="h-3.5 w-1.5" key={color} style={{ background: color }} />
                               ))}
