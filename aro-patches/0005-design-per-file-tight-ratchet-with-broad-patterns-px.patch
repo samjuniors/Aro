@@ -1,0 +1,584 @@
+From 2c85597ce87ff957787280301c29faacdc733b9a Mon Sep 17 00:00:00 2001
+From: Aro design patches <noreply@example.com>
+Date: Sat, 17 Oct 2026 08:24:30 +0000
+Subject: [PATCH 5/5] design: per-file tight ratchet with broad patterns
+ (px/rem/decimal, legacy radius, z, hex) and DESIGN.md sync
+
+---
+ apps/desktop/DESIGN.md                        |  12 +
+ .../ui/__tests__/no-raw-visuals.baseline.json | 221 ++++++++++++++-
+ .../ui/__tests__/no-raw-visuals.test.ts       | 252 ++++++++++++------
+ 3 files changed, 400 insertions(+), 85 deletions(-)
+
+diff --git a/apps/desktop/DESIGN.md b/apps/desktop/DESIGN.md
+index 077c8e8e..7768a425 100644
+--- a/apps/desktop/DESIGN.md
++++ b/apps/desktop/DESIGN.md
+@@ -183,6 +183,12 @@ values)*:
+ | `--aro-text-xl` | 18 / 26 | Page headings |
+ | `--aro-text-mono` | 12 / 18 | Logs, code, paths |
+ 
++Tailwind utilities: `text-aro-xs|sm|md|lg|xl|mono` (font-size only, so existing
++leading is inherited; set `leading-*` explicitly where a row needs the
++`--aro-text-*-lh` value). Every new radius, text or shadow theme key must also
++be added to the `extendTailwindMerge` theme in `src/lib/utils.ts`, otherwise
++`cn()` mis-merges it (a size class next to a color class silently disappears).
++
+ Numbers that change (counts, timers, diffs) use `tabular-nums`. Chat text size
+ is governed by *Chat typography* (section 10) and the UI Scale zoom; do not
+ multiply global tokens or nest CSS zoom.
+@@ -518,6 +524,12 @@ lowered in the same change. The baseline only shrinks. A line with
+ A removed class such as `rounded-md` emits nothing and silently renders
+ square, which is why the reset is last and the test catches stragglers first.
+ 
++`node scripts/design/codemod.mjs <radius|type|all> [--write]` re-applies the
++migrations (legacy and arbitrary radii to role classes, hand-picked text sizes
++to `text-aro-*`). It is idempotent; use it instead of hand-resolving a patch
++conflict. The ratchet is per file and tight: raise nothing, and lower the
++baseline in the same change with `UPDATE_RATCHET=1 npx vitest run no-raw-visuals`.
++
+ Additional gates for this phase: typecheck, lint, existing unit tests, the
+ no-native-title test, and the visual gallery check (section 14).
+ 
+diff --git a/apps/desktop/src/components/ui/__tests__/no-raw-visuals.baseline.json b/apps/desktop/src/components/ui/__tests__/no-raw-visuals.baseline.json
+index d62b0392..a117b8ca 100644
+--- a/apps/desktop/src/components/ui/__tests__/no-raw-visuals.baseline.json
++++ b/apps/desktop/src/components/ui/__tests__/no-raw-visuals.baseline.json
+@@ -1,10 +1,217 @@
+ {
+-  "version": 1,
+-  "description": "Ratchet baseline for raw visual classes in apps/desktop/src. Counts must only shrink over time.",
+-  "ratchet": {
+-    "roundedArbitrary": 0,
+-    "textArbitrary": 0,
+-    "transitionAll": 0,
+-    "rawShadows": 4
++  "version": 2,
++  "description": "Per-file ratchet baseline for raw visual values in apps/desktop/src. Counts only shrink; lower them with UPDATE_RATCHET=1 npx vitest run no-raw-visuals.",
++  "generated": true,
++  "files": {
++    "adapters/agents.ts": {
++      "hexLiterals": 16
++    },
++    "app/capabilities/plugins/plugins-tab.tsx": {
++      "hexLiterals": 3
++    },
++    "app/chat/composer/attachments.tsx": {
++      "rawShadows": 1
++    },
++    "app/chat/composer/index.tsx": {
++      "hexLiterals": 1
++    },
++    "app/chat/composer/voice-activity.tsx": {
++      "rawShadows": 2
++    },
++    "app/chat/orb.tsx": {
++      "hexLiterals": 12
++    },
++    "app/chat/session-tile.tsx": {
++      "hexLiterals": 1
++    },
++    "app/chat/sidebar/profile-dropdown-switcher.tsx": {
++      "textArbitrary": 1
++    },
++    "app/chat/sidebar/session-row.tsx": {
++      "textArbitrary": 1
++    },
++    "app/chat/voice-agent-orb.tsx": {
++      "zArbitrary": 1
++    },
++    "app/messaging/platform-icon.tsx": {
++      "hexLiterals": 17
++    },
++    "app/quick-entry/quick-entry-app.tsx": {
++      "hexLiterals": 3
++    },
++    "app/right-sidebar/git-section.tsx": {
++      "textArbitrary": 1
++    },
++    "app/right-sidebar/index.tsx": {
++      "rawShadows": 2
++    },
++    "app/right-sidebar/review/index.tsx": {
++      "rawShadows": 2
++    },
++    "app/right-sidebar/terminal/selection.ts": {
++      "hexLiterals": 42
++    },
++    "app/right-sidebar/terminal/use-agent-terminal.ts": {
++      "hexLiterals": 1
++    },
++    "app/right-sidebar/terminal/use-terminal-session.ts": {
++      "hexLiterals": 1
++    },
++    "app/settings/appearance-settings.tsx": {
++      "hexLiterals": 24
++    },
++    "app/settings/billing/tier-art.tsx": {
++      "hexLiterals": 1
++    },
++    "app/settings/gateway-settings.tsx": {
++      "hexLiterals": 1
++    },
++    "app/settings/vault-settings.tsx": {
++      "hexLiterals": 1
++    },
++    "app/shell/wslg-window-controls.tsx": {
++      "hexLiterals": 3
++    },
++    "app/starmap/color.ts": {
++      "hexLiterals": 1
++    },
++    "aro/AgentsView.tsx": {
++      "hexLiterals": 2
++    },
++    "aro/AroAppearanceSettings.tsx": {
++      "hexLiterals": 44
++    },
++    "aro/AroProjectDialog.tsx": {
++      "hexLiterals": 6
++    },
++    "aro/AroSidebar.tsx": {
++      "hexLiterals": 17
++    },
++    "aro/AroTitlebar.tsx": {
++      "hexLiterals": 24,
++      "textArbitrary": 1
++    },
++    "aro/DesignSystemAro.tsx": {
++      "hexLiterals": 36,
++      "textArbitrary": 1
++    },
++    "aro/Icons.tsx": {
++      "hexLiterals": 14
++    },
++    "aro/ui.tsx": {
++      "rawShadows": 2,
++      "zArbitrary": 4
++    },
++    "aro/workbenchData.ts": {
++      "hexLiterals": 10
++    },
++    "components/assistant-ui/artifact-card.tsx": {
++      "textArbitrary": 1
++    },
++    "components/assistant-ui/markdown-text.tsx": {
++      "rawShadows": 1
++    },
++    "components/assistant-ui/thread/assistant-message.tsx": {
++      "hexLiterals": 1
++    },
++    "components/chat/activity-timer-text.tsx": {
++      "textArbitrary": 1
++    },
++    "components/chat/code-card.tsx": {
++      "textArbitrary": 1
++    },
++    "components/chat/code-editor-theme.ts": {
++      "hexLiterals": 18
++    },
++    "components/chat/shiki-config.ts": {
++      "hexLiterals": 2
++    },
++    "components/chat/vibe-hearts.tsx": {
++      "hexLiterals": 1
++    },
++    "components/onboarding-chat/options.tsx": {
++      "hexLiterals": 12
++    },
++    "components/pane-shell/tree/renderer/tree-group.tsx": {
++      "hexLiterals": 1
++    },
++    "components/pane-shell/tree/zone-editor.tsx": {
++      "zArbitrary": 1
++    },
++    "components/pane-shell/tree/zones-engine.ts": {
++      "hexLiterals": 4
++    },
++    "components/pet/pet-star-shower.tsx": {
++      "hexLiterals": 3
++    },
++    "components/ui/badge.tsx": {
++      "textArbitrary": 1
++    },
++    "components/ui/confirm-dialog.tsx": {
++      "hexLiterals": 1
++    },
++    "components/ui/dialog.tsx": {
++      "zArbitrary": 2
++    },
++    "components/ui/kbd.tsx": {
++      "rawShadows": 2
++    },
++    "components/ui/pane-tab.tsx": {
++      "rawShadows": 5
++    },
++    "components/ui/profile-glyph.tsx": {
++      "textArbitrary": 1
++    },
++    "components/ui/sidebar.tsx": {
++      "rawShadows": 2
++    },
++    "components/ui/switch.tsx": {
++      "rawShadows": 1
++    },
++    "debug/perf-live.ts": {
++      "hexLiterals": 3
++    },
++    "lib/mcp-brands.tsx": {
++      "hexLiterals": 38
++    },
++    "lib/preview-act/watch-in-page.ts": {
++      "hexLiterals": 4
++    },
++    "lib/preview-annotate/in-page.ts": {
++      "hexLiterals": 1
++    },
++    "lib/preview-annotate/tokens.ts": {
++      "hexLiterals": 4
++    },
++    "plugins/hermes-bots/avatar.tsx": {
++      "hexLiterals": 1
++    },
++    "plugins/hermes-bots/mcp-setup.tsx": {
++      "hexLiterals": 1
++    },
++    "plugins/hermes-bots/roster-pane-toolbar.tsx": {
++      "hexLiterals": 1
++    },
++    "plugins/hermes-bots/screen-hero.tsx": {
++      "textArbitrary": 1
++    },
++    "plugins/kanban/drawer.tsx": {
++      "hexLiterals": 1
++    },
++    "plugins/kanban/types.ts": {
++      "hexLiterals": 8
++    },
++    "themes/color.ts": {
++      "hexLiterals": 3
++    },
++    "themes/context.tsx": {
++      "hexLiterals": 20
++    },
++    "themes/skin.ts": {
++      "hexLiterals": 7
++    },
++    "themes/vscode.ts": {
++      "hexLiterals": 7
++    }
+   }
+ }
+diff --git a/apps/desktop/src/components/ui/__tests__/no-raw-visuals.test.ts b/apps/desktop/src/components/ui/__tests__/no-raw-visuals.test.ts
+index 04f89aef..a61dd28a 100644
+--- a/apps/desktop/src/components/ui/__tests__/no-raw-visuals.test.ts
++++ b/apps/desktop/src/components/ui/__tests__/no-raw-visuals.test.ts
+@@ -1,49 +1,106 @@
+-import { readdirSync, readFileSync, statSync } from 'node:fs'
++import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+ import { join, resolve } from 'node:path'
+ 
+ import { describe, expect, it } from 'vitest'
+ 
+-import baseline from './no-raw-visuals.baseline.json' with { type: 'json' }
+-
+-// Static-analysis ratchet guard: prevents addition of raw/arbitrary visual values
+-// in the desktop renderer. As screens and host primitives are migrated to the
+-// unified Aro design system, counts in baseline.json are ratcheted down and must
+-// never grow.
++// Per-file ratchet for raw visual values in the desktop renderer (DESIGN.md 13).
++//
++//  - A file may never gain a hit for any metric.
++//  - A count that drops MUST be lowered in no-raw-visuals.baseline.json in the
++//    same change (so the baseline can only shrink and never hides new debt).
++//  - `UPDATE_RATCHET=1 npx vitest run no-raw-visuals` rewrites the baseline, but
++//    only when nothing grew (or on the very first run, `generated: false`).
++//  - A line carrying `design-allow: <reason>` is not counted.
+ //
+-// Ignored:
+-// - Lines containing `design-allow:` comments for intentional, documented exceptions
+-// - Theme definition files and token bridges
++// The patterns are deliberately broad (px, rem, decimals, any side variant):
++// an earlier version only matched `text-[10px]`-style integers and reported 0
++// while hundreds of `text-[0.6875rem]` uses went unseen.
+ 
+ const SRC_ROOT = resolve(__dirname, '../../..')
++const BASELINE_PATH = resolve(__dirname, 'no-raw-visuals.baseline.json')
+ 
+-const EXCLUDED_RELATIVE_PATHS = [
++const EXCLUDED_RELATIVE_PATHS = new Set([
+   'aro/tokens.css',
+   'aro/host-theme.css',
++  'styles.css',
+   'themes/presets.ts',
+-  'themes/palettes.ts'
+-]
++  'themes/palettes.ts',
++  'components/brand-mark.tsx'
++])
++
++const SIDE = '(?:-(?:t|r|b|l|tl|tr|bl|br|s|e|ss|se|es|ee))?'
++
++type Metric =
++  | 'hexLiterals'
++  | 'rawShadows'
++  | 'roundedArbitrary'
++  | 'roundedLegacy'
++  | 'textArbitrary'
++  | 'transitionAll'
++  | 'zArbitrary'
++
++interface Counter {
++  codeOnly?: boolean
++  hint: string
++  line?: (line: string) => boolean
++  re: RegExp
++}
++
++const COUNTERS: Record<Metric, Counter> = {
++  roundedLegacy: {
++    // Stock sizes resolve to the legacy 0.2 scalar (2 to 5px), and bare `rounded`
++    // is a fixed 0.25rem: both are a different shape language from the roles.
++    re: new RegExp(`\\brounded${SIDE}-(?:xs|sm|md|lg|xl|2xl|3xl|aro-[a-z0-9]+)(?![\\w-])`, 'g'),
++    hint: 'use rounded-control / rounded-panel / rounded-overlay (DESIGN.md 3.1)'
++  },
++  roundedArbitrary: {
++    re: new RegExp(`\\brounded${SIDE}-\\[(?!inherit\\])[^\\]]+\\]`, 'g'),
++    hint: 'use a role radius, never rounded-[...]'
++  },
++  textArbitrary: {
++    re: /\btext-\[\d*\.?\d+(?:px|rem)\]/g,
++    hint: 'use text-aro-xs|sm|md|lg|xl (DESIGN.md 3.6)'
++  },
++  transitionAll: {
++    re: /\btransition-all\b/g,
++    hint: 'name the properties; use --aro-dur-* / --aro-ease-*'
++  },
++  rawShadows: {
++    re: /\bshadow-(?:sm|md|lg|xl|2xl|inner|\[[^\]]+\])(?![\w-])/g,
++    hint: 'use --aro-shadow-* / shadow-nous roles'
++  },
++  zArbitrary: {
++    re: /\bz-\[[^\]]+\]/g,
++    hint: 'use the z ladder (DESIGN.md 3.8)'
++  },
++  hexLiterals: {
++    codeOnly: true,
++    re: /#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\b/g,
++    line: line => !/^\s*(\/\/|\*|\/\*)/.test(line),
++    hint: 'use a color token'
++  }
++}
++
++const METRICS = Object.keys(COUNTERS) as Metric[]
++
++type FileCounts = Partial<Record<Metric, number>>
+ 
+ function collectSourceFiles(dir: string): string[] {
+   const results: string[] = []
+ 
+   for (const entry of readdirSync(dir)) {
+-    if (entry === 'node_modules' || entry === 'dist' || entry === '__tests__' || entry === 'build') {
++    if (['node_modules', 'dist', '__tests__', 'build', 'fonts'].includes(entry)) {
+       continue
+     }
+ 
+     const fullPath = join(dir, entry)
+-    const stat = statSync(fullPath)
+ 
+-    if (stat.isDirectory()) {
++    if (statSync(fullPath).isDirectory()) {
+       results.push(...collectSourceFiles(fullPath))
+-    } else if (
+-      (entry.endsWith('.tsx') || entry.endsWith('.ts') || entry.endsWith('.css')) &&
+-      !entry.endsWith('.test.ts') &&
+-      !entry.endsWith('.test.tsx')
+-    ) {
++    } else if (/\.(ts|tsx|css)$/.test(entry) && !/\.test\.tsx?$/.test(entry) && !entry.endsWith('.d.ts')) {
+       const rel = fullPath.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
+ 
+-      if (!EXCLUDED_RELATIVE_PATHS.includes(rel)) {
++      if (!EXCLUDED_RELATIVE_PATHS.has(rel)) {
+         results.push(fullPath)
+       }
+     }
+@@ -52,84 +109,123 @@ function collectSourceFiles(dir: string): string[] {
+   return results
+ }
+ 
+-describe('no-raw-visuals ratchet test', () => {
+-  it('enforces that raw visual counts do not exceed the recorded baseline', () => {
+-    const files = collectSourceFiles(SRC_ROOT)
++function scan(): Record<string, FileCounts> {
++  const out: Record<string, FileCounts> = {}
+ 
+-    let roundedArbitrary = 0
+-    let textArbitrary = 0
+-    let transitionAll = 0
+-    let rawShadows = 0
++  for (const file of collectSourceFiles(SRC_ROOT)) {
++    const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
++    const isCode = /\.tsx?$/.test(file)
++    const counts: FileCounts = {}
+ 
+-    const violations: string[] = []
++    for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
++      if (line.includes('design-allow:')) {
++        continue
++      }
+ 
+-    for (const file of files) {
+-      const content = readFileSync(file, 'utf8')
+-      const lines = content.split(/\r?\n/)
+-      const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/')
++      for (const metric of METRICS) {
++        const counter = COUNTERS[metric]
+ 
+-      lines.forEach((line, lineIdx) => {
+-        if (line.includes('design-allow:')) {
+-          return
++        if (counter.codeOnly && !isCode) {
++          continue
+         }
+ 
+-        const rMatches = line.match(/\brounded-\[\d+px\]/g)
+-
+-        if (rMatches) {
+-          roundedArbitrary += rMatches.length
+-          violations.push(`${rel}:${lineIdx + 1} arbitrary radius: ${rMatches.join(', ')}`)
++        if (counter.line && !counter.line(line)) {
++          continue
+         }
+ 
+-        const tMatches = line.match(/\btext-\[\d+px\]/g)
++        const hits = line.match(counter.re)
+ 
+-        if (tMatches) {
+-          textArbitrary += tMatches.length
+-          violations.push(`${rel}:${lineIdx + 1} arbitrary text: ${tMatches.join(', ')}`)
++        if (hits) {
++          counts[metric] = (counts[metric] ?? 0) + hits.length
+         }
++      }
+ 
+-        const trMatches = line.match(/\btransition-all\b/g)
++      // Tailwind v4's bare `rounded` is a fixed 0.25rem. Class-string lines only.
++      if (isCode && !/^\s*(\/\/|\*|\/\*)/.test(line) && /["'`]/.test(line)) {
++        const bare = line.match(/(?:^|[\s"'`:{(])rounded(?=[\s"'`})\]]|$)/g)
+ 
+-        if (trMatches) {
+-          transitionAll += trMatches.length
+-          violations.push(`${rel}:${lineIdx + 1} transition-all`)
++        if (bare) {
++          counts.roundedLegacy = (counts.roundedLegacy ?? 0) + bare.length
+         }
++      }
++    }
+ 
+-        const shMatches = line.match(/\bshadow-(sm|md|lg|xl|2xl|inner|\[[^\]]+\])\b/g)
+-
+-        if (shMatches) {
+-          rawShadows += shMatches.length
+-          violations.push(`${rel}:${lineIdx + 1} raw shadow: ${shMatches.join(', ')}`)
+-        }
+-      })
++    if (Object.keys(counts).length > 0) {
++      out[rel] = counts
+     }
++  }
++
++  return out
++}
+ 
+-    const current = {
+-      roundedArbitrary,
+-      textArbitrary,
+-      transitionAll,
+-      rawShadows
++interface Baseline {
++  description: string
++  files: Record<string, FileCounts>
++  // false only for the first run after the file is created; then
++  // `UPDATE_RATCHET=1` may record the starting counts. Always true afterwards.
++  generated: boolean
++  version: number
++}
++
++function readBaseline(): Baseline {
++  return JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) as Baseline
++}
++
++function sortedFiles(files: Record<string, FileCounts>): Record<string, FileCounts> {
++  return Object.fromEntries(
++    Object.keys(files)
++      .sort()
++      .map(path => [
++        path,
++        Object.fromEntries(Object.keys(files[path]!).sort().map(m => [m, files[path]![m as Metric]]))
++      ])
++  )
++}
++
++describe('no-raw-visuals ratchet', () => {
++  it('never grows, and the baseline never hides shrinkage', () => {
++    const current = scan()
++    const baseline = readBaseline()
++
++    if (!baseline.generated && process.env.UPDATE_RATCHET === '1') {
++      writeFileSync(
++        BASELINE_PATH,
++        `${JSON.stringify({ ...baseline, generated: true, files: sortedFiles(current) }, null, 2)}\n`
++      )
++
++      return
+     }
+ 
+-    const { ratchet } = baseline
++    const grew: string[] = []
++    const shrank: string[] = []
+ 
+-    expect(
+-      current.roundedArbitrary,
+-      `rounded-[Npx] count grew (${current.roundedArbitrary} > ${ratchet.roundedArbitrary}). Migrations must only reduce arbitrary radii.`
+-    ).toBeLessThanOrEqual(ratchet.roundedArbitrary)
++    for (const path of new Set([...Object.keys(current), ...Object.keys(baseline.files)])) {
++      for (const metric of METRICS) {
++        const now = current[path]?.[metric] ?? 0
++        const before = baseline.files[path]?.[metric] ?? 0
+ 
+-    expect(
+-      current.textArbitrary,
+-      `text-[Npx] count grew (${current.textArbitrary} > ${ratchet.textArbitrary}). Migrations must only reduce arbitrary text sizes.`
+-    ).toBeLessThanOrEqual(ratchet.textArbitrary)
++        if (now > before) {
++          grew.push(`${path}: ${metric} ${before} -> ${now} (${COUNTERS[metric].hint})`)
++        } else if (now < before) {
++          shrank.push(`${path}: ${metric} ${before} -> ${now}`)
++        }
++      }
++    }
+ 
+-    expect(
+-      current.transitionAll,
+-      `transition-all count grew (${current.transitionAll} > ${ratchet.transitionAll}). Use targeted transitions with --aro-dur/ease.`
+-    ).toBeLessThanOrEqual(ratchet.transitionAll)
++    expect(grew, `Raw visual values grew:\n${grew.join('\n')}`).toEqual([])
++
++    if (shrank.length > 0 && process.env.UPDATE_RATCHET === '1') {
++      writeFileSync(
++        BASELINE_PATH,
++        `${JSON.stringify({ ...baseline, files: sortedFiles(current) }, null, 2)}\n`
++      )
++
++      return
++    }
+ 
+     expect(
+-      current.rawShadows,
+-      `raw shadow count grew (${current.rawShadows} > ${ratchet.rawShadows}). Use --aro-shadow-* tokens.`
+-    ).toBeLessThanOrEqual(ratchet.rawShadows)
++      shrank,
++      `Counts dropped. Lower the baseline in this change: UPDATE_RATCHET=1 npx vitest run no-raw-visuals\n${shrank.join('\n')}`
++    ).toEqual([])
+   })
+ })
