@@ -150,7 +150,7 @@ non-English locale.
 - [x] 21. Theme radius reset (`--radius-*: initial`) + straggler fixes
 - [x] 22. Perf (long transcript, several panes, live stream)
 - [x] 23. A11y (keyboard-only, contrast, roles, reduced motion)
-- [ ] 24. Prod build check + `DESIGN.md` sync
+- [x] 24. Prod build check + `DESIGN.md` sync
 - [ ] 25. Extensibility proof: add one throwaway component using only
       `.agent/aro-design-system/EXTENDING.md` (gallery section, test, ratchet
       stays clean), fix any gap in EXTENDING.md, then remove the throwaway
