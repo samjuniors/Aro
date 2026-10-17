@@ -93,13 +93,13 @@ screenshots and step counts per screen.
 resize and collapse. **Check:** resize wide to narrow, pane drag/drop, tray.
 - [x] 10. Titlebar and tabs  - [x] 11. Sidebar and rail
 - [x] 12. Panes, statusbar, collapse behavior
-- [ ] 🛑 **GATE C1**
+- [x] 🛑 **GATE C1**
 
 **C2 Chat:** transcript measure and rhythm, tool rows, widgets, composer and
 its controls, status stack, approvals. **Check:** send, stream, stop,
 approve, queue, attach, long transcript, no jump while streaming.
-- [ ] 13. Transcript  - [ ] 14. Tool rows and widgets
-- [ ] 15. Composer, status stack, approvals
+- [x] 13. Transcript  - [x] 14. Tool rows and widgets
+- [x] 15. Composer, status stack, approvals
 - [ ] 🛑 **GATE C2**
 
 **C3 Overlays and settings:** Settings (19 categories) on Form page template,

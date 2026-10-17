@@ -146,7 +146,7 @@ export function ComposerControls({
   return (
     <div className="flex w-full min-w-0 items-center justify-between gap-1.5" data-aro-composer-controls="">
       {/* Left: [+] [/] [@] | Mode | (Model if not Aro) */}
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+      <div className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
         {leadingCluster}
         {modeControl}
         {!isAro && modelPillCluster}
