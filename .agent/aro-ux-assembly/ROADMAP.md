@@ -47,7 +47,7 @@ the Layout sections, resize the window, flip themes.
 - [x] 0. Recon: confirm branch and Phase 8 status; record baseline lists; run
       Interview batch 1; list real routes/screens and which template each
       maps to; read `docs/research/07-desktop-interaction-audit.md`
-- [ ] 1. Measure the current layout: min window size, gutters
+- [x] 1. Measure the current layout: min window size, gutters
       (`PAGE_INSET_X`), header heights, row heights, pane widths, collapse
       behavior. Propose additive tokens for measures and width classes
       (report, then add)

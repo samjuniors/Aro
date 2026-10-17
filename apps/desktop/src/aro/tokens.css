@@ -171,6 +171,18 @@
   --animate-aro-sweep: aro-sweep 1.6s ease-in-out infinite;
   --animate-aro-sheet: aro-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-aro-drawer: aro-drawer-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  /* ---- layout measures & heights (Phase 9 UX-ASM) ----------------------- */
+  --width-aro-chat: var(--aro-measure-chat);
+  --width-aro-form: var(--aro-measure-form);
+  --width-aro-overlay: var(--aro-measure-overlay);
+  --width-aro-sidebar: var(--aro-measure-sidebar);
+  --width-aro-nav: var(--aro-measure-nav);
+  --height-aro-titlebar: var(--aro-height-titlebar);
+  --height-aro-statusbar: var(--aro-height-statusbar);
+  --height-aro-header: var(--aro-height-header);
+  --height-aro-control: var(--aro-height-control);
+  --height-aro-row: var(--aro-height-row);
 }
 
 /* ============================================================================
@@ -281,6 +293,20 @@
   --aro-shadow-panel: 0 12px 30px -18px var(--aro-shadow-c), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
   --aro-shadow-menu: 0 18px 44px -18px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 5%, transparent) inset;
   --aro-shadow-composer: 0 18px 40px -24px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
+
+  /* Layout measures and heights per LAYOUT-UX.md §2, §4 (Phase 9 UX-ASM) */
+  --aro-measure-chat: 72ch;
+  --aro-measure-form: 40rem;
+  --aro-measure-overlay: 75rem;
+  --aro-measure-sidebar: 237px;
+  --aro-measure-sidebar-min: 200px;
+  --aro-measure-sidebar-max: 360px;
+  --aro-measure-nav: 240px;
+  --aro-height-titlebar: 34px;
+  --aro-height-statusbar: 20px;
+  --aro-height-header: 40px;
+  --aro-height-control: 32px;
+  --aro-height-row: 36px;
 }
 
 @media (prefers-reduced-motion: reduce) {

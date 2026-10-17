@@ -30,3 +30,24 @@ export const PAGE_MAX_W = 'max-w-[75rem]'
 export const SIDEBAR_DOCK_MIN_WIDTH_PX = 640
 // `max-width` is inclusive: shave a hair so an exactly-640px window docks.
 export const SIDEBAR_COLLAPSE_MEDIA_QUERY = `(max-width: ${SIDEBAR_DOCK_MIN_WIDTH_PX - 0.02}px)`
+
+// Max width tokens for form and chat reading lines per LAYOUT-UX.md §4
+export const FORM_MAX_W = 'max-w-[40rem]' // 640px
+export const CHAT_MAX_W = 'max-w-[72ch]'
+export const OVERLAY_NAV_W = 'w-[15rem]' // 240px
+
+// Fixed element heights per LAYOUT-UX.md & titlebar/statusbar specs
+export const HEADER_HEIGHT_PX = 40
+export const CONTROL_HEIGHT_PX = 32
+export const STATUSBAR_HEIGHT_PX = 20
+export const LIST_ROW_MIN_HEIGHT_PX = 36
+
+// Container query width thresholds for responsive templates
+export const CONTAINER_BREAKPOINTS = {
+  xs: 480, // ultra-narrow: collapse secondary controls, single column
+  sm: 640, // narrow: collapse sidebar to rail/overlay, stacked forms
+  md: 768, // standard: master/detail split, dual-pane
+  lg: 1024, // wide: multi-pane expanded, secondary tool tabs open
+  xl: 1280 // full desktop: all panes docked, maximum breathing room
+} as const
+
