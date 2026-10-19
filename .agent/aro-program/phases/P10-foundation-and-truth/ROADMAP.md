@@ -26,7 +26,8 @@ Out of scope: features, visual changes, backend behavior (except the one small f
   Evidence: `apps/desktop/index.html` Google Fonts link removed (local bundled fonts in styles.css verified); items (b)-(e) verified and ledger written to `docs/research/08-defects-ledger.md`.
 - [x] 6. Fork-safety audit. Read every file in `.github/workflows/` and the release/update/telemetry/site-deploy scripts. Classify each: KEEP / DISABLE / RENAME / NEEDS-SECRET, and list any upstream-owned URLs, org names, secrets, or endpoints. Change nothing in release or deploy workflows without approval.
   Evidence: `.agent/aro-program/evidence/P10/fork-safety.md`: 51 workflows audited (33 KEEP, 7 DISABLE, 11 NEEDS-SECRET); 25 upstream secrets inventoried; release/telemetry scripts cataloged. Zero workflow files modified.
-- [ ] 7. CI map. Which workflows can pass on this fork today, which are red and why (pre-existing vs ours). Propose the minimal required-checks set.
+- [x] 7. CI map. Which workflows can pass on this fork today, which are red and why (pre-existing vs ours). Propose the minimal required-checks set.
+  Evidence: `.agent/aro-program/evidence/P10/ci-map.md`: 51 workflows mapped; 8 green today; root causes for red lanes documented (pre-existing lint/test anomalies vs upstream-owned); 5-check minimal required set proposed for founder approval.
 - [ ] 🛑 **GATE 10.2** registry, context map, ledger, fork-safety list, CI map; founder approves the required-checks set.
 
 ## Exit criteria
