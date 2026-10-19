@@ -1,9 +1,9 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P12-backend-wiring-behavior
-Active step: GATE 12.3
-Last gate tag: aro-gate/P12-G12.2
+Active phase: P13-features
+Active step: 0
+Last gate tag: aro-gate/P12-G12.3
 Integration branch: aro/integration (per D-1)
 ```
 
