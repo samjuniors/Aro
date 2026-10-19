@@ -2,8 +2,8 @@
 
 ```
 Active phase: P10-foundation-and-truth
-Active step: GATE 10.1
-Last gate tag: (none under aro-program yet)
+Active step: 2
+Last gate tag: aro-gate/P10-G10.1
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -46,4 +46,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 11. Upstream-sync and security-patch policy decided and written (ADR).
 
 ## Phase history log (append one line per approved gate)
-_none yet_
+- P10-G10.1: 2026-10-19 — baseline recon, integration plan, decisions D-1..D-5 recorded (tag aro-gate/P10-G10.1)

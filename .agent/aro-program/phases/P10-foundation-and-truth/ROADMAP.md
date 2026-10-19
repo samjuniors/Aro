@@ -15,7 +15,7 @@ Out of scope: features, visual changes, backend behavior (except the one small f
   Evidence: `.agent/aro-program/evidence/P10/baseline.txt`: typecheck 0, lint 1 (575 issues: 182 errors, 393 warnings), test:ui 1 (10755 passed, 3 failed across 2 files), build 0 (built in 57.76s).
 - [x] 1. Integration plan. Diff the branches (`git log --oneline`, `git diff --stat`), list divergences, write the merge plan per interview Q1. Do not merge yet.
   Evidence: `.agent/aro-program/evidence/P10/integration-plan.md`: 8 commits on `ui-port/aro-patches`, 0 on `ui-port/2026-10-09` (clean fast-forward possible, 326 files changed, 0 merge conflicts).
-- [ ] 🛑 **GATE 10.1** baseline numbers, integration plan, interview answers recorded (D-1 to D-5).
+- [x] 🛑 **GATE 10.1** baseline numbers, integration plan, interview answers recorded (D-1 to D-5).
 - [ ] 2. Execute the integration and the approved removals from `DOCS-GOVERNANCE.md` (`git rm`, `git mv`); tests re-run after.
 - [ ] 3. Docs reconcile. Build `DOCS-REGISTRY.md` for every `*.md` outside `website/`, `locales/`, `node_modules/`. For each ACTIVE doc verify numbers, paths, and commands against the code; supersede or archive the rest; banners per governance; run a link check.
 - [ ] 4. Context map. Verify every row of `CONTEXT-MAP.md` against the tree, extend it, add one pointer line to the root `AGENTS.md`.
