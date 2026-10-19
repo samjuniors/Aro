@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 993
+Total registered documents: 994
 Last full audit: 2026-10-19
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -122,6 +122,7 @@ Last full audit: 2026-10-19
 | `docs/research/15-slice2-cost-hud-spec.md` | Research 15: Slice 2 Specification — Ambient Co... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/16-slice3-tasks-board-spec.md` | Research 16: Slice 3 Specification — Parallel S... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/17-slice4-browser-preview-spec.md` | Slice 4 (13.S4) Specification: In-App Responsiv... | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/18-slice5-ide-deep-link-spec.md` | Slice 5 (13.S5) Specification: One-Click IDE De... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `evals/botmode-dm-delivery/README.md` | Native Bot Mode delivery probe | ACTIVE | - | P10 | 2026-10-19 |
 | `evals/botmode-dm-matrix/README.md` | Bot Mode native delivery matrix | ACTIVE | - | P10 | 2026-10-19 |
