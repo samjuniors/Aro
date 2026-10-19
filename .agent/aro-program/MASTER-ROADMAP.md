@@ -2,7 +2,7 @@
 
 ```
 Active phase: P10-foundation-and-truth
-Active step: 2
+Active step: GATE 10.2
 Last gate tag: aro-gate/P10-G10.1
 Integration branch: aro/integration (per D-1)
 ```
