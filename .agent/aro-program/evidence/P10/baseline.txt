@@ -1,0 +1,48 @@
+# P10 Baseline Recon Evidence
+Date: 2026-10-19
+Branch: aro/P10-foundation (branched from ui-port/aro-patches @ 81d86f11f4)
+Environment: Windows 11, Node.js, cwd: apps/desktop
+
+## 1. npm run typecheck
+Command: npm run typecheck
+Exit Code: 0
+Output:
+> aro-desktop@0.0.0 typecheck
+> tsc -p . --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.e2e.json --noEmit && tsc --ignoreConfig --allowJs --checkJs --noEmit --skipLibCheck --module nodenext --moduleResolution nodenext --target es2022 electron-builder.config.cjs
+
+## 2. npm run lint
+Command: npm run lint
+Exit Code: 1
+Output summary:
+✖ 575 problems (182 errors, 393 warnings)
+  176 errors and 141 warnings potentially fixable with the `--fix` option.
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path E:\Projects\SamjuniorsProducts\Aro\apps\desktop
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c eslint src/ electron/
+
+## 3. npm run test:ui
+Command: npm run test:ui
+Exit Code: 1
+Output summary:
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL   ui  src/store/voice-prefs.test.ts > keeps the desktop toggle local across config refreshes
+ FAIL   ui  src/store/voice-prefs.test.ts > migrates the legacy preference once, not on every refresh
+ FAIL   ui  src/plugins/hermes-bots/cron-prompt.test.ts > delegated arguments stay literal shell values > passes substitutions, backticks and quotes through as text
+ Test Files  2 failed | 1211 passed (1213)
+      Tests  3 failed | 10755 passed (10758)
+   Start at  09:24:13
+   Duration  1096.22s (transform 254.28s, setup 431.32s, import 7817.98s, tests 861.35s, environment 2376.36s)
+
+## 4. npm run build
+Command: npm run build
+Exit Code: 0
+Output summary:
+✓ built in 57.76s
+  .dist-build-2jfrj8\product\electron-main.mjs  2.9mb
+Done in 1671ms
+  .dist-build-2jfrj8\product\electron-preload.js  44.4kb
+Done in 19ms
+  .dist-build-2jfrj8\product\preview-guest-preload.js  962b 
+Done in 25ms
