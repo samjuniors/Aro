@@ -32,7 +32,7 @@ Out of scope: signing certificates and store submission (P16), new features.
   Evidence: Desktop uninstaller tests in `apps/desktop/electron/desktop-uninstall.test.ts` passed (16/16 passed, verifying modeRemovesUserData leaves data intact by default); automated upgrade and retention runner `.agent/aro-program/tools/verify-upgrade-uninstall.mjs` staged N-1 state, verified 100% data retention across upgrade, and verified user data preservation upon uninstall; output recorded in `.agent/aro-program/evidence/P11/upgrade-uninstall.txt`.
 - [x] 9. Updater design ADR (Q3): channels, signature verification, rollback. No shipping.
   Evidence: Authored `docs/adr/0009-updater-design-channels-signatures-rollback.md` defining dual channels (stable/beta), cryptographic signature verification across platforms, pre-update atomic snapshotting, and health-check watchdog rollback; recorded as D-9 in `DECISIONS.md`.
-- [ ] 🛑 **GATE 11.3** failure, upgrade, and uninstall evidence; updater ADR approved.
+- [x] 🛑 **GATE 11.3** failure, upgrade, and uninstall evidence; updater ADR approved. Approved by founder; tagged aro-gate/P11-G11.3.
 
 ## Exit criteria
 Clean-machine install and first run (including offline) pass on every platform in the matrix; no data loss across upgrade and uninstall; runtime ADR accepted.
