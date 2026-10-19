@@ -11,6 +11,7 @@
  * - Quick-links to A10 dedicated surfaces (/aro-rules, /aro-agents, /aro-doctor).
  */
 
+import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 
@@ -42,6 +43,7 @@ import {
   setThemeSyncEnabled,
   setVoiceOrbVisible
 } from './design-axes'
+import { $aroFeatures, ARO_FEATURE_METADATA, type AroFeatureFlags, setAroFeature } from './flags'
 import {
   IconCheck,
   IconGit,
@@ -159,6 +161,7 @@ const DESIGN_SPECS: Record<DesignProfile, {
 export function AroAppearanceSettings() {
   const navigate = useNavigate()
   const { themeName, setTheme } = useTheme()
+  const features = useStore($aroFeatures)
 
   const [currentProfile, setCurrentProfile] = useState<DesignProfile>(getDesignProfile)
   const [currentDensity, setCurrentDensity] = useState<Density>(getDensity)
@@ -659,7 +662,48 @@ export function AroAppearanceSettings() {
         </div>
       </section>
 
-      {/* 4. Specifications */}
+      {/* 4. Phase 13 Vertical Feature Slices */}
+      <section className="space-y-2.5">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Experimental Features (Phase 13 Slices)
+        </h4>
+        <div className="divide-y divide-(--ui-border-soft)/50 rounded-panel border border-(--ui-border-soft) bg-card/30">
+          {(Object.keys(ARO_FEATURE_METADATA) as (keyof AroFeatureFlags)[]).map((key) => {
+            const meta = ARO_FEATURE_METADATA[key]
+            const enabled = features[key]
+
+            return (
+              <div className="flex flex-wrap items-center justify-between gap-4 p-3.5" key={key}>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-foreground">{meta.title}</span>
+                    <Pill tone="muted">{meta.slice}</Pill>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{meta.description}</p>
+                </div>
+                <button
+                  aria-label={`Toggle ${meta.title}`}
+                  className={cn(
+                    'rounded-control px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer',
+                    enabled
+                      ? 'bg-accent text-accent-foreground shadow-xs'
+                      : 'bg-muted/60 text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => {
+                    triggerHaptic('tap')
+                    setAroFeature(key, !enabled)
+                  }}
+                  type="button"
+                >
+                  {enabled ? 'Enabled' : 'Disabled'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 5. Specifications */}
       <section className="border-t border-(--ui-border-soft) pt-4">
         <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {DESIGN_SPECS[currentProfile]?.label ?? selectedItem.label} Specifications

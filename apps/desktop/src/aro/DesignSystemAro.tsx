@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/templates'
 
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
+import { AroReviewPage } from './ReviewHunks'
 import {
   Badge,
   Bar,
@@ -1130,6 +1131,58 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
                 </div>
               )}
             </div>
+          </div>
+        </DS>
+
+        <DS
+          body="Hunk-level accept/reject/comment code review with split/unified views, checkpoint rollbacks, and git index staging."
+          eyebrow="Phase 13 Feature Slice 1"
+          id="diff-review"
+          title="Diff-First Visual Review"
+        >
+          <div className="h-[460px] overflow-hidden rounded-panel border border-aro-line-soft shadow-aro-e2">
+            <AroReviewPage
+              forceEnabled={true}
+              overrideCheckpoints={[
+                { hash: 'a1b2c3d', label: 'Added cost HUD computation', at: '14:22' },
+                { hash: 'e4f5g6h', label: 'Initial tool setup', at: '14:10' },
+              ]}
+              overrideData={{
+                available: true,
+                error: null,
+                files: [
+                  {
+                    path: 'src/agent/turn.ts',
+                    adds: 3,
+                    dels: 1,
+                    lang: 'typescript',
+                    lines: [
+                      { t: 'hunk', text: '@@ -12,4 +12,6 @@' },
+                      { t: 'ctx', text: 'export function runTurn() {' },
+                      { t: 'del', text: '  const oldCost = 0' },
+                      { t: 'add', text: '  const activeCost = computeCost()' },
+                      { t: 'add', text: '  logCost(activeCost)' },
+                      { t: 'add', text: '  checkpointSave()' },
+                      { t: 'ctx', text: '}' },
+                    ],
+                  },
+                  {
+                    path: 'src/tools/git.ts',
+                    adds: 2,
+                    dels: 0,
+                    lang: 'typescript',
+                    lines: [
+                      { t: 'hunk', text: '@@ -1,3 +1,5 @@' },
+                      { t: 'ctx', text: 'import { exec } from "child_process"' },
+                      { t: 'add', text: 'export const STAGE_FILE = "git add"' },
+                      { t: 'add', text: 'export const RESET_HUNK = "git checkout -p"' },
+                    ],
+                  },
+                ],
+                loading: false,
+                stagedSet: new Set(['src/agent/turn.ts']),
+              }}
+            />
           </div>
         </DS>
       </div>

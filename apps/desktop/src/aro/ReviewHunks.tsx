@@ -20,6 +20,7 @@ import { activeGateway } from '@/store/gateway'
 import { $activeSessionId } from '@/store/session'
 
 import { DiffView } from './DiffCard'
+import { $aroFeatures } from './flags'
 import { IconCheck, IconFile, IconPencil, IconUndo, IconX } from './Icons'
 import { InlineHint, SourceBadge, useAroCheckpoints, useAroReview } from './live'
 import { ToastHost, useToasts } from './toasts'
@@ -54,11 +55,32 @@ function HunkThread({ thread }: { thread: HunkThreadData }) {
   )
 }
 
-export function AroReviewPage() {
+export function AroReviewPage({
+  overrideData,
+  overrideCheckpoints,
+  forceEnabled,
+}: {
+  overrideData?: Partial<ReturnType<typeof useAroReview>>
+  overrideCheckpoints?: { hash: string; label: string; at?: string }[]
+  forceEnabled?: boolean
+} = {}) {
   const { items, toast } = useToasts()
-  const { files, live, available, error, loading, stagedSet, toggleStaged, refresh } = useAroReview()
+  const liveReview = useAroReview()
+  const features = useStore($aroFeatures)
+  const enabled = forceEnabled ?? features.reviewHunks
+
+  const files = overrideData?.files !== undefined ? overrideData.files : liveReview.files
+  const live = overrideData?.live !== undefined ? overrideData.live : liveReview.live
+  const available = overrideData?.available !== undefined ? overrideData.available : liveReview.available
+  const error = overrideData?.error !== undefined ? overrideData.error : liveReview.error
+  const loading = overrideData?.loading !== undefined ? overrideData.loading : liveReview.loading
+  const stagedSet = overrideData?.stagedSet !== undefined ? overrideData.stagedSet : liveReview.stagedSet
+  const toggleStaged = overrideData?.toggleStaged !== undefined ? overrideData.toggleStaged : liveReview.toggleStaged
+  const refresh = overrideData?.refresh !== undefined ? overrideData.refresh : liveReview.refresh
+
   const sessionId = useStore($activeSessionId)
-  const checkpoints = useAroCheckpoints(sessionId, live)
+  const liveCheckpoints = useAroCheckpoints(sessionId, live)
+  const checkpoints = overrideCheckpoints ?? liveCheckpoints
 
   const [active, setActive] = useState(0)
   const [layout, setLayout] = useState<'unified' | 'split'>('split')
@@ -145,6 +167,29 @@ export function AroReviewPage() {
     setDraft('')
     setCommenting(null)
     toast('Review comment added', 'amber')
+  }
+
+  // Feature flag check (Slice 13.S1 reviewHunks)
+  if (!enabled) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
+        <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
+          <div className="min-w-0">
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+            <h1 className="text-sm font-semibold text-aro-ink">Review changes</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2"><SourceBadge demoLabel="disabled" live={false} /></div>
+        </header>
+        <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
+          <div className="max-w-[440px] space-y-3 text-center">
+            <InlineHint>
+              Diff-first visual review is currently disabled by feature flag (<span className="font-aro-mono text-xs text-aro-iris">reviewHunks</span>). Enable it in Aro settings or feature flags.
+            </InlineHint>
+          </div>
+        </div>
+        <ToastHost items={items} />
+      </div>
+    )
   }
 
   // Honest unavailable state when git review is unavailable or in error
