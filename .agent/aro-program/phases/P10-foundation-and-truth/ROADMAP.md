@@ -28,7 +28,7 @@ Out of scope: features, visual changes, backend behavior (except the one small f
   Evidence: `.agent/aro-program/evidence/P10/fork-safety.md`: 51 workflows audited (33 KEEP, 7 DISABLE, 11 NEEDS-SECRET); 25 upstream secrets inventoried; release/telemetry scripts cataloged. Zero workflow files modified.
 - [x] 7. CI map. Which workflows can pass on this fork today, which are red and why (pre-existing vs ours). Propose the minimal required-checks set.
   Evidence: `.agent/aro-program/evidence/P10/ci-map.md`: 51 workflows mapped; 8 green today; root causes for red lanes documented (pre-existing lint/test anomalies vs upstream-owned); 5-check minimal required set proposed for founder approval.
-- [ ] 🛑 **GATE 10.2** registry, context map, ledger, fork-safety list, CI map; founder approves the required-checks set.
+- [x] 🛑 **GATE 10.2** registry, context map, ledger, fork-safety list, CI map; founder approves the required-checks set.
 
 ## Exit criteria
 One integration branch recorded; `DOCS-REGISTRY.md` complete with no two ACTIVE docs on one topic; every claim in ACTIVE docs verified or removed; ledger and fork-safety list approved.
