@@ -2,7 +2,7 @@
 
 ```
 Active phase: P12-backend-wiring-behavior
-Active step: 4
+Active step: GATE 12.2
 Last gate tag: aro-gate/P12-G12.1
 Integration branch: aro/integration (per D-1)
 ```

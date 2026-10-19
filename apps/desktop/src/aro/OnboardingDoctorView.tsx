@@ -224,7 +224,7 @@ export function OnboardingStrip({ onDismiss }: { onDismiss?: () => void }) {
    ARO DOCTOR PAGE — Readiness Sweep & Deep Diagnostics Dashboard
    ==================================================================== */
 
-// BACKEND-TODO(onboarding-doctor): renderer-visible signals only — the
+// BACKEND-TODO(onboarding-doctor): [D-10, research/10 §2] renderer-visible signals only — the
 // future backend call is an `ops.doctor` summary (see port/FEATURE_MAP.md).
 export function AroDoctorPage() {
   const gatewayState = useStore($gatewayState)

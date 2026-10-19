@@ -47,7 +47,7 @@ const KIND_ICONS: Record<AgentKind, typeof IconTerminal> = {
   hybrid: IconLayers
 }
 
-// BACKEND-TODO(agents): local persistence only — future backend call is
+// BACKEND-TODO(agents): [D-10, research/11 §5] local persistence only — future backend call is
 // `agents.list/register` (see port/FEATURE_MAP.md `agents-adapters`).
 export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = {}) {
   const customAgents = useStore($customAgents)

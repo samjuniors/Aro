@@ -52,7 +52,7 @@ function writeDisabledRuleSet(set: Set<string>): void {
   writeKey(DISABLED_RULES_STORAGE_KEY, JSON.stringify([...set]))
 }
 
-// BACKEND-TODO(rules): local persistence only — future backend call is
+// BACKEND-TODO(rules): [D-10, research/11 §4] local persistence only — future backend call is
 // `rules.list/add/remove` against a profile/rules endpoint.
 export function AroRulesPage() {
   const rules = useStore($rules)

@@ -30,7 +30,7 @@
  *
  * The registry entries below are the areas with NO Hermes counterpart
  * (`local` rows) — each persists under the prototype's `conductor.*`
- * namespace (D-0011) and carries a BACKEND-TODO marker at its future
+ * namespace (D-0011 / D-10) and carries a BACKEND-TODO marker at its future
  * backend seam.
  */
 
@@ -43,11 +43,11 @@ import { $rules, localRulesAdapter } from './rules'
 import { $userTasks, localTasksAdapter } from './tasks'
 
 export const adapters = {
-  /** local — BACKEND-TODO(tasks): `tasks.list/create/update` per project. */
+  /** local — BACKEND-TODO(tasks): [D-10, research/11 §6] `tasks.list/create/update` per project. */
   tasks: localTasksAdapter,
-  /** local — BACKEND-TODO(rules): `rules.list/add/remove`. */
+  /** local — BACKEND-TODO(rules): [D-10, research/11 §4] `rules.list/add/remove`. */
   rules: localRulesAdapter,
-  /** local — BACKEND-TODO(agents): `agents.list/register`. */
+  /** local — BACKEND-TODO(agents): [D-10, research/11 §5] `agents.list/register`. */
   agents: localAgentsAdapter,
   /** local — BACKEND-TODO(editors): [D-10, research/11 §1] `editors.list/detect`; open = OS protocol launch. */
   editors: localEditorsAdapter,
@@ -55,7 +55,7 @@ export const adapters = {
   codeSearch: localCodeSearchAdapter,
   /** local — BACKEND-TODO(browser-preview): [D-10, research/11 §3] future `preview.*` events. */
   browserPreview: localBrowserPreviewAdapter,
-  /** local — BACKEND-TODO(onboarding-doctor): `ops.doctor` summary. */
+  /** local — BACKEND-TODO(onboarding-doctor): [D-10, research/10 §2] `ops.doctor` summary. */
   doctor: localDoctorAdapter
 } satisfies Record<string, unknown>
 

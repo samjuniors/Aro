@@ -89,7 +89,7 @@ function makeTaskId(): string {
   return `task-${Date.now().toString(36)}-${seq.toString(36)}`
 }
 
-// BACKEND-TODO(tasks): local persistence only — the future backend call is
+// BACKEND-TODO(tasks): [D-10, research/11 §6] local persistence only — the future backend call is
 // `tasks.create` per project (see port/FEATURE_MAP.md `aro-tasks`).
 export const localTasksAdapter: TasksAdapter = {
   list() {
@@ -155,7 +155,7 @@ export const localTasksAdapter: TasksAdapter = {
 export const $userTasks = atom<WorkspaceTask[]>(readLocalRecord(WORKSPACE_KEY.tasks, [], sanitizeTasks))
 
 $userTasks.subscribe(tasks => {
-  // BACKEND-TODO(tasks): replace with the real `tasks.list` sync when the
+  // BACKEND-TODO(tasks): [D-10, research/11 §6] replace with the real `tasks.list` sync when the
   // backend lands; until then this is the persistence point.
   writeLocalRecord(WORKSPACE_KEY.tasks, tasks)
 })

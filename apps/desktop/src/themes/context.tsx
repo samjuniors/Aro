@@ -228,6 +228,100 @@ const mixesFor = (isDark: boolean): Record<string, string> => ({
   '--theme-mix-bubble': isDark ? '46%' : '0%'
 })
 
+// NB-001: Batch theme attribute mutations via requestAnimationFrame to avoid DOM style re-calc flash on rapid skin switching.
+export interface ThemeDomBatch {
+  colorScheme: string
+  hermesTheme: string
+  hermesMode: string
+  actualDark: boolean
+  effectiveTheme: string
+}
+
+let pendingThemeRaf: null | number = null
+let pendingThemeBatch: null | ThemeDomBatch = null
+
+const getRaf = (): ((cb: FrameRequestCallback) => number) | undefined => {
+  if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+    return window.requestAnimationFrame.bind(window)
+  }
+
+  if (typeof requestAnimationFrame === 'function') {
+    return requestAnimationFrame
+  }
+
+  return undefined
+}
+
+const getCancelRaf = (): ((id: number) => void) | undefined => {
+  if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+    return window.cancelAnimationFrame.bind(window)
+  }
+
+  if (typeof cancelAnimationFrame === 'function') {
+    return cancelAnimationFrame
+  }
+
+  return undefined
+}
+
+export function scheduleThemeAttributes(batch: ThemeDomBatch): void {
+  pendingThemeBatch = batch
+
+  const raf = getRaf()
+
+  if (!raf) {
+    flushThemeAttributes()
+
+    return
+  }
+
+  if (pendingThemeRaf === null) {
+    pendingThemeRaf = raf(() => {
+      pendingThemeRaf = null
+      flushThemeAttributes()
+    })
+  }
+}
+
+export function applyThemeDomAttributes(batch: ThemeDomBatch): void {
+  const cancelRaf = getCancelRaf()
+
+  if (pendingThemeRaf !== null && cancelRaf) {
+    cancelRaf(pendingThemeRaf)
+    pendingThemeRaf = null
+  }
+
+  pendingThemeBatch = null
+
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  const root = document.documentElement
+  root.style.setProperty('color-scheme', batch.colorScheme)
+  root.dataset.hermesTheme = batch.hermesTheme
+  root.dataset.hermesMode = batch.hermesMode
+  root.classList.toggle('dark', batch.actualDark)
+  root.dataset.theme = batch.effectiveTheme
+}
+
+export function flushThemeAttributes(): void {
+  if (pendingThemeBatch) {
+    applyThemeDomAttributes(pendingThemeBatch)
+  }
+}
+
+export function __resetThemeBatch(): void {
+  const cancelRaf = getCancelRaf()
+
+  if (pendingThemeRaf !== null && cancelRaf) {
+    cancelRaf(pendingThemeRaf)
+  }
+
+  pendingThemeRaf = null
+  pendingThemeBatch = null
+}
+
 function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily = $chatFontFamily.get()) {
   if (typeof document === 'undefined') {
     return
@@ -252,11 +346,13 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
   const actualDark = isAro ? isAroDark : isDark
   const actualRendered = isAro ? (actualDark ? 'dark' : 'light') : rendered
 
-  root.style.setProperty('color-scheme', actualRendered)
-  root.dataset.hermesTheme = effectiveTheme
-  root.dataset.hermesMode = actualRendered
-  root.classList.toggle('dark', actualDark)
-  root.dataset.theme = effectiveTheme
+  applyThemeDomAttributes({
+    colorScheme: actualRendered,
+    hermesTheme: effectiveTheme,
+    hermesMode: actualRendered,
+    actualDark,
+    effectiveTheme
+  })
 
   // Translucency is tuned per appearance, and "appearance" means the palette
   // actually painted — a skin that keeps a bright surface in "dark" wants
@@ -384,6 +480,7 @@ if (typeof window !== 'undefined') {
   const resolved = resolveMode(pref)
   const theme = deriveTheme(normalizeSkin(storedSkin(profile)), resolved)
   applyTheme(theme, resolved)
+  flushThemeAttributes()
   syncNativeTheme(pref, renderedModeFor(theme.colors, resolved))
 }
 
@@ -584,13 +681,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('aro.theme', next)
         localStorage.setItem('conductor.theme', next)
         persistString(SKIN_KEY, next)
-        document.documentElement.dataset.theme = next
         const isLight = next === 'daylight' || next === 'paper'
-        document.documentElement.classList.toggle('dark', !isLight)
-        document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
+        scheduleThemeAttributes({
+          colorScheme: isLight ? 'light' : 'dark',
+          hermesTheme: next,
+          hermesMode: isLight ? 'light' : 'dark',
+          actualDark: !isLight,
+          effectiveTheme: next
+        })
         window.dispatchEvent(new CustomEvent('aro:theme', { detail: next }))
       }
-    } catch {}
+    } catch {
+      // ignore storage or dispatch errors
+    }
   }, [])
 
   const setMode = useCallback((next: ThemeMode) => {

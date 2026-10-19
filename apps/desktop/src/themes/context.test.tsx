@@ -2,7 +2,7 @@ import { act, cleanup, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { $backendThemes, __resetBackendSkinSync, ingestBackendSkin } from './backend-sync'
-import { skinPref, ThemeProvider, useTheme } from './context'
+import { __resetThemeBatch, skinPref, ThemeProvider, useTheme } from './context'
 import { everforestTheme } from './presets'
 
 // The live-authoring loop: Hermes writes/edits one skin file and every surface
@@ -20,6 +20,7 @@ describe('ThemeProvider ← backend skin sync', () => {
   beforeEach(() => {
     window.localStorage.clear()
     __resetBackendSkinSync()
+    __resetThemeBatch()
   })
 
   afterEach(cleanup)
@@ -346,5 +347,79 @@ describe('ThemeProvider customCSS injection', () => {
     )
 
     expect(customStyleEl()?.textContent).toBe('.chat-input { font-size: 18px; }')
+  })
+})
+
+describe('NB-001: batch theme attribute mutations with requestAnimationFrame', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    __resetBackendSkinSync()
+    __resetThemeBatch()
+  })
+
+  afterEach(cleanup)
+
+  it('batches rapid skin switches so DOM attributes are not re-styled twice per switch', () => {
+    let pendingRafs: FrameRequestCallback[] = []
+    const rafMock = (cb: FrameRequestCallback) => {
+      pendingRafs.push(cb)
+
+      return pendingRafs.length
+    }
+    vi.stubGlobal('requestAnimationFrame', rafMock)
+    Object.defineProperty(window, 'requestAnimationFrame', { configurable: true, value: rafMock })
+
+    const flushFrames = () => {
+      act(() => {
+        const rafs = [...pendingRafs]
+        pendingRafs = []
+        for (const cb of rafs) {
+          cb(performance.now())
+        }
+      })
+    }
+
+    let themeConsumer: { setTheme: (name: string) => void } | null = null
+
+    function TestConsumer() {
+      const { setTheme } = useTheme()
+      themeConsumer = { setTheme }
+
+      return null
+    }
+
+    render(
+      <ThemeProvider>
+        <TestConsumer />
+      </ThemeProvider>
+    )
+
+    // Settle initial mount frames
+    flushFrames()
+
+    const mutations: string[] = []
+    const originalSetProperty = document.documentElement.style.setProperty.bind(document.documentElement.style)
+    const setPropertySpy = vi.spyOn(document.documentElement.style, 'setProperty').mockImplementation((prop, val) => {
+      if (prop === 'color-scheme') {
+        mutations.push(`color-scheme:${val}`)
+      }
+
+      return originalSetProperty(prop, val)
+    })
+
+    // Rapid skin switching: 3 switches in the same frame
+    act(() => {
+      themeConsumer?.setTheme('nord')
+      themeConsumer?.setTheme('ember')
+      themeConsumer?.setTheme('paper')
+    })
+
+    // Exactly one color-scheme mutation occurred for the final batched state ('light' for paper),
+    // proving that intermediate skins did not trigger redundant synchronous DOM style recalculations.
+    expect(mutations).toEqual(['color-scheme:light'])
+    expect(document.documentElement.dataset.theme).toBe('paper')
+
+    setPropertySpy.mockRestore()
+    vi.unstubAllGlobals()
   })
 })

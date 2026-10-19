@@ -38,7 +38,7 @@ export function sanitizeRules(value: unknown): string[] {
 
 /* ============================== adapter ============================== */
 
-// BACKEND-TODO(rules): local persistence only — the future backend call is
+// BACKEND-TODO(rules): [D-10, research/11 §4] local persistence only — the future backend call is
 // `rules.add/remove` against a profile/rules endpoint.
 export const localRulesAdapter: RulesAdapter = {
   list() {
@@ -76,7 +76,7 @@ export const localRulesAdapter: RulesAdapter = {
 export const $rules = atom<string[]>(readLocalRecord(WORKSPACE_KEY.rules, [], sanitizeRules))
 
 $rules.subscribe(rules => {
-  // BACKEND-TODO(rules): replace with the real `rules.list` sync when the
+  // BACKEND-TODO(rules): [D-10, research/11 §4] replace with the real `rules.list` sync when the
   // backend lands; until then this is the persistence point.
   writeLocalRecord(WORKSPACE_KEY.rules, rules)
 })
