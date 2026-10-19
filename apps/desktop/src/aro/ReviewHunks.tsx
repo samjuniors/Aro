@@ -20,6 +20,7 @@ import { activeGateway } from '@/store/gateway'
 import { $activeSessionId } from '@/store/session'
 
 import { DiffView } from './DiffCard'
+import { AroIdeHandoffButton, parseHunkLine } from './EditorDeepLink'
 import { $aroFeatures } from './flags'
 import { IconCheck, IconFile, IconPencil, IconUndo, IconX } from './Icons'
 import { InlineHint, SourceBadge, useAroCheckpoints, useAroReview } from './live'
@@ -323,7 +324,13 @@ export function AroReviewPage({
             <div className="ml-auto flex gap-1.5">
               <Button onClick={() => hunks.length > 0 && toggleComposer(hkey(0))} size="xs" variant="ghost">Comment</Button>
               <Button onClick={() => { const r = hunks.findIndex((_, i) => verdicts[hkey(i)] === 'rejected'); toggleComposer(hkey(r === -1 ? 0 : r)); }} size="xs" variant="ghost">Ask agent to fix</Button>
-              <Button onClick={() => toast('R3 opens this hunk set in the host editor pane', 'iris')} size="xs" variant="ghost">Open in editor</Button>
+              <AroIdeHandoffButton
+                filePath={file.path}
+                label="Open in editor"
+                line={hunks.length > 0 ? parseHunkLine(hunks[0].header) : undefined}
+                size="xs"
+                variant="ghost"
+              />
             </div>
           </div>
           <div className="p-4">
@@ -371,6 +378,14 @@ export function AroReviewPage({
                         <Button aria-label={`Accept hunk ${i + 1}`} icon={IconCheck} onClick={() => setVerdict(key, 'accepted')} size="xs" variant="success">Accept</Button>
                         <Button aria-label={`Reject hunk ${i + 1}`} icon={IconX} onClick={() => setVerdict(key, 'rejected')} size="xs" variant="danger">Reject</Button>
                         <Button aria-label={`Comment on hunk ${i + 1}`} icon={IconPencil} onClick={() => toggleComposer(key)} size="xs" variant="ghost">Comment</Button>
+                        <AroIdeHandoffButton
+                          aria-label={`Jump to hunk ${i + 1} in editor`}
+                          filePath={file.path}
+                          label="Jump"
+                          line={parseHunkLine(h.header)}
+                          size="xs"
+                          variant="ghost"
+                        />
                       </div>
                     </div>
                     <div className="[&>div]:rounded-none [&>div]:border-0 [&>div>div:first-child]:hidden">

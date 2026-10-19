@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 
 import { AroBrowserPreview } from './BrowserPreview'
 import { AroCostHud } from './CostHud'
+import { AroIdeHandoffPanel } from './EditorDeepLink'
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
@@ -1331,6 +1332,15 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
               overrideViewport="tablet"
             />
           </div>
+        </DS>
+
+        <DS
+          body="Bi-directional IDE deep-links targeting exact file and line coordinates in Cursor, VS Code, Windsurf, Zed, and JetBrains."
+          eyebrow="Phase 13 Feature Slice 5"
+          id="ide-deep-link"
+          title="One-Click IDE Deep Link & Editor Handoff"
+        >
+          <AroIdeHandoffPanel forceEnabled={true} />
         </DS>
       </div>
 
