@@ -13,6 +13,8 @@
 | D-9 | Desktop updater design: channels, cryptographic signatures, atomic staging, and rollback | ACCEPTED | `docs/adr/0009-updater-design-channels-signatures-rollback.md` |
 | D-10 | Persistence location for UI-owned data: hybrid model (on-disk `.aro/` + live JSON-RPC session stream + optimistic localStorage cache) | ACCEPTED | `docs/adr/0010-ui-data-persistence-hybrid.md` |
 | D-11 | Voice assistant v1 scope: push-to-talk (PTT) only; wake word deferred post-v1; replace ScriptProcessorNode with Web Audio API | ACCEPTED | `docs/adr/0011-voice-v1-scope-push-to-talk.md` |
+| D-12 | Telemetry posture at v1: none; qualitative beta feedback only | ACCEPTED | `docs/adr/0012-telemetry-posture-none.md` |
+| D-13 | v1 feature scope: 5 vertical slices (Diff Review, Cost HUD, Tasks Board, Browser Preview, IDE Deep Link) | ACCEPTED | `docs/adr/0013-v1-features-shortlist.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly

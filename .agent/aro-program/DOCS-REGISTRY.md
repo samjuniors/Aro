@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 987
+Total registered documents: 989
 Last full audit: 2026-10-19
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -102,6 +102,8 @@ Last full audit: 2026-10-19
 | `docs/adr/0009-updater-design-channels-signatures-rollback.md` | ADR 0009: Desktop Application Updater Design — ... | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/adr/0010-ui-data-persistence-hybrid.md` | ADR 0010: UI-Owned Data Persistence Architectur... | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/adr/0011-voice-v1-scope-push-to-talk.md` | ADR 0011: Voice Assistant Scope for v1 (Push-To... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0012-telemetry-posture-none.md` | ADR 0012: Telemetry Posture at v1 (None / Quali... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0013-v1-features-shortlist.md` | ADR 0013: Public v1 Feature Scope and Shortlist... | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/brand/BRAND.md` | Aro Brand Guidelines | ACTIVE | - | P16 | 2026-10-19 |
 | `docs/research/01-competitive-analysis.md` | 01 — Competitive Analysis: Aro vs the Agent Lan... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/02-gap-analysis.md` | 02 — Gap Analysis: Aro vs the Leaders | ACTIVE | - | P10/P12 | 2026-10-19 |

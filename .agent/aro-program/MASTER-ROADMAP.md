@@ -2,8 +2,8 @@
 
 ```
 Active phase: P13-features
-Active step: GATE 13.1
-Last gate tag: aro-gate/P12-G12.3
+Active step: 13.S1
+Last gate tag: aro-gate/P13-G13.1
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -54,3 +54,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P12-G12.1: 2026-10-19 — inventory, specs, decisions D-10..D-11 recorded (tag aro-gate/P12-G12.1)
 - P12-G12.2: 2026-10-19 — every v1 item works end to end, BACKEND-TODOs linked, NB-001 resolved (tag aro-gate/P12-G12.2)
 - P12-G12.3: 2026-10-19 — audio capture modernized with AudioWorkletNode, failure matrix verified, Phase 12 complete (tag aro-gate/P12-G12.3)
+- P13-G13.1: 2026-10-19 — v1 feature scope and 5 vertical slices approved (tag aro-gate/P13-G13.1)
