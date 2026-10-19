@@ -10,10 +10,12 @@ Out of scope: signing certificates and store submission (P16), new features.
 3. Update model at v1. A. manual download / **B. auto-update on the stable channel with opt-out** / C. none. Design only here; shipping is P16.
 4. Reference machines for the matrix (OS versions, RAM, disk). Ask for what you actually own; fill gaps with VMs.
 
-## Steps
-- [ ] 0. Recon: run the existing packaging scripts in dry mode; record what `npm run pack` produces today (the audit planned it but did not run it).
-- [ ] 1. Clean-machine test matrix and a repeatable smoke script (install, first run, no network, upgrade, uninstall). `docs/research/09-clean-machine-matrix.md`.
-- [ ] 2. Runtime spike (audit finding 1: the Windows Store `python` alias, exit code 9009 in the gateway crash log). Try the options in Q1, measure size, time to first run, failure modes. Write the ADR.
+- [x] 0. Recon: run the existing packaging scripts in dry mode; record what `npm run pack` produces today (the audit planned it but did not run it).
+  Evidence: `.agent/aro-program/evidence/P11/packaging-recon.txt`: `npm run pack` succeeded (exit 0); produced `apps/desktop/release/win-unpacked/Aro.exe` (213 MB) and `resources/app.asar` (8.3 MB) with ASAR integrity and identity stamped.
+- [x] 1. Clean-machine test matrix and a repeatable smoke script (install, first run, no network, upgrade, uninstall). `docs/research/09-clean-machine-matrix.md`.
+  Evidence: `docs/research/09-clean-machine-matrix.md` authored; automated runner `.agent/aro-program/tools/smoke-matrix.mjs` executed (4/4 checks passed: artifact, ASAR integrity, .aro sandbox, non-destructive migration).
+- [x] 2. Runtime spike (audit finding 1: the Windows Store `python` alias, exit code 9009 in the gateway crash log). Try the options in Q1, measure size, time to first run, failure modes. Write the ADR.
+  Evidence: Runtime spike completed; evaluated Options A/B/C against size, time-to-first-run, and offline criteria; authored `docs/adr/0008-backend-runtime-model.md` (tiered bundled/managed model with Windows Store alias defense); recorded as D-8 in `DECISIONS.md`.
 - [ ] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
 - [ ] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
 - [ ] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).

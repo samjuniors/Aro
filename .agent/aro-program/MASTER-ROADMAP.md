@@ -2,7 +2,7 @@
 
 ```
 Active phase: P11-runtime-install-packaging
-Active step: 0
+Active step: GATE 11.1
 Last gate tag: aro-gate/P10-G10.2
 Integration branch: aro/integration (per D-1)
 ```

@@ -7,6 +7,9 @@
 | D-3 | Upstream (Hermes) sync policy: security fixes only, cherry-picked on a schedule | ACCEPTED | `docs/adr/0003-upstream-sync-policy.md` |
 | D-4 | Supported OS list and order for public v1: Windows, then macOS, then Linux | ACCEPTED | `docs/adr/0004-v1-platform-order.md` |
 | D-5 | v1 audience posture: public beta, labeled | ACCEPTED | `docs/adr/0005-v1-audience-posture.md` |
+| D-6 | Data directory: new `.aro` directory with one-time copy migration from `.hermes` | ACCEPTED | `docs/adr/0006-data-directory-migration.md` |
+| D-7 | Update model at v1: auto-update on stable channel with opt-out | ACCEPTED | `docs/adr/0007-v1-auto-update-model.md` |
+| D-8 | Backend runtime model: tiered bundled/managed runtime with Windows Store alias defense | ACCEPTED | `docs/adr/0008-backend-runtime-model.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly
