@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 973
+Total registered documents: 985
 Last full audit: 2026-10-19
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -9,7 +9,7 @@ Last full audit: 2026-10-19
 | `.agent/aro-design-system/EXTENDING.md` | Extending the Aro design system | COMPLETE (frozen) | - | P8 | 2026-10-19 |
 | `.agent/aro-design-system/ROADMAP.md` | ROADMAP: Phase 8 UI-DS (branch ui-port) | COMPLETE (frozen) | - | P8 | 2026-10-19 |
 | `.agent/aro-design-system/START-PROMPT.md` | START PROMPT (paste this once into your coding ... | COMPLETE (frozen) | - | P8 | 2026-10-19 |
-| `.agent/aro-program/CONTEXT-MAP.md` | Context map (seed; P10 step 4 verifies and exte... | ACTIVE | - | P10 | 2026-10-19 |
+| `.agent/aro-program/CONTEXT-MAP.md` | Context map (verified & extended in P10 step 4) | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/DECISIONS.md` | Decisions index (full records: docs/adr/NNNN-*.... | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/DOCS-GOVERNANCE.md` | Docs governance: reconcile, supersede, archive | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/FEATURE-TEARDOWN.md` | Feature teardown: learn from another app, build... | ACTIVE | - | P10 | 2026-10-19 |
@@ -19,6 +19,8 @@ Last full audit: 2026-10-19
 | `.agent/aro-program/README.md` | aro-program | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/START.md` | START (paste once per session; safe to paste ag... | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/TOOLS-AND-SKILLS.md` | Tools and skills policy | ACTIVE | - | P10 | 2026-10-19 |
+| `.agent/aro-program/evidence/P10/ci-map.md` | CI Map & Required Checks Analysis (P10.7) | ACTIVE | - | P10 | 2026-10-19 |
+| `.agent/aro-program/evidence/P10/fork-safety.md` | Fork-Safety Audit Report (P10.6) | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/evidence/P10/integration-plan.md` | Integration Plan (P10.1) | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/inbox/README.md` | Patch inbox | ACTIVE | - | P10 | 2026-10-19 |
 | `.agent/aro-program/phases/P10-foundation-and-truth/ROADMAP.md` | ROADMAP P10: Foundation and truth | ACTIVE | - | P10 | 2026-10-19 |
@@ -94,6 +96,12 @@ Last full audit: 2026-10-19
 | `docs/adr/0003-upstream-sync-policy.md` | ADR 0003: Upstream (Hermes) sync policy | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/adr/0004-v1-platform-order.md` | ADR 0004: Supported OS platform list and order ... | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/adr/0005-v1-audience-posture.md` | ADR 0005: v1 audience posture (Public Beta) | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0006-data-directory-migration.md` | ADR 0006: User Data Directory and Migration Str... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0007-v1-auto-update-model.md` | ADR 0007: Desktop Application Auto-Update Archi... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0008-backend-runtime-model.md` | ADR 0008: Backend Python Runtime and Execution ... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0009-updater-design-channels-signatures-rollback.md` | ADR 0009: Desktop Application Updater Design — ... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0010-ui-data-persistence-hybrid.md` | ADR 0010: UI-Owned Data Persistence Architectur... | ACTIVE | - | P10 | 2026-10-19 |
+| `docs/adr/0011-voice-v1-scope-push-to-talk.md` | ADR 0011: Voice Assistant Scope for v1 (Push-To... | ACTIVE | - | P10 | 2026-10-19 |
 | `docs/brand/BRAND.md` | Aro Brand Guidelines | ACTIVE | - | P16 | 2026-10-19 |
 | `docs/research/01-competitive-analysis.md` | 01 — Competitive Analysis: Aro vs the Agent Lan... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/02-gap-analysis.md` | 02 — Gap Analysis: Aro vs the Leaders | ACTIVE | - | P10/P12 | 2026-10-19 |
@@ -102,6 +110,10 @@ Last full audit: 2026-10-19
 | `docs/research/05-prototype-spec.md` | 05 — Aro Desktop Prototype Spec | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/06-prototype-vs-hermes-integration.md` | 06 — Aro Workbench Prototype vs. Hermes/SamAgen... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/07-desktop-interaction-audit.md` | 07 — Aro Desktop Interaction Audit | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/08-defects-ledger.md` | Research 08: Known-defects ledger (P10 seed) | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/09-clean-machine-matrix.md` | Research 09: Clean-Machine Test Matrix & Smoke ... | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/10-backend-todo-inventory.md` | Research 10: Backend-TODO Inventory & Reconcili... | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/11-backend-wiring-specs.md` | Research 11: Backend Wiring Specifications (v1 ... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `evals/botmode-dm-delivery/README.md` | Native Bot Mode delivery probe | ACTIVE | - | P10 | 2026-10-19 |
 | `evals/botmode-dm-matrix/README.md` | Bot Mode native delivery matrix | ACTIVE | - | P10 | 2026-10-19 |
