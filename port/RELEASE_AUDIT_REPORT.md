@@ -122,6 +122,9 @@ Live inspection via Chrome DevTools Protocol in active Electron window:
 
 ## 6. Outstanding Limitations & Backend-TODO Inventory
 
+> [!NOTE]
+> **STALE (Inventory drift):** This section lists 4 limitation kinds from the initial port audit. Full repository verification during P10 confirmed 26 `BACKEND-TODO` markers across 7 kinds (including browser-preview, code-search, and editors). Comprehensive inventory and implementation will be executed in Phase 12.
+
 | Identifier | Scope | Classification | Technical Assessment |
 |---|---|---|---|
 | **Live Model Completion** | Chat turn execution | **Environment-Blocked** | Requires user-provided model credentials (`OPENAI_API_KEY` or Nous login). Zero UI changes needed. |
