@@ -216,6 +216,7 @@ import {
 } from './dashboard-token'
 import { resolveDashboardWebDist } from './dashboard-web-dist'
 import { resolveDesktopHermesHome, resolveDesktopUserData } from './data-paths'
+import { migrateHermesToAro } from './aro-migration'
 import { loadOrCreateInstallationId, sshOwnershipId } from './desktop-installation'
 import { formatDesktopLogLine, formatLogStamp } from './desktop-log-line'
 import {
@@ -1264,6 +1265,15 @@ const HERMES_HOME: string = resolveDesktopHermesHome({
   directoryExists,
   readWindowsHome: (): string | null => readWindowsUserEnvVar('HERMES_HOME')
 })
+
+try {
+  const legacyHermesHome = path.join(app.getPath('home'), '.hermes')
+  if (directoryExists(legacyHermesHome) && path.resolve(HERMES_HOME) !== path.resolve(legacyHermesHome)) {
+    migrateHermesToAro({ sourceDir: legacyHermesHome, targetDir: HERMES_HOME })
+  }
+} catch {
+  // Non-blocking background migration
+}
 
 // #77311: `desktop.electron_flags` and the renderer heap ceiling
 // (`desktop.renderer_max_old_space_mb`) used to reach Chromium only through
