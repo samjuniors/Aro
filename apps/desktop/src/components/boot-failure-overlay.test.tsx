@@ -453,4 +453,28 @@ describe('BootFailureOverlay', () => {
       $notifications.set([])
     }
   })
+
+  it('copies diagnostics when copy diagnostics button is clicked', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
+
+    const restore = stubDesktop({ mode: 'local' })
+
+    try {
+      failBoot()
+      render(<BootFailureOverlay />)
+      const copyBtn = await screen.findByRole('button', { name: /copy diagnostics/i })
+      fireEvent.click(copyBtn)
+
+      await waitFor(() => expect(writeText).toHaveBeenCalled())
+      expect(writeText.mock.calls[0][0]).toContain('Boot Error:')
+      expect(writeText.mock.calls[0][0]).toContain('Could not connect to Hermes gateway')
+      expect($notifications.get().some(n => n.title === 'Diagnostics copied')).toBe(true)
+    } finally {
+      restore()
+      vi.unstubAllGlobals()
+      $notifications.set([])
+    }
+  })
 })
+

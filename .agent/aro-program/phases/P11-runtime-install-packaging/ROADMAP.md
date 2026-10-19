@@ -17,7 +17,8 @@ Out of scope: signing certificates and store submission (P16), new features.
 - [x] 2. Runtime spike (audit finding 1: the Windows Store `python` alias, exit code 9009 in the gateway crash log). Try the options in Q1, measure size, time to first run, failure modes. Write the ADR.
   Evidence: Runtime spike completed; evaluated Options A/B/C against size, time-to-first-run, and offline criteria; authored `docs/adr/0008-backend-runtime-model.md` (tiered bundled/managed model with Windows Store alias defense); recorded as D-8 in `DECISIONS.md`.
 - [x] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
-- [ ] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
+- [x] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
+  Evidence: `isWindowsStorePythonAlias` implemented in `apps/desktop/electron/windows-hermes-path.ts` and tested (14/14 tests pass); `windowsStoreAlias` classified in `boot-failure-cause.ts` (3/3 tests pass); `copyDiagnostics` handler and action button added to `boot-failure-overlay.tsx` and tested in `boot-failure-overlay.test.tsx` (19/19 tests pass); `npm run typecheck` clean.
 - [ ] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).
 - [ ] 5. First run with no network: no external requests, no blocked startup, credentials onboarding path works (live model calls are BLOCKED without credentials; mock instead and say so).
 - [ ] 6. Data directory and migration (Q2) with tests, including a read-only home and a path with spaces and non-ASCII.

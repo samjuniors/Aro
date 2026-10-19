@@ -16,7 +16,12 @@ import assert from 'node:assert/strict'
 
 import { test } from 'vitest'
 
-import { buildPathExtCandidates, chooseUpdaterArgs, resolveVenvHermesCommand } from './windows-hermes-path'
+import {
+  buildPathExtCandidates,
+  chooseUpdaterArgs,
+  isWindowsStorePythonAlias,
+  resolveVenvHermesCommand
+} from './windows-hermes-path'
 
 test('buildPathExtCandidates: Windows tries PATHEXT extensions before the empty extension', () => {
   const extensions = buildPathExtCandidates('.COM;.EXE;.BAT;.CMD', true)
@@ -128,3 +133,15 @@ test('resolveVenvHermesCommand: is case-insensitive on hermes.exe and the Script
   assert.ok(await resolveVenvHermesCommand('/root/venv/Scripts/HERMES.EXE', [], deps))
   assert.ok(await resolveVenvHermesCommand('/root/venv/SCRIPTS/hermes.exe', [], deps))
 })
+
+test('isWindowsStorePythonAlias: identifies Microsoft Store execution alias', () => {
+  assert.equal(isWindowsStorePythonAlias('C:\\Users\\User\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe'), true)
+  assert.equal(isWindowsStorePythonAlias('python', undefined, 9009), true)
+  assert.equal(
+    isWindowsStorePythonAlias('python', 'Python was not found; run without arguments to install from the Microsoft Store'),
+    true
+  )
+  assert.equal(isWindowsStorePythonAlias('C:\\Python311\\python.exe', 'Python 3.11.9', 0), false)
+  assert.equal(isWindowsStorePythonAlias('/usr/bin/python3', 'Python 3.12.0', 0), false)
+})
+

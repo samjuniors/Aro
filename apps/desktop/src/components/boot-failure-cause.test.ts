@@ -24,6 +24,9 @@ describe('local boot failure classification', () => {
     expect(classifyLocalBootFailure("EACCES: permission denied, open '/home/x/.hermes/state.db'")).toBe('permission')
     expect(classifyLocalBootFailure('OSError: [Errno 28] No space left on device')).toBe('diskFull')
     expect(classifyLocalBootFailure('listen EADDRINUSE: address already in use 127.0.0.1:9191')).toBe('portInUse')
+    expect(
+      classifyLocalBootFailure('Hermes backend exited with code 9009 (Python was not found; run without arguments to install from the Microsoft Store)')
+    ).toBe('windowsStoreAlias')
     expect(classifyLocalBootFailure(null)).toBeNull()
   })
 

@@ -13,7 +13,7 @@ import { useI18n } from '@/i18n'
 import { reestablishCloudAgentSession } from '@/lib/cloud-agent-session'
 import { DESKTOP_DOCS_URL } from '@/lib/docs'
 import { openExternalLink } from '@/lib/external-link'
-import { ChevronLeft, ExternalLink, FileText, Loader2, LogIn, RefreshCw, SlidersHorizontal, Wrench } from '@/lib/icons'
+import { ChevronLeft, Copy, ExternalLink, FileText, Loader2, LogIn, RefreshCw, SlidersHorizontal, Wrench } from '@/lib/icons'
 import { $desktopBoot } from '@/store/boot'
 import { notify, notifyError } from '@/store/notifications'
 import { $desktopOnboarding } from '@/store/onboarding'
@@ -336,6 +336,24 @@ export function BootFailureOverlay() {
 
   const openLogs = () => void window.hermesDesktop?.revealLogs().catch(() => undefined)
 
+  const copyDiagnostics = async () => {
+    try {
+      const diag = [
+        `Boot Error: ${boot.error || 'none'}`,
+        `Headline: ${failureCopy.headline}`,
+        `Platform: ${navigator.userAgent}`,
+        `Connection Mode: ${connectionConfig?.mode || 'unknown'}`,
+        `Bundled: ${bundled}`,
+        `Recent Logs:\n${logs.slice(-20).join('\n')}`
+      ].join('\n')
+
+      await navigator.clipboard.writeText(diag)
+      notify({ kind: 'success', title: 'Diagnostics copied', message: 'Diagnostic information copied to clipboard.' })
+    } catch (err) {
+      notifyError(err, 'Could not copy diagnostics')
+    }
+  }
+
   const dismiss = () => setDismissedError(boot.error)
 
   const copy = t.boot.failure
@@ -542,6 +560,10 @@ export function BootFailureOverlay() {
               <Button onClick={openLogs} variant="ghost">
                 <FileText />
                 {copy.openLogs}
+              </Button>
+              <Button onClick={() => void copyDiagnostics()} variant="ghost">
+                <Copy />
+                Copy diagnostics
               </Button>
             </div>
             {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}

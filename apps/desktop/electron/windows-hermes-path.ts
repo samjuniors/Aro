@@ -182,3 +182,30 @@ export async function resolveVenvHermesCommand(
     shell: false
   }
 }
+
+/**
+ * Detect whether a candidate python path, probe output, or exit code indicates
+ * the Windows Microsoft Store execution alias stub (Finding 1 / exit code 9009).
+ */
+export function isWindowsStorePythonAlias(
+  candidatePath: string,
+  stderrOrOutput?: string,
+  exitCode?: number
+): boolean {
+  if (exitCode === 9009) {
+    return true
+  }
+
+  const normalized = candidatePath.replace(/\\/g, '/').toLowerCase()
+
+  if (normalized.includes('/microsoft/windowsapps/python')) {
+    return true
+  }
+
+  if (stderrOrOutput && /Microsoft Store|Manage App Execution Aliases/i.test(stderrOrOutput)) {
+    return true
+  }
+
+  return false
+}
+
