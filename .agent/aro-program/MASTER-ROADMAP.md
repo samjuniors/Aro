@@ -2,8 +2,8 @@
 
 ```
 Active phase: P11-runtime-install-packaging
-Active step: GATE 11.1
-Last gate tag: aro-gate/P10-G10.2
+Active step: 3
+Last gate tag: aro-gate/P11-G11.1
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -48,3 +48,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 ## Phase history log (append one line per approved gate)
 - P10-G10.1: 2026-10-19 — baseline recon, integration plan, decisions D-1..D-5 recorded (tag aro-gate/P10-G10.1)
 - P10-G10.2: 2026-10-19 — registry, context map, ledger, fork-safety audit, CI map (tag aro-gate/P10-G10.2)
+- P11-G11.1: 2026-10-19 — packaging recon, clean-machine smoke matrix, runtime spike ADR (tag aro-gate/P11-G11.1)

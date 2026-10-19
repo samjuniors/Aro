@@ -16,7 +16,7 @@ Out of scope: signing certificates and store submission (P16), new features.
   Evidence: `docs/research/09-clean-machine-matrix.md` authored; automated runner `.agent/aro-program/tools/smoke-matrix.mjs` executed (4/4 checks passed: artifact, ASAR integrity, .aro sandbox, non-destructive migration).
 - [x] 2. Runtime spike (audit finding 1: the Windows Store `python` alias, exit code 9009 in the gateway crash log). Try the options in Q1, measure size, time to first run, failure modes. Write the ADR.
   Evidence: Runtime spike completed; evaluated Options A/B/C against size, time-to-first-run, and offline criteria; authored `docs/adr/0008-backend-runtime-model.md` (tiered bundled/managed model with Windows Store alias defense); recorded as D-8 in `DECISIONS.md`.
-- [ ] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
+- [x] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
 - [ ] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
 - [ ] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).
 - [ ] 5. First run with no network: no external requests, no blocked startup, credentials onboarding path works (live model calls are BLOCKED without credentials; mock instead and say so).
