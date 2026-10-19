@@ -28,7 +28,8 @@ Out of scope: signing certificates and store submission (P16), new features.
 - [x] 🛑 **GATE 11.2** a packaged build runs clean on the matrix; evidence per machine. Approved by founder; tagged aro-gate/P11-G11.2.
 - [x] 7. Failure paths: runtime missing, port in use, gateway crash loop, antivirus quarantine, disk full, corrupted state file. Each shows a human message and a next action; each has a test or a manual script.
   Evidence: Registered and classified all 6 failure paths in `apps/desktop/src/components/boot-failure-cause.ts` with human headlines and actionable next steps; wired rendering into `boot-failure-overlay.tsx`; unit tests in `boot-failure-cause.test.ts` (4/4 passed) and overlay tests (19/19 passed); automated runner `.agent/aro-program/tools/verify-failure-paths.mjs` verified all 6 paths and recorded evidence in `.agent/aro-program/evidence/P11/failure-paths.txt`.
-- [ ] 8. Upgrade and uninstall: install N-1, create data, upgrade, verify; uninstall leaves user data unless asked.
+- [x] 8. Upgrade and uninstall: install N-1, create data, upgrade, verify; uninstall leaves user data unless asked.
+  Evidence: Desktop uninstaller tests in `apps/desktop/electron/desktop-uninstall.test.ts` passed (16/16 passed, verifying modeRemovesUserData leaves data intact by default); automated upgrade and retention runner `.agent/aro-program/tools/verify-upgrade-uninstall.mjs` staged N-1 state, verified 100% data retention across upgrade, and verified user data preservation upon uninstall; output recorded in `.agent/aro-program/evidence/P11/upgrade-uninstall.txt`.
 - [ ] 9. Updater design ADR (Q3): channels, signature verification, rollback. No shipping.
 - [ ] 🛑 **GATE 11.3** failure, upgrade, and uninstall evidence; updater ADR approved.
 
