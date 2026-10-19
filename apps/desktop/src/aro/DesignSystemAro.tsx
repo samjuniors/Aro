@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/templates'
 import { cn } from '@/lib/utils'
 
+import { AroBrowserPreview } from './BrowserPreview'
 import { AroCostHud } from './CostHud'
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import { AroReviewPage } from './ReviewHunks'
@@ -1298,6 +1299,36 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
                   },
                 ],
               }}
+            />
+          </div>
+        </DS>
+
+        <DS
+          body="Embedded responsive preview supporting Desktop (100%), Tablet (768px), and Mobile (390px) viewports with dev-server quick links."
+          eyebrow="Phase 13 Feature Slice 4"
+          id="browser-preview"
+          title="In-App Responsive Web & Dev-Server Preview"
+        >
+          <div className="rounded-panel border border-aro-line-soft bg-aro-sunken overflow-hidden h-[420px]">
+            <AroBrowserPreview
+              forceEnabled={true}
+              overrideTabs={[
+                {
+                  id: 'tab-demo-1',
+                  input: 'http://localhost:5173',
+                  url: 'http://localhost:5173',
+                  title: 'Vite App (localhost:5173)',
+                  loading: false,
+                },
+                {
+                  id: 'tab-demo-2',
+                  input: 'https://aro.agent',
+                  url: 'https://aro.agent',
+                  title: 'aro.agent',
+                  loading: false,
+                },
+              ]}
+              overrideViewport="tablet"
             />
           </div>
         </DS>

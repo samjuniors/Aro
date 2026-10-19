@@ -17,7 +17,7 @@ Rule: at most 5 features in v1, one slice active at a time.
 - [x] 13.S1. Diff-First Visual Review & Checkpoint Rollback (`aro-review`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S1**.
 - [x] 13.S2. Ambient Token / Cost HUD & Proactive Quota Guard: a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S2**.
 - [x] 13.S3. Parallel Tasks Board & Plan Orchestrator (`aro-tasks`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S3**.
-- [ ] 13.S4. In-App Responsive Web & Dev-Server Preview (`browser-preview`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S4**.
+- [x] 13.S4. In-App Responsive Web & Dev-Server Preview (`browser-preview`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S4**.
 - [ ] 13.S5. One-Click IDE Deep Link & Editor Handoff (`editors`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S5**.
 
 ## Exit criteria
