@@ -16,14 +16,18 @@ const PLATFORM = process.platform
 // Platform-specific packaged-app layout. The bundled app ships an Electron
 // shell and the PM payload under resources/agent-payload.
 const APP = (() => {
+  const binaryNames = ['Aro', 'Hermes']
   if (PLATFORM === 'darwin') {
-    const appPath = path.join(RELEASE_ROOT, `mac-${ARCH}`, 'Hermes.app')
+    const appDir = ['Aro.app', 'Hermes.app']
+      .map(name => path.join(RELEASE_ROOT, `mac-${ARCH}`, name))
+      .find(exists) || path.join(RELEASE_ROOT, `mac-${ARCH}`, 'Aro.app')
+    const binName = binaryNames.find(n => exists(path.join(appDir, 'Contents', 'MacOS', n))) || 'Aro'
     return {
-      appPath,
-      binary: path.join(appPath, 'Contents', 'MacOS', 'Hermes'),
-      resourcesPath: path.join(appPath, 'Contents', 'Resources'),
-      asarPath: path.join(appPath, 'Contents', 'Resources', 'app.asar'),
-      unpackedDistIndex: path.join(appPath, 'Contents', 'Resources', 'app.asar.unpacked', 'dist', 'index.html')
+      appPath: appDir,
+      binary: path.join(appDir, 'Contents', 'MacOS', binName),
+      resourcesPath: path.join(appDir, 'Contents', 'Resources'),
+      asarPath: path.join(appDir, 'Contents', 'Resources', 'app.asar'),
+      unpackedDistIndex: path.join(appDir, 'Contents', 'Resources', 'app.asar.unpacked', 'dist', 'index.html')
     }
   }
   if (PLATFORM === 'win32') {
@@ -33,21 +37,22 @@ const APP = (() => {
     const unpacked = ['win-unpacked', `win-${ARCH}-unpacked`]
       .map(name => path.join(RELEASE_ROOT, name))
       .find(exists)
+    const baseDir = unpacked || path.join(RELEASE_ROOT, 'win-unpacked')
+    const binName = binaryNames.map(n => `${n}.exe`).find(n => exists(path.join(baseDir, n))) || 'Aro.exe'
     return {
       appPath: unpacked,
-      binary: unpacked ? path.join(unpacked, 'Hermes.exe') : path.join(RELEASE_ROOT, 'win-unpacked', 'Hermes.exe'),
-      resourcesPath: unpacked ? path.join(unpacked, 'resources') : path.join(RELEASE_ROOT, 'win-unpacked', 'resources'),
-      asarPath: unpacked ? path.join(unpacked, 'resources', 'app.asar') : path.join(RELEASE_ROOT, 'win-unpacked', 'resources', 'app.asar'),
-      unpackedDistIndex: unpacked
-        ? path.join(unpacked, 'resources', 'app.asar.unpacked', 'dist', 'index.html')
-        : path.join(RELEASE_ROOT, 'win-unpacked', 'resources', 'app.asar.unpacked', 'dist', 'index.html')
+      binary: path.join(baseDir, binName),
+      resourcesPath: path.join(baseDir, 'resources'),
+      asarPath: path.join(baseDir, 'resources', 'app.asar'),
+      unpackedDistIndex: path.join(baseDir, 'resources', 'app.asar.unpacked', 'dist', 'index.html')
     }
   }
   // linux unpacked layout matches windows but with different binary name
   const unpacked = path.join(RELEASE_ROOT, 'linux-unpacked')
+  const binName = binaryNames.find(n => exists(path.join(unpacked, n))) || 'Aro'
   return {
     appPath: unpacked,
-    binary: path.join(unpacked, 'Hermes'),
+    binary: path.join(unpacked, binName),
     resourcesPath: path.join(unpacked, 'resources'),
     asarPath: path.join(unpacked, 'resources', 'app.asar'),
     unpackedDistIndex: path.join(unpacked, 'resources', 'app.asar.unpacked', 'dist', 'index.html')

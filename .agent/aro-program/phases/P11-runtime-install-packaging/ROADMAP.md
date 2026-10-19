@@ -19,7 +19,8 @@ Out of scope: signing certificates and store submission (P16), new features.
 - [x] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
 - [x] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
   Evidence: `isWindowsStorePythonAlias` implemented in `apps/desktop/electron/windows-hermes-path.ts` and tested (14/14 tests pass); `windowsStoreAlias` classified in `boot-failure-cause.ts` (3/3 tests pass); `copyDiagnostics` handler and action button added to `boot-failure-overlay.tsx` and tested in `boot-failure-overlay.test.tsx` (19/19 tests pass); `npm run typecheck` clean.
-- [ ] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).
+- [x] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).
+  Evidence: `apps/desktop/scripts/test-desktop.mjs` updated to resolve rebranded `Aro.exe`; automated runner `.agent/aro-program/tools/verify-package-launch.mjs` verified `apps/desktop/release/win-unpacked/Aro.exe` (204.03 MB) launches and maintains healthy running status under isolated sandbox; output recorded in `.agent/aro-program/evidence/P11/package-launch.txt`.
 - [ ] 5. First run with no network: no external requests, no blocked startup, credentials onboarding path works (live model calls are BLOCKED without credentials; mock instead and say so).
 - [ ] 6. Data directory and migration (Q2) with tests, including a read-only home and a path with spaces and non-ASCII.
 - [ ] 🛑 **GATE 11.2** a packaged build runs clean on the matrix; evidence per machine.
