@@ -10,6 +10,7 @@
 | D-6 | Data directory: new `.aro` directory with one-time copy migration from `.hermes` | ACCEPTED | `docs/adr/0006-data-directory-migration.md` |
 | D-7 | Update model at v1: auto-update on stable channel with opt-out | ACCEPTED | `docs/adr/0007-v1-auto-update-model.md` |
 | D-8 | Backend runtime model: tiered bundled/managed runtime with Windows Store alias defense | ACCEPTED | `docs/adr/0008-backend-runtime-model.md` |
+| D-9 | Desktop updater design: channels, cryptographic signatures, atomic staging, and rollback | ACCEPTED | `docs/adr/0009-updater-design-channels-signatures-rollback.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly
