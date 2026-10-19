@@ -535,7 +535,10 @@ export function BootFailureOverlay() {
 
         <div className="grid gap-4 p-5 pt-0">
           <div className="rounded-overlay border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs text-destructive">
-            {failureCopy.headline}
+            <div className="font-semibold">{failureCopy.headline}</div>
+            {failureCopy.nextAction ? (
+              <div className="mt-1 text-foreground/80">{failureCopy.nextAction}</div>
+            ) : null}
             {failureCopy.rawDetail ? (
               <details className="mt-2 text-muted-foreground">
                 <summary className="cursor-pointer select-none font-medium">{copy.details}</summary>
