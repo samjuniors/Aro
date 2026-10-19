@@ -16,7 +16,7 @@ Rule: at most 5 features in v1, one slice active at a time.
 - [x] 🛑 **GATE 13.1** v1 feature scope approved. Slices are appended below as `13.S<n>` from the shortlist (an allowed roadmap addition at this gate).
 - [x] 13.S1. Diff-First Visual Review & Checkpoint Rollback (`aro-review`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S1**.
 - [x] 13.S2. Ambient Token / Cost HUD & Proactive Quota Guard: a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S2**.
-- [ ] 13.S3. Parallel Tasks Board & Plan Orchestrator (`aro-tasks`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S3**.
+- [x] 13.S3. Parallel Tasks Board & Plan Orchestrator (`aro-tasks`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S3**.
 - [ ] 13.S4. In-App Responsive Web & Dev-Server Preview (`browser-preview`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S4**.
 - [ ] 13.S5. One-Click IDE Deep Link & Editor Handoff (`editors`): a. spec / b. design / c. build behind flag / d. verify journeys / e. docs & registry. 🛑 **GATE 13.S5**.
 

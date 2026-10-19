@@ -10,10 +10,12 @@
  * R5 wires dispatch (delegate_task) on top of this shape.
  */
 
+import { useStore } from '@nanostores/react'
 import { useMemo, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 
+import { $aroFeatures } from './flags'
 import { AgentMark, IconBolt, IconCheck, IconGrid, IconList, IconPlus, IconSearch, IconSpark, IconWarning, IconX } from './Icons'
 import { InlineHint, SourceBadge, useAroTasks } from './live'
 import { ToastHost, useToasts } from './toasts'
@@ -65,9 +67,27 @@ function TaskCard({ t, blocked, onOpen, active }: { t: Task; blocked?: boolean; 
   )
 }
 
-export function AroTasksPage() {
+export function AroTasksPage({
+  overrideData,
+  forceEnabled,
+}: {
+  overrideData?: Partial<ReturnType<typeof useAroTasks>>
+  forceEnabled?: boolean
+} = {}) {
   const { items, toast } = useToasts()
-  const { tasks: sourceTasks, live, hasSession, local, isUserTask, createUserTask, moveUserTask, removeUserTask } = useAroTasks()
+  const liveTasks = useAroTasks()
+  const features = useStore($aroFeatures)
+  const enabled = forceEnabled ?? features.parallelTasksBoard
+
+  const sourceTasks = overrideData?.tasks !== undefined ? overrideData.tasks : liveTasks.tasks
+  const live = overrideData?.live !== undefined ? overrideData.live : liveTasks.live
+  const hasSession = overrideData?.hasSession !== undefined ? overrideData.hasSession : liveTasks.hasSession
+  const local = overrideData?.local !== undefined ? overrideData.local : liveTasks.local
+  const isUserTask = overrideData?.isUserTask !== undefined ? overrideData.isUserTask : liveTasks.isUserTask
+  const createUserTask = overrideData?.createUserTask !== undefined ? overrideData.createUserTask : liveTasks.createUserTask
+  const moveUserTask = overrideData?.moveUserTask !== undefined ? overrideData.moveUserTask : liveTasks.moveUserTask
+  const removeUserTask = overrideData?.removeUserTask !== undefined ? overrideData.removeUserTask : liveTasks.removeUserTask
+
   const [layout, setLayout] = useState<'board' | 'list'>('board')
   const [sel, setSel] = useState<string | null>(null)
   const [q, setQ] = useState('')
@@ -104,6 +124,28 @@ export function AroTasksPage() {
 
   const running = tasks.filter((t) => t.status === 'running').length
   const doneCount = tasks.filter((t) => t.status === 'done').length
+
+  if (!enabled) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
+        <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
+          <div className="min-w-0">
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">work graph · tasks</div>
+            <h1 className="text-sm font-semibold text-aro-ink">Tasks</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2"><SourceBadge demoLabel="disabled" live={false} /></div>
+        </header>
+        <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
+          <div className="max-w-[440px] space-y-3 text-center">
+            <InlineHint>
+              Parallel Tasks Work-Graph is currently disabled by feature flag (<span className="font-aro-mono text-xs text-aro-iris">parallelTasksBoard</span>). Enable it in Aro settings or feature flags.
+            </InlineHint>
+          </div>
+        </div>
+        <ToastHost items={items} />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">

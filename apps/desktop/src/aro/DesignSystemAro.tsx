@@ -12,16 +12,10 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 
-import { cn } from '@/lib/utils'
 import {
-  ActionBar,
   FormRow,
-  Inline,
-  PageHeader,
-  PageShell,
   Section as LayoutSection,
   Stack,
-  Toolbar,
 } from '@/components/ui/layout'
 import {
   DialogTemplate,
@@ -29,13 +23,14 @@ import {
   ListPageTemplate,
   MasterDetailOverlayTemplate,
   PageTemplate,
-  SettingsSubpageTemplate,
   StateBox,
 } from '@/components/ui/templates'
+import { cn } from '@/lib/utils'
 
-import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import { AroCostHud } from './CostHud'
+import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import { AroReviewPage } from './ReviewHunks'
+import { AroTasksPage } from './TasksBoard'
 import {
   Badge,
   Bar,
@@ -217,12 +212,15 @@ export function AroDesignSystemPage() {
   const [theme, setTheme] = useState<ThemeId>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('aro.theme') as ThemeId
+
       if (['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(saved)) {
         return saved
       }
     }
+
     return 'obsidian'
   })
+
   const [glass, setGlass] = useState(false)
   const [rtl, setRtl] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
@@ -351,11 +349,14 @@ export function AroDesignSystemPage() {
                 key={t.id}
                 onClick={() => {
                   setTheme(t.id)
+
                   try {
                     localStorage.setItem('aro.theme', t.id)
                     localStorage.setItem('conductor.theme', t.id)
                     window.dispatchEvent(new CustomEvent('aro:theme', { detail: t.id }))
-                  } catch {}
+                  } catch {
+                    // ignore storage failure
+                  }
                 }}
               >
                 <div className="relative h-[92px] p-2.5" style={{ background: t.swatch[0] }}>
@@ -1222,6 +1223,82 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
                 overrideUsage={{ calls: 22, cost_usd: 5.4, input: 210000, output: 65000, total: 275000, cache_hit_pct: 65.4 }}
               />
             </div>
+          </div>
+        </DS>
+
+        <DS
+          body="Visual DAG of parent-child subagent tasks, dependency blockers, live statuses, and execution topologies."
+          eyebrow="Phase 13 Feature Slice 3"
+          id="tasks-board"
+          title="Parallel Subagent Work-Graph & Tasks Board"
+        >
+          <div className="rounded-panel border border-aro-line-soft bg-aro-sunken p-2 overflow-hidden max-h-[500px]">
+            <AroTasksPage
+              forceEnabled={true}
+              overrideData={{
+                hasSession: true,
+                live: true,
+                local: false,
+                tasks: [
+                  {
+                    id: 't-1',
+                    key: 'T-101',
+                    title: 'Research API rate limits & token models',
+                    status: 'done',
+                    priority: 'p1',
+                    source: 'agent',
+                    assignee: 'aro',
+                    estimate: '1h',
+                    deps: [],
+                    criteria: ['Check cache multipliers'],
+                    tags: ['research', 'tokens'],
+                    cost: '$0.02',
+                  },
+                  {
+                    id: 't-2',
+                    key: 'T-102',
+                    title: 'Author spec for parallel task board',
+                    status: 'running',
+                    priority: 'p0',
+                    source: 'agent',
+                    assignee: 'claude-code',
+                    estimate: '2h',
+                    deps: ['t-1'],
+                    criteria: ['Define work-graph DAG schema'],
+                    tags: ['spec', 'tasks'],
+                    cost: '$0.05',
+                  },
+                  {
+                    id: 't-3',
+                    key: 'T-103',
+                    title: 'Implement React DAG visualization',
+                    status: 'ready',
+                    priority: 'p1',
+                    source: 'agent',
+                    assignee: 'codex',
+                    estimate: '3h',
+                    deps: ['t-2'],
+                    criteria: ['Render blocked dependencies', 'List vs board switch'],
+                    tags: ['ui', 'dag'],
+                    cost: '$0.08',
+                  },
+                  {
+                    id: 't-4',
+                    key: 'T-104',
+                    title: 'Approve token budget overrun',
+                    status: 'review',
+                    priority: 'p0',
+                    source: 'manual',
+                    human: true,
+                    estimate: '15m',
+                    deps: [],
+                    criteria: ['Human review'],
+                    tags: ['approval', 'budget'],
+                    cost: '$0.00',
+                  },
+                ],
+              }}
+            />
           </div>
         </DS>
       </div>
