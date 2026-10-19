@@ -4,7 +4,8 @@
 > **Aro** (Aro Agent / Aro CLI / Aro Desktop / Aro Harness — see `NOTICE`,
 > `docs/brand/BRAND.md`). Internal identifiers (`hermes_cli`, `~/.hermes`,
 > `HERMES_*` env vars) are intentionally unchanged in this phase — see the
-> deep-rebrand TODO in `docs/research/04-rebrand-log.md`.
+> deep-rebrand TODO in `docs/research/04-rebrand-log.md`. For focused session
+> reading per task, consult `.agent/aro-program/CONTEXT-MAP.md`.
 
 Instructions for AI coding assistants and developers working on the hermes-agent codebase.
 This root file holds only what applies everywhere. Each area has its own `AGENTS.md` (aim for
