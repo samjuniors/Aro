@@ -27,10 +27,10 @@ Question: What verified technical and architectural defects exist in the integra
    - Finding: On Windows hosts without system Python in PATH, `python` triggers Windows Store 9009 stub error.
    - Target: Phase 11 (packaging and runtime provisioner).
 
-5. **[Verified] Deprecated `ScriptProcessorNode` in wake audio client**
+5. **[Verified - Fixed in P12.6] Deprecated `ScriptProcessorNode` in wake audio client**
    - Location: `apps/desktop/src/lib/wake-client-capture.ts:148-150`
    - Finding: Uses deprecated `createScriptProcessor(4096, 1, 1)` emitting console deprecation warnings.
-   - Target: Phase 12 (migrate to `AudioWorkletNode`).
+   - Status: Modernized to `AudioWorkletNode` (zero-copy transfer) with fallback in P12.6; console deprecation warning eliminated. Verified with unit tests.
 
 6. **[Verified] Cross-platform shell assumption in `cron-prompt.test.ts`**
    - Location: `apps/desktop/src/plugins/hermes-bots/cron-prompt.test.ts:24`

@@ -101,6 +101,112 @@ function bytesToBase64(buf: ArrayBuffer): string {
   return btoa(binary)
 }
 
+const WORKLET_PROCESSOR_CODE = `
+class PcmCaptureProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.buffer = new Float32Array(4096);
+    this.offset = 0;
+  }
+
+  process(inputs) {
+    const channel = inputs[0] && inputs[0][0];
+    if (channel) {
+      let srcOffset = 0;
+      while (srcOffset < channel.length) {
+        const toCopy = Math.min(channel.length - srcOffset, this.buffer.length - this.offset);
+        this.buffer.set(channel.subarray(srcOffset, srcOffset + toCopy), this.offset);
+        this.offset += toCopy;
+        srcOffset += toCopy;
+        if (this.offset >= this.buffer.length) {
+          this.port.postMessage(this.buffer, [this.buffer.buffer]);
+          this.buffer = new Float32Array(4096);
+          this.offset = 0;
+        }
+      }
+    }
+    return true;
+  }
+}
+
+registerProcessor('pcm-capture-processor', PcmCaptureProcessor);
+`
+
+const registeredAudioWorkletContexts = new WeakSet<AudioContext>()
+
+interface CaptureNodeWrapper {
+  node: AudioNode
+  cleanup: () => void
+}
+
+async function createCaptureNode(
+  context: AudioContext,
+  onAudioData: (data: Float32Array) => void
+): Promise<CaptureNodeWrapper> {
+  const AudioWorkletNodeCtor = (window as unknown as { AudioWorkletNode?: typeof AudioWorkletNode }).AudioWorkletNode
+
+  if (
+    context.audioWorklet &&
+    typeof context.audioWorklet.addModule === 'function' &&
+    typeof AudioWorkletNodeCtor === 'function'
+  ) {
+    try {
+      if (!registeredAudioWorkletContexts.has(context)) {
+        const blob = new Blob([WORKLET_PROCESSOR_CODE], { type: 'application/javascript' })
+        const blobUrl = URL.createObjectURL(blob)
+
+        try {
+          await context.audioWorklet.addModule(blobUrl)
+          registeredAudioWorkletContexts.add(context)
+        } finally {
+          URL.revokeObjectURL(blobUrl)
+        }
+      }
+
+      const workletNode = new AudioWorkletNodeCtor(context, 'pcm-capture-processor')
+
+      workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        if (event.data) {
+          onAudioData(event.data)
+        }
+      }
+
+      return {
+        node: workletNode,
+        cleanup: () => {
+          workletNode.port.onmessage = null
+          workletNode.disconnect()
+        }
+      }
+    } catch {
+      // AudioWorklet setup failed; fall back to ScriptProcessorNode
+    }
+  }
+
+  // Fallback for environments lacking AudioWorkletNode (legacy browsers, mock test runners)
+  const legacyContext = context as unknown as {
+    createScriptProcessor?: (bufferSize: number, numberOfInputChannels: number, numberOfOutputChannels: number) => ScriptProcessorNode
+  }
+
+  if (typeof legacyContext.createScriptProcessor === 'function') {
+    const processor = legacyContext.createScriptProcessor(4096, 1, 1)
+
+    processor.onaudioprocess = event => {
+      onAudioData(event.inputBuffer.getChannelData(0))
+    }
+
+    return {
+      node: processor,
+      cleanup: () => {
+        processor.onaudioprocess = null
+        processor.disconnect()
+      }
+    }
+  }
+
+  throw new Error('Neither AudioWorkletNode nor ScriptProcessorNode is available')
+}
+
 /**
  * Start streaming the default microphone to `wake.feed`.
  * Returns a handle whose `stop()` ends tracks + audio graph.
@@ -145,11 +251,10 @@ export async function startClientWakeCapture(options: ClientWakeCaptureOptions):
 
   const context = new AudioContextCtor()
   const source = context.createMediaStreamSource(stream)
-  // ScriptProcessor is deprecated but widely available and simple for PCM export.
-  // Buffer size 4096 keeps callback rate reasonable on desktop.
-  const processor = context.createScriptProcessor(4096, 1, 1)
   const mute = context.createGain()
   mute.gain.value = 0
+
+  let captureNode: CaptureNodeWrapper | null = null
 
   let pending = new Float32Array(0)
   let stopped = false
@@ -176,7 +281,7 @@ export async function startClientWakeCapture(options: ClientWakeCaptureOptions):
       }
 
       try {
-        processor.disconnect()
+        captureNode?.cleanup()
         source.disconnect()
         mute.disconnect()
       } catch {
@@ -316,14 +421,13 @@ export async function startClientWakeCapture(options: ClientWakeCaptureOptions):
     void drainQueue()
   }
 
-  processor.onaudioprocess = event => {
+  const onAudioData = (input: Float32Array) => {
     if (stopped || failed) {
       return
     }
 
     armStallTimer()
 
-    const input = event.inputBuffer.getChannelData(0)
     const at16k = downsampleTo16k(input, context.sampleRate)
     // Append to pending and emit full frames
     const merged = new Float32Array(pending.length + at16k.length)
@@ -371,8 +475,10 @@ export async function startClientWakeCapture(options: ClientWakeCaptureOptions):
     pending = merged.subarray(offset)
   }
 
-  source.connect(processor)
-  processor.connect(mute)
+  captureNode = await createCaptureNode(context, onAudioData)
+
+  source.connect(captureNode.node)
+  captureNode.node.connect(mute)
   mute.connect(context.destination)
 
   if (context.state === 'suspended') {

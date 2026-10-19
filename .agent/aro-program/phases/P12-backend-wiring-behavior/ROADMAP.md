@@ -18,9 +18,9 @@ Frozen: Hermes core Python (`agent/`, `gateway/`, `tools/`, `hermes_*.py`) chang
 - [x] 3. Slice A (max 3 items): implement, contract tests against the wire baseline, UI states, docs.
 - [x] 4. Slice B (max 3 items): same.
 - [x] 5. `NB-001`: batch theme attribute mutations with `requestAnimationFrame`; prove with a trace that rapid skin switching no longer re-styles twice.
-- [ ] 🛑 **GATE 12.2** every v1 item works end to end (BLOCKED items listed with what is needed).
-- [ ] 6. Audio capture: replace `ScriptProcessorNode` (audit finding 2; locate the file first, the path in the report may have moved).
-- [ ] 7. Failure matrix: gateway down, no model or credentials, rate limit, tool error, network loss, huge output, session restore after crash. Each: designed state, copy, test.
+- [x] 🛑 **GATE 12.2** every v1 item works end to end (BLOCKED items listed with what is needed).
+- [x] 6. Audio capture: replace `ScriptProcessorNode` (audit finding 2; locate the file first, the path in the report may have moved).
+- [x] 7. Failure matrix: gateway down, no model or credentials, rate limit, tool error, network loss, huge output, session restore after crash. Each: designed state, copy, test.
 - [ ] 🛑 **GATE 12.3** failure matrix evidence; no `BACKEND-TODO` left without an ADR or a backlog entry.
 
 ## Exit criteria
