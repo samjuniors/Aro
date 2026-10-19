@@ -67,7 +67,7 @@ const VIEWPORTS: { icon: typeof IconMonitor | typeof IconTablet; id: ViewportId;
  * - Feature id: `browser-preview` (port/FEATURE_MAP.md — local).
  * - Surfaces `adapters.browserPreview` (src/adapters/browser-preview.ts) as a right-rail panel tab.
  * - Tab strip and viewport state persist under `conductor.workspace.v3.browser.*` (survives reload).
- * - BACKEND-TODO(browser-preview): tabs/viewports over future preview.* events.
+ * - BACKEND-TODO(browser-preview): [D-10, research/11 §3] tabs/viewports over future preview.* events.
  */
 export function BrowserSection() {
   const tabs = useStore($previewTabs)
@@ -207,13 +207,13 @@ export function BrowserSection() {
                 role="tab"
               >
                 <button
+                  aria-label={t.url || 'New tab'}
                   className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-left"
                   onClick={() => {
                     setActiveId(t.id)
                     setInputVal(t.input)
                     setError('')
                   }}
-                  aria-label={t.url || 'New tab'}
                   type="button"
                 >
                   <IconGlobe className={cn('shrink-0', isActive ? 'text-aro-iris-soft' : 'text-aro-ink-4')} size={11} />
@@ -340,7 +340,7 @@ export function BrowserSection() {
                     : undefined
                 }
               >
-                {/* BACKEND-TODO(browser-preview): tabs/viewports over future preview.* */}
+                {/* BACKEND-TODO(browser-preview): [D-10, research/11 §3] tabs/viewports over future preview.* */}
                 <iframe
                   className="h-full w-full border-0 bg-white"
                   key={`${activeTab.id}-${reloadNonce}`}

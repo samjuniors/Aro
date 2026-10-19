@@ -14,8 +14,8 @@ Frozen: Hermes core Python (`agent/`, `gateway/`, `tools/`, `hermes_*.py`) chang
 - [x] 0. Recon and context pack.
 - [x] 1. Inventory: `grep -rn "BACKEND-TODO" apps/desktop/src` with file:line, kind, user-visible effect. Reconcile against `port/RELEASE_AUDIT_REPORT.md` section 6 (which lists 4 kinds; the code had 26 markers in 7 kinds on `81d86f11`). Write `docs/research/10-backend-todo-inventory.md`, supersede the audit table.
 - [x] 2. One-page spec per implement-for-v1 item: user outcome, API or bridge contract (`aro_bridge/protocol.md`, `port/WIRE_BASELINE.md`), error states, tests.
-- [ ] 🛑 **GATE 12.1** inventory, specs, decisions (Q1 to Q3).
-- [ ] 3. Slice A (max 3 items): implement, contract tests against the wire baseline, UI states, docs.
+- [x] 🛑 **GATE 12.1** inventory, specs, decisions (Q1 to Q3).
+- [x] 3. Slice A (max 3 items): implement, contract tests against the wire baseline, UI states, docs.
 - [ ] 4. Slice B (max 3 items): same.
 - [ ] 5. `NB-001`: batch theme attribute mutations with `requestAnimationFrame`; prove with a trace that rapid skin switching no longer re-styles twice.
 - [ ] 🛑 **GATE 12.2** every v1 item works end to end (BLOCKED items listed with what is needed).

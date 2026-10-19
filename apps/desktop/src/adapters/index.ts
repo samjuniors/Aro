@@ -49,11 +49,11 @@ export const adapters = {
   rules: localRulesAdapter,
   /** local — BACKEND-TODO(agents): `agents.list/register`. */
   agents: localAgentsAdapter,
-  /** local — BACKEND-TODO(editors): `editors.list/detect`; open = OS protocol launch. */
+  /** local — BACKEND-TODO(editors): [D-10, research/11 §1] `editors.list/detect`; open = OS protocol launch. */
   editors: localEditorsAdapter,
-  /** local — BACKEND-TODO(code-search): future `search` RPC. */
+  /** local — BACKEND-TODO(code-search): [D-10, research/11 §2] future `search` RPC. */
   codeSearch: localCodeSearchAdapter,
-  /** local — BACKEND-TODO(browser-preview): future `preview.*` events. */
+  /** local — BACKEND-TODO(browser-preview): [D-10, research/11 §3] future `preview.*` events. */
   browserPreview: localBrowserPreviewAdapter,
   /** local — BACKEND-TODO(onboarding-doctor): `ops.doctor` summary. */
   doctor: localDoctorAdapter

@@ -2,8 +2,8 @@
 
 ```
 Active phase: P12-backend-wiring-behavior
-Active step: GATE 12.1
-Last gate tag: aro-gate/P11-G11.3
+Active step: 4
+Last gate tag: aro-gate/P12-G12.1
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -51,3 +51,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P11-G11.1: 2026-10-19 — packaging recon, clean-machine smoke matrix, runtime spike ADR (tag aro-gate/P11-G11.1)
 - P11-G11.2: 2026-10-19 — installers built, install smoke green on host, clean-machine pass (tag aro-gate/P11-G11.2)
 - P11-G11.3: 2026-10-19 — failure matrix, uninstall/upgrade tests, updater ADR D-9 (tag aro-gate/P11-G11.3)
+- P12-G12.1: 2026-10-19 — inventory, specs, decisions D-10..D-11 recorded (tag aro-gate/P12-G12.1)

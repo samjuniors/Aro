@@ -17,7 +17,7 @@ interface SearchSectionProps {
  * - Feature id: `code-search` (port/FEATURE_MAP.md — local).
  * - Surfaces `adapters.codeSearch` (src/adapters/code-search.ts) as a right-rail panel tab.
  * - Honest local-only scanning via renderer fs bridge (readDesktopDir/readDesktopFileText).
- * - BACKEND-TODO(code-search): grep over workspace via future search RPC.
+ * - BACKEND-TODO(code-search): [D-10, research/11 §2] grep over workspace via future search RPC.
  */
 export function SearchSection({ onPreviewFile }: SearchSectionProps) {
   const cwd = useStore($focusedWorkspaceCwd)
@@ -27,7 +27,7 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
   const [scannedFiles, setScannedFiles] = useState(0)
   const [truncated, setTruncated] = useState(false)
 
-  // BACKEND-TODO(code-search): renderer-side walk only — future backend call is a `search` RPC
+  // BACKEND-TODO(code-search): [D-10, research/11 §2] renderer-side walk only — future backend call is a `search` RPC
   const performSearch = useCallback(
     async (needle: string, rootDir: string) => {
       const q = needle.trim()
@@ -168,9 +168,9 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
             {byFile.map(([filePath, fileHits]) => (
               <Panel className="overflow-hidden p-0" key={filePath}>
                 <button
+                  aria-label={`Open ${filePath}`}
                   className="flex w-full items-center gap-2 border-b border-aro-line-soft bg-aro-raise/40 px-2.5 py-1.5 text-left transition-colors hover:bg-aro-hover"
                   onClick={() => onPreviewFile?.(filePath)}
-                  aria-label={`Open ${filePath}`}
                   type="button"
                 >
                   <IconFolder className="shrink-0 text-aro-ink-4" size={11} />
@@ -184,10 +184,10 @@ export function SearchSection({ onPreviewFile }: SearchSectionProps) {
                 <div className="divide-y divide-aro-line-soft/60">
                   {fileHits.map((hit, idx) => (
                     <button
+                      aria-label={`Open line ${hit.line}`}
                       className="group flex w-full items-start gap-2 px-2.5 py-1 text-left transition-colors hover:bg-aro-hover/60"
                       key={`${hit.line}-${idx}`}
                       onClick={() => onPreviewFile?.(hit.path)}
-                      aria-label={`Open line ${hit.line}`}
                       type="button"
                     >
                       <span className="w-6 shrink-0 text-right font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 group-hover:text-aro-ink-2">
