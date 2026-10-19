@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 989
+Total registered documents: 990
 Last full audit: 2026-10-19
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -118,6 +118,7 @@ Last full audit: 2026-10-19
 | `docs/research/11-backend-wiring-specs.md` | Research 11: Backend Wiring Specifications (v1 ... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/12-failure-matrix.md` | Research 12: Failure Matrix Specification and V... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/13-v1-features-selection.md` | Research 13: v1 Feature Set Selection and Scori... | ACTIVE | - | P10/P12 | 2026-10-19 |
+| `docs/research/14-slice1-diff-review-spec.md` | Research 14: Slice 1 Specification — Diff-First... | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-19 |
 | `evals/botmode-dm-delivery/README.md` | Native Bot Mode delivery probe | ACTIVE | - | P10 | 2026-10-19 |
 | `evals/botmode-dm-matrix/README.md` | Bot Mode native delivery matrix | ACTIVE | - | P10 | 2026-10-19 |

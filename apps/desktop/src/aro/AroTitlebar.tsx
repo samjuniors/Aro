@@ -25,7 +25,6 @@ import { useNavigate } from 'react-router'
 
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
 import { SETTINGS_ROUTE } from '@/app/routes'
-import { useTheme } from '@/themes/context'
 import { useWindowControlsOverlayWidth } from '@/app/shell/hooks/use-window-controls-overlay-width'
 import { titlebarControlsPosition, titlebarToolsRightCss } from '@/app/shell/titlebar'
 import { $workspaceOwnerLabels } from '@/components/pane-shell/workspace-scope'
@@ -42,7 +41,9 @@ import { $projectOwnerBySessionId, $projects, openFolderAsProject } from '@/stor
 import { $connection, $currentCwd, $selectedStoredSessionId, $sessions } from '@/store/session'
 import { $botChatScopes } from '@/store/session-states'
 import { $statusbarVisible } from '@/store/statusbar-prefs'
+import { useTheme } from '@/themes/context'
 
+import { AroCostHud } from './CostHud'
 import {
   IconBranch,
   IconCheck,
@@ -159,6 +160,7 @@ export function AroTitlebar() {
     } catch {
       // ignore
     }
+
     setTheme(themeId)
   }
 
@@ -402,6 +404,9 @@ export function AroTitlebar() {
         <Tip label="Keyboard shortcuts · ⌘/" side="bottom">
           <IconButton icon={IconKeyboard} label="Keyboard shortcuts" onClick={() => openCommandPalette()} size={28} />
         </Tip>
+
+        {/* Ambient Token / Cost HUD & Quota Guard (Slice 13.S2) */}
+        <AroCostHud />
 
         {/* Active Profile / Agent Bot Switcher */}
         <Popover onOpenChange={setProfilePopoverOpen} open={profilePopoverOpen}>

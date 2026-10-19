@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/templates'
 
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
+import { AroCostHud } from './CostHud'
 import { AroReviewPage } from './ReviewHunks'
 import {
   Badge,
@@ -1183,6 +1184,44 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
                 stagedSet: new Set(['src/agent/turn.ts']),
               }}
             />
+          </div>
+        </DS>
+
+        <DS
+          body="Real-time session spend ($0.04), token burn (12.4k), prompt cache hit forensics, and proactive quota limits."
+          eyebrow="Phase 13 Feature Slice 2"
+          id="cost-hud"
+          title="Ambient Cost HUD & Token Burn Forensics"
+        >
+          <div className="flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-4">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-aro-ink">Live Ambient HUD Pills</span>
+              <p className="text-[11px] text-aro-ink-3">
+                Mounted directly in the desktop Titlebar with reactive status indicators (Normal, Caution, Warning, Exceeded).
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 ml-auto">
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 2, cost_usd: 0.042, input: 9800, output: 2600, total: 12400, cache_hit_pct: 88.4 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 8, cost_usd: 1.65, input: 48000, output: 12000, total: 60000, cache_hit_pct: 79.1 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 14, cost_usd: 2.45, input: 95000, output: 28000, total: 123000, cache_hit_pct: 72.0 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 22, cost_usd: 5.4, input: 210000, output: 65000, total: 275000, cache_hit_pct: 65.4 }}
+              />
+            </div>
           </div>
         </DS>
       </div>
