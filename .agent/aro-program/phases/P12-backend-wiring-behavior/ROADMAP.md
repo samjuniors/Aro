@@ -21,7 +21,7 @@ Frozen: Hermes core Python (`agent/`, `gateway/`, `tools/`, `hermes_*.py`) chang
 - [x] 🛑 **GATE 12.2** every v1 item works end to end (BLOCKED items listed with what is needed).
 - [x] 6. Audio capture: replace `ScriptProcessorNode` (audit finding 2; locate the file first, the path in the report may have moved).
 - [x] 7. Failure matrix: gateway down, no model or credentials, rate limit, tool error, network loss, huge output, session restore after crash. Each: designed state, copy, test.
-- [ ] 🛑 **GATE 12.3** failure matrix evidence; no `BACKEND-TODO` left without an ADR or a backlog entry.
+- [x] 🛑 **GATE 12.3** failure matrix evidence; no `BACKEND-TODO` left without an ADR or a backlog entry.
 
 ## Exit criteria
 `grep BACKEND-TODO` returns only items with a linked decision; contract tests green; failure matrix complete.
