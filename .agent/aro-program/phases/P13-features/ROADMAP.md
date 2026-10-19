@@ -10,9 +10,9 @@ Rule: at most 5 features in v1, one slice active at a time.
 4. Who is the first user (role, task, tool they use today)? Options proposed from `docs/research/01-competitive-analysis.md`.
 
 ## Steps
-- [ ] 0. Recon and context pack.
-- [ ] 1. Long list: `port/FEATURE_MAP.md` ("Prototype-only features" and "Unknowns"), `docs/research/01` to `03`, founder ideas. Each item: user problem, who, how they solve it today.
-- [ ] 2. Score with a lightweight rubric (reach, impact, confidence, effort, risk) and propose the shortlist of at most 5. Show the table.
+- [x] 0. Recon and context pack.
+- [x] 1. Long list: `port/FEATURE_MAP.md` ("Prototype-only features" and "Unknowns"), `docs/research/01` to `03`, founder ideas. Each item: user problem, who, how they solve it today.
+- [x] 2. Score with a lightweight rubric (reach, impact, confidence, effort, risk) and propose the shortlist of at most 5. Show the table.
 - [ ] 🛑 **GATE 13.1** v1 feature scope approved. Slices are appended below as `13.S<n>` from the shortlist (an allowed roadmap addition at this gate).
 - [ ] Slice template (copy per feature): **a.** spec (problem, flow, all states, copy, accessibility, success measure, acceptance tests) / **b.** design from the kit with a gallery fixture / **c.** build behind a flag / **d.** verify on the 10 default journeys plus the new one / **e.** docs, registry, flag removal plan. 🛑 **GATE 13.S<n>**.
 

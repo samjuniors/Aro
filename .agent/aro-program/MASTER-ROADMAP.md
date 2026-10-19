@@ -2,7 +2,7 @@
 
 ```
 Active phase: P13-features
-Active step: 0
+Active step: GATE 13.1
 Last gate tag: aro-gate/P12-G12.3
 Integration branch: aro/integration (per D-1)
 ```
