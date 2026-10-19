@@ -1,4 +1,5 @@
 # ROADMAP: Phase 9 UX-ASM, layout, UX and screen assembly (`ui-port/2026-10-09`)
+> STATUS: COMPLETE (frozen)
 
 Order: layout kit first, then audit, then screens group by group, then
 journeys and hardening. Status: `[ ]` todo `[~]` doing `[x]` done `[!]`

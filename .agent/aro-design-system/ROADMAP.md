@@ -1,4 +1,5 @@
 # ROADMAP: Phase 8 UI-DS (branch `ui-port`)
+> STATUS: COMPLETE (frozen)
 
 Order: design system first,
 then screens, then the whole app hardened.
