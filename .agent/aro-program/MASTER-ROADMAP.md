@@ -1,8 +1,8 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P11-runtime-install-packaging
-Active step: GATE 11.3
+Active phase: P12-backend-wiring-behavior
+Active step: 0
 Last gate tag: aro-gate/P11-G11.3
 Integration branch: aro/integration (per D-1)
 ```
