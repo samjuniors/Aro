@@ -60,3 +60,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P13-G13.S3: 2026-10-19 — Slice 3 parallel subagent work-graph and tasks board (tag aro-gate/P13-G13.S3)
 - P13-G13.S4: 2026-10-19 — Slice 4 in-app responsive web and dev-server preview (tag aro-gate/P13-G13.S4)
 - P13-G13.S5: 2026-10-19 — Slice 5 one-click IDE deep link and editor handoff; Phase 13 complete (tag aro-gate/P13-G13.S5)
+- P14-G14.1: 2026-10-21 — Motion language, token extension, animation inventory decisions, and interview answers (tag aro-gate/P14-G14.1)

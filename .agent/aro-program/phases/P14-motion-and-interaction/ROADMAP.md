@@ -12,10 +12,10 @@ animation that blocks input; reduced-motion gives the same information without m
 4. Reference products to feel like (pick 2 to 3): Codex Desktop, Claude desktop, Cursor, Zed, Linear, Raycast.
 
 ## Steps
-- [ ] 0. Recon and context pack.
-- [ ] 1. Inventory every animation: keyframes in `src/aro/host-theme.css` and `src/styles.css`, the `motion` library uses, CSS transitions, durations. Classify keep / replace / remove; flag anything that animates layout or paint properties.
-- [ ] 2. Motion language: extend the existing `--aro-dur-*` and `--aro-ease-*` tokens in `src/aro/tokens.css` (add only what is missing, plus distance), rules (enter, exit, shared element, list change, loading), and a "when not to animate" list. `docs/research/11-motion-language.md` plus a short section in `DESIGN.md`.
-- [ ] 🛑 **GATE 14.1** language, tokens, inventory decisions, interview answers.
+- [x] 0. Recon and context pack.
+- [x] 1. Inventory every animation: keyframes in `src/aro/host-theme.css` and `src/styles.css`, the `motion` library uses, CSS transitions, durations. Classify keep / replace / remove; flag anything that animates layout or paint properties (`docs/research/19-motion-language.md`).
+- [x] 2. Motion language: extend the existing `--aro-dur-*` and `--aro-ease-*` tokens in `src/aro/tokens.css` (add only what is missing, plus distance), rules (enter, exit, shared element, list change, loading), and a "when not to animate" list. `docs/research/19-motion-language.md` plus a short section in `DESIGN.md`.
+- [x] 🛑 **GATE 14.1** language, tokens, inventory decisions, interview answers.
 - [ ] 3. Hero moments, each with acceptance criteria and a frame-timing trace: launch/boot, message send, streaming text and caret, tool-call timeline, pane open/close, command palette, theme switch, voice orb, empty states.
 - [ ] 4. Ambient layer if approved (Q2), with the off conditions and a measured cost.
 - [ ] 🛑 **GATE 14.2** hero moments with traces and short recordings.

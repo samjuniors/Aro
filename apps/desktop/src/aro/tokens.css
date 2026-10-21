@@ -203,6 +203,21 @@
   --animate-aro-sheet: aro-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-aro-drawer: aro-drawer-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 
+  --duration-aro-instant: var(--aro-dur-instant);
+  --duration-aro-fast: var(--aro-dur-fast);
+  --duration-aro-mid: var(--aro-dur-mid);
+  --duration-aro-base: var(--aro-dur-base);
+  --duration-aro-slow: var(--aro-dur-slow);
+  --duration-aro-panel: var(--aro-dur-panel);
+  --duration-aro-hero: var(--aro-dur-hero);
+  --duration-aro-ambient: var(--aro-dur-ambient);
+
+  --ease-aro-standard: var(--aro-ease-standard);
+  --ease-aro-out: var(--aro-ease-out);
+  --ease-aro-in: var(--aro-ease-in);
+  --ease-aro-out-quint: var(--aro-ease-out-quint);
+  --ease-aro-spring: var(--aro-ease-spring);
+
   /* ---- layout measures & heights (Phase 9 UX-ASM) ----------------------- */
   --width-aro-chat: var(--aro-measure-chat);
   --width-aro-form: var(--aro-measure-form);
@@ -289,9 +304,18 @@
   --aro-dur-base: 160ms;
   --aro-dur-slow: 220ms;
   --aro-dur-panel: 260ms;
+  --aro-dur-hero: 450ms;
+  --aro-dur-ambient: 2200ms;
   --aro-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --aro-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --aro-ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Spatial distance tokens per Phase 14 Step 2 */
+  --aro-dist-xs: 2px;
+  --aro-dist-sm: 4px;
+  --aro-dist-md: 8px;
+  --aro-dist-lg: 16px;
+  --aro-dist-xl: 28px;
 
   /* Typography scale per DESIGN.md §3.6 */
   --aro-text-xs: 11px;
@@ -349,6 +373,8 @@
     --aro-dur-base: 0ms;
     --aro-dur-slow: 0ms;
     --aro-dur-panel: 0ms;
+    --aro-dur-hero: 0ms;
+    --aro-dur-ambient: 0ms;
     --aro-ease-standard: linear;
     --aro-ease-out: linear;
     --aro-ease-in: linear;
@@ -357,6 +383,15 @@
     --aro-ease-out-expo: linear;
     --aro-ease-in-quit: linear;
     --aro-ease-inout: linear;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -50,25 +50,25 @@ const STATUS_CONFIG: Record<
   }
 > = {
   normal: {
-    dotClass: 'bg-aro-mint shadow-[0_0_8px_rgba(53,214,196,0.5)]',
+    dotClass: 'bg-aro-mint ring-1 ring-aro-mint/50',
     badgeText: 'Within budget',
     badgeTone: 'bg-aro-mint-tint text-aro-mint border-aro-mint/30',
     description: 'Expenditure is safely within session limits.',
   },
   caution: {
-    dotClass: 'bg-aro-amber shadow-[0_0_8px_rgba(245,158,11,0.5)]',
+    dotClass: 'bg-aro-amber ring-1 ring-aro-amber/50',
     badgeText: 'Approaching limit',
     badgeTone: 'bg-aro-amber-tint text-aro-amber border-aro-amber/30',
     description: 'Approaching soft budget threshold (75%+).',
   },
   warning: {
-    dotClass: 'bg-aro-rose-soft shadow-[0_0_8px_rgba(244,63,94,0.5)]',
+    dotClass: 'bg-aro-rose-soft ring-1 ring-aro-rose/50',
     badgeText: 'Soft limit reached',
     badgeTone: 'bg-aro-rose-tint text-aro-rose border-aro-rose/30',
     description: 'Soft budget limit reached. Consider reviewing prompt context.',
   },
   exceeded: {
-    dotClass: 'bg-aro-rose animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.8)]',
+    dotClass: 'bg-aro-rose animate-pulse ring-2 ring-aro-rose/60',
     badgeText: 'Budget exceeded',
     badgeTone: 'bg-aro-rose-tint text-aro-rose border-aro-rose/40 font-bold',
     description: 'Hard budget limit exceeded. Session quota guard tripped.',
@@ -186,7 +186,7 @@ export function AroCostHud({
             <div className="h-1.5 w-full rounded-full bg-aro-sunken overflow-hidden">
               <div
                 className={cn(
-                  'h-full transition-all duration-300 rounded-full',
+                  'h-full transition-[width] duration-aro-base ease-aro-out rounded-full',
                   status === 'normal' ? 'bg-aro-mint' : status === 'caution' ? 'bg-aro-amber' : 'bg-aro-rose'
                 )}
                 style={{ width: `${softPct}%` }}
@@ -199,7 +199,7 @@ export function AroCostHud({
             </div>
           </div>
 
-          <p className="text-[11px] leading-tight text-aro-ink-3">{config.description}</p>
+          <p className="text-aro-xs leading-tight text-aro-ink-3">{config.description}</p>
         </div>
 
         {/* Token Distribution Matrix */}
@@ -209,31 +209,31 @@ export function AroCostHud({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-control border border-aro-line-soft bg-aro-sunken p-2">
-              <div className="text-[10px] text-aro-ink-4">Prompt (Input)</div>
+              <div className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Prompt (Input)</div>
               <div className="font-aro-mono text-xs font-semibold text-aro-ink">
                 {formatTokensCount(usage.input)}
               </div>
             </div>
             <div className="rounded-control border border-aro-line-soft bg-aro-sunken p-2">
-              <div className="text-[10px] text-aro-ink-4">Completion (Output)</div>
+              <div className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Completion (Output)</div>
               <div className="font-aro-mono text-xs font-semibold text-aro-ink">
                 {formatTokensCount(usage.output)}
               </div>
             </div>
             <div className="rounded-control border border-aro-line-soft bg-aro-sunken p-2">
-              <div className="text-[10px] text-aro-ink-4">Total Tokens</div>
+              <div className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Total Tokens</div>
               <div className="font-aro-mono text-xs font-semibold text-aro-iris-soft">
                 {formatTokensCount(usage.total)}
               </div>
             </div>
             <div className="rounded-control border border-aro-line-soft bg-aro-sunken p-2">
-              <div className="text-[10px] text-aro-ink-4">Cache Hit Rate</div>
+              <div className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Cache Hit Rate</div>
               <div className="font-aro-mono text-xs font-semibold text-aro-mint">{cacheHitStr}</div>
             </div>
           </div>
 
           {/* Prompt Cache Savings Note */}
-          <div className="mt-2.5 flex items-start gap-1.5 rounded-control bg-aro-iris-tint/25 p-2 text-[11px] leading-relaxed text-aro-ink-2">
+          <div className="mt-2.5 flex items-start gap-1.5 rounded-control bg-aro-iris-tint/25 p-2 text-aro-xs leading-relaxed text-aro-ink-2">
             <IconSpark className="text-aro-iris shrink-0 mt-0.5" size={11} />
             <span>Prompt caching is sacred: prefix cache hits reduce provider input costs by up to 90%.</span>
           </div>
@@ -242,7 +242,7 @@ export function AroCostHud({
         {/* Context Window Headroom (if reported) */}
         {usage.context_used !== undefined && usage.context_max !== undefined && usage.context_max > 0 && (
           <div className="p-3 border-b border-aro-line-soft">
-            <div className="flex justify-between font-aro-mono text-[10px] text-aro-ink-4 mb-1">
+            <div className="flex justify-between font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 mb-1">
               <span>Context Utilization</span>
               <span>
                 {formatTokensCount(usage.context_used)} / {formatTokensCount(usage.context_max)} (
@@ -251,7 +251,7 @@ export function AroCostHud({
             </div>
             <div className="h-1.5 w-full rounded-full bg-aro-sunken overflow-hidden">
               <div
-                className="h-full bg-aro-cyan transition-all duration-300 rounded-full"
+                className="h-full bg-aro-cyan transition-[width] duration-aro-base ease-aro-out rounded-full"
                 style={{
                   width: `${Math.min(100, usage.context_percent || Math.round((usage.context_used / usage.context_max) * 100))}%`,
                 }}
@@ -266,12 +266,12 @@ export function AroCostHud({
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <span className="font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">Session Quota Guard</span>
-                <p className="text-[10px] text-aro-ink-4">
+                <p className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   Soft alert: ${budget.softLimitUsd.toFixed(2)} · Hard stop: ${budget.hardLimitUsd.toFixed(2)}
                 </p>
               </div>
               <button
-                className="rounded-control border border-aro-line bg-aro-raise px-2 py-1 font-mono text-[10px] text-aro-ink-2 hover:bg-aro-hover hover:border-aro-line-strong transition-colors cursor-pointer"
+                className="rounded-control border border-aro-line bg-aro-raise px-2 py-1 font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 hover:bg-aro-hover hover:border-aro-line-strong transition-colors cursor-pointer"
                 onClick={() => setEditingBudget(true)}
                 type="button"
               >
@@ -285,7 +285,7 @@ export function AroCostHud({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-aro-ink-4 block mb-0.5">Soft Alert ($)</label>
+                  <label className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4 block mb-0.5">Soft Alert ($)</label>
                   <input
                     aria-label="Soft alert limit"
                     className="w-full rounded-control border border-aro-line bg-aro-sunken px-2 py-1 font-mono text-xs text-aro-ink"
@@ -297,7 +297,7 @@ export function AroCostHud({
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-aro-ink-4 block mb-0.5">Hard Quota ($)</label>
+                  <label className="text-[var(--aro-text-2xs,10px)] text-aro-ink-4 block mb-0.5">Hard Quota ($)</label>
                   <input
                     aria-label="Hard quota limit"
                     className="w-full rounded-control border border-aro-line bg-aro-sunken px-2 py-1 font-mono text-xs text-aro-ink"
@@ -311,14 +311,14 @@ export function AroCostHud({
               </div>
               <div className="flex justify-end gap-1.5 pt-1">
                 <button
-                  className="rounded-control px-2 py-1 font-mono text-[10px] text-aro-ink-4 hover:text-aro-ink transition-colors cursor-pointer"
+                  className="rounded-control px-2 py-1 font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4 hover:text-aro-ink transition-colors cursor-pointer"
                   onClick={handleResetBudget}
                   type="button"
                 >
                   Reset
                 </button>
                 <button
-                  className="rounded-control border border-aro-line bg-aro-raise px-2.5 py-1 font-mono text-[10px] text-aro-ink hover:bg-aro-hover transition-colors cursor-pointer flex items-center gap-1"
+                  className="rounded-control border border-aro-line bg-aro-raise px-2.5 py-1 font-mono text-[var(--aro-text-2xs,10px)] text-aro-ink hover:bg-aro-hover transition-colors cursor-pointer flex items-center gap-1"
                   onClick={handleSaveBudget}
                   type="button"
                 >
@@ -329,7 +329,7 @@ export function AroCostHud({
             </div>
           )}
           {savedFeedback && (
-            <p className="mt-1 font-mono text-[10px] text-aro-mint flex items-center gap-1">
+            <p className="mt-1 font-mono text-[var(--aro-text-2xs,10px)] text-aro-mint flex items-center gap-1">
               <IconCheck size={9} /> Budget limits saved
             </p>
           )}

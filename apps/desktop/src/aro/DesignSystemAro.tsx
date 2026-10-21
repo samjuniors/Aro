@@ -1199,7 +1199,7 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
           <div className="flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-4">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-aro-ink">Live Ambient HUD Pills</span>
-              <p className="text-[11px] text-aro-ink-3">
+              <p className="text-aro-xs text-aro-ink-3">
                 Mounted directly in the desktop Titlebar with reactive status indicators (Normal, Caution, Warning, Exceeded).
               </p>
             </div>

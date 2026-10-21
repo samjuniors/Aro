@@ -280,7 +280,7 @@ export function AroIdeHandoffPanel({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <span className="font-semibold text-aro-ink">Active Editor Handoff</span>
-          <p className="text-[11px] text-aro-ink-3">
+          <p className="text-aro-xs text-aro-ink-3">
             One-click jumps to exact file and line coordinates in your preferred IDE.
           </p>
         </div>

@@ -193,32 +193,37 @@ Numbers that change (counts, timers, diffs) use `tabular-nums`. Chat text size
 is governed by *Chat typography* (section 10) and the UI Scale zoom; do not
 multiply global tokens or nest CSS zoom.
 
-### 3.7 Motion (reuse the existing `--aro-dur-*` / `--aro-ease-*`; the values below are the intended scale, verify against `tokens.css` and add only what is missing, plus a `prefers-reduced-motion` block)
+### 3.7 Motion (Phase 14 motion scale & distance tokens in `tokens.css`, with strict reduced-motion clamping)
 
 | Token | Default | Use |
 | --- | --- | --- |
 | `--aro-dur-instant` | 0ms | State that must not animate (selection, pressed) |
-| `--aro-dur-fast` | 100ms | Hover, focus, control state |
-| `--aro-dur-base` | 160ms | Menus, popovers, tooltips (enter), tab switch |
-| `--aro-dur-slow` | 240ms | Dialogs, drawers, card promotion |
-| `--aro-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
+| `--aro-dur-fast` | 100ms | Hover, focus, control state, exit transitions |
+| `--aro-dur-mid` | 150ms | Dropdowns, popover exit, disclosure toggles |
+| `--aro-dur-base` | 160ms | Menus, popovers, default UI transitions, tab switch |
+| `--aro-dur-slow` | 220ms | Modals, dialogs, card entrance |
+| `--aro-dur-panel` | 260ms | Workspace drawers, side pane collapse/expand |
+| `--aro-dur-hero` | 450ms | Mode switches, boot sequences, theme shifts |
+| `--aro-dur-ambient` | 2200ms | Subtle idle pulse loops |
+| `--aro-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Default UI transitions |
 | `--aro-ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | Enter / settle |
 | `--aro-ease-in` | `cubic-bezier(0.4, 0, 1, 1)` | Exit |
+| `--aro-ease-out-quint` | `cubic-bezier(0.22, 1, 0.36, 1)` | Signature Aro curve (gentle landing) |
+| `--aro-ease-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Dialog and popover organic entry |
+| `--aro-dist-xs` | 2px | Micro-press, button depression |
+| `--aro-dist-sm` | 4px | Tooltips, menu drop, inline disclosure |
+| `--aro-dist-md` | 8px | Cards, hunk review banners, toasts |
+| `--aro-dist-lg` | 16px | Modal entry, alert promotion |
+| `--aro-dist-xl` | 28px | Side panel sheets, task drawer slide-ins |
 
 Rules:
-- Animate only `opacity`, `transform`, `background-color`, `color`,
-  `box-shadow`, `filter` with **named properties**. Never `transition-all`.
-- Enter is longer than exit (exit is `--aro-dur-fast`).
-- Tooltips: 200ms open delay, 300ms warm window, no entrance animation, 100ms
-  exit.
-- Stagger only choreographed surfaces (onboarding); the outer fade is delayed
-  so it does not swallow inner motion.
-- Respect `prefers-reduced-motion`: anything beyond an opacity fade becomes
-  instant, and no empty clearance is retained.
-- No backdrop-filter repaints during movement. Remove animation before
-  masking a performance problem.
-- Hot interactions (drag, resize, streaming scroll) use transform/opacity only
-  and coalesce pointer work per frame.
+- Animate only `transform` and `opacity` for layout/spatial movement. Never animate layout properties (`width`, `height`, `margin`, `padding`, `top`, `left`).
+- Named properties only. Never `transition-all`.
+- Enter is longer than exit (exit is `--aro-dur-fast` or `--aro-dur-mid`).
+- Micro-press responds in the current frame (0ms `active` depression).
+- Strict reduced-motion parity: both `html[data-motion='reduced']` and `@media (prefers-reduced-motion: reduce)` clamp all durations to `.001ms !important`, set `animation-iteration-count: 1 !important`, and set `scroll-behavior: auto !important`.
+- No backdrop-filter blur repaints or animated box-shadow on large surfaces during movement.
+- Hot interactions (drag, resize, streaming scroll) use transform/opacity only and coalesce pointer work per frame.
 
 ### 3.8 Z ladder
 
@@ -546,6 +551,37 @@ reduced motion. It reads no backend and no feature store (fixtures only).
 - Each component entry shows: anatomy, variants x sizes grid, all states,
   long-text and truncation case, keyboard path, and its role.
 - The gallery is excluded from production bundles.
+
+---
+
+## 14.1 Motion language & frame-rate budget (Phase 14)
+
+**Authority**: `docs/research/19-motion-language.md`, `src/aro/tokens.css`
+
+Motion in Aro explains state, creates spatial continuity, and confirms intent — it is never decorative indulgence.
+
+### Performance & Frame Budget:
+1. **Compositor Only**: Spatial and entrance animations animate `transform` and `opacity` exclusively. Never animate layout properties (`width`, `height`, `margin`, `padding`, `top`, `left`, `border-width`).
+2. **Paint Budget**: No animated `box-shadow` or `filter: blur()` across large surfaces. Static backdrop filters remain stationary during panel transitions.
+3. **Target Frame Rate**: Sustained 60fps (120fps on ProMotion displays). Total JS frame duration during animations must stay `< 8ms`.
+
+### Motion Rules by Interaction Type:
+- **Enters**: Small directional translation (`--aro-dist-sm` to `--aro-dist-md`) paired with opacity fade. Timing: `--aro-dur-base` (160ms) to `--aro-dur-slow` (220ms), easing: `--aro-ease-out-quint` or `--aro-ease-out`.
+- **Exits**: Snap exit (`--aro-dur-fast` 100ms or `--aro-dur-mid` 150ms), easing: `--aro-ease-in`. Exits are always 30% faster than enters.
+- **Micro-Interactions**: Hover feedback paints within `--aro-dur-fast` (100ms). Active/pressed state paints instantly (0ms) on pointerdown.
+- **Drawers & Sheets**: Sliding side panels animate via `translateX` across `--aro-dist-xl` (28px) over `--aro-dur-panel` (260ms).
+
+### When NOT to Animate (Hard Invariants):
+1. **Critical Safety Approvals**: YOLO gates, bash command approvals, and destructive confirmation modals render instantaneously (0ms). Safety decisions must never be delayed by decorative motion.
+2. **Rapid Typing & Streaming**: No animation on composer typing, caret repositioning, or high-throughput text streaming reflow.
+3. **Input Blocking**: No animation may delay focus acquisition, pointer hit-testing, or keyboard shortcuts.
+4. **Battery / Low Power**: Ambient canvas layers (starfield/particles) are disabled on battery, weak GPU, or reduced motion via `conductor.ambient.stars`.
+
+### Reduced-Motion Parity:
+When either `html[data-motion='reduced']` or `@media (prefers-reduced-motion: reduce)` is active:
+- All animation and transition durations clamp to `.001ms !important`.
+- `animation-iteration-count: 1 !important` and `scroll-behavior: auto !important`.
+- Zero spatial translations or clearance steps; all state changes convey full information instantaneously.
 
 ---
 
