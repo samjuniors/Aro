@@ -1,9 +1,9 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P16-release-and-launch (completed) -> P17-operate-and-evolve
-Active step: 16.3
-Last gate tag: aro-gate/P16-G16.2
+Active phase: P17-operate-and-evolve (completed)
+Active step: 17.1
+Last gate tag: aro-gate/P17-G17.1
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -69,3 +69,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P16-G16.1: 2026-10-21 — Interview batch 1 answers, legal & brand inventory, About dialog attribution, packaging dry run (tag aro-gate/P16-G16.1)
 - P16-G16.2: 2026-10-21 — User documentation suite, privacy policy, and closed beta operational runbook (tag aro-gate/P16-G16.2)
 - P16-G16.3: 2026-10-21 — 11 public-ready criteria verified, release notes, rollback plan, 7-day on-call runbook; Phase 16 complete (tag aro-gate/P16-G16.3)
+- P17-G17.1: 2026-10-21 — Operating handbook, automation & release runbook, staleness check, roadmap intake; Phase 17 complete (tag aro-gate/P17-G17.1)

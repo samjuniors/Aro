@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 1010
+Total registered documents: 1012
 Last full audit: 2026-10-21
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -134,6 +134,8 @@ Last full audit: 2026-10-21
 | `docs/research/22-test-pyramid-and-benchmarks.md` | Test Pyramid, Performance Budgets & Journey Cov... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/23-legal-brand-inventory.md` | Legal, Brand, Font & Asset Inventory (Phase 16,... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/24-beta-program-runbook.md` | Closed Beta Program Runbook (Phase 16, Step 4) | ACTIVE | - | P10/P12 | 2026-10-21 |
+| `docs/research/25-release-notes-and-rollback.md` | Research 25: Release Notes, Rollback Plan & 7-D... | ACTIVE | - | P10/P12 | 2026-10-21 |
+| `docs/research/26-go-no-go-checklist.md` | Research 26: Go / No-Go Checklist (Public-Ready... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/user/FIRST-RUN.md` | Aro First-Run & Onboarding Guide | ACTIVE | - | P10 | 2026-10-21 |
 | `docs/user/INSTALL.md` | Aro Installation Guide | ACTIVE | - | P10 | 2026-10-21 |

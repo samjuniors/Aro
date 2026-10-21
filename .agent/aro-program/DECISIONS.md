@@ -23,6 +23,9 @@
 | D-19 | Release update channels: 3 channels (canary, beta, stable) with atomic staging and rollback | ACCEPTED | `docs/adr/0017-release-channels-and-signing.md` |
 | D-20 | Distribution and support: GitHub Releases feed for assets, GitHub Issues & Discussions for support | ACCEPTED | `docs/adr/0018-beta-program-and-support.md` |
 | D-21 | Closed beta cohort: 25-50 users, 2-week closed testing; success = 0 fatal crashers & >=80% journey completion | ACCEPTED | `docs/adr/0018-beta-program-and-support.md` |
+| D-22 | Release train cadence: bi-weekly beta releases, monthly stable releases | ACCEPTED | `docs/adr/0019-release-cadence-and-channels.md` |
+| D-23 | Operational triage SLAs by severity: P0 < 12h, P1 < 24h, P2 < 48h, P3 within 1 release cycle | ACCEPTED | `docs/adr/0020-triage-sla-and-severity.md` |
+| D-24 | Upstream (Hermes) security sync routine: automated pre-screening bi-weekly, founder review & cherry-pick | ACCEPTED | `docs/adr/0021-upstream-security-sync-routine.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly

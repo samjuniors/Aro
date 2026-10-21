@@ -13,14 +13,38 @@ if (top.status !== 0) {
 const ROOT = resolve(top.stdout.trim());
 process.chdir(ROOT);
 
+const args = process.argv.slice(2);
+const checkStale = args.includes('--check-stale');
+const staleDaysIdx = args.indexOf('--stale-days');
+const maxStaleDays = staleDaysIdx !== -1 && args[staleDaysIdx + 1] ? parseInt(args[staleDaysIdx + 1], 10) : 90;
+
 const files = git('ls-files', '*.md', ':!:website/*', ':!:locales/*', ':!:node_modules/*')
   .stdout.trim().split('\n').map(s => s.trim().replace(/\\/g, '/')).filter(Boolean);
 
 console.log(`Found ${files.length} markdown files to reconcile.`);
 
 const today = new Date().toISOString().split('T')[0];
+const todayMs = new Date(today).getTime();
 const rows = [];
 const linkErrors = [];
+const staleDocs = [];
+
+// Parse existing verified dates if registry exists
+const existingVerifiedDates = new Map();
+if (existsSync('.agent/aro-program/DOCS-REGISTRY.md')) {
+  const regContent = readFileSync('.agent/aro-program/DOCS-REGISTRY.md', 'utf8');
+  for (const line of regContent.split('\n')) {
+    if (!line.startsWith('| `')) continue;
+    const parts = line.split('|').map(s => s.trim());
+    if (parts.length >= 7) {
+      const p = parts[1].replace(/`/g, '');
+      const v = parts[6];
+      if (p && v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        existingVerifiedDates.set(p, v);
+      }
+    }
+  }
+}
 
 for (const file of files) {
   if (file === '.agent/aro-program/DOCS-REGISTRY.md') continue;
@@ -101,6 +125,8 @@ for (const file of files) {
     ownerPhase = 'P15';
   } else if (file === 'AGENTS.md') {
     ownerPhase = 'P10/P17';
+  } else if (file === 'docs/operations.md') {
+    ownerPhase = 'P17';
   }
 
   // Link checking for local relative links
@@ -127,13 +153,19 @@ for (const file of files) {
     }
   }
 
+  const verifiedDate = existingVerifiedDates.get(file) || today;
+  const ageDays = Math.floor((todayMs - new Date(verifiedDate).getTime()) / (1000 * 60 * 60 * 24));
+  if (ageDays > maxStaleDays) {
+    staleDocs.push({ file, verifiedDate, ageDays });
+  }
+
   rows.push({
     file,
     topic: title,
     status,
     supersededBy,
     ownerPhase,
-    verified: today
+    verified: verifiedDate
   });
 }
 
@@ -158,5 +190,17 @@ if (linkErrors.length > 0) {
   console.log('Sample broken links (first 10):');
   for (const err of linkErrors.slice(0, 10)) {
     console.log(`  in ${err.file}: [${err.text}](${err.target})`);
+  }
+}
+
+if (checkStale) {
+  console.log(`\nStale docs check (threshold: >${maxStaleDays} days):`);
+  if (staleDocs.length === 0) {
+    console.log(`✓ All ${rows.length} documents verified within ${maxStaleDays} days.`);
+  } else {
+    console.log(`Found ${staleDocs.length} stale documents:`);
+    for (const d of staleDocs.slice(0, 15)) {
+      console.log(`  - ${d.file}: verified ${d.verifiedDate} (${d.ageDays} days ago)`);
+    }
   }
 }
