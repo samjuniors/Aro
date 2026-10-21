@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 1004
+Total registered documents: 1010
 Last full audit: 2026-10-21
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -133,7 +133,13 @@ Last full audit: 2026-10-21
 | `docs/research/21-privacy-network-map.md` | Privacy Network Map & Data Flow Audit (Phase 15... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/22-test-pyramid-and-benchmarks.md` | Test Pyramid, Performance Budgets & Journey Cov... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/23-legal-brand-inventory.md` | Legal, Brand, Font & Asset Inventory (Phase 16,... | ACTIVE | - | P10/P12 | 2026-10-21 |
+| `docs/research/24-beta-program-runbook.md` | Closed Beta Program Runbook (Phase 16, Step 4) | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-21 |
+| `docs/user/FIRST-RUN.md` | Aro First-Run & Onboarding Guide | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/user/INSTALL.md` | Aro Installation Guide | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/user/KNOWN-ISSUES.md` | Known Issues & Workarounds (v1 Beta) | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/user/PRIVACY.md` | Aro Privacy Policy & Terms of Service (Draft) | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/user/SUPPORT.md` | Aro Support & Community Instructions | ACTIVE | - | P10 | 2026-10-21 |
 | `evals/botmode-dm-delivery/README.md` | Native Bot Mode delivery probe | ACTIVE | - | P10 | 2026-10-21 |
 | `evals/botmode-dm-matrix/README.md` | Bot Mode native delivery matrix | ACTIVE | - | P10 | 2026-10-21 |
 | `evals/browser_use/README.md` | Browser Use Mode Benchmark | ACTIVE | - | P10 | 2026-10-21 |

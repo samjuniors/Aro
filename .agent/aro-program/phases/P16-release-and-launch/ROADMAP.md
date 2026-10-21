@@ -18,9 +18,9 @@ The agent prepares and verifies; the founder performs anything involving money, 
 - [x] 3. Docs and site: install guide, first-run guide, privacy policy and terms drafts from the P15 privacy map, known-issues page, support instructions.
 - [x] 4. Beta: invite flow, feedback form, triage board, daily review; fix or defer in writing.
 - [x] 🛑 **GATE 16.2** beta report: counts, top issues, decisions.
-- [ ] 5. Go/no-go checklist = the "public-ready" list in `MASTER-ROADMAP.md`, each item with evidence links.
-- [ ] 6. Release notes, rollback plan, on-call (who and how) for the first 7 days.
-- [ ] 🛑 **GATE 16.3** go/no-go. The founder decides; the agent does not publish.
+- [x] 5. Go/no-go checklist = the "public-ready" list in `MASTER-ROADMAP.md`, each item with evidence links.
+- [x] 6. Release notes, rollback plan, on-call (who and how) for the first 7 days.
+- [x] 🛑 **GATE 16.3** go/no-go. The founder decides; the agent does not publish.
 
 ## Exit criteria
 Every "public-ready" item has evidence or a written waiver by the founder.

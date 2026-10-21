@@ -1,9 +1,9 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P15-hardening (completed) -> P16-release-and-launch
-Active step: 16.1
-Last gate tag: aro-gate/P15-G15.3
+Active phase: P16-release-and-launch (completed) -> P17-operate-and-evolve
+Active step: 16.3
+Last gate tag: aro-gate/P16-G16.2
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -66,3 +66,6 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P15-G15.1: 2026-10-21 — Electron security review checklist, secret redaction pass, and privacy network map (tag aro-gate/P15-G15.1)
 - P15-G15.2: 2026-10-21 — WCAG 2.2 AA accessibility verification across 10 journeys, theme contrast, and i18n audit (tag aro-gate/P15-G15.2)
 - P15-G15.3: 2026-10-21 — Performance budgets met on 4-core reference baseline, test pyramid signed off; Phase 15 complete (tag aro-gate/P15-G15.3)
+- P16-G16.1: 2026-10-21 — Interview batch 1 answers, legal & brand inventory, About dialog attribution, packaging dry run (tag aro-gate/P16-G16.1)
+- P16-G16.2: 2026-10-21 — User documentation suite, privacy policy, and closed beta operational runbook (tag aro-gate/P16-G16.2)
+- P16-G16.3: 2026-10-21 — 11 public-ready criteria verified, release notes, rollback plan, 7-day on-call runbook; Phase 16 complete (tag aro-gate/P16-G16.3)
