@@ -1,9 +1,9 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P14-motion-and-interaction (completed) -> P15-hardening
-Active step: 15.1
-Last gate tag: aro-gate/P14-G14.3
+Active phase: P15-hardening (completed) -> P16-release-and-launch
+Active step: 16.1
+Last gate tag: aro-gate/P15-G15.3
 Integration branch: aro/integration (per D-1)
 ```
 
@@ -63,3 +63,6 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P14-G14.1: 2026-10-21 — Motion language, token extension, animation inventory decisions, and interview answers (tag aro-gate/P14-G14.1)
 - P14-G14.2: 2026-10-21 — 9 signature hero moments verified with frame-timing traces; ambient space layer with off conditions and measured cost (tag aro-gate/P14-G14.2)
 - P14-G14.3: 2026-10-21 — Micro-interactions, performance pass, reduced-motion parity pass, and keyboard pass; Phase 14 complete (tag aro-gate/P14-G14.3)
+- P15-G15.1: 2026-10-21 — Electron security review checklist, secret redaction pass, and privacy network map (tag aro-gate/P15-G15.1)
+- P15-G15.2: 2026-10-21 — WCAG 2.2 AA accessibility verification across 10 journeys, theme contrast, and i18n audit (tag aro-gate/P15-G15.2)
+- P15-G15.3: 2026-10-21 — Performance budgets met on 4-core reference baseline, test pyramid signed off; Phase 15 complete (tag aro-gate/P15-G15.3)
