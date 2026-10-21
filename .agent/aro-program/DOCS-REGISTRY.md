@@ -1,6 +1,6 @@
 # Docs registry (managed via .agent/aro-program/tools/reconcile-docs.mjs)
 
-Total registered documents: 1001
+Total registered documents: 1004
 Last full audit: 2026-10-21
 
 | Path | Topic | Status | Superseded by | Owner phase | Verified (date) |
@@ -107,6 +107,8 @@ Last full audit: 2026-10-21
 | `docs/adr/0014-v1-launch-languages-en-only.md` | ADR 0014: Launch Languages Scope (English Only ... | ACTIVE | - | P10 | 2026-10-21 |
 | `docs/adr/0015-accessibility-target-wcag-22-aa.md` | ADR 0015: Accessibility Target (WCAG 2.2 AA on ... | ACTIVE | - | P10 | 2026-10-21 |
 | `docs/adr/0016-reference-hardware-baseline.md` | ADR 0016: Reference Hardware Baseline for Perfo... | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/adr/0017-release-channels-and-signing.md` | ADR 0017: Release Channels and Signing Strategy | ACTIVE | - | P10 | 2026-10-21 |
+| `docs/adr/0018-beta-program-and-support.md` | ADR 0018: Closed Beta Cohort and Support Strategy | ACTIVE | - | P10 | 2026-10-21 |
 | `docs/brand/BRAND.md` | Aro Brand Guidelines | ACTIVE | - | P16 | 2026-10-21 |
 | `docs/research/01-competitive-analysis.md` | 01 — Competitive Analysis: Aro vs the Agent Lan... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/02-gap-analysis.md` | 02 — Gap Analysis: Aro vs the Leaders | ACTIVE | - | P10/P12 | 2026-10-21 |
@@ -130,6 +132,7 @@ Last full audit: 2026-10-21
 | `docs/research/20-hero-moments-traces.md` | Aro Hero Moments & Frame-Timing Traces (Phase 1... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/21-privacy-network-map.md` | Privacy Network Map & Data Flow Audit (Phase 15... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/22-test-pyramid-and-benchmarks.md` | Test Pyramid, Performance Budgets & Journey Cov... | ACTIVE | - | P10/P12 | 2026-10-21 |
+| `docs/research/23-legal-brand-inventory.md` | Legal, Brand, Font & Asset Inventory (Phase 16,... | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `docs/research/README.md` | Research — Aro / SamAgent | ACTIVE | - | P10/P12 | 2026-10-21 |
 | `evals/botmode-dm-delivery/README.md` | Native Bot Mode delivery probe | ACTIVE | - | P10 | 2026-10-21 |
 | `evals/botmode-dm-matrix/README.md` | Bot Mode native delivery matrix | ACTIVE | - | P10 | 2026-10-21 |
