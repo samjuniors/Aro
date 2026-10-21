@@ -64,7 +64,7 @@ export function Button({
     <button
       {...rest}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus active:translate-y-[var(--aro-dist-xs,2px)] disabled:pointer-events-none disabled:opacity-40',
         variantMap[variant],
         sizeMap[size],
         className,
@@ -881,7 +881,7 @@ export function Skeleton({ className, ...rest }: HTMLAttributes<HTMLDivElement>)
   return (
     <div
       {...rest}
-      className={cn('animate-pulse rounded-control bg-aro-line/50', className)}
+      className={cn('aro-skeleton rounded-control', className)}
     />
   )
 }

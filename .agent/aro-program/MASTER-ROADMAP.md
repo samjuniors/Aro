@@ -62,3 +62,4 @@ fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend
 - P13-G13.S5: 2026-10-19 — Slice 5 one-click IDE deep link and editor handoff; Phase 13 complete (tag aro-gate/P13-G13.S5)
 - P14-G14.1: 2026-10-21 — Motion language, token extension, animation inventory decisions, and interview answers (tag aro-gate/P14-G14.1)
 - P14-G14.2: 2026-10-21 — 9 signature hero moments verified with frame-timing traces; ambient space layer with off conditions and measured cost (tag aro-gate/P14-G14.2)
+- P14-G14.3: 2026-10-21 — Micro-interactions, performance pass, reduced-motion parity pass, and keyboard pass; Phase 14 complete (tag aro-gate/P14-G14.3)

@@ -19,9 +19,9 @@ animation that blocks input; reduced-motion gives the same information without m
 - [x] 3. Hero moments, each with acceptance criteria and a frame-timing trace: launch/boot, message send, streaming text and caret, tool-call timeline, pane open/close, command palette, theme switch, voice orb, empty states (`docs/research/20-hero-moments-traces.md`, `apps/desktop/src/aro/HeroMoments.tsx`).
 - [x] 4. Ambient layer if approved (Q2), with the off conditions and a measured cost (`apps/desktop/src/aro/AmbientSpaceLayer.tsx`).
 - [x] 🛑 **GATE 14.2** hero moments with traces and short recordings.
-- [ ] 5. Micro-interactions: hover, press, focus, drag, reorder, toast, skeleton, optimistic updates; consistent via primitives, not call sites.
-- [ ] 6. Performance pass on a low-end reference machine; reduced-motion parity pass; keyboard pass.
-- [ ] 🛑 **GATE 14.3** budget met (numbers in the report), nothing janky on the reference machine.
+- [x] 5. Micro-interactions: hover, press, focus, drag, reorder, toast, skeleton, optimistic updates; consistent via primitives, not call sites (`apps/desktop/src/aro/ui.tsx`, `micro-interactions.test.tsx`).
+- [x] 6. Performance pass on a low-end reference machine; reduced-motion parity pass; keyboard pass (`micro-interactions.test.tsx`).
+- [x] 🛑 **GATE 14.3** budget met (numbers in the report), nothing janky on the reference machine.
 
 ## Exit criteria
 Every animation traces back to a token and a rule; `no-raw-visuals` ratchet not grown; budget met; reduced motion verified.
