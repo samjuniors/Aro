@@ -150,9 +150,15 @@ function validateKeyPath(keyPath) {
 
 const _REDACTIONS: Array<[RegExp, string]> = [
   [/(HERMES_DASHBOARD_SESSION_TOKEN=)(\S+)/g, '$1<redacted>'],
+  [/(ARO_DASHBOARD_SESSION_TOKEN=)(\S+)/g, '$1<redacted>'],
   [/(X-Hermes-Session-Token["']?\s*[:=]\s*["']?)([^\s"'&]+)/gi, '$1<redacted>'],
+  [/(X-Aro-Session-Token["']?\s*[:=]\s*["']?)([^\s"'&]+)/gi, '$1<redacted>'],
   [/(Authorization["']?\s*:\s*Bearer\s+)(\S+)/gi, '$1<redacted>'],
   [/([?&](?:token|ticket)=)([^\s&"']+)/gi, '$1<redacted>'],
+  [/\b(sk-[a-zA-Z0-9_-]{20,})\b/g, '<redacted-api-key>'],
+  [/\b(sk-ant-[a-zA-Z0-9_-]{20,})\b/g, '<redacted-api-key>'],
+  [/\b(AIzaSy[a-zA-Z0-9_-]{30,40})\b/g, '<redacted-api-key>'],
+  [/\b(gh[pousr]_[a-zA-Z0-9]{36,255})\b/g, '<redacted-token>'],
   // SSH target with a non-numeric segment where a port belongs
   // (user@host:SECRET or user@host:SECRET:22). A mistyped password in the
   // host field must never reach logs / debug shares verbatim.

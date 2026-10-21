@@ -15,6 +15,9 @@
 | D-11 | Voice assistant v1 scope: push-to-talk (PTT) only; wake word deferred post-v1; replace ScriptProcessorNode with Web Audio API | ACCEPTED | `docs/adr/0011-voice-v1-scope-push-to-talk.md` |
 | D-12 | Telemetry posture at v1: none; qualitative beta feedback only | ACCEPTED | `docs/adr/0012-telemetry-posture-none.md` |
 | D-13 | v1 feature scope: 5 vertical slices (Diff Review, Cost HUD, Tasks Board, Browser Preview, IDE Deep Link) | ACCEPTED | `docs/adr/0013-v1-features-shortlist.md` |
+| D-14 | Launch languages scope at v1: English (en-US) only; other locales deferred post-v1 | ACCEPTED | `docs/adr/0014-v1-launch-languages-en-only.md` |
+| D-15 | Accessibility target: WCAG 2.2 AA across the 10 default user journeys | ACCEPTED | `docs/adr/0015-accessibility-target-wcag-22-aa.md` |
+| D-16 | Reference low-end machine baseline: 4-core CPU, 8 GB RAM, integrated GPU (Intel UHD 620 baseline) | ACCEPTED | `docs/adr/0016-reference-hardware-baseline.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly

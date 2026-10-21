@@ -13763,12 +13763,18 @@ function installPreviewGuestPreload() {
       return
     }
 
-    contents.on('will-attach-webview', (_attachEvent, webPreferences, params) => {
+    contents.on('will-attach-webview', (attachEvent, webPreferences, params) => {
       if (params.partition !== 'persist:hermes-preview') {
+        attachEvent.preventDefault()
+
         return
       }
 
+      delete (webPreferences as { preloadURL?: string }).preloadURL
       webPreferences.preload = PREVIEW_GUEST_PRELOAD_PATH
+      webPreferences.nodeIntegration = false
+      webPreferences.nodeIntegrationInSubFrames = false
+      webPreferences.contextIsolation = true
     })
   })
 }

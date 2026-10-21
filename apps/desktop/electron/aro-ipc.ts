@@ -169,7 +169,19 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     }
   }
 
+  function isTrustedSender(event: { sender?: { id?: number; mainFrame?: unknown }; senderFrame?: unknown }): boolean {
+    if (event?.senderFrame && event?.sender?.mainFrame && event.senderFrame !== event.sender.mainFrame) {
+      return false
+    }
+
+    return true
+  }
+
   ipcMain.handle('hermes:aro:bridge:start', async (event, opts: AroBridgeStartOptions = {}) => {
+    if (!isTrustedSender(event)) {
+      throw new Error('Unauthorized IPC sender: calls are only permitted from the main frame')
+    }
+
     // Deterministic start: if a session with this sessionId is already active and healthy, reuse it.
     if (opts.sessionId) {
       const existing = findSession(opts.sessionId)
@@ -318,7 +330,11 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     return { sessionId: await started }
   })
 
-  ipcMain.handle('hermes:aro:bridge:send', (_event, sessionId: string, text: string) => {
+  ipcMain.handle('hermes:aro:bridge:send', (event, sessionId: string, text: string) => {
+    if (!isTrustedSender(event)) {
+      return false
+    }
+
     const session = findSession(sessionId)
 
     return session ? writeLine(session, { type: 'user_message', text: String(text ?? '') }) : false
@@ -326,7 +342,11 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
 
   ipcMain.handle(
     'hermes:aro:bridge:toolResult',
-    (_event, sessionId: string, callId: string, ok: boolean, output: string) => {
+    (event, sessionId: string, callId: string, ok: boolean, output: string) => {
+      if (!isTrustedSender(event)) {
+        return false
+      }
+
       const session = findSession(sessionId)
 
       return session
@@ -340,13 +360,21 @@ export function registerAroIpc({ resolveAroDaemon }: AroBridgeDeps): void {
     }
   )
 
-  ipcMain.handle('hermes:aro:bridge:interrupt', (_event, sessionId: string) => {
+  ipcMain.handle('hermes:aro:bridge:interrupt', (event, sessionId: string) => {
+    if (!isTrustedSender(event)) {
+      return false
+    }
+
     const session = findSession(sessionId)
 
     return session ? writeLine(session, { type: 'interrupt' }) : false
   })
 
-  ipcMain.handle('hermes:aro:bridge:stop', (_event, sessionId: string) => {
+  ipcMain.handle('hermes:aro:bridge:stop', (event, sessionId: string) => {
+    if (!isTrustedSender(event)) {
+      return false
+    }
+
     const session = findSession(sessionId)
 
     if (!session) {

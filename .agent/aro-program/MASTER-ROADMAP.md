@@ -1,9 +1,9 @@
 # MASTER ROADMAP: Aro to public release
 
 ```
-Active phase: P13-features (completed) -> P14-motion-and-interaction
-Active step: 14.1
-Last gate tag: aro-gate/P13-G13.S5
+Active phase: P14-motion-and-interaction (completed) -> P15-hardening
+Active step: 15.1
+Last gate tag: aro-gate/P14-G14.3
 Integration branch: aro/integration (per D-1)
 ```
 
