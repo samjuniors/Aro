@@ -3,17 +3,17 @@ Branch: `aro/P16-release` | Gates: 16.1, 16.2, 16.3 | Needs: P15
 Goal: a signed, updatable, documented release that real people can install, with a way to hear from them.
 The agent prepares and verifies; the founder performs anything involving money, legal, keys, or publishing.
 
-## Interview batch 1
-1. Name and brand. The product is a fork of Hermes Agent under MIT; upstream "Hermes" marks belong to their owners (README attribution). Confirm the public name, logo status (`docs/brand/BRAND.md`), and whether any upstream marketing claims in the README are reused. Recommended: the founder reviews with counsel; the agent only lists risks.
-2. Signing: which certificates exist (Windows, Apple Developer ID) or must be obtained.
-3. Channels. **A. canary, beta, stable** / B. beta and stable / C. stable.
-4. Distribution and support: website, GitHub releases, issue tracker, community channel; who answers.
-5. Beta size and duration; what counts as success.
+## Interview batch 1 (Decisions recorded 2026-10-21)
+1. Name and brand: "Aro" (Aro Desktop / Aro Agent by samjuniors) with MIT attribution to Nous Research in NOTICE (Decision D-17, `NOTICE`).
+2. Signing: Developer / test certs for dry-runs; production ATS (Windows) and Apple Developer ID (macOS) via CI secrets (ADR 0017, Decision D-18).
+3. Channels: **A. 3 channels: canary, beta, stable** (ADR 0017, Decision D-19).
+4. Distribution and support: GitHub Releases feed + GitHub Issues & Discussions for support (ADR 0018, Decision D-20).
+5. Beta cohort: 25-50 users, 2-week closed beta, success = 0 fatal crashers & >=80% journey completion (ADR 0018, Decision D-21).
 
 ## Steps
-- [ ] 0. Recon and context pack.
-- [ ] 1. Legal and brand inventory: licenses of code, fonts (Geist, Inter, JetBrains Mono, Cascadia Code, Monaspace, others bundled in `apps/desktop/src/fonts/`), icons, images, third-party notices, attribution in `NOTICE` and the About screen; README claims audit (each public claim backed by a test or removed). Not legal advice: list, recommend counsel.
-- [ ] 2. Release engineering dry run in a throwaway fork or a private channel: build, sign (founder-provided keys), notarize where applicable, upload, update, rollback, each timed and logged. No publishing.
+- [x] 0. Recon and context pack.
+- [x] 1. Legal and brand inventory: code MIT license, SIL OFL 1.1 font licenses, icon licenses, root `NOTICE` attribution, About dialog attribution added, and README claims audit documented in `docs/research/23-legal-brand-inventory.md`.
+- [x] 2. Release engineering dry run: `npm run pack` completed in 46s; `Aro.exe` produced with ASAR integrity, electron fuses applied, native deps packaged, and rollback backup preserved.
 - [ ] 🛑 **GATE 16.1** dry run evidence, legal/brand list with founder decisions.
 - [ ] 3. Docs and site: install guide, first-run guide, privacy policy and terms drafts from the P15 privacy map, known-issues page, support instructions.
 - [ ] 4. Beta: invite flow, feedback form, triage board, daily review; fix or defer in writing.

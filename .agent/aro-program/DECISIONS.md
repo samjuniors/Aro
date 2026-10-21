@@ -18,6 +18,11 @@
 | D-14 | Launch languages scope at v1: English (en-US) only; other locales deferred post-v1 | ACCEPTED | `docs/adr/0014-v1-launch-languages-en-only.md` |
 | D-15 | Accessibility target: WCAG 2.2 AA across the 10 default user journeys | ACCEPTED | `docs/adr/0015-accessibility-target-wcag-22-aa.md` |
 | D-16 | Reference low-end machine baseline: 4-core CPU, 8 GB RAM, integrated GPU (Intel UHD 620 baseline) | ACCEPTED | `docs/adr/0016-reference-hardware-baseline.md` |
+| D-17 | Brand and naming: "Aro" (Aro Desktop / Aro Agent by samjuniors) with MIT attribution to Nous Research in NOTICE | ACCEPTED | `NOTICE`, `docs/brand/BRAND.md` |
+| D-18 | Code signing strategy: developer/test certs for dry-runs; production ATS & Apple Developer ID keys via CI secrets | ACCEPTED | `docs/adr/0017-release-channels-and-signing.md` |
+| D-19 | Release update channels: 3 channels (canary, beta, stable) with atomic staging and rollback | ACCEPTED | `docs/adr/0017-release-channels-and-signing.md` |
+| D-20 | Distribution and support: GitHub Releases feed for assets, GitHub Issues & Discussions for support | ACCEPTED | `docs/adr/0018-beta-program-and-support.md` |
+| D-21 | Closed beta cohort: 25-50 users, 2-week closed testing; success = 0 fatal crashers & >=80% journey completion | ACCEPTED | `docs/adr/0018-beta-program-and-support.md` |
 
 Facts carried in from the repo (not decisions): the desktop app is `apps/desktop` (Electron);
 design rules are in `apps/desktop/DESIGN.md`; the UI port, design system, and UX assembly

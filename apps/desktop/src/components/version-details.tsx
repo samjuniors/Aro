@@ -104,6 +104,9 @@ export function VersionDetails({ version }: { version: DesktopVersionInfo }) {
           </dd>
         </div>
       )}
+      <div className="border-t border-border/50 pt-2 text-center text-xs text-muted-foreground">
+        Aro Agent by samjuniors · Forked from Hermes Agent under MIT License
+      </div>
     </dl>
   )
 }
