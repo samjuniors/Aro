@@ -25,6 +25,7 @@ Research folder for the Aro rebrand and desktop redesign — lives in-repo at `d
 | [17-slice4-browser-preview-spec.md](17-slice4-browser-preview-spec.md) | Slice 4: In-app responsive web & dev-server preview spec. |
 | [18-slice5-ide-deep-link-spec.md](18-slice5-ide-deep-link-spec.md) | Slice 5: One-click IDE deep link & editor handoff spec. |
 | [19-motion-language.md](19-motion-language.md) | **Phase 14.** Motion language, animation inventory, tokens contract, and frame budget. |
+| [20-hero-moments-traces.md](20-hero-moments-traces.md) | **Phase 14.** Hero moments criteria, frame-timing traces, and ambient space layer budget. |
 
 Brand guidelines: [`../brand/BRAND.md`](../brand/BRAND.md).
 

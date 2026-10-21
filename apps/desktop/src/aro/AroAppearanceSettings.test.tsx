@@ -150,7 +150,7 @@ describe('AroAppearanceSettings', () => {
 
     render(<AroAppearanceSettings />)
 
-    const toggle = screen.getByRole('checkbox', { checked: true })
+    const toggle = screen.getByRole('checkbox', { name: 'Voice Assistant Orb' })
     act(() => {
       fireEvent.click(toggle)
     })
@@ -160,6 +160,25 @@ describe('AroAppearanceSettings', () => {
     expect(orbListener).toHaveBeenCalled()
 
     window.removeEventListener('conductor:voice:orb', orbListener)
+  })
+
+  it('toggles ambient space layer setting and persists conductor.ambient.stars', () => {
+    const starsListener = vi.fn()
+    window.addEventListener('conductor:ambient:stars', starsListener)
+
+    render(<AroAppearanceSettings />)
+
+    const toggle = screen.getByRole('checkbox', { name: 'Ambient Space Layer' })
+    expect((toggle as HTMLInputElement).checked).toBe(true)
+
+    act(() => {
+      fireEvent.click(toggle)
+    })
+
+    expect(window.localStorage.getItem('conductor.ambient.stars')).toBe('false')
+    expect(starsListener).toHaveBeenCalled()
+
+    window.removeEventListener('conductor:ambient:stars', starsListener)
   })
 
   it('persists git merge strategy preference', () => {

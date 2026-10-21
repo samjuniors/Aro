@@ -132,5 +132,19 @@ describe('aro design axes (A0 foundations)', () => {
     setMergeStrategy('squash')
     expect(window.localStorage.getItem(MERGE_STRATEGY_KEY)).toBe('squash')
     expect(getMergeStrategy()).toBe('squash')
+
+    const {
+      AMBIENT_STARS_KEY,
+      getAmbientStarsEnabled,
+      setAmbientStarsEnabled
+    } = await import('./design-axes')
+
+    expect(getAmbientStarsEnabled()).toBe(true)
+    setAmbientStarsEnabled(false)
+    expect(window.localStorage.getItem(AMBIENT_STARS_KEY)).toBe('false')
+    expect(getAmbientStarsEnabled()).toBe(false)
+    setAmbientStarsEnabled(true)
+    expect(window.localStorage.getItem(AMBIENT_STARS_KEY)).toBe('true')
+    expect(getAmbientStarsEnabled()).toBe(true)
   })
 })

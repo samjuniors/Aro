@@ -166,3 +166,21 @@ export function getMergeStrategy(): MergeStrategy {
 export function setMergeStrategy(strategy: MergeStrategy): void {
   writePref(MERGE_STRATEGY_KEY, strategy)
 }
+
+export const AMBIENT_STARS_KEY = 'conductor.ambient.stars'
+
+export function getAmbientStarsEnabled(): boolean {
+  const stored = readPref(AMBIENT_STARS_KEY)
+
+  if (stored !== null) {
+    return stored !== 'false'
+  }
+
+  return true
+}
+
+export function setAmbientStarsEnabled(enabled: boolean): void {
+  writePref(AMBIENT_STARS_KEY, enabled ? 'true' : 'false')
+  window.dispatchEvent(new CustomEvent('conductor:ambient:stars', { detail: enabled }))
+}
+

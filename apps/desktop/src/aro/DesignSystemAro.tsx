@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils'
 import { AroBrowserPreview } from './BrowserPreview'
 import { AroCostHud } from './CostHud'
 import { AroIdeHandoffPanel } from './EditorDeepLink'
+import { AroHeroMomentsGallery } from './HeroMoments'
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
 import { AroReviewPage } from './ReviewHunks'
 import { AroTasksPage } from './TasksBoard'
@@ -566,6 +567,16 @@ export function AroDesignSystemPage() {
               </div>
             ))}
           </div>
+        </DS>
+
+        {/* ---------------- HERO MOMENTS & AMBIENT LAYER ---------------- */}
+        <DS
+          body="Nine signature interaction moments in Aro Desktop, each verified against compositor-only frame budgets, 60fps frame rates, and strict reduced-motion parity. Includes the optional ambient space starfield."
+          eyebrow="phase 14"
+          id="hero-moments"
+          title="Hero Moments & Ambient Layer"
+        >
+          <AroHeroMomentsGallery />
         </DS>
 
         {/* ---------------- COMPONENTS ---------------- */}

@@ -25,6 +25,7 @@ import {
   type Density,
   DENSITY_VALUES,
   type DesignProfile,
+  getAmbientStarsEnabled,
   getDensity,
   getDesignProfile,
   getMergeStrategy,
@@ -36,6 +37,7 @@ import {
   type Motion,
   MOTION_VALUES,
   RECOMMENDED_THEMES,
+  setAmbientStarsEnabled,
   setDensity,
   setDesignProfile,
   setMergeStrategy,
@@ -50,7 +52,8 @@ import {
   IconLayers,
   IconMic,
   IconPalette,
-  IconPulse
+  IconPulse,
+  IconSpark
 } from './Icons'
 import {
   ARO_AGENTS_ROUTE,
@@ -168,6 +171,7 @@ export function AroAppearanceSettings() {
   const [currentMotion, setCurrentMotion] = useState<Motion>(getMotion)
   const [syncTheme, setSyncTheme] = useState<boolean>(getThemeSyncEnabled)
   const [voiceOrb, setVoiceOrb] = useState<boolean>(getVoiceOrbVisible)
+  const [ambientStars, setAmbientStars] = useState<boolean>(getAmbientStarsEnabled)
   const [mergeStrategy, setMergeStrategyState] = useState<MergeStrategy>(getMergeStrategy)
   const [themeFeedback, setThemeFeedback] = useState<string | null>(null)
 
@@ -179,6 +183,7 @@ export function AroAppearanceSettings() {
       setCurrentMotion(getMotion())
       setSyncTheme(getThemeSyncEnabled())
       setVoiceOrb(getVoiceOrbVisible())
+      setAmbientStars(getAmbientStarsEnabled())
       setMergeStrategyState(getMergeStrategy())
     }
 
@@ -198,6 +203,7 @@ export function AroAppearanceSettings() {
 
       if (syncTheme && recommended && recommended !== themeName) {
         setTheme(recommended)
+
         try {
           localStorage.setItem('aro.theme', recommended)
           document.documentElement.dataset.theme = recommended
@@ -205,7 +211,10 @@ export function AroAppearanceSettings() {
           document.documentElement.classList.toggle('dark', !isLight)
           document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
           window.dispatchEvent(new CustomEvent('aro:theme', { detail: recommended }))
-        } catch {}
+        } catch {
+          // storage unavailable
+        }
+
         setThemeFeedback(`Switched theme to ${recommended}`)
         setTimeout(() => setThemeFeedback(null), 3000)
       }
@@ -216,6 +225,7 @@ export function AroAppearanceSettings() {
   const handleApplyRecommendedTheme = useCallback(
     (recommended: string) => {
       setTheme(recommended)
+
       try {
         localStorage.setItem('aro.theme', recommended)
         document.documentElement.dataset.theme = recommended
@@ -223,7 +233,10 @@ export function AroAppearanceSettings() {
         document.documentElement.classList.toggle('dark', !isLight)
         document.documentElement.style.setProperty('color-scheme', isLight ? 'light' : 'dark')
         window.dispatchEvent(new CustomEvent('aro:theme', { detail: recommended }))
-      } catch {}
+      } catch {
+        // storage unavailable
+      }
+
       triggerHaptic('success')
       setThemeFeedback(`Applied recommended theme: ${recommended}`)
       setTimeout(() => setThemeFeedback(null), 3000)
@@ -252,6 +265,12 @@ export function AroAppearanceSettings() {
   const handleToggleVoiceOrb = useCallback((checked: boolean) => {
     setVoiceOrb(checked)
     setVoiceOrbVisible(checked)
+    triggerHaptic('selection')
+  }, [])
+
+  const handleToggleAmbientStars = useCallback((checked: boolean) => {
+    setAmbientStars(checked)
+    setAmbientStarsEnabled(checked)
     triggerHaptic('selection')
   }, [])
 
@@ -550,9 +569,33 @@ export function AroAppearanceSettings() {
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
+              aria-label="Voice Assistant Orb"
               checked={voiceOrb}
               className="sr-only peer"
               onChange={e => handleToggleVoiceOrb(e.target.checked)}
+              type="checkbox"
+            />
+            <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:bg-accent"></div>
+          </label>
+        </div>
+
+        {/* Ambient Space Layer (Starfield) */}
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <IconSpark className="text-accent" size={14} />
+              <span className="text-xs font-medium text-foreground">Ambient Space Layer</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Drifting starfield canvas behind idle screens. Automatically pauses on battery, weak GPU, or reduced motion (conductor.ambient.stars).
+            </p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              aria-label="Ambient Space Layer"
+              checked={ambientStars}
+              className="sr-only peer"
+              onChange={e => handleToggleAmbientStars(e.target.checked)}
               type="checkbox"
             />
             <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:bg-accent"></div>
