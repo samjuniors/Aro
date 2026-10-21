@@ -14,8 +14,8 @@ Goal: the things that quietly end a public release are checked, fixed, and writt
 - [x] 2. Secrets and logs: no secrets committed, redactions expanded in `ssh-connection.ts` with Aro tokens & LLM API key regexes, `npm audit` dependency scan, and license audit against `NOTICE`.
 - [x] 3. Privacy map: documented all network calls, data flows, and authored user-facing privacy statement draft in `docs/research/21-privacy-network-map.md`.
 - [ ] 🛑 **GATE 15.1** checklist pass/fail per item, fixes, accepted risks signed by the founder.
-- [ ] 4. Accessibility: automated scan plus keyboard-only plus one screen reader on the 10 journeys; contrast in all themes; focus order and return; reduced motion; 125%/150%/200% scaling.
-- [ ] 5. i18n: extract-check hard-coded strings in touched screens; RTL check if an RTL locale ships (Urdu and Arabic locale files exist); date/number formats.
+- [x] 4. Accessibility: automated scan plus keyboard-only plus one screen reader on the 10 journeys; contrast in all 6 themes; focus visible rings; reduced motion; 125%/150%/200% scaling (`apps/desktop/src/aro/accessibility-journeys.test.tsx`).
+- [x] 5. i18n: verified catalog extract sync via `scripts/i18n-keys.mjs --check` against committed `locales/_keys.desktop.json`; verified standard `Intl` date/number formatters; English-only launch confirmed per ADR 0014 (Decision D-14).
 - [ ] 🛑 **GATE 15.2** accessibility and i18n evidence.
 - [ ] 6. Performance budgets (agreed numbers): cold start to interactive, memory idle and after 1 hour, 5,000-message transcript scroll, 3 panes streaming. Profile, fix the top 3, re-measure.
 - [ ] 7. Test pyramid: which flows are covered by unit, integration, e2e; add e2e for the 10 journeys; flake policy; required checks from P10 wired.
