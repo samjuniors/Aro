@@ -478,7 +478,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   // backend) for anything not already installed.
   const needle = normalize(query)
 
-  const WORKING_THEME_IDS = new Set(['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'])
+  const WORKING_THEME_IDS = new Set(['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink', 'codex'])
   const filteredThemes = availableThemes
     .filter(
       theme =>
