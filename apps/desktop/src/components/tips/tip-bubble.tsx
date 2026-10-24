@@ -90,7 +90,7 @@ export function TipBubble({ action, anchor, keybind, onClose, side, text, title 
               // fill against the accent surface, same currentColor discipline
               // as the rest of the bubble.
               <button
-                className="mt-2.5 inline-flex cursor-pointer items-center rounded-md bg-current/15 px-2.5 py-1 text-[length:var(--conversation-caption-font-size)] font-semibold transition-colors hover:bg-current/25"
+                className="mt-2.5 inline-flex cursor-pointer items-center rounded-control bg-current/15 px-2.5 py-1 text-[length:var(--conversation-caption-font-size)] font-semibold transition-colors hover:bg-current/25"
                 onClick={action.onSelect}
                 type="button"
               >
@@ -100,7 +100,7 @@ export function TipBubble({ action, anchor, keybind, onClose, side, text, title 
           </div>
           <button
             aria-label={t.tips.close}
-            className="-mr-0.5 -mt-0.5 shrink-0 cursor-pointer rounded-[3px] p-0.5 text-current/70 transition-colors hover:bg-current/15 hover:text-current"
+            className="-mr-0.5 -mt-0.5 shrink-0 cursor-pointer rounded-control p-0.5 text-current/70 transition-colors hover:bg-current/15 hover:text-current"
             onClick={onClose}
             type="button"
           >

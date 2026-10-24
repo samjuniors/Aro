@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useEffect } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useRef } from 'react'
 
 import { TITLEBAR_HEIGHT } from '@/app/shell/titlebar'
 import { TitlebarIcon } from '@/app/shell/titlebar-icon'
@@ -42,6 +42,18 @@ export function OverlayView({
   rootClassName,
   titlebarActions
 }: OverlayViewProps) {
+  const triggerRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+    return () => {
+      if (triggerRef.current && document.contains(triggerRef.current)) {
+        triggerRef.current.focus()
+      }
+    }
+  }, [])
+
   const closeOverlay = () => {
     triggerHaptic('close')
     onClose()
@@ -105,7 +117,7 @@ export function OverlayView({
       <div className="relative h-full min-h-0">
         <div
           className={cn(
-            'relative flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-(--ui-stroke-secondary) bg-(--ui-chat-surface-background) shadow-md',
+            'relative flex h-full min-h-0 flex-col overflow-hidden rounded-overlay border border-(--stroke-nous) bg-(--ui-chat-surface-background) shadow-nous',
             rootClassName
           )}
           // Marks the card as a RAISED surface for window glass: while the field

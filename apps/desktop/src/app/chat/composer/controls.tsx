@@ -146,7 +146,7 @@ export function ComposerControls({
   return (
     <div className="flex w-full min-w-0 items-center justify-between gap-1.5" data-aro-composer-controls="">
       {/* Left: [+] [/] [@] | Mode | (Model if not Aro) */}
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+      <div className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
         {leadingCluster}
         {modeControl}
         {!isAro && modelPillCluster}
@@ -199,7 +199,7 @@ export function ComposerControls({
                 isAro ? (
                   <IconStop size={12} />
                 ) : (
-                  <span className="block size-2.5 rounded-[0.1875rem] bg-current" />
+                  <span className="block size-2.5 rounded-control bg-current" />
                 )
               ) : // Aro: the prototype's send glyph (IconArrowUp 16) instead of
               // the host codicon.

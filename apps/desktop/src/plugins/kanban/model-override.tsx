@@ -105,7 +105,7 @@ export function ModelOverrideField({
       <DropdownMenuTrigger asChild>
         <Button
           className={cn(
-            'h-8 w-full justify-between gap-2 px-2.5 text-[0.75rem] font-normal',
+            'h-8 w-full justify-between gap-2 px-2.5 text-aro-sm font-normal',
             isInherited(value) && 'text-(--ui-text-tertiary)'
           )}
           type="button"
@@ -116,7 +116,7 @@ export function ModelOverrideField({
             {!isInherited(value) && (
               <span
                 aria-label={k.modelClear}
-                className="grid size-4 place-items-center rounded text-(--ui-text-tertiary) hover:text-foreground"
+                className="grid size-4 place-items-center rounded-control text-(--ui-text-tertiary) hover:text-foreground"
                 onClick={event => {
                   // Clear without opening the menu.
                   event.preventDefault()

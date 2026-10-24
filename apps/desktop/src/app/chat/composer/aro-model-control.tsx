@@ -54,14 +54,14 @@ export function AroModelControl({ disabled, model }: { disabled: boolean; model:
       <DropdownMenuTrigger asChild>
         <Button
           aria-label={currentModel || 'Model'}
-          className="h-[28px] shrink-0 gap-[6px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-[11.5px] font-normal whitespace-nowrap text-aro-ink-2 shadow-sm transition-all hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink"
+          className="h-[28px] shrink-0 gap-[6px] rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-aro-sm font-normal whitespace-nowrap text-aro-ink-2 shadow-(--aro-shadow-e1) transition-colors hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink"
           data-aro-model-control=""
           data-aro-model-pill=""
           disabled={disabled}
           type="button"
           variant="ghost"
         >
-          <span className="font-aro-mono text-[10px] font-semibold text-aro-ink-3">{monogram}</span>
+          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold text-aro-ink-3">{monogram}</span>
           <span className="max-w-[130px] truncate">{currentModel || '…'}</span>
           {pending ? (
             <GlyphSpinner className="opacity-50" spinner="braille" />

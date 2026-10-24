@@ -95,7 +95,7 @@ export function LanguageSwitcher({ className, collapsed = false, dropUp = false 
     return (
       <Sheet onOpenChange={setOpen} open={open}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>
-        <SheetContent className="max-h-[min(28rem,80vh)] rounded-t-xl" side="bottom">
+        <SheetContent className="max-h-[min(28rem,80vh)] rounded-t-overlay" side="bottom">
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>{t.language.description}</SheetDescription>
@@ -177,7 +177,7 @@ function LanguageCommand({
               value={option.id}
             >
               <span className="min-w-0 flex-1 truncate">{option.endonym}</span>
-              <span className="font-mono text-[0.65rem] uppercase text-(--ui-text-tertiary)">{option.id}</span>
+              <span className="font-mono text-aro-xs uppercase text-(--ui-text-tertiary)">{option.id}</span>
               <CommandItemCheck checked={selected} />
             </CommandItem>
           )

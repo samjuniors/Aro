@@ -96,7 +96,7 @@ export function HatchPreview({ pet, adopting, error, onAdopt, onDiscard }: Hatch
   return (
     <div className="flex flex-col items-center gap-2">
       {/* Fills the (now narrow) dialog so the pet frame is the screen width. */}
-      <div className="relative flex aspect-[192/208] w-full items-center justify-center overflow-hidden rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)">
+      <div className="relative flex aspect-[192/208] w-full items-center justify-center overflow-hidden rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)">
         {revealed ? (
           <>
             <div className="relative inline-block">

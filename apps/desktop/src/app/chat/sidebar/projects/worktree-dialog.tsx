@@ -290,7 +290,7 @@ export function WorktreeDialog() {
 
         {convertMode ? (
           <Command
-            className="rounded-md border border-(--ui-stroke-tertiary)"
+            className="rounded-control border border-(--ui-stroke-tertiary)"
             filter={(value, search) => (value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0)}
           >
             <CommandInput autoFocus disabled={pending} placeholder={p.convertBranchPlaceholder} />
@@ -310,7 +310,7 @@ export function WorktreeDialog() {
                       size="0.8rem"
                     />
                     <span className="truncate">{branch.name}</span>
-                    <span className="ml-auto shrink-0 text-[0.625rem] text-(--ui-text-tertiary)">
+                    <span className="ml-auto shrink-0 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
                       {branchActionLabel(branch, p)}
                     </span>
                   </CommandItem>

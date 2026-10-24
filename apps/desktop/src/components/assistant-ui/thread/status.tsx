@@ -62,7 +62,7 @@ const AroStreamPulse: FC = () => (
   <>
     <span
       aria-hidden="true"
-      className="flex size-[26px] shrink-0 items-center justify-center rounded-[8px] border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"
+      className="flex size-[26px] shrink-0 items-center justify-center rounded-control border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"
     >
       <IconSpark className="size-3 animate-aro-breathe" />
     </span>
@@ -396,7 +396,7 @@ export const TurnActivityIndicator: FC = () => {
       className={cn(!active && 'sr-only')}
       data-slot="aui_turn-activity"
       data-state={active ? 'active' : 'idle'}
-      label={active ? hint || 'Hermes is working' : ''}
+      label={active ? hint || 'Aro is working' : ''}
     >
       {active && (
         <>

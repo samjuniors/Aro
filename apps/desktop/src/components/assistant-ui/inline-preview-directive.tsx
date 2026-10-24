@@ -516,7 +516,7 @@ function InlineHtmlFrame({
     <span className="my-2 block w-full max-w-160">
       {framedDoc === null ? (
         <span
-          className="block w-full animate-pulse rounded-md bg-[color-mix(in_srgb,currentColor_4%,transparent)]"
+          className="block w-full animate-pulse rounded-control bg-[color-mix(in_srgb,currentColor_4%,transparent)]"
           style={{ height }}
         />
       ) : (

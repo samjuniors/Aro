@@ -378,7 +378,7 @@ export function CodeEditor({
   return (
     <div
       className={cn(
-        'flex h-full min-h-0 flex-col overflow-hidden rounded-md border border-(--ui-stroke-tertiary)',
+        'flex h-full min-h-0 flex-col overflow-hidden rounded-control border border-(--ui-stroke-tertiary)',
         className
       )}
     >

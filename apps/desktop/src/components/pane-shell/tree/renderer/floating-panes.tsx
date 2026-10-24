@@ -174,7 +174,7 @@ function FloatingPane({ pane }: { pane: Contribution }) {
     >
       {/* Header IS the drag handle — the floating equivalent of a tab strip. */}
       <header
-        className="flex shrink-0 cursor-grab items-center justify-between gap-2 px-2.5 py-1.5 text-[0.6875rem] text-(--ui-text-secondary) select-none"
+        className="flex shrink-0 cursor-grab items-center justify-between gap-2 px-2.5 py-1.5 text-aro-xs text-(--ui-text-secondary) select-none"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -182,7 +182,7 @@ function FloatingPane({ pane }: { pane: Contribution }) {
       >
         <span className="truncate font-medium">{pane.title ?? pane.id}</span>
         <button
-          className="rounded p-0.5 text-(--ui-text-quaternary) transition-colors hover:text-(--ui-text-primary)"
+          className="rounded-control p-0.5 text-(--ui-text-quaternary) transition-colors hover:text-(--ui-text-primary)"
           data-floating-no-drag=""
           onClick={toggleCollapsed}
           type="button"

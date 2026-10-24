@@ -190,7 +190,7 @@ function EnvVarField({ envVar, isSet, onSaved, onCleared, profile }: EnvVarField
 
   return (
     <EnvVarContextMenu {...actionProps}>
-      <div className="grid gap-2 rounded-lg bg-background/55 p-2.5">
+      <div className="grid gap-2 rounded-panel bg-background/55 p-2.5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -201,7 +201,7 @@ function EnvVarField({ envVar, isSet, onSaved, onCleared, profile }: EnvVarField
               </Pill>
             </div>
             {envVar.prompt && envVar.prompt !== envVar.key && (
-              <p className="mt-0.5 text-[0.7rem] text-muted-foreground">{envVar.prompt}</p>
+              <p className="mt-0.5 text-aro-xs text-muted-foreground">{envVar.prompt}</p>
             )}
           </div>
           {!editing && (
@@ -212,7 +212,7 @@ function EnvVarField({ envVar, isSet, onSaved, onCleared, profile }: EnvVarField
         </div>
 
         {isSet && revealed !== null && (
-          <div className="rounded-md bg-background px-2.5 py-1.5 font-mono text-xs text-foreground">
+          <div className="rounded-control bg-background px-2.5 py-1.5 font-mono text-xs text-foreground">
             {revealed || '---'}
           </div>
         )}
@@ -355,10 +355,10 @@ function PostSetupRunner({ toolset, postSetupKey, installed = false, onComplete,
   }, [toolset, postSetupKey, onComplete, copy, profile])
 
   return (
-    <div className="grid gap-2 rounded-lg bg-background/55 p-2.5">
+    <div className="grid gap-2 rounded-panel bg-background/55 p-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p className="text-aro-sm text-muted-foreground">
             {installed ? copy.postSetupInstalledHint : copy.postSetupHint(postSetupKey)}
           </p>
         </div>
@@ -383,7 +383,7 @@ function PostSetupRunner({ toolset, postSetupKey, installed = false, onComplete,
 
       {status && (status.lines.length > 0 || status.running) && (
         <pre
-          className="max-h-48 overflow-y-auto rounded-md bg-background px-2.5 py-1.5 font-mono text-[0.7rem] leading-relaxed text-muted-foreground whitespace-pre-wrap"
+          className="max-h-48 overflow-y-auto rounded-control bg-background px-2.5 py-1.5 font-mono text-aro-xs leading-relaxed text-muted-foreground whitespace-pre-wrap"
           data-selectable-text="true"
         >
           {status.lines.length > 0 ? status.lines.join('\n') : copy.postSetupStarting}
@@ -459,7 +459,7 @@ function ModelCatalogPicker({ toolset, providerName, isActiveBackend, profile }:
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-1 py-2 text-[0.72rem] text-muted-foreground">
+      <div className="flex items-center gap-2 px-1 py-2 text-aro-sm text-muted-foreground">
         <Loader2 className="size-3 animate-spin" />
         {copy.loadingModels}
       </div>
@@ -475,10 +475,10 @@ function ModelCatalogPicker({ toolset, providerName, isActiveBackend, profile }:
   return (
     <div className="grid gap-1.5">
       <div className="flex items-baseline justify-between gap-2 px-0.5">
-        <span className="text-[0.72rem] font-medium">{copy.modelSectionTitle}</span>
-        <span className="text-[0.68rem] text-muted-foreground">{copy.modelCount(catalog.models.length)}</span>
+        <span className="text-aro-sm font-medium">{copy.modelSectionTitle}</span>
+        <span className="text-aro-xs text-muted-foreground">{copy.modelCount(catalog.models.length)}</span>
       </div>
-      {!isActiveBackend && <p className="px-0.5 text-[0.68rem] text-muted-foreground">{copy.modelInactiveHint}</p>}
+      {!isActiveBackend && <p className="px-0.5 text-aro-xs text-muted-foreground">{copy.modelInactiveHint}</p>}
       <div className="grid gap-1">
         {catalog.models.map(model => {
           const isSelected = selected === model.id
@@ -488,7 +488,7 @@ function ModelCatalogPicker({ toolset, providerName, isActiveBackend, profile }:
             <button
               aria-pressed={isSelected}
               className={cn(
-                'grid gap-0.5 rounded-lg border px-2.5 py-2 text-left transition',
+                'grid gap-0.5 rounded-panel border px-2.5 py-2 text-left transition',
                 isSelected
                   ? 'border-(--ui-stroke-secondary) bg-(--ui-bg-tertiary)'
                   : 'border-transparent bg-background/55 hover:bg-accent/40',
@@ -510,7 +510,7 @@ function ModelCatalogPicker({ toolset, providerName, isActiveBackend, profile }:
                 {!isSelected && isDefault && <Pill>{copy.modelDefault}</Pill>}
                 {saving === model.id && <Loader2 className="size-3 animate-spin" />}
               </span>
-              <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[0.68rem] text-muted-foreground">
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-aro-xs text-muted-foreground">
                 {model.speed && <span>{model.speed}</span>}
                 {model.strengths && <span>{model.strengths}</span>}
                 {model.price && <span className="font-mono">{model.price}</span>}
@@ -794,7 +794,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
         const isExtractBackend = Boolean(provider.web_backend && cfg.active_extract_backend === provider.web_backend)
 
         return (
-          <div className="overflow-hidden rounded-xl bg-background/60" key={provider.name}>
+          <div className="overflow-hidden rounded-overlay bg-background/60" key={provider.name}>
             <button
               aria-expanded={isExpanded}
               className={cn(
@@ -835,7 +835,7 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
 
             {isExpanded && (
               <div className="grid gap-2 bg-muted/20 p-3">
-                {provider.tag && <p className="text-[0.72rem] text-muted-foreground">{provider.tag}</p>}
+                {provider.tag && <p className="text-aro-sm text-muted-foreground">{provider.tag}</p>}
                 {(toolset !== 'web' || webCaps.length === 0) && (
                   // Explicit activation — the old row-click-selects UX gave no
                   // signal about which backend was actually in use and made
@@ -883,10 +883,10 @@ export function ToolsetConfigPanel({ toolset, onConfiguredChange, profile }: Too
                   </div>
                 )}
                 {provider.requires_nous_auth && (
-                  <p className="text-[0.72rem] text-muted-foreground">{copy.nousIncluded}</p>
+                  <p className="text-aro-sm text-muted-foreground">{copy.nousIncluded}</p>
                 )}
                 {provider.env_vars.length === 0 ? (
-                  <p className="text-[0.72rem] text-muted-foreground">{copy.noApiKeyRequired}</p>
+                  <p className="text-aro-sm text-muted-foreground">{copy.noApiKeyRequired}</p>
                 ) : (
                   provider.env_vars.map(ev => (
                     <EnvVarField

@@ -161,7 +161,7 @@ export const SessionControlLoopSection = memo(function SessionControlLoopSection
                       <Button
                         aria-haspopup="menu"
                         aria-label={ctrl.loopActions}
-                        className="size-6 rounded-md text-muted-foreground/70 hover:text-foreground/90"
+                        className="size-6 rounded-control text-muted-foreground/70 hover:text-foreground/90"
                         disabled={isBusy}
                         onClick={event => {
                           // Radix opens pointer interactions from pointerdown. Keyboard,
@@ -194,7 +194,7 @@ export const SessionControlLoopSection = memo(function SessionControlLoopSection
               label={headerLabel}
             >
               <div>
-                <StatusControlRow className="text-[0.73rem] leading-4 text-foreground/92 break-words" icon="comment">
+                <StatusControlRow className="text-aro-sm leading-4 text-foreground/92 break-words" icon="comment">
                   {loop.prompt}
                 </StatusControlRow>
                 <StatusControlRow icon="clock">

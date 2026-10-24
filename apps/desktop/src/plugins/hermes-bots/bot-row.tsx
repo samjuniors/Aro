@@ -243,7 +243,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
       aria-busy={isOpening || undefined}
       aria-label={rowTooltip}
       className={cn(
-        'flex w-full min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-md px-2 py-2 text-left transition-colors',
+        'flex w-full min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-control px-2 py-2 text-left transition-colors',
         'hover:bg-(--chrome-action-hover)',
         isActive && 'bg-(--ui-row-active-background)',
         // The row being dragged fades in place; the browser's drag image is
@@ -281,23 +281,23 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
             </SidebarRowLead>
             {pinned ? (
               <Tip label={b.roster.pinned}>
-                <Codicon className="shrink-0 text-[0.6875rem] text-(--ui-text-quaternary)" name="pinned" />
+                <Codicon className="shrink-0 text-aro-xs text-(--ui-text-quaternary)" name="pinned" />
               </Tip>
             ) : null}
             {hidden ? (
               <Tip label={b.roster.hiddenFromRoster}>
-                <Codicon className="shrink-0 text-[0.6875rem] text-(--ui-text-quaternary)" name="eye-closed" />
+                <Codicon className="shrink-0 text-aro-xs text-(--ui-text-quaternary)" name="eye-closed" />
               </Tip>
             ) : null}
             <Tip label={rowTooltip}>
-              <span className="min-w-0 truncate text-[0.8125rem] font-medium">{displayName(bot, meta)}</span>
+              <span className="min-w-0 truncate text-aro-md font-medium">{displayName(bot, meta)}</span>
             </Tip>
           </div>
           {attention ? (
             <Tip label={botAttentionHint(attention.reason)}>
               <Codicon
                 aria-label={b.roster.needsAttention}
-                className="shrink-0 text-[0.6875rem] text-amber-600 dark:text-amber-300"
+                className="shrink-0 text-aro-xs text-amber-600 dark:text-amber-300"
                 name="warning"
               />
             </Tip>
@@ -306,7 +306,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
             <GlyphSpinner ariaLabel={b.bot.openingChat} className="shrink-0 text-xs text-(--ui-text-secondary)" />
           ) : null}
           {rowAgeTs ? (
-            <span className="shrink-0 text-[0.6875rem] text-(--ui-text-quaternary)">
+            <span className="shrink-0 text-aro-xs text-(--ui-text-quaternary)">
               {rowAge(rowAgeTs * 1000, t.sidebar.row)}
             </span>
           ) : null}
@@ -314,7 +314,7 @@ export function BotRow({ bot, onDelete, onEdit, onGroup, onNewSection, showHandl
         {showDetailsRow ? (
           <div className="flex min-w-0 items-center gap-1.5 text-xs text-(--ui-text-tertiary)">
             {showHandle ? (
-              <span className="shrink-0 font-mono text-[0.6875rem] text-(--ui-text-quaternary)">{`@${handle}`}</span>
+              <span className="shrink-0 font-mono text-aro-xs text-(--ui-text-quaternary)">{`@${handle}`}</span>
             ) : null}
             {showHandle && displayPreview ? <span className="shrink-0 text-(--ui-text-quaternary)">·</span> : null}
             {displayPreview ? (
@@ -547,7 +547,7 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
     <RowButton
       aria-label={`${group}, ${b.group.memberCount(members.length)}, ${availabilityLabel}`}
       className={cn(
-        'flex w-full min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-md px-2 py-2 text-left transition-colors',
+        'flex w-full min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-control px-2 py-2 text-left transition-colors',
         'hover:bg-(--chrome-action-hover)',
         active && 'bg-(--ui-row-active-background)',
         dragging && 'opacity-40'
@@ -569,7 +569,7 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
           <img
             alt=""
             className={cn(
-              'size-8 rounded-md object-cover ring-1 ring-(--ui-stroke-tertiary)',
+              'size-8 rounded-control object-cover ring-1 ring-(--ui-stroke-tertiary)',
               availableMembers === 0 && 'grayscale opacity-60'
             )}
             src={room.image}
@@ -577,7 +577,7 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
         ) : (
           <span
             className={cn(
-              'flex size-8 items-center justify-center rounded-md bg-(--chrome-action-hover) text-(--ui-text-tertiary)',
+              'flex size-8 items-center justify-center rounded-control bg-(--chrome-action-hover) text-(--ui-text-tertiary)',
               availableMembers === 0 && 'opacity-60'
             )}
           >
@@ -588,7 +588,7 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
           <Tip label={availabilityLabel}>
             <span
               aria-label={availabilityLabel}
-              className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-(--ui-bg-primary) text-[0.625rem] text-amber-600 ring-1 ring-(--ui-stroke-tertiary) dark:text-amber-300"
+              className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-(--ui-bg-primary) text-aro-xs text-amber-600 ring-1 ring-(--ui-stroke-tertiary) dark:text-amber-300"
             >
               <Codicon name="debug-disconnect" />
             </span>
@@ -597,10 +597,10 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium">{group}</span>
+          <span className="min-w-0 flex-1 truncate text-aro-md font-medium">{group}</span>
           {room.pinned ? (
             <Tip label={b.roster.pinned}>
-              <Codicon className="shrink-0 text-[0.6875rem] text-(--ui-text-quaternary)" name="pinned" />
+              <Codicon className="shrink-0 text-aro-xs text-(--ui-text-quaternary)" name="pinned" />
             </Tip>
           ) : null}
           {needsYou ? (
@@ -609,7 +609,7 @@ export function GroupRow({ active, group, members, needsYou, onOpen, onDisband, 
             </Tip>
           ) : null}
           {lastAt ? (
-            <span className="shrink-0 text-[0.6875rem] text-(--ui-text-quaternary)">
+            <span className="shrink-0 text-aro-xs text-(--ui-text-quaternary)">
               {rowAge(lastAt, t.sidebar.row)}
             </span>
           ) : null}

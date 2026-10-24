@@ -133,7 +133,7 @@ export function TerminalBackendPanel({ onConfiguredChange, profile }: TerminalBa
   return (
     <div className="grid gap-1.5">
       <div className="flex items-baseline justify-between gap-2 px-0.5">
-        <span className="text-[0.72rem] font-medium">{copy.sectionTitle}</span>
+        <span className="text-aro-sm font-medium">{copy.sectionTitle}</span>
         <Button disabled={loading} onClick={() => void refresh()} size="sm" variant="text">
           <RefreshCw className={cn('size-3.5', loading && 'animate-spin')} />
         </Button>
@@ -143,7 +143,7 @@ export function TerminalBackendPanel({ onConfiguredChange, profile }: TerminalBa
           <button
             aria-pressed={backend.active}
             className={cn(
-              'grid gap-0.5 rounded-lg border px-2.5 py-2 text-left transition',
+              'grid gap-0.5 rounded-panel border px-2.5 py-2 text-left transition',
               backend.active
                 ? 'border-(--ui-stroke-secondary) bg-(--ui-bg-tertiary)'
                 : 'border-transparent bg-background/55 hover:bg-accent/40'
@@ -164,9 +164,9 @@ export function TerminalBackendPanel({ onConfiguredChange, profile }: TerminalBa
               )}
               {selecting === backend.name && <Loader2 className="size-3 animate-spin" />}
             </span>
-            <span className="text-[0.68rem] text-muted-foreground">{backend.description}</span>
+            <span className="text-aro-xs text-muted-foreground">{backend.description}</span>
             {backend.status !== 'ready' && backend.detail && (
-              <span className="flex items-start gap-1 text-[0.68rem] text-amber-600 dark:text-amber-300">
+              <span className="flex items-start gap-1 text-aro-xs text-amber-600 dark:text-amber-300">
                 <AlertTriangle className="mt-0.5 size-3 shrink-0" />
                 {backend.detail}
                 {backend.active && ` ${copy.needsSetupHint}`}

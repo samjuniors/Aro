@@ -31,7 +31,7 @@ on:
         default: false
   pull_request:
   push:
-    branches: [main]
+    branches: [main, AroMain]
 
 permissions:
   contents: read

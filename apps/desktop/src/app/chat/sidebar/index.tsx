@@ -1602,7 +1602,7 @@ export function ChatSidebar({
         <div className="flex h-[38px] shrink-0 items-center justify-between border-b border-aro-line-soft px-1 pb-1 pt-1.5">
           <div className="flex items-center gap-2">
             <LogoMark size={20} />
-            <span className="font-display text-[15px] font-semibold tracking-tight text-aro-ink">Aro</span>
+            <span className="font-display text-base font-semibold tracking-tight text-aro-ink">Aro</span>
           </div>
           <ProfileSwitcher compact />
         </div>
@@ -1633,7 +1633,7 @@ export function ChatSidebar({
                       // resolved region has been observed to swallow clicks on the
                       // top rows. Same carve-out as USER_BUBBLE_BASE_CLASS in
                       // thread.tsx.
-                      'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
+                      'flex h-7 w-full justify-start gap-2 rounded-control border border-transparent px-2 text-left text-aro-md font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
                       active &&
                         'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-none hover:border-(--ui-stroke-tertiary)!',
                       !isInteractive &&
@@ -1769,7 +1769,7 @@ export function ChatSidebar({
                   searchPending ? (
                     <SidebarSessionSkeletons />
                   ) : (
-                    <div className="wrap-anywhere grid min-h-24 place-items-center rounded-lg px-2 text-center text-xs text-(--ui-text-tertiary)">
+                    <div className="wrap-anywhere grid min-h-24 place-items-center rounded-panel px-2 text-center text-xs text-(--ui-text-tertiary)">
                       {s.noMatch(trimmedQuery)}
                     </div>
                   )
@@ -1798,7 +1798,7 @@ export function ChatSidebar({
                 // included, so one column never mixes card and inline
                 // geometry at the section boundary.
                 card={cardRows}
-                contentClassName="flex flex-col gap-px rounded-lg pb-2 pt-1"
+                contentClassName="flex flex-col gap-px rounded-panel pb-2 pt-1"
                 dndSensors={dndSensors}
                 emptyState={<SidebarPinnedEmptyState />}
                 label={s.pinned}
@@ -1850,7 +1850,7 @@ export function ChatSidebar({
                   ) : !inProject && sessionsLoadError ? (
                     <SidebarLoadErrorState onRetry={() => void onRetrySessions()} />
                   ) : (
-                    <div className="grid min-h-16 place-items-center rounded-lg px-2 text-center text-xs text-(--ui-text-tertiary)">
+                    <div className="grid min-h-16 place-items-center rounded-panel px-2 text-center text-xs text-(--ui-text-tertiary)">
                       {inProject
                         ? s.projectEmpty
                         : filtersActive
@@ -1978,7 +1978,7 @@ export function ChatSidebar({
                 labelMeta={
                   worktreeGroupingActive ? (
                     reposScanning && !projectsSkeletonVisible ? (
-                      <GlyphSpinner ariaLabel={s.loading} className="text-[0.6875rem] text-(--ui-text-quaternary)" />
+                      <GlyphSpinner ariaLabel={s.loading} className="text-aro-xs text-(--ui-text-quaternary)" />
                     ) : undefined
                   ) : undefined
                 }
@@ -2055,7 +2055,7 @@ export function ChatSidebar({
                     label={group.label}
                     labelIcon={
                       <PlatformAvatar
-                        className="size-4 rounded-[4px] text-[0.5625rem] [&_svg]:size-3"
+                        className="size-4 rounded-control text-aro-xs [&_svg]:size-3"
                         platformId={group.sourceId}
                         platformName={group.label}
                       />
@@ -2104,13 +2104,13 @@ export function ChatSidebar({
         <button
           type="button"
           onClick={() => navigate('/settings')}
-          className="group flex h-[32px] w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 text-[12px] text-(--ui-text-secondary) transition-all hover:bg-(--ui-control-hover-background) hover:text-foreground"
+          className="group flex h-[32px] w-full cursor-pointer items-center gap-2.5 rounded-panel px-2 text-xs text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-hover-background) hover:text-foreground"
         >
           <Codicon name="settings-gear" className="size-3.5 text-(--ui-text-tertiary) shrink-0" />
           <span className="flex-1 text-left font-medium">Settings</span>
-          <kbd className="font-mono text-[9px] text-(--ui-text-quaternary)">⌘,</kbd>
+          <kbd className="font-mono text-[var(--aro-text-2xs,9px)] text-(--ui-text-quaternary)">⌘,</kbd>
         </button>
-        <p className="px-2 pt-0.5 text-[9.5px] text-(--ui-text-quaternary) select-none">
+        <p className="px-2 pt-0.5 text-aro-xs text-(--ui-text-quaternary) select-none">
           Code workspace · saved on this device
         </p>
       </SidebarFooter>

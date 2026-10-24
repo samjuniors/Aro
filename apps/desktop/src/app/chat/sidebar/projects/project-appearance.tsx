@@ -66,7 +66,7 @@ export function ProjectAppearancePicker({ color, icon, noColorLabel, onColor, on
             <button
               aria-label={name}
               className={cn(
-                'grid aspect-square place-items-center rounded-md text-(--ui-text-tertiary) transition hover:bg-(--ui-control-hover-background)',
+                'grid aspect-square place-items-center rounded-control text-(--ui-text-tertiary) transition hover:bg-(--ui-control-hover-background)',
                 icon === name && 'bg-(--ui-control-active-background) text-foreground'
               )}
               onClick={() => onIcon(icon === name ? null : name)}

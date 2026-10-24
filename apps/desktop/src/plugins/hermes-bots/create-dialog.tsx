@@ -676,7 +676,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                   }}
                   value={targetConnection || activeConnectionId || 'local'}
                 >
-                  <SelectTrigger className="h-8 rounded-md">
+                  <SelectTrigger className="h-8 rounded-control">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -692,7 +692,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
               )
             : null}
           {remoteTarget ? (
-            <div className="text-[0.7rem] leading-5 text-(--ui-text-tertiary)">{b.editor.remoteHint(targetLabel)}</div>
+            <div className="text-aro-xs leading-5 text-(--ui-text-tertiary)">{b.editor.remoteHint(targetLabel)}</div>
           ) : null}
           {labeled(
             b.editor.title,
@@ -725,7 +725,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
             {b.bot.advanced}
           </Button>
           {advanced ? (
-            <div className="grid gap-3 rounded-md border border-(--ui-stroke-secondary) p-3">
+            <div className="grid gap-3 rounded-control border border-(--ui-stroke-secondary) p-3">
               <SegmentedControl
                 onChange={id => {
                   setAdvTab(id)
@@ -769,7 +769,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                       }}
                       value={remoteTarget && cloneFrom !== '__none__' ? 'default' : cloneFrom}
                     >
-                      <SelectTrigger className="h-8 rounded-md">
+                      <SelectTrigger className="h-8 rounded-control">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -814,7 +814,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                     <Checkbox checked={shareAuth} onCheckedChange={value => setShareAuth(Boolean(value))} />
                     {remoteTarget ? b.editor.shareKeysOn(targetLabel) : b.editor.shareKeys}
                   </label>
-                  <div className="pl-6 pt-0.5 text-[0.7rem] leading-5 text-(--ui-text-tertiary)">
+                  <div className="pl-6 pt-0.5 text-aro-xs leading-5 text-(--ui-text-tertiary)">
                     {b.editor.shareKeysHint}
                   </div>
                   <label className="flex items-center gap-2 text-xs text-(--ui-text-secondary)">
@@ -885,7 +885,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                         onToggle={(name, enabled) => toggleCap('skills', name, enabled)}
                       />
                     </div>
-                    <div className="text-[0.65rem] leading-4 text-(--ui-text-quaternary)">
+                    <div className="text-aro-xs leading-4 text-(--ui-text-quaternary)">
                       {b.editor.catalogHint(caps.source)}
                     </div>
                     <HubSkillsSection
@@ -922,7 +922,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                       onToggle={(name, enabled) => toggleCap('toolsets', name, enabled)}
                     />
                   </div>
-                  <div className="text-[0.65rem] leading-4 text-(--ui-text-quaternary)">
+                  <div className="text-aro-xs leading-4 text-(--ui-text-quaternary)">
                     {b.editor.defaultToolsHint}
                   </div>
                 </div>
@@ -953,7 +953,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                             <span className="min-w-0">
                               <span>{m.name}</span>
                               {m.fromCatalog && !needsSetup ? (
-                                <span className="ml-1.5 text-[0.65rem] text-(--ui-text-quaternary)">
+                                <span className="ml-1.5 text-aro-xs text-(--ui-text-quaternary)">
                                   {m.installed ? b.editor.catalogInstalled : b.editor.catalog}
                                 </span>
                               ) : null}
@@ -989,7 +989,7 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                                 />
                               ) : null}
                               {m.description ? (
-                                <div className="truncate text-[0.65rem] leading-4 text-(--ui-text-quaternary)">
+                                <div className="truncate text-aro-xs leading-4 text-(--ui-text-quaternary)">
                                   {m.description}
                                 </div>
                               ) : null}
@@ -999,13 +999,13 @@ export function CreateAgentDialog({ open, onClose, onConfigureModel, roster }: C
                       })}
                     </div>
                   </div>
-                  <div className="text-[0.65rem] leading-4 text-(--ui-text-quaternary)">{b.editor.mcpHint}</div>
+                  <div className="text-aro-xs leading-4 text-(--ui-text-quaternary)">{b.editor.mcpHint}</div>
                 </div>
               )}
             </div>
           ) : null}
           {error ? (
-            <div className="rounded-md border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
+            <div className="rounded-control border border-(--ui-stroke-secondary) px-3 py-2 text-xs text-(--ui-accent)">
               {error}
             </div>
           ) : null}
@@ -1077,7 +1077,7 @@ export function GroupDialog({ bot, onClose }: GroupDialogProps) {
 
               return (
                 <label
-                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-(--chrome-action-hover)"
+                  className="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-sm hover:bg-(--chrome-action-hover)"
                   key={group}
                 >
                   <Checkbox checked={enabled} onCheckedChange={checked => setMembership(group, checked === true)} />
@@ -1256,7 +1256,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
             {selected.map(bot => (
               <Badge
                 asChild
-                className="rounded-full bg-(--chrome-action-hover) pl-2 pr-1.5 text-[0.6875rem] text-(--ui-text-secondary) transition-colors hover:text-foreground"
+                className="rounded-full bg-(--chrome-action-hover) pl-2 pr-1.5 text-aro-xs text-(--ui-text-secondary) transition-colors hover:text-foreground"
                 key={botRosterKey(bot)}
                 variant="muted"
               >
@@ -1270,7 +1270,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
                     }
                   >
                     {displayName(bot, botRosterMeta(bot, allMeta))}
-                    <Codicon className="text-[0.6rem]" name="close" />
+                    <Codicon className="text-aro-xs" name="close" />
                   </RowButton>
                 </Tip>
               </Badge>
@@ -1290,7 +1290,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
                 return (
                   <label
                     className={cn(
-                      'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-(--chrome-action-hover)',
+                      'flex min-w-0 cursor-pointer items-center gap-2 rounded-control px-1.5 py-1 transition-colors hover:bg-(--chrome-action-hover)',
                       disabled && 'cursor-not-allowed opacity-50'
                     )}
                     key={botRosterKey(bot)}
@@ -1304,7 +1304,7 @@ export function CreateGroupChatDialog({ open, roster, onClose, onCreated }: Crea
                     />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-xs text-foreground">{displayName(bot, meta)}</div>
-                      <div className="truncate text-[0.625rem] text-(--ui-text-quaternary)">
+                      <div className="truncate text-aro-xs text-(--ui-text-quaternary)">
                         {[
                           currentGroups.length
                             ? `@${botHandle(bot.name, bot)} · in ${currentGroups.map(group => `“${group}”`).join(', ')}`

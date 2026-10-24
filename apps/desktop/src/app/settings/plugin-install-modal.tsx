@@ -401,7 +401,7 @@ export function PluginInstallModal() {
               <div className="mb-1 text-[length:var(--conversation-caption-font-size)] font-medium text-foreground">
                 {m.repoLabel}
               </div>
-              <div className="rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2 font-mono text-[length:var(--conversation-caption-font-size)] break-all text-foreground">
+              <div className="rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2 font-mono text-[length:var(--conversation-caption-font-size)] break-all text-foreground">
                 {request.repo}
               </div>
               {request.catalogName && (
@@ -411,7 +411,7 @@ export function PluginInstallModal() {
               )}
             </div>
 
-            <div className="space-y-3 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2.5">
+            <div className="space-y-3 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-2.5">
               <div className="space-y-2 text-[length:var(--conversation-caption-font-size)]">
                 <div className="font-medium text-foreground">
                   {request.catalogName ? m.reviewedHeading : m.securityHeading}
@@ -433,7 +433,7 @@ export function PluginInstallModal() {
                   )}
                   <div>
                     <div className="mb-1 text-(--ui-text-tertiary)">{m.gitCloneLabel}</div>
-                    <div className="rounded-md border border-(--ui-stroke-tertiary) bg-(--ui-bg-primary) px-2.5 py-1.5 font-mono break-all text-foreground">
+                    <div className="rounded-control border border-(--ui-stroke-tertiary) bg-(--ui-bg-primary) px-2.5 py-1.5 font-mono break-all text-foreground">
                       {sourceLinks.gitUrl}
                     </div>
                   </div>
@@ -448,7 +448,7 @@ export function PluginInstallModal() {
             )}
 
             {phase === 'error' && probe?.error && (
-              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] text-destructive">
+              <p className="rounded-panel border border-destructive/30 bg-destructive/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] text-destructive">
                 {probe.error}
               </p>
             )}
@@ -460,7 +460,7 @@ export function PluginInstallModal() {
                 </div>
 
                 {probe.agent && (
-                  <div className="space-y-2 rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2">
+                  <div className="space-y-2 rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2">
                     <label className="flex items-start gap-3">
                       <Checkbox
                         checked={installAgent}
@@ -496,7 +496,7 @@ export function PluginInstallModal() {
                 )}
 
                 {probe.desktop && (
-                  <label className="flex items-start gap-3 rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2">
+                  <label className="flex items-start gap-3 rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2">
                     <Checkbox
                       checked={installDesktop}
                       disabled={busy}
@@ -519,7 +519,7 @@ export function PluginInstallModal() {
                 )}
 
                 {(probe.insecure || (probe.warnings?.length ?? 0) > 0) && (
-                  <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] text-foreground">
+                  <div className="flex items-start gap-2 rounded-panel border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] text-foreground">
                     <AlertTriangle
                       aria-hidden
                       className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
@@ -575,7 +575,7 @@ export function PluginInstallModal() {
             )}
 
             {installError && (
-              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 whitespace-pre-wrap text-[length:var(--conversation-caption-font-size)] text-destructive">
+              <p className="rounded-panel border border-destructive/30 bg-destructive/10 px-3 py-2 whitespace-pre-wrap text-[length:var(--conversation-caption-font-size)] text-destructive">
                 {installError}
               </p>
             )}

@@ -59,7 +59,7 @@ export function PetThumb({
 
   return (
     <span
-      className="grid shrink-0 place-items-center overflow-hidden rounded-md bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-control bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)"
       ref={boxRef}
       style={{ height, width: size }}
     >

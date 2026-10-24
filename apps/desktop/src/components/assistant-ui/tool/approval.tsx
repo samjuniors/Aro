@@ -138,7 +138,7 @@ function ApprovalActivity({ floating, visible }: { floating: boolean; visible: b
           transition={{ duration: reduced ? 0 : 0.22, ease: 'easeInOut' }}
         >
           <div
-            className={cn('mb-1 min-w-0', floating && 'rounded bg-(--ui-chat-surface-background)')}
+            className={cn('mb-1 min-w-0', floating && 'rounded-control bg-(--ui-chat-surface-background)')}
             data-approval-activity=""
             data-glass-opaque={floating ? '' : undefined}
             data-tool-summary=""
@@ -211,7 +211,7 @@ export function ApprovalQueue({
           })
       }}
       surfaceClassName={cn(
-        'rounded-[10px] border border-aro-amber/40 bg-aro-well shadow-aro-e2 overflow-hidden',
+        'rounded-panel border border-aro-amber/40 bg-aro-well shadow-aro-e2 overflow-hidden',
         floating ? 'border-aro-iris/40 shadow-aro-e3' : 'border-aro-amber/40'
       )}
       swipeDirections={['left']}
@@ -337,17 +337,17 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
       <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2 text-xs">
         <IconShield className="text-aro-amber shrink-0" size={13} />
         <span className="font-semibold text-aro-ink">{showsDescription ? copy.commandDetails : copy.command}</span>
-        <span className="rounded bg-aro-amber-tint px-1.5 py-0.5 font-aro-mono text-[9.5px] font-medium text-aro-amber capitalize">
+        <span className="rounded-control bg-aro-amber-tint px-1.5 py-0.5 font-aro-mono text-aro-xs font-medium text-aro-amber capitalize">
           {request.smartDenied ? 'smart-denied' : 'approval required'}
         </span>
         {total > 1 && (
-          <span className="ml-auto font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+          <span className="ml-auto font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
             {position} / {total}
           </span>
         )}
       </div>
       {details.length > 0 && (
-        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-[6px] border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-[11.5px] leading-relaxed text-aro-ink-2">
+        <pre className="aro-scroll-thin m-2.5 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-control border border-aro-line-soft bg-aro-code px-2.5 py-2 font-aro-mono text-aro-sm leading-relaxed text-aro-ink-2">
           {details}
         </pre>
       )}
@@ -408,7 +408,7 @@ const ApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, stack }
           </DialogHeader>
 
           {request.command.trim() && (
-            <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words rounded-md border border-(--ui-stroke-tertiary) bg-(--ui-chat-surface-background) px-2.5 py-1.5 font-mono text-xs leading-snug text-foreground">
+            <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words rounded-control border border-(--ui-stroke-tertiary) bg-(--ui-chat-surface-background) px-2.5 py-1.5 font-mono text-xs leading-snug text-foreground">
               {request.command.trim()}
             </pre>
           )}

@@ -199,7 +199,7 @@ export function RemoteFolderPicker() {
             {crumbs.map((crumb, index) => (
               <button
                 className={cn(
-                  'rounded px-1.5 py-0.5 hover:bg-muted hover:text-foreground',
+                  'rounded-control px-1.5 py-0.5 hover:bg-muted hover:text-foreground',
                   index === crumbs.length - 1 && 'text-foreground'
                 )}
                 key={crumb.path}
@@ -298,7 +298,7 @@ export function RemoteFolderPicker() {
 function FolderRow({ disabled = false, name, onClick }: { disabled?: boolean; name: string; onClick: () => void }) {
   return (
     <button
-      className="row-hover flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-(--ui-text-secondary) hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      className="row-hover flex w-full items-center gap-2 rounded-control px-2 py-1.5 text-left text-xs text-(--ui-text-secondary) hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
       disabled={disabled}
       onClick={onClick}
       type="button"

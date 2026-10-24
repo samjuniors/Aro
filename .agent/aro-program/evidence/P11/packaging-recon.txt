@@ -1,0 +1,22 @@
+# P11 Packaging Recon Evidence (Step 0)
+Date: 2026-10-19
+Command: npm run pack (ran from apps/desktop)
+Exit Code: 0
+Build Platform: win32 arch x64 (Electron 40.10.2)
+Builder Tool: electron-builder 27.0.0-alpha.6
+
+## Output Artifacts
+- Directory: `apps/desktop/release/win-unpacked/`
+- Binary: `Aro.exe` (213,943,808 bytes, ~213 MB)
+- Resources: `apps/desktop/release/win-unpacked/resources/`
+  - `app.asar` (8,302,523 bytes, ~8.3 MB)
+  - `default_app.asar` (110,825 bytes)
+  - `icon.ico` (32,405 bytes)
+  - `install-stamp.json` (385 bytes)
+  - `update-relaunch-waiter.ps1` (1,979 bytes)
+  - `app.asar.unpacked/` (contains node-pty prebuilds, winpty-agent.exe, conpty/OpenConsole.exe, native hud-modifier-monitor.exe)
+
+## Verification Highlights
+- Build duration: ~46.6s frontend compile, ~10s electron packaging.
+- Identity stamp: `Aro.exe` successfully stamped with Aro/Hermes icon and metadata via `set-exe-identity.mjs`.
+- Security/integrity: ASAR integrity hash stamped into executable resource; 20 PEs scanned, 0 dangling certificate tables cleared.

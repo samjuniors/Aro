@@ -57,7 +57,7 @@ export function SessionSwitcher() {
           return (
             <div
               className={cn(
-                'row-hover flex items-center rounded leading-tight',
+                'row-hover flex items-center rounded-control leading-tight',
                 HUD_ITEM,
                 HUD_TEXT,
                 selected ? 'bg-accent text-accent-foreground' : 'text-(--ui-text-secondary)'
@@ -74,7 +74,7 @@ export function SessionSwitcher() {
               {i < 9 && (
                 <span
                   className={cn(
-                    'shrink-0 font-mono text-[0.625rem] tabular-nums',
+                    'shrink-0 font-mono text-aro-xs tabular-nums',
                     selected ? 'text-accent-foreground/70' : 'text-(--ui-text-quaternary)'
                   )}
                 >

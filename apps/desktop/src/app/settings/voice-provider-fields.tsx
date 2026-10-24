@@ -154,7 +154,7 @@ export function VoiceProviderFields({
   }
 
   return (
-    <div className="grid gap-0.5 rounded-lg bg-background/55 px-2.5">
+    <div className="grid gap-0.5 rounded-panel bg-background/55 px-2.5">
       {keys.map(key => {
         const value = getNested(config, key)
         const field = schema[key] ?? inferFieldSchema(value)

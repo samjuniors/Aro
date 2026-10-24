@@ -96,8 +96,8 @@ export function normalizePreviewUrl(input: string): null | string {
   }
 }
 
-// BACKEND-TODO(browser-preview): local tab strip only — the future backend
-// surface is the `preview.*` event family (see port/FEATURE_MAP.md).
+// BACKEND-TODO(browser-preview): [D-10, research/11 §3] local tab strip only — the future
+// backend surface is the `preview.*` event family (see port/FEATURE_MAP.md).
 export const localBrowserPreviewAdapter: BrowserPreviewAdapter = {
   listTabs() {
     const tabs = $previewTabs.get()
@@ -151,8 +151,8 @@ export const $previewViewport = atom<ViewportId>(readLocalRecord(
 ))
 
 $previewTabs.subscribe(tabs => {
-  // BACKEND-TODO(browser-preview): replace with the real `preview.*` sync
-  // when the backend lands; until then this is the persistence point.
+  // BACKEND-TODO(browser-preview): [D-10, research/11 §3] replace with real
+  // `preview.*` sync when backend lands; until then this is the persistence point.
   writeLocalRecord(WORKSPACE_KEY.browserTabs, tabs)
 })
 

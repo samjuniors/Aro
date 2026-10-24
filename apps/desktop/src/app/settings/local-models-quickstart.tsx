@@ -39,7 +39,7 @@ export function LocalModelsQuickstart({
     <SettingsContent>
       <div className="flex min-h-[60dvh] items-center justify-center">
         <div className="w-full max-w-md text-center">
-          <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-primary/10">
+          <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-overlay bg-primary/10">
             {qJob ? (
               qJob.status === 'paused' ? (
                 <Pause className="size-7 text-muted-foreground" />
@@ -62,7 +62,7 @@ export function LocalModelsQuickstart({
                   the composer drops speed/ETA when bytes aren't moving —
                   showing a stale rate across a stage hand-off would read as
                   progress loss. A paused job keeps its frozen counter. */}
-              <p className="mt-2 min-h-10 text-[0.8rem] leading-5 text-muted-foreground">
+              <p className="mt-2 min-h-10 text-aro-md leading-5 text-muted-foreground">
                 {downloadStatusText(qJob, copy)}
               </p>
 
@@ -82,7 +82,7 @@ export function LocalModelsQuickstart({
                 {stages.map((label, i) => (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1.5 text-[0.72rem]',
+                      'inline-flex items-center gap-1.5 text-aro-sm',
                       i < stageIndex && 'text-(--ui-text-tertiary)',
                       i === stageIndex && 'font-medium text-foreground',
                       i > stageIndex && 'text-(--ui-text-tertiary) opacity-60'
@@ -103,7 +103,7 @@ export function LocalModelsQuickstart({
             </>
           ) : heroModel ? (
             <>
-              <p className="mt-2 text-[0.8rem] leading-5 text-muted-foreground">
+              <p className="mt-2 text-aro-md leading-5 text-muted-foreground">
                 {heroModel.downloaded
                   ? copy.quickstartDetailReady(heroModel.display_name)
                   : copy.quickstartDetail(heroModel.display_name, heroModel.size_label)}
@@ -122,7 +122,7 @@ export function LocalModelsQuickstart({
           ) : null}
 
           {lastError?.kind === 'quickstart' && !qJob && (
-            <p className="mt-4 text-[0.75rem] text-destructive">{lastError.error}</p>
+            <p className="mt-4 text-aro-sm text-destructive">{lastError.error}</p>
           )}
         </div>
       </div>

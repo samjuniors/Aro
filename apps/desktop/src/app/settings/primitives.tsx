@@ -111,7 +111,7 @@ export function SettingsSection({
 }
 
 /**
- * SettingsGroup: Prototype-style grouped card with rounded-[11px], hairline borders,
+ * SettingsGroup: Prototype-style grouped card with rounded-panel, hairline borders,
  * optional title header, and internal row dividers.
  */
 export function SettingsGroup({
@@ -130,16 +130,16 @@ export function SettingsGroup({
   return (
     <section
       className={cn(
-        'settings-group mb-5 overflow-hidden rounded-[11px] border border-(--ui-stroke-primary) bg-(--ui-bg-card)',
+        'settings-group mb-5 overflow-hidden rounded-panel border border-(--ui-stroke-primary) bg-(--ui-bg-card)',
         className
       )}
     >
       {title && (
         <div className="flex items-center justify-between border-b border-(--ui-stroke-secondary) px-4 py-3">
           <div>
-            <h3 className="text-[12px] font-medium text-(--ui-text-primary)">{title}</h3>
+            <h3 className="text-xs font-medium text-(--ui-text-primary)">{title}</h3>
             {description && (
-              <p className="mt-0.5 text-[10.5px] leading-relaxed text-(--ui-text-tertiary)">{description}</p>
+              <p className="mt-0.5 text-aro-xs leading-relaxed text-(--ui-text-tertiary)">{description}</p>
             )}
           </div>
           {aside && <div className="ml-auto flex items-center">{aside}</div>}
@@ -164,7 +164,7 @@ export function NavLink({
   return (
     <Button
       className={cn(
-        'flex min-h-7 w-full justify-start gap-2 rounded-md px-2 text-left text-[length:var(--conversation-text-font-size)] transition',
+        'flex min-h-7 w-full justify-start gap-2 rounded-control px-2 text-left text-[length:var(--conversation-text-font-size)] transition',
         active
           ? 'bg-(--ui-bg-tertiary) text-foreground'
           : 'text-(--ui-text-secondary) hover:bg-(--chrome-action-hover) hover:text-foreground'
@@ -228,7 +228,7 @@ export function ListRow({
               {description}
             </div>
           )}
-          {hint && <div className="mt-1 block font-mono text-[0.68rem] text-muted-foreground/45">{hint}</div>}
+          {hint && <div className="mt-1 block font-mono text-aro-xs text-muted-foreground/45">{hint}</div>}
           {below}
         </div>
         {!wide && action && (

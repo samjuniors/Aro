@@ -23,6 +23,7 @@ import {
   IconPlus,
   IconRefresh,
   IconSearch,
+  IconSpark,
   IconTerminal,
   IconX
 } from '@/aro/Icons'
@@ -58,6 +59,7 @@ import { ProjectTree } from './files/tree'
 import { useProjectTree } from './files/use-project-tree'
 import { GitSection } from './git-section'
 import { WorkspaceLaunchpad } from './launchpad'
+import { OverviewSection } from './overview-section'
 import { PlanSection } from './plan-section'
 import { SearchSection } from './search-section'
 import {
@@ -65,6 +67,7 @@ import {
   $workspaceOpenTabs,
   closeWorkspaceTab,
   type ContextSectionId,
+  openWorkspaceTab,
   setRightSidebarSection
 } from './store'
 import { TerminalSection } from './terminal-section'
@@ -80,6 +83,7 @@ const SECTION_CONFIG: Record<
   ContextSectionId,
   { id: ContextSectionId; label: string; icon: ComponentType<{ size?: number; className?: string }> }
 > = {
+  overview: { id: 'overview', label: 'Overview', icon: IconSpark },
   changes: { id: 'changes', label: 'Changes', icon: IconGit },
   terminal: { id: 'terminal', label: isWin ? 'powershell.exe' : 'Terminal', icon: IconTerminal },
   files: { id: 'files', label: 'Files', icon: IconFolder },
@@ -108,6 +112,27 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       setFullscreen(false)
     }
   }, [rightSideOpen])
+
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      // Ctrl+Shift+G / Cmd+Shift+G to toggle Changes/Review, matching OpenAI Codex Desktop
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'g') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!rightSideOpen) {
+          openWorkspaceTab('changes')
+          toggleRightSide()
+        } else if (section === 'changes') {
+          toggleRightSide()
+        } else {
+          openWorkspaceTab('changes')
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleShortcut, true)
+    return () => window.removeEventListener('keydown', handleShortcut, true)
+  }, [rightSideOpen, section])
 
   useEffect(() => {
     if (!fullscreen) {return}
@@ -329,7 +354,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
                   <Icon size={11} />
                   <span className="workspace-tab-title">{config.label}</span>
                   {count !== undefined && count > 0 && (
-                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[9px] text-aro-ink-3">
+                    <span className="ml-1 rounded-full bg-aro-hover px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                       {count}
                     </span>
                   )}
@@ -412,6 +437,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         role="region"
         tabIndex={0}
       >
+        {section === 'overview' && <OverviewSection />}
         {section === 'files' && (
           <FilesystemTab
             canCollapse={canCollapse}
@@ -551,10 +577,10 @@ function FilesystemTab({
         </Tip>
       </RightSidebarSectionHeader>
       <div className="px-2.5 py-1.5 border-b border-aro-line-soft bg-aro-well/30">
-        <div className="flex items-center gap-1.5 rounded-md border border-aro-line/50 bg-aro-well px-2 py-1 text-aro-ink-4 focus-within:border-aro-iris focus-within:text-aro-ink">
+        <div className="flex items-center gap-1.5 rounded-control border border-aro-line/50 bg-aro-well px-2 py-1 text-aro-ink-4 focus-within:border-aro-iris focus-within:text-aro-ink">
           <IconSearch className="shrink-0" size={11} />
           <input
-            className="w-full bg-transparent text-[11px] text-aro-ink outline-none placeholder:text-aro-ink-4"
+            className="w-full bg-transparent text-xs text-aro-ink outline-none placeholder:text-aro-ink-4"
             onChange={e => setFileFilter(e.target.value)}
             placeholder="Filter files in workspace…"
             type="text"
@@ -640,7 +666,7 @@ function FileTreeBody({
         <EmptyState body={r.unreadableBody(error)} title={r.unreadableTitle} />
         {onRetry && (
           <button
-            className="text-[0.68rem] font-medium text-muted-foreground transition hover:text-foreground"
+            className="text-[var(--aro-text-2xs,10px)] font-medium text-muted-foreground transition hover:text-foreground"
             onClick={onRetry}
             type="button"
           >
@@ -665,7 +691,7 @@ function FileTreeBody({
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
           <EmptyState body={r.treeErrorBody} title={r.treeErrorTitle} />
           <button
-            className="text-[0.68rem] font-medium text-muted-foreground transition hover:text-foreground"
+            className="text-[var(--aro-text-2xs,10px)] font-medium text-muted-foreground transition hover:text-foreground"
             onClick={reset}
             type="button"
           >
@@ -717,9 +743,9 @@ export function EmptyState({ body, title }: { body: string; title?: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1 px-4 text-center">
       {title && (
-        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.07em] text-muted-foreground/75">{title}</div>
+        <div className="text-[var(--aro-text-2xs,10px)] font-semibold uppercase tracking-[0.07em] text-muted-foreground/75">{title}</div>
       )}
-      <div className="text-[0.68rem] leading-relaxed text-muted-foreground/65">{body}</div>
+      <div className="text-[var(--aro-text-2xs,10px)] leading-relaxed text-muted-foreground/65">{body}</div>
     </div>
   )
 }

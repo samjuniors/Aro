@@ -194,7 +194,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
       {/* Aro prose-code header (prototype grammar): mono uppercase language
           label + the real hover actions (run in terminal / copy). */}
       <div className="flex h-[26px] items-center justify-between gap-2 border-b border-aro-line-soft bg-aro-code/50 pl-2.5 pr-1">
-        <span className="min-w-0 truncate font-aro-mono text-[9px] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
+        <span className="min-w-0 truncate font-aro-mono text-[var(--aro-text-2xs,10px)] font-medium tracking-[0.14em] text-aro-ink-4 uppercase">
           {language || 'code'}
         </span>
         {/* Prototype prose-code head: actions are ALWAYS visible (the
@@ -203,7 +203,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
           <Tip label="Run in terminal">
             <button
               aria-label="Run in terminal"
-              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+              className="flex size-5 cursor-pointer items-center justify-center rounded-control text-aro-ink-4 transition-colors hover:bg-aro-hover hover:text-aro-ink"
               onClick={() => runInTerminal(copyableCodeText(content))}
               type="button"
             >
@@ -212,7 +212,7 @@ export const SyntaxHighlighter: FC<HermesSyntaxHighlighterProps> = ({
           </Tip>
           <CopyButton
             appearance="inline"
-            className="h-5 gap-0 rounded-md px-1 text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
+            className="h-5 gap-0 rounded-control px-1 text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink"
             iconClassName="size-3"
             label={t.assistant.tool.copyCode}
             showLabel={false}

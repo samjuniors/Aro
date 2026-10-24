@@ -13,7 +13,7 @@ import { useI18n } from '@/i18n'
 import { reestablishCloudAgentSession } from '@/lib/cloud-agent-session'
 import { DESKTOP_DOCS_URL } from '@/lib/docs'
 import { openExternalLink } from '@/lib/external-link'
-import { ChevronLeft, ExternalLink, FileText, Loader2, LogIn, RefreshCw, SlidersHorizontal, Wrench } from '@/lib/icons'
+import { ChevronLeft, Copy, ExternalLink, FileText, Loader2, LogIn, RefreshCw, SlidersHorizontal, Wrench } from '@/lib/icons'
 import { $desktopBoot } from '@/store/boot'
 import { notify, notifyError } from '@/store/notifications'
 import { $desktopOnboarding } from '@/store/onboarding'
@@ -336,6 +336,24 @@ export function BootFailureOverlay() {
 
   const openLogs = () => void window.hermesDesktop?.revealLogs().catch(() => undefined)
 
+  const copyDiagnostics = async () => {
+    try {
+      const diag = [
+        `Boot Error: ${boot.error || 'none'}`,
+        `Headline: ${failureCopy.headline}`,
+        `Platform: ${navigator.userAgent}`,
+        `Connection Mode: ${connectionConfig?.mode || 'unknown'}`,
+        `Bundled: ${bundled}`,
+        `Recent Logs:\n${logs.slice(-20).join('\n')}`
+      ].join('\n')
+
+      await navigator.clipboard.writeText(diag)
+      notify({ kind: 'success', title: 'Diagnostics copied', message: 'Diagnostic information copied to clipboard.' })
+    } catch (err) {
+      notifyError(err, 'Could not copy diagnostics')
+    }
+  }
+
   const dismiss = () => setDismissedError(boot.error)
 
   const copy = t.boot.failure
@@ -475,7 +493,7 @@ export function BootFailureOverlay() {
   if (view === 'connect') {
     return (
       <BootFailureModal onDismiss={dismiss} title={copy.gatewaySettings}>
-        <div className="relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+        <div className="relative flex max-h-[86vh] w-full max-w-[46rem] flex-col overflow-hidden rounded-overlay border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
           <DialogCloseButton />
           {/* Subtle back affordance (projects/overlay idiom): muted → foreground
               on hover, no divider. */}
@@ -499,30 +517,33 @@ export function BootFailureOverlay() {
 
   return (
     <BootFailureModal onDismiss={dismiss}>
-      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-xl border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
+      <div className="relative w-full max-w-[40rem] overflow-hidden rounded-overlay border border-(--stroke-nous) bg-(--ui-chat-bubble-background) shadow-nous">
         <DialogCloseButton />
         <div className="flex items-start gap-3 px-5 py-4 pr-12">
           <ErrorIcon className="mt-0.5" size="1.25rem" />
           <div>
             <DialogPrimitive.Title asChild>
-              <h2 className="text-[0.9375rem] font-semibold tracking-tight">
+              <h2 className="text-aro-lg font-semibold tracking-tight">
                 {remoteReauth ? copy.remoteTitle : cloudDown ? copy.cloudDownTitle : copy.title}
               </h2>
             </DialogPrimitive.Title>
-            <p className="mt-1 text-[0.8125rem] leading-5 text-(--ui-text-tertiary)">
+            <p className="mt-1 text-aro-md leading-5 text-(--ui-text-tertiary)">
               {remoteReauth ? copy.remoteDescription : cloudDown ? copy.cloudDownDescription : copy.description}
             </p>
           </div>
         </div>
 
         <div className="grid gap-4 p-5 pt-0">
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs text-destructive">
-            {failureCopy.headline}
+          <div className="rounded-overlay border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs text-destructive">
+            <div className="font-semibold">{failureCopy.headline}</div>
+            {failureCopy.nextAction ? (
+              <div className="mt-1 text-foreground/80">{failureCopy.nextAction}</div>
+            ) : null}
             {failureCopy.rawDetail ? (
               <details className="mt-2 text-muted-foreground">
                 <summary className="cursor-pointer select-none font-medium">{copy.details}</summary>
                 <pre
-                  className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap wrap-break-word font-mono text-[0.6875rem] leading-relaxed"
+                  className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap wrap-break-word font-mono text-aro-xs leading-relaxed"
                   data-selectable-text="true"
                 >
                   {failureCopy.rawDetail}
@@ -542,6 +563,10 @@ export function BootFailureOverlay() {
               <Button onClick={openLogs} variant="ghost">
                 <FileText />
                 {copy.openLogs}
+              </Button>
+              <Button onClick={() => void copyDiagnostics()} variant="ghost">
+                <Copy />
+                Copy diagnostics
               </Button>
             </div>
             {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}

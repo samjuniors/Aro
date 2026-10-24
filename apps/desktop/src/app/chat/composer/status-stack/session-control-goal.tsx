@@ -297,7 +297,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                       <Button
                         aria-haspopup="menu"
                         aria-label={ctrl.goalActions}
-                        className="size-6 rounded-md text-muted-foreground/70 hover:text-foreground/90"
+                        className="size-6 rounded-control text-muted-foreground/70 hover:text-foreground/90"
                         disabled={isBusy}
                         onClick={event => {
                           // Radix opens pointer interactions from pointerdown. Keyboard,
@@ -329,7 +329,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
               label={headerLabel}
             >
               <div>
-                <StatusControlRow className="text-[0.73rem] leading-4 text-foreground/92 break-words" icon="flag">
+                <StatusControlRow className="text-aro-sm leading-4 text-foreground/92 break-words" icon="flag">
                   {goal.title}
                 </StatusControlRow>
                 {!detailsOpen && goal.wait_barrier && (
@@ -346,7 +346,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                 {hasDetails && (
                   <StatusControlRow icon="eye">
                     <Button
-                      className="text-[0.7rem] text-muted-foreground/75 hover:text-foreground/90"
+                      className="text-aro-xs text-muted-foreground/75 hover:text-foreground/90"
                       onClick={() => setDetailsOpen(true)}
                       size="inline"
                       type="button"
@@ -360,7 +360,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                 {/* Criteria subsection */}
                 <div className="mt-1.5 border-t border-(--ui-stroke-tertiary)/40 pt-1.5">
                   <StatusRow
-                    className="text-[0.68rem] font-medium text-muted-foreground/75"
+                    className="text-aro-xs font-medium text-muted-foreground/75"
                     leading={
                       <span
                         aria-hidden="true"
@@ -373,7 +373,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                     trailing={
                       <div className="flex items-center gap-1">
                         <Button
-                          className="text-[0.68rem] text-muted-foreground/75 hover:text-foreground/90"
+                          className="text-aro-xs text-muted-foreground/75 hover:text-foreground/90"
                           disabled={isBusy}
                           onClick={openAddCriterion}
                           size="micro"
@@ -384,7 +384,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                         </Button>
                         {goal.subgoals.length > 0 && (
                           <Button
-                            className="text-[0.68rem] text-muted-foreground/60 hover:text-destructive"
+                            className="text-aro-xs text-muted-foreground/60 hover:text-destructive"
                             disabled={isBusy}
                             onClick={confirmClearCriteria}
                             size="micro"
@@ -417,7 +417,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                                 <Tip label={ctrl.copyCriterion(index)}>
                                   <Button
                                     aria-label={ctrl.copyCriterion(index)}
-                                    className="size-6 rounded text-muted-foreground/60 hover:text-foreground/90"
+                                    className="size-6 rounded-control text-muted-foreground/60 hover:text-foreground/90"
                                     onClick={() => void copyCriterionText(subgoal)}
                                     size="icon-xs"
                                     type="button"
@@ -428,7 +428,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
                                 </Tip>
                                 <Button
                                   aria-label={ctrl.removeCriterion(index)}
-                                  className="size-6 rounded text-muted-foreground/60 hover:text-destructive"
+                                  className="size-6 rounded-control text-muted-foreground/60 hover:text-destructive"
                                   disabled={isBusy}
                                   onClick={() => confirmRemoveCriterion(index)}
                                   size="icon-xs"
@@ -492,7 +492,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
               <textarea
                 aria-label={ctrl.criterionLabel}
                 autoFocus
-                className="w-full rounded-md border border-(--ui-stroke-secondary) bg-transparent p-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-control border border-(--ui-stroke-secondary) bg-transparent p-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
                 disabled={isBusy}
                 onChange={e => setNewCriterionText(e.target.value)}
                 placeholder={ctrl.addCriterionPlaceholder}
@@ -525,7 +525,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
           </DialogHeader>
           <div className="space-y-3 py-2 text-xs">
             <div>
-              <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+              <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                 {ctrl.objectiveLabel}
               </div>
               <div className="mt-0.5 text-foreground leading-relaxed break-words">{goal.title}</div>
@@ -534,7 +534,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             {/* Contract fields */}
             {goal.contract.outcome && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.contractOutcome}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">{goal.contract.outcome}</div>
@@ -542,7 +542,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             )}
             {goal.contract.verification && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.contractVerification}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">{goal.contract.verification}</div>
@@ -550,7 +550,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             )}
             {goal.contract.constraints && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.contractConstraints}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">{goal.contract.constraints}</div>
@@ -558,7 +558,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             )}
             {goal.contract.boundaries && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.contractBoundaries}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">{goal.contract.boundaries}</div>
@@ -566,7 +566,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             )}
             {goal.contract.stop_when && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.contractStopWhen}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">{goal.contract.stop_when}</div>
@@ -576,7 +576,7 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             {/* Wait Barrier */}
             {goal.wait_barrier && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.waitBarrierTitle}
                 </div>
                 <div className="mt-0.5 text-foreground/90 leading-relaxed">
@@ -594,17 +594,17 @@ export const SessionControlGoalSection = memo(function SessionControlGoalSection
             {/* Quality Gates */}
             {goal.gates.length > 0 && (
               <div>
-                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-[0.68rem]">
+                <div className="font-semibold text-muted-foreground/75 uppercase tracking-wider text-aro-xs">
                   {ctrl.qualityGatesTitle}
                 </div>
                 <div className="mt-1 space-y-1.5">
                   {goal.gates.map((gate, i) => (
                     <div
-                      className="rounded border border-(--ui-stroke-tertiary)/60 bg-(--ui-control-active-background)/20 p-2"
+                      className="rounded-control border border-(--ui-stroke-tertiary)/60 bg-(--ui-control-active-background)/20 p-2"
                       key={`${i}-${gate.command}`}
                     >
-                      <div className="font-mono text-[0.7rem] text-foreground/95">{gate.command}</div>
-                      <div className="mt-1 flex items-center gap-2 text-[0.68rem] text-muted-foreground/80">
+                      <div className="font-mono text-aro-xs text-foreground/95">{gate.command}</div>
+                      <div className="mt-1 flex items-center gap-2 text-aro-xs text-muted-foreground/80">
                         <span>{ctrl.gateAttempts(gate.attempts, gate.max_retries)}</span>
                         <span className="text-muted-foreground/40">·</span>
                         <span>{ctrl.gateTimeout(gate.timeout_seconds)}</span>

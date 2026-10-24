@@ -61,7 +61,7 @@ export function StickyHumanMessageContainer({
         {/* Prototype grammar: 28px monogram avatar, left-aligned row. */}
         <div
           aria-hidden
-          className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-aro-line-soft bg-aro-hover font-aro-mono text-[10.5px] font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
+          className="flex size-7 shrink-0 items-center justify-center rounded-panel border border-aro-line-soft bg-aro-hover font-aro-mono text-aro-xs font-bold text-aro-ink-2 shadow-aro-e1 [-webkit-app-region:no-drag]"
         >
           Y
         </div>
@@ -83,10 +83,10 @@ export function StickyHumanMessageContainer({
 // so without the carve-out, clicking a stuck bubble drags the window instead of
 // opening the edit composer.
 export const USER_BUBBLE_BASE_CLASS =
-  'composer-human-message relative flex w-full min-w-0 max-w-full flex-col gap-1.5 overflow-y-auto rounded-[10px] rounded-tl-[3px] border border-aro-line-soft bg-aro-raise px-3.5 py-2.5 text-left shadow-aro-e1 [-webkit-app-region:no-drag]'
+  'composer-human-message relative flex w-full min-w-0 max-w-full flex-col gap-1.5 overflow-y-auto rounded-panel rounded-tl-control border border-aro-line-soft bg-aro-raise px-3.5 py-2.5 text-left shadow-aro-e1 [-webkit-app-region:no-drag]'
 
 export const USER_ACTION_ICON_BUTTON_CLASS =
-  'grid place-items-center rounded-md bg-transparent text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-active-background) hover:text-foreground disabled:cursor-default disabled:text-(--ui-text-quaternary) disabled:opacity-70'
+  'grid place-items-center rounded-control bg-transparent text-(--ui-text-secondary) transition-colors hover:bg-(--ui-control-active-background) hover:text-foreground disabled:cursor-default disabled:text-(--ui-text-quaternary) disabled:opacity-70'
 
 export const USER_ACTION_ICON_SIZE = '0.6875rem'
 export const StopGlyph = <StopFilled aria-hidden className="size-3.5 -translate-y-px" />
@@ -215,14 +215,14 @@ const AgentMessageNote: FC<{ text: string }> = ({ text }) => {
   // message, so the exchange still reads in order.
   return (
     <div
-      className="flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-[0.6875rem] leading-5 text-muted-foreground/60"
+      className="flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-aro-xs leading-5 text-muted-foreground/60"
       data-slot="aui_agent-message-note"
     >
       <span className="flex items-center justify-center gap-1.5">
         {avatar ? (
           <img alt="" aria-hidden className="size-4 shrink-0 rounded-full object-cover" src={avatar} />
         ) : (
-          <span aria-hidden className="text-[0.8125rem] leading-none">
+          <span aria-hidden className="text-aro-md leading-none">
             🤖
           </span>
         )}
@@ -233,7 +233,7 @@ const AgentMessageNote: FC<{ text: string }> = ({ text }) => {
           <summary className="cursor-pointer select-none text-center text-muted-foreground/45 hover:text-muted-foreground/70">
             show message
           </summary>
-          <div className="mt-1 max-w-[36rem] rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-[0.75rem] leading-5 text-foreground/85">
+          <div className="mt-1 max-w-[36rem] rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-aro-sm leading-5 text-foreground/85">
             <UserMessageText text={body} />
           </div>
         </details>
@@ -434,9 +434,9 @@ export const UserMessage: FC<{
           <div className="human-message-with-todos-wrapper flex w-full flex-col gap-0">
             {/* Aro attributed header: "You" + real timestamp, above the bubble. */}
             <div className="mb-1.5 flex flex-wrap items-center gap-2 px-0.5">
-              <span className="text-[12.5px] font-semibold text-aro-ink">{copy.you}</span>
+              <span className="text-aro-sm font-semibold text-aro-ink">{copy.you}</span>
               {createdAt !== undefined && (
-                <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                   {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
@@ -524,7 +524,7 @@ export const UserMessage: FC<{
                 )}
                 {/* Hover cluster, bottom-right: when it was sent, then Stop or
                     Restore. Its fill masks the last line's tail while shown. */}
-                <div className="pointer-events-none absolute right-2 bottom-2 z-10 flex items-center gap-1 rounded-md bg-(--dt-user-bubble) pl-1 opacity-0 transition-opacity group-hover/user-message:opacity-100 group-hover/user-message:transition-none group-focus-within/user-message:opacity-100">
+                <div className="pointer-events-none absolute right-2 bottom-2 z-10 flex items-center gap-1 rounded-control bg-(--dt-user-bubble) pl-1 opacity-0 transition-opacity group-hover/user-message:opacity-100 group-hover/user-message:transition-none group-focus-within/user-message:opacity-100">
                   <MessageHoverTime className={cn(!showStop && !showRestore && 'pr-0.5')} />
                   {showStop ? (
                     <button
@@ -577,7 +577,7 @@ export const UserMessage: FC<{
             <MessageTimelineTimestamp className="self-end pr-1.5" />
             <BranchPickerPrimitive.Root
               className={cn(
-                'checkpoint-container mt-1.5 flex w-full items-center gap-2 font-aro-mono text-[10px] leading-none text-aro-ink-4',
+                'checkpoint-container mt-1.5 flex w-full items-center gap-2 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none text-aro-ink-4',
                 readOnly && 'hidden'
               )}
               hideWhenSingleBranch
@@ -587,7 +587,7 @@ export const UserMessage: FC<{
               <span aria-hidden="true" className="h-px min-w-4 flex-1 bg-aro-line-soft" />
               <IconUndo aria-hidden="true" className="shrink-0" size={10} />
               <BranchPickerPrimitive.Previous
-                className="checkpoint-restore-text rounded-sm bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
+                className="checkpoint-restore-text rounded-control bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
                 title={copy.restorePrevious}
               >
                 {copy.restoreCheckpoint}
@@ -596,7 +596,7 @@ export const UserMessage: FC<{
                 <BranchPickerPrimitive.Number />/<BranchPickerPrimitive.Count />
               </span>
               <BranchPickerPrimitive.Next
-                className="checkpoint-restore-text rounded-sm bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
+                className="checkpoint-restore-text rounded-control bg-transparent px-1 text-aro-ink-4 transition-colors hover:text-aro-iris disabled:hidden disabled:cursor-default"
                 title={copy.restoreNext}
               >
                 {copy.goForward}

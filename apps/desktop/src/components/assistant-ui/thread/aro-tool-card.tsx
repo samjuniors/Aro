@@ -237,7 +237,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
       data-aro-tool-card=""
       data-tool-name={toolName}
     >
-      <div className="overflow-hidden rounded-[9px] border border-aro-line-soft bg-aro-well">
+      <div className="overflow-hidden rounded-panel border border-aro-line-soft bg-aro-well">
         {expandable ? (
           <button
             aria-expanded={open}
@@ -248,34 +248,34 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             <span
               aria-hidden="true"
               className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-raise',
+                'flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise',
                 meta.tone
               )}
             >
               <Icon size={11} />
             </span>
-            <span className="shrink-0 font-aro-mono text-[9.5px] font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
+            <span className="shrink-0 font-aro-mono text-aro-xs font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
               {meta.label}
             </span>
             {target && (
-              <span className="min-w-0 flex-1 truncate font-aro-mono text-[11.5px] text-aro-ink-2" title={target}>
+              <span className="min-w-0 flex-1 truncate font-aro-mono text-aro-sm text-aro-ink-2" title={target}>
                 {target}
               </span>
             )}
             {isPending && (
-              <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-[10.5px] text-aro-cyan">
+              <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-aro-xs text-aro-cyan">
                 <i aria-hidden="true" className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />
                 running
               </span>
             )}
             {!isPending && diffStats && (
-              <span className="flex shrink-0 items-center gap-1 font-aro-mono text-[10px] tabular-nums">
+              <span className="flex shrink-0 items-center gap-1 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums">
                 {diffStats.added > 0 && <span className="text-aro-mint">+{diffStats.added}</span>}
                 {diffStats.removed > 0 && <span className="text-aro-rose">−{diffStats.removed}</span>}
               </span>
             )}
             {!isPending && !diffStats && view.durationLabel && (
-              <span className="shrink-0 font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+              <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
                 {view.durationLabel}
               </span>
             )}
@@ -290,28 +290,28 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
             <span
               aria-hidden="true"
               className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-raise',
+                'flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise',
                 meta.tone
               )}
             >
               <Icon size={11} />
             </span>
-            <span className="shrink-0 font-aro-mono text-[9.5px] font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
+            <span className="shrink-0 font-aro-mono text-aro-xs font-semibold tracking-[0.12em] text-aro-ink-4 uppercase">
               {meta.label}
             </span>
             {target && (
-              <span className="min-w-0 flex-1 truncate font-aro-mono text-[11.5px] text-aro-ink-2" title={target}>
+              <span className="min-w-0 flex-1 truncate font-aro-mono text-aro-sm text-aro-ink-2" title={target}>
                 {target}
               </span>
             )}
             {isPending && (
-              <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-[10.5px] text-aro-cyan">
+              <span className="ml-auto flex shrink-0 items-center gap-1.5 font-aro-mono text-aro-xs text-aro-cyan">
                 <i aria-hidden="true" className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />
                 running
               </span>
             )}
             {!isPending && view.durationLabel && (
-              <span className="ml-auto shrink-0 font-aro-mono text-[10px] tabular-nums text-aro-ink-4">
+              <span className="ml-auto shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] tabular-nums text-aro-ink-4">
                 {view.durationLabel}
               </span>
             )}
@@ -341,7 +341,7 @@ export const AroToolCard: FC<AroToolCardProps> = props => {
                a11y tree in CSS-less environments); both write the same
                disclosure-store state. */
             aria-label="Dismiss tool"
-            className="absolute right-1 top-1 z-10 flex size-5 cursor-pointer items-center justify-center rounded-md text-aro-ink-4 opacity-0 transition-opacity group-hover/aro-tool:opacity-100 hover:bg-aro-hover hover:text-aro-ink focus-visible:opacity-100"
+            className="absolute right-1 top-1 z-10 flex size-5 cursor-pointer items-center justify-center rounded-control text-aro-ink-4 opacity-0 transition-opacity group-hover/aro-tool:opacity-100 hover:bg-aro-hover hover:text-aro-ink focus-visible:opacity-100"
             onClick={event => {
               event.stopPropagation()
               dismissToolRow(disclosureId)

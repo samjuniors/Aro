@@ -58,6 +58,14 @@ test('redactSecrets scrubs Authorization and X-Hermes-Session-Token headers', ()
   assert.ok(!redactSecrets('X-Hermes-Session-Token: hdr_888').includes('hdr_888'))
 })
 
+test('redactSecrets scrubs Aro tokens and LLM API keys', () => {
+  assert.match(redactSecrets('ARO_DASHBOARD_SESSION_TOKEN=arotok123456789'), /ARO_DASHBOARD_SESSION_TOKEN=<redacted>/)
+  assert.match(redactSecrets('X-Aro-Session-Token: arosess_secret'), /X-Aro-Session-Token: ?<redacted>/)
+  assert.match(redactSecrets('sk-proj-abcdefghijklmnopqrstuvwxyz012345'), /<redacted-api-key>/)
+  assert.match(redactSecrets('sk-ant-api03-abcdefghijklmnopqrstuvwxyz'), /<redacted-api-key>/)
+  assert.match(redactSecrets('AIzaSyD-abcdefghijklmnopqrstuvwxyz1234'), /<redacted-api-key>/)
+})
+
 test('redactSecrets handles null/undefined and non-secret text untouched', () => {
   assert.equal(redactSecrets(null), '')
   assert.equal(redactSecrets(undefined), '')

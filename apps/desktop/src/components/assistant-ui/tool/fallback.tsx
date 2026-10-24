@@ -102,19 +102,19 @@ const TOOL_HEADER_GLYPH_WRAP_CLASS = cn(SCAFFOLD_GLYPH_CLASS, 'self-center')
 // Glass-style section label that sits above any pre/JSON/output block.
 // Lowercase tracking + tiny size so it reads as a quiet field label rather
 // than a chrome heading. Used for "stdout", "stderr", "Search results", etc.
-const TOOL_SECTION_LABEL_CLASS = 'mb-1 text-[0.65rem] font-medium uppercase tracking-[0.08em] text-(--ui-text-tertiary)'
+const TOOL_SECTION_LABEL_CLASS = 'mb-1 text-aro-xs font-medium uppercase tracking-[0.08em] text-(--ui-text-tertiary)'
 
 // Inset scroll surface for any detail body. The expanded tool row owns the
 // border; the payload itself is just clipped raw text.
 const TOOL_SECTION_SURFACE_CLASS =
   'max-h-20 max-w-full overflow-auto bg-transparent px-2 py-1.5 text-(--ui-text-secondary)'
 
-const TOOL_EXPANDED_SHELL_CLASS = 'rounded-[0.3125rem] border border-(--ui-stroke-tertiary)'
+const TOOL_EXPANDED_SHELL_CLASS = 'rounded-control border border-(--ui-stroke-tertiary)'
 
-const TOOL_SECTION_PRE_CLASS = cn(TOOL_SECTION_SURFACE_CLASS, 'font-mono text-[0.7rem] leading-relaxed')
+const TOOL_SECTION_PRE_CLASS = cn(TOOL_SECTION_SURFACE_CLASS, 'font-mono text-aro-xs leading-relaxed')
 
 // Raw args/result dump — reference material, so a notch smaller than a body.
-const TOOL_PAYLOAD_PRE_CLASS = cn(TOOL_SECTION_SURFACE_CLASS, 'font-mono text-[0.65rem] leading-relaxed')
+const TOOL_PAYLOAD_PRE_CLASS = cn(TOOL_SECTION_SURFACE_CLASS, 'font-mono text-aro-xs leading-relaxed')
 
 /**
  * Technical-mode raw payload, behind a chevron disclosure.
@@ -198,7 +198,7 @@ function statusGlyph(status: ToolStatus, copy: ToolStatusCopy): ReactNode {
     return (
       <GlyphSpinner
         ariaLabel={copy.statusRunning}
-        className="size-3.5 shrink-0 text-[0.95rem] text-(--ui-text-tertiary)"
+        className="size-3.5 shrink-0 text-aro-lg text-(--ui-text-tertiary)"
         spinner="breathe"
       />
     )
@@ -552,7 +552,7 @@ function ToolEntry({ part }: ToolEntryProps) {
     <Button
       aria-label={statusCopy.dismiss}
       className={cn(
-        'size-5 rounded-md text-(--ui-text-tertiary) transition-opacity hover:text-(--ui-text-primary) hover:opacity-100',
+        'size-5 rounded-control text-(--ui-text-tertiary) transition-opacity hover:text-(--ui-text-primary) hover:opacity-100',
         open
           ? 'opacity-80'
           : 'opacity-0 group-hover/disclosure-row:opacity-80 group-focus-within/disclosure-row:opacity-80'
@@ -635,7 +635,7 @@ function ToolEntry({ part }: ToolEntryProps) {
               <span className={cn(SCAFFOLD_META_CLASS, memoryMetaClass)}>{view.countLabel}</span>
             )}
             {showDiffStats && diffStats && (
-              <span className="flex shrink-0 items-center gap-1 font-mono text-[0.625rem] tabular-nums">
+              <span className="flex shrink-0 items-center gap-1 font-mono text-aro-xs tabular-nums">
                 {diffStats.added > 0 && (
                   <span className="text-emerald-600 dark:text-emerald-400">+{diffStats.added}</span>
                 )}
@@ -655,7 +655,7 @@ function ToolEntry({ part }: ToolEntryProps) {
           {copyAction.text && (
             <CopyButton
               appearance="inline"
-              className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-md px-1 opacity-5 transition-opacity group-hover/tool-block:opacity-100 hover:opacity-100 focus-visible:opacity-100"
+              className="absolute right-4 top-1.5 z-10 h-5 gap-0 rounded-control px-1 opacity-5 transition-opacity group-hover/tool-block:opacity-100 hover:opacity-100 focus-visible:opacity-100"
               iconClassName="size-3"
               label={copyAction.label}
               showLabel={false}
@@ -668,7 +668,7 @@ function ToolEntry({ part }: ToolEntryProps) {
             <TerminalTranscript command={view.terminalCommand} exitCode={view.terminalExitCode} />
           )}
           {view.imageUrl && (
-            <div className="max-w-72 overflow-hidden rounded-[0.25rem] border border-(--ui-stroke-tertiary)">
+            <div className="max-w-72 overflow-hidden rounded-control border border-(--ui-stroke-tertiary)">
               <MarkdownImage alt={copy.outputAlt} src={view.imageUrl} />
             </div>
           )}
@@ -698,7 +698,7 @@ function ToolEntry({ part }: ToolEntryProps) {
                   {detailSections.body && (
                     <pre
                       className={cn(
-                        'max-h-56 overflow-auto whitespace-pre-wrap wrap-anywhere font-mono text-[0.7rem] leading-[1.55] text-(--ui-text-secondary)',
+                        'max-h-56 overflow-auto whitespace-pre-wrap wrap-anywhere font-mono text-aro-xs leading-[1.55] text-(--ui-text-secondary)',
                         detailSections.summary && 'mt-1.5'
                       )}
                     >
@@ -776,7 +776,7 @@ function TerminalTranscript({ command, exitCode }: TerminalTranscriptProps) {
   }
 
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-[0.25rem] border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-2 py-1.5 font-mono text-[0.7rem] leading-relaxed">
+    <div className="flex min-w-0 items-center gap-2 rounded-control border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-2 py-1.5 font-mono text-aro-xs leading-relaxed">
       {command && (
         <code className="min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere text-(--ui-text-secondary)">
           <span aria-hidden className="select-none text-(--ui-accent-secondary)">
@@ -788,7 +788,7 @@ function TerminalTranscript({ command, exitCode }: TerminalTranscriptProps) {
       {exitCode !== undefined && (
         <span
           className={cn(
-            'shrink-0 rounded bg-(--ui-bg-tertiary) px-1 py-px text-[0.6rem] tabular-nums',
+            'shrink-0 rounded-control bg-(--ui-bg-tertiary) px-1 py-px text-aro-xs tabular-nums',
             exitCode === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
           )}
         >

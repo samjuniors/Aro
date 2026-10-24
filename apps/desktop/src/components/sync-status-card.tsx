@@ -58,7 +58,7 @@ export function SyncStatusCard() {
 
   return (
     <div
-      className="grid gap-2 rounded-lg border border-border bg-muted/40 p-3 text-left"
+      className="grid gap-2 rounded-panel border border-border bg-muted/40 p-3 text-left"
       data-testid="sync-status-card"
     >
       <p className={`flex items-center gap-2 text-sm font-medium ${tone}`}>

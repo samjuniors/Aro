@@ -136,7 +136,7 @@ export function ImageLightbox({
         chrome={
           open && (
             <div
-              className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border/70 bg-background/85 p-1 shadow-lg backdrop-blur"
+              className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border/70 bg-background/85 p-1 shadow-aro-e3 backdrop-blur"
               onClick={event => event.stopPropagation()}
               onPointerDown={event => event.stopPropagation()}
             >
@@ -172,7 +172,7 @@ export function ImageLightbox({
         className="w-auto max-h-[calc(100vh-12rem)] max-w-[calc(100vw-12rem)] border-0 bg-transparent! shadow-none!"
         // The media-lightbox shell variant. styles.css paints every
         // [data-slot='dialog-content'] with the themed elevated background +
-        // --shadow-md — fine for opaque dialogs, but this shell is meant to be
+        // --aro-shadow-e2 — fine for opaque dialogs, but this shell is meant to be
         // an invisible frame around the image: when a zoomed/panned image moves
         // inside it, that paint shows as a stray box of shell area the image
         // no longer covers. tailwind-merge cannot drop the base `shadow-nous`
@@ -187,7 +187,7 @@ export function ImageLightbox({
           <img
             alt={alt ?? ''}
             className={cn(
-              'block max-h-[calc(100vh-12rem)] max-w-[calc(100vw-12rem)] select-none rounded-lg object-contain shadow-2xl',
+              'block max-h-[calc(100vh-12rem)] max-w-[calc(100vw-12rem)] select-none rounded-panel object-contain shadow-aro-e4',
               panning && 'cursor-grabbing'
             )}
             onClick={onImageClick}
@@ -223,7 +223,7 @@ export function ImageActionButton({
     <button
       aria-label={saving ? copy.savingImage : copy.downloadImage}
       className={cn(
-        'absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-border/70 bg-background/80 text-muted-foreground opacity-0 shadow-sm backdrop-blur transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 disabled:opacity-50',
+        'absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-border/70 bg-background/80 text-muted-foreground opacity-0 shadow-aro-e1 backdrop-blur transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 disabled:opacity-50',
         className
       )}
       disabled={saving}

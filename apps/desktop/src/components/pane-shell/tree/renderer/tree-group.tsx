@@ -606,7 +606,7 @@ export function TreeGroup({
                     {minimizable && (
                       <button
                         aria-label={node.minimized ? t.zones.restore : minimizeLabel}
-                        className="mx-1 grid size-5 shrink-0 place-items-center self-center [-webkit-app-region:no-drag] rounded-md text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/pane-header:opacity-100"
+                        className="mx-1 grid size-5 shrink-0 place-items-center self-center [-webkit-app-region:no-drag] rounded-control text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--ui-control-hover-background) hover:text-foreground focus-visible:opacity-100 group-hover/pane-header:opacity-100"
                         onClick={toggleCollapse}
                         onPointerDown={e => e.stopPropagation()}
                         type="button"
@@ -862,7 +862,7 @@ export function TreeGroup({
                     </PaneGroupContext.Provider>
                   ) : (
                     isActive && (
-                      <div className="p-3 font-mono text-[11px] text-(--ui-text-quaternary)">
+                      <div className="p-3 font-mono text-xs text-(--ui-text-quaternary)">
                         {t.zones.missingPane(paneId)}
                       </div>
                     )
@@ -895,7 +895,7 @@ export function TreeGroup({
               outlineColor: 'color-mix(in srgb, var(--ui-accent) 55%, transparent)'
             }}
           >
-            <span className="flex max-w-[calc(100%-1rem)] items-center gap-1.5 rounded-md border border-(--ui-stroke-secondary) bg-popover px-2 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-(--ui-text-secondary)">
+            <span className="flex max-w-[calc(100%-1rem)] items-center gap-1.5 rounded-control border border-(--ui-stroke-secondary) bg-popover px-2 py-1 text-aro-xs font-semibold uppercase tracking-[0.16em] text-(--ui-text-secondary)">
               <Codicon className="shrink-0" name="gripper" size="0.8125rem" />
               <span className="min-w-0 truncate">{tabText(activeId)}</span>
             </span>
@@ -1050,7 +1050,7 @@ function ZoneDropOverlay({ node }: { node: GroupNode }) {
       <div
         className={cn(
           DROP_SHEET_CLASS,
-          // Transition ONLY the box + colors. `transition-all` also animated
+          // Transition ONLY the box + colors. Blanket transitions also animated
           // backdrop-filter, and a blur interpolating while the insets glide
           // re-blurs half a zone every frame — the single most expensive
           // paint in the whole drag.

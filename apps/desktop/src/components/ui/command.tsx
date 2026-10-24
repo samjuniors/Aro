@@ -24,7 +24,7 @@ function Command({
       <CommandPrimitive
         className={cn(
           'flex h-full w-full flex-col overflow-hidden text-popover-foreground',
-          variant === 'menu' ? 'bg-transparent' : 'rounded-md bg-popover',
+          variant === 'menu' ? 'bg-transparent' : 'rounded-control bg-popover',
           className
         )}
         data-slot="command"
@@ -68,7 +68,7 @@ function CommandInput({ className, right, ...props }: CommandInputProps) {
       <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
       <CommandPrimitive.Input
         className={cn(
-          'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-10 w-full rounded-control bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
           className
         )}
         data-slot="command-input"
@@ -160,7 +160,7 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
               menuItemClass,
               'cursor-pointer data-[selected=true]:bg-(--ui-control-active-background) data-[selected=true]:text-foreground'
             )
-          : 'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground',
+          : 'relative flex cursor-default select-none items-center gap-2 rounded-control px-2 py-1.5 text-sm outline-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground',
         'data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
         className
       )}

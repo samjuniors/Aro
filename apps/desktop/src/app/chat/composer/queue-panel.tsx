@@ -114,7 +114,7 @@ export function QueuePanel({
                     <Button
                       aria-expanded={isExpanded}
                       aria-label={isExpanded ? c.queueCollapse : c.queueExpand}
-                      className="size-5 rounded-md"
+                      className="size-5 rounded-control"
                       onClick={() => toggleExpanded(entry.id)}
                       size="icon-xs"
                       type="button"
@@ -131,7 +131,7 @@ export function QueuePanel({
                 <Tip label={c.queueEdit}>
                   <Button
                     aria-label={c.queueEdit}
-                    className="size-5 rounded-md"
+                    className="size-5 rounded-control"
                     disabled={Boolean(editingId) && !isEditing}
                     onClick={() => onEdit(entry)}
                     size="icon-xs"
@@ -145,7 +145,7 @@ export function QueuePanel({
                   <Tip label={c.queueSteer}>
                     <Button
                       aria-label={c.queueSteer}
-                      className="size-5 rounded-md"
+                      className="size-5 rounded-control"
                       disabled={isEditing}
                       onClick={() => onSteerNow?.(entry.id)}
                       size="icon-xs"
@@ -159,7 +159,7 @@ export function QueuePanel({
                 <Tip label={busy ? c.queueSendNext : c.queueSend}>
                   <Button
                     aria-label={busy ? c.queueSendNext : c.queueSend}
-                    className="size-5 rounded-md"
+                    className="size-5 rounded-control"
                     disabled={isEditing}
                     onClick={() => onSendNow(entry.id)}
                     size="icon-xs"
@@ -176,14 +176,14 @@ export function QueuePanel({
             <div className="min-w-0 flex-1">
               <p
                 className={cn(
-                  'text-[0.73rem] leading-4 text-foreground/92',
+                  'text-aro-sm leading-4 text-foreground/92',
                   isExpanded ? 'max-h-40 overflow-y-auto whitespace-pre-wrap pr-1' : 'line-clamp-2 break-words'
                 )}
               >
                 {preview}
               </p>
               {(attachmentsCount > 0 || isEditing) && (
-                <div className="mt-0.5 flex items-center gap-1.5 text-[0.64rem] text-muted-foreground/75">
+                <div className="mt-0.5 flex items-center gap-1.5 text-aro-xs text-muted-foreground/75">
                   {attachmentsCount > 0 && <span>{c.attachments(attachmentsCount)}</span>}
                   {isEditing && (
                     <span className="text-[color-mix(in_srgb,var(--dt-composer-ring)_78%,var(--muted-foreground))]">

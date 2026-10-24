@@ -88,7 +88,7 @@ export function FreeTierSetupNotice({ ctx }: { ctx: OnboardingContext }) {
 
   return (
     <div
-      className="grid gap-2 rounded-2xl border border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary)/40 px-4 py-3 text-sm"
+      className="grid gap-2 rounded-overlay border border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary)/40 px-4 py-3 text-sm"
       data-testid="free-tier-setup-notice"
       role="status"
     >

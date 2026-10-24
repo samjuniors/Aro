@@ -73,8 +73,8 @@ function readInitialPreferred(): SupportedIde {
 
 export const $preferredIde = atom<SupportedIde>(readInitialPreferred())
 
-// BACKEND-TODO(editors): `editors.list/detect` will provide real install
-// detection; until then `installed` stays null (never guessed).
+// BACKEND-TODO(editors): [D-10, research/11 §1] `editors.list/detect` will provide
+// real install detection; until then `installed` stays null (never guessed).
 export const localEditorsAdapter: ExternalEditorsAdapter = {
   list() {
     return EDITOR_CATALOG
@@ -109,7 +109,12 @@ export const localEditorsAdapter: ExternalEditorsAdapter = {
     const targetUrl = `${editor.scheme}/${encodeURI(normalizedPath)}`
 
     try {
-      window.open(targetUrl, '_self')
+      if (typeof window !== 'undefined' && window.hermesDesktop?.openExternal) {
+        void window.hermesDesktop.openExternal(targetUrl)
+      } else {
+        window.open(targetUrl, '_self')
+      }
+
       notify({ kind: 'info', message: `Opening in ${editor.name}…` })
     } catch {
       notify({ kind: 'info', message: `Launched ${editor.name} protocol for ${normalizedPath}` })

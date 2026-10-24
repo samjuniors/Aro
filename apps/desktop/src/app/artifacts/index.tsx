@@ -399,7 +399,7 @@ export function ArtifactsView({ setStatusbarItemGroup: _setStatusbarItemGroup, .
                     total={visibleFileArtifacts.length}
                   />
                 </div>
-                <div className="overflow-x-auto rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)">
+                <div className="overflow-x-auto rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)">
                   <ArtifactTable artifacts={pagedFileArtifacts} ctx={cellCtx} filter={kindFilter} />
                 </div>
               </section>
@@ -427,7 +427,7 @@ function ArtifactsPagination({ className, itemLabel, onPageChange, page, pageSiz
 
   return (
     <div className={cn('flex h-6 items-center justify-between gap-2 px-1', className)}>
-      <div className="shrink-0 text-[0.62rem] text-muted-foreground">
+      <div className="shrink-0 text-[var(--aro-text-2xs,10px)] text-muted-foreground">
         {pageRangeLabel(total, page, pageSize, a)} {itemLabel}
       </div>
       {pageCount > 1 && (
@@ -500,7 +500,7 @@ function ArtifactImageCard({ artifact, failedImage, onImageError, onOpenChat }: 
 
   return (
     <article
-      className="group/artifact overflow-hidden rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)"
+      className="group/artifact overflow-hidden rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-chat-bubble-background)"
       data-tour="artifact-card"
     >
       <div
@@ -512,7 +512,7 @@ function ArtifactImageCard({ artifact, failedImage, onImageError, onOpenChat }: 
         {!failedImage && src && (
           <ZoomableImage
             alt={artifact.label}
-            className="max-h-40 max-w-full cursor-zoom-in rounded-md object-contain"
+            className="max-h-40 max-w-full cursor-zoom-in rounded-control object-contain"
             containerClassName="max-h-full"
             decoding="async"
             loading="lazy"
@@ -525,17 +525,17 @@ function ArtifactImageCard({ artifact, failedImage, onImageError, onOpenChat }: 
 
       <div className="space-y-1.5 p-2">
         <div className="min-w-0">
-          <div className="mb-0.5 flex items-center gap-1 text-[0.625rem] uppercase tracking-[0.08em] text-(--ui-text-tertiary)">
+          <div className="mb-0.5 flex items-center gap-1 text-[var(--aro-text-2xs,10px)] uppercase tracking-[0.08em] text-(--ui-text-tertiary)">
             <FileImage className="size-3" />
             {kindLabel}
           </div>
           <div className="truncate text-[length:var(--conversation-caption-font-size)] font-medium">
             {artifact.label}
           </div>
-          <div className="mt-0.5 truncate text-[0.625rem] text-(--ui-text-tertiary)">{artifact.value}</div>
+          <div className="mt-0.5 truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">{artifact.value}</div>
         </div>
 
-        <div className="truncate text-[0.625rem] text-(--ui-text-tertiary)">
+        <div className="truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
           {artifact.sessionTitle} · {formatArtifactTime(artifact.timestamp)}
         </div>
 
@@ -600,7 +600,7 @@ const PrimaryCell = memo(function PrimaryCell({ artifact, ctx }: { artifact: Art
       onClick={isLink ? undefined : () => void ctx.onOpen(artifact)}
       title={label}
     >
-      <span className="mt-0.5 grid size-6 shrink-0 place-items-center self-start rounded-md bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)">
+      <span className="mt-0.5 grid size-6 shrink-0 place-items-center self-start rounded-control bg-(--ui-bg-tertiary) text-(--ui-text-tertiary)">
         <Icon className="size-3.5" />
       </span>
       <span className={cn('min-w-0 flex-1', isLink ? 'wrap-anywhere' : 'truncate')}>
@@ -647,7 +647,7 @@ const SessionCell = memo(function SessionCell({ artifact, ctx }: { artifact: Art
     <ArtifactCellAction onClick={() => ctx.onOpenChat(artifact.sessionId)} title={artifact.sessionTitle}>
       <span className="flex min-w-0 flex-col">
         <span className="truncate">{artifact.sessionTitle}</span>
-        <span className="truncate text-[0.6875rem] font-normal text-(--ui-text-tertiary)">
+        <span className="truncate text-xs font-normal text-(--ui-text-tertiary)">
           {formatArtifactTime(artifact.timestamp)}
         </span>
       </span>
@@ -694,7 +694,7 @@ function ArtifactTable({
 
   return (
     <table className="w-full min-w-176 table-fixed text-left text-[length:var(--conversation-caption-font-size)]">
-      <thead className="border-b border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) text-[0.625rem] uppercase tracking-[0.08em] text-(--ui-text-tertiary)">
+      <thead className="border-b border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) text-[var(--aro-text-2xs,10px)] uppercase tracking-[0.08em] text-(--ui-text-tertiary)">
         <tr>
           {ARTIFACT_COLUMNS.map(col => (
             <th className={cn(col.width(filter), 'px-2.5 py-1.5 font-medium')} key={col.id}>

@@ -693,7 +693,7 @@ export function ConnectionsRegistrySection() {
       )}
 
       {editor ? (
-        <div className="mt-4 space-y-3 rounded-lg border border-border/60 p-4">
+        <div className="mt-4 space-y-3 rounded-panel border border-border/60 p-4">
           <div className="grid grid-cols-2 gap-2 @2xl:grid-cols-4">
             {/* Kind is fixed once created (buttons disable on edit). On create
                 every kind is offered; Local is disabled while the managed

@@ -90,7 +90,7 @@ export function KeysSettings({ view }: KeysSettingsProps) {
             const label = credentialRowLabel(key, info)
 
             return (
-              <div className="scroll-mt-6 rounded-[6px]" id={credentialElementId(key)} key={key}>
+              <div className="scroll-mt-6 rounded-control" id={credentialElementId(key)} key={key}>
                 <CredentialKeyCard
                   expanded={openKey === key}
                   info={info}
@@ -106,7 +106,7 @@ export function KeysSettings({ view }: KeysSettingsProps) {
           })}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-(--ui-stroke-tertiary) px-4 py-8 text-center text-[length:var(--conversation-caption-font-size)] text-muted-foreground">
+        <div className="rounded-panel border border-dashed border-(--ui-stroke-tertiary) px-4 py-8 text-center text-[length:var(--conversation-caption-font-size)] text-muted-foreground">
           {t.settings.keys.empty}
         </div>
       )}

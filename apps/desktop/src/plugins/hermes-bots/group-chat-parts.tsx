@@ -258,7 +258,7 @@ export function GroupMentionInput({ members, onChange, onSubmitDraft, value, ...
   return (
     <div className="relative min-w-0 flex-1">
       {open ? (
-        <div className="absolute bottom-full left-0 z-50 mb-1 max-h-48 w-64 overflow-y-auto rounded-md border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 shadow-lg">
+        <div className="absolute bottom-full left-0 z-50 mb-1 max-h-48 w-64 overflow-y-auto rounded-control border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 shadow-aro-e3">
           {options.map((option, index) => (
             <RowButton
               className={cn(
@@ -273,7 +273,7 @@ export function GroupMentionInput({ members, onChange, onSubmitDraft, value, ...
               onMouseEnter={() => setSelected(index)}
             >
               <span className="font-medium">{`@${option.handle}`}</span>
-              <span className="truncate text-[0.65rem] text-(--ui-text-quaternary)">{option.meta}</span>
+              <span className="truncate text-aro-xs text-(--ui-text-quaternary)">{option.meta}</span>
             </RowButton>
           ))}
         </div>
@@ -468,7 +468,7 @@ export function GroupClarifyCard({ entry, members }: GroupClarifyCardProps) {
   }
 
   return (
-    <div className="grid gap-1.5 rounded-md border border-(--ui-accent)/50 bg-(--ui-accent)/5 px-2.5 py-2">
+    <div className="grid gap-1.5 rounded-control border border-(--ui-accent)/50 bg-(--ui-accent)/5 px-2.5 py-2">
       <div className="flex items-center gap-1.5 text-xs font-medium">
         <Codicon className="shrink-0 text-(--ui-accent)" name={isApproval ? 'shield' : 'question'} />
         {isApproval
@@ -476,7 +476,7 @@ export function GroupClarifyCard({ entry, members }: GroupClarifyCardProps) {
           : b.group.asks(botHandle(entry.member, member))}
       </div>
       {isApproval && entry.command ? (
-        <code className="block overflow-x-auto rounded bg-(--ui-bg-secondary,rgba(0,0,0,0.25)) px-2 py-1 font-mono text-[0.7rem] whitespace-pre-wrap break-all">
+        <code className="block overflow-x-auto rounded-control bg-(--ui-bg-secondary,rgba(0,0,0,0.25)) px-2 py-1 font-mono text-aro-xs whitespace-pre-wrap break-all">
           {entry.command}
         </code>
       ) : null}
@@ -491,7 +491,7 @@ export function GroupClarifyCard({ entry, members }: GroupClarifyCardProps) {
                 return (
                   <Button
                     className={cn(
-                      'h-6 px-2 text-[0.7rem]',
+                      'h-6 px-2 text-aro-xs',
                       isApproval && choice === 'deny' && !chosen && 'text-destructive'
                     )}
                     disabled={sending || !member}

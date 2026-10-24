@@ -37,6 +37,7 @@ export const runInTerminal = (command: string) => {
 }
 
 export type ContextSectionId =
+  | 'overview'
   | 'files'
   | 'changes'
   | 'terminal'
@@ -50,6 +51,7 @@ export type ContextSectionId =
 export const PANEL_SECTION_STORAGE_KEY = 'conductor.workspace.panel.section'
 
 const VALID_SECTIONS = new Set<ContextSectionId>([
+  'overview',
   'files',
   'changes',
   'terminal',
@@ -104,7 +106,7 @@ function readInitialOpenTabs(): ContextSectionId[] {
     }
   }
 
-  return includeActiveSection(['changes', 'terminal'])
+  return includeActiveSection(['overview', 'changes', 'terminal'])
 }
 
 export const $workspaceOpenTabs = atom<ContextSectionId[]>(readInitialOpenTabs())

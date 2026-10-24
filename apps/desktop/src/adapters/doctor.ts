@@ -34,7 +34,7 @@ export interface DoctorAdapter {
 
 /* ============================== adapter ============================== */
 
-// BACKEND-TODO(onboarding-doctor): renderer-visible signals only — the
+// BACKEND-TODO(onboarding-doctor): [D-10, research/10 §2] renderer-visible signals only — the
 // future backend call is an `ops.doctor` summary (see port/FEATURE_MAP.md).
 export const localDoctorAdapter: DoctorAdapter = {
   async sweep() {

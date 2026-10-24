@@ -49,7 +49,7 @@ export function BillingBanner({ sessionId }: { sessionId: null | string }) {
           </Button>
           <Button
             aria-label={copy.dismiss}
-            className="size-4 rounded-md text-muted-foreground/60 hover:text-foreground/90"
+            className="size-4 rounded-control text-muted-foreground/60 hover:text-foreground/90"
             onClick={() => {
               recordFriction('notice_dismissed', 'billing_banner')
               clearBillingBlock(sessionId)
@@ -64,7 +64,7 @@ export function BillingBanner({ sessionId }: { sessionId: null | string }) {
       }
       trailingVisible
     >
-      <span className="min-w-0 truncate text-[0.73rem] leading-4 text-foreground/92">
+      <span className="min-w-0 truncate text-aro-sm leading-4 text-foreground/92">
         <span className="font-medium">{title}</span>
         {message && <span className="text-muted-foreground/80"> · {message}</span>}
       </span>

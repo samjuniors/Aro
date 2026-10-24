@@ -21,7 +21,7 @@ export interface SelectableCardState {
  */
 export function selectableCardClass({ active, prominent }: SelectableCardState): string {
   return cn(
-    'rounded-lg border transition-colors',
+    'rounded-panel border transition-colors',
     active
       ? 'border-primary bg-primary/[0.06] ring-2 ring-primary/20'
       : prominent

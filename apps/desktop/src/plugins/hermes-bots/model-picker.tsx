@@ -257,7 +257,7 @@ export function ModelPicker({ bot = null, value, onChange, placeholderModel }: M
           }}
           value={activeProvider?.slug || value.provider || NONE}
         >
-          <SelectTrigger className="h-8 rounded-md">
+          <SelectTrigger className="h-8 rounded-control">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -282,7 +282,7 @@ export function ModelPicker({ bot = null, value, onChange, placeholderModel }: M
             }
             value={value.model || (models[0] ?? '')}
           >
-            <SelectTrigger className="h-8 rounded-md">
+            <SelectTrigger className="h-8 rounded-control">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

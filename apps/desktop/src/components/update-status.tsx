@@ -187,7 +187,7 @@ export function VersionHero({
         </p>
       </div>
       {(version?.bundleSwapPending || version?.bundleOutOfSync) && (
-        <div className="mx-auto w-full max-w-2xl rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-left text-sm">
+        <div className="mx-auto w-full max-w-2xl rounded-overlay border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-left text-sm">
           <div className="flex items-start gap-2">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="min-w-0">
@@ -289,7 +289,7 @@ export function UpdateStatusCard({
   return (
     <div
       className={cn(
-        'rounded-xl border px-4 py-3 text-sm',
+        'rounded-overlay border px-4 py-3 text-sm',
         view.tone === 'available' && 'border-primary/30 bg-primary/5 text-foreground',
         view.tone === 'error' && 'border-destructive/35 bg-destructive/5 text-destructive',
         (view.tone === 'idle' || view.tone === 'unsupported') && 'border-border/70 bg-muted/20 text-foreground'

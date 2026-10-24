@@ -11,27 +11,57 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { Button as DesktopButton } from '@/components/ui/button'
+import { SearchField } from '@/components/ui/search-field'
 
+import {
+  FormRow,
+  Section as LayoutSection,
+  Stack,
+} from '@/components/ui/layout'
+import {
+  DialogTemplate,
+  FormPageTemplate,
+  ListPageTemplate,
+  MasterDetailOverlayTemplate,
+  PageTemplate,
+  StateBox,
+} from '@/components/ui/templates'
 import { cn } from '@/lib/utils'
 
+import { AroBrowserPreview } from './BrowserPreview'
+import { AroCostHud } from './CostHud'
+import { AroIdeHandoffPanel } from './EditorDeepLink'
+import { AroHeroMomentsGallery } from './HeroMoments'
 import { AgentMark, IconAt, IconBolt, IconBrain, IconCheck, IconGit, IconPlug, IconSearch, IconShield, IconSpark, IconTerminal, IconWarning, LogoMark } from './Icons'
+import { AroReviewPage } from './ReviewHunks'
+import { AroTasksPage } from './TasksBoard'
 import {
   Badge,
   Bar,
   Button,
+  Checkbox,
+  ConfirmDialog,
   Divider,
   EmptyState,
+  ErrorState,
+  FieldMessage,
   IconButton,
   Input,
   Kbd,
+  ListRow,
+  Loader,
+  LogView,
   Modal,
   Ring,
   SectionLabel,
   Segmented,
   Select,
+  Skeleton,
   Sparkline,
   Stat,
   Tabs,
+  Textarea,
   Tip,
   Toasts,
   Toggle,
@@ -39,7 +69,7 @@ import {
 } from './ui'
 
 /* ------------------------------ theme registry ---------------------------- */
-type ThemeId = 'obsidian' | 'daylight' | 'nord' | 'ember' | 'paper'
+type ThemeId = 'obsidian' | 'daylight' | 'nord' | 'ember' | 'paper' | 'ink'
 
 const THEMES: { id: ThemeId; label: string; desc: string; swatch: string[] }[] = [
   { id: 'obsidian', label: 'Obsidian', desc: 'Deep neutral dark · violet accent', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
@@ -47,6 +77,7 @@ const THEMES: { id: ThemeId; label: string; desc: string; swatch: string[] }[] =
   { id: 'nord', label: 'Nord', desc: 'Arctic blue-grey · frost accent', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
   { id: 'ember', label: 'Ember', desc: 'Warm charcoal · copper accent', swatch: ['#171210', '#1f1815', '#ff8a4c', '#4fd1b5'] },
   { id: 'paper', label: 'Paper', desc: 'Warm light · ink on paper', swatch: ['#faf7f0', '#f4f0e6', '#8a5cf6', '#0f8f86'] },
+  { id: 'ink', label: 'Ink', desc: 'Monochrome dark · high contrast', swatch: ['#000000', '#0a0a0a', '#ffffff', '#22c55e'] },
 ]
 
 /* ------------------------------ inline catalogue -------------------------- */
@@ -85,13 +116,13 @@ const DS_COLORS: { group: string; swatches: { name: string; cssVar: string; usag
 ]
 
 const DS_TYPE: { token: string; cls: string; spec: string }[] = [
-  { token: 'display', cls: 'font-aro-display text-[26px] leading-[1.12] font-semibold tracking-[-.028em]', spec: 'Space Grotesk · 26/29 · 600' },
-  { token: 'title', cls: 'text-[15px] leading-[1.3] font-semibold tracking-[-.01em]', spec: '15 / 20 · 600 · -1%' },
-  { token: 'body', cls: 'text-[13px] leading-[1.6] font-normal', spec: '13 / 21 · 400' },
-  { token: 'label', cls: 'text-[12px] leading-[1.4] font-medium', spec: '12 / 17 · 500' },
-  { token: 'meta', cls: 'text-[11px] leading-[1.4] font-normal text-aro-ink-3', spec: '11 / 15 · 400' },
-  { token: 'mono', cls: 'font-aro-mono text-[11.5px] leading-[1.55]', spec: 'JetBrains Mono 11.5' },
-  { token: 'overline', cls: 'font-aro-mono text-[9.5px] font-semibold tracking-[.14em] uppercase text-aro-ink-4', spec: '9.5 · 600 · +14%' },
+  { token: 'display', cls: 'font-aro-display text-2xl leading-[1.12] font-semibold tracking-[-.028em]', spec: 'Space Grotesk · 26/29 · 600' },
+  { token: 'title', cls: 'text-base leading-[1.3] font-semibold tracking-[-.01em]', spec: '15 / 20 · 600 · -1%' },
+  { token: 'body', cls: 'text-xs leading-[1.6] font-normal', spec: '13 / 21 · 400' },
+  { token: 'label', cls: 'text-xs leading-[1.4] font-medium', spec: '12 / 17 · 500' },
+  { token: 'meta', cls: 'text-xs leading-[1.4] font-normal text-aro-ink-3', spec: '11 / 15 · 400' },
+  { token: 'mono', cls: 'font-aro-mono text-xs leading-[1.55]', spec: 'JetBrains Mono 11.5' },
+  { token: 'overline', cls: 'font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] uppercase text-aro-ink-4', spec: '9.5 · 600 · +14%' },
 ]
 
 const DS_RADII: { token: string; px: number; usage: string }[] = [
@@ -119,9 +150,9 @@ function DS({ id, eyebrow, title, body, children }: { id: string; eyebrow: strin
   return (
     <section className="scroll-mt-16 border-t border-aro-line-soft py-8 first:border-0" id={id}>
       <div className="mb-5">
-        <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.16em] text-aro-iris-soft uppercase">{eyebrow}</span>
-        <h2 className="mt-1.5 text-[19px] leading-tight font-semibold tracking-[-.02em] text-aro-ink">{title}</h2>
-        <p className="mt-1.5 max-w-[680px] text-[12.5px] leading-[1.65] text-aro-ink-3">{body}</p>
+        <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.16em] text-aro-iris-soft uppercase">{eyebrow}</span>
+        <h2 className="mt-1.5 text-xl leading-tight font-semibold tracking-[-.02em] text-aro-ink">{title}</h2>
+        <p className="mt-1.5 max-w-[680px] text-xs leading-[1.65] text-aro-ink-3">{body}</p>
       </div>
       {children}
     </section>
@@ -130,8 +161,8 @@ function DS({ id, eyebrow, title, body, children }: { id: string; eyebrow: strin
 
 function Spec({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="rounded-[10px] border border-aro-line-soft bg-aro-sunken p-3">
-      <div className="mb-2.5 font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">{label}</div>
+    <div className="rounded-panel border border-aro-line-soft bg-aro-sunken p-3">
+      <div className="mb-3 text-aro-sm font-medium text-aro-ink-2">{label}</div>
       {children}
     </div>
   )
@@ -140,7 +171,7 @@ function Spec({ label, children }: { label: string; children: ReactNode }) {
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-aro-line-soft/60 py-2.5 last:border-0">
-      <span className="w-[110px] shrink-0 font-aro-mono text-[10px] text-aro-ink-4">{label}</span>
+      <span className="w-24 shrink-0 text-aro-sm text-aro-ink-3">{label}</span>
       {children}
     </div>
   )
@@ -152,7 +183,7 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
 
   return (
     <button
-      className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-[10px] border border-aro-line-soft bg-aro-raise text-left transition-all hover:border-aro-line-strong hover:shadow-aro-e2"
+      className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-panel border border-aro-line-soft bg-aro-raise text-left transition-[box-shadow,border-color] hover:border-aro-line-strong hover:shadow-aro-e2"
       onClick={() => {
         navigator.clipboard?.writeText(`var(${cssVar})`)
         setCopied(true)
@@ -166,7 +197,7 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
         />
         <span
           className={cn(
-            'absolute top-2 right-2 rounded-[4px] px-1.5 py-[1px] font-aro-mono text-[9px] transition-all',
+            'absolute top-2 right-2 rounded-control px-1.5 py-[1px] font-aro-mono text-[var(--aro-text-2xs,10px)] transition-opacity',
             copied ? 'bg-black/50 text-white opacity-100' : 'bg-black/35 text-white/80 opacity-0 group-hover:opacity-100',
           )}
         >
@@ -174,8 +205,8 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
         </span>
       </div>
       <div className="px-2.5 py-2">
-        <div className="font-aro-mono text-[11px] text-aro-ink">{name}</div>
-        <div className="mt-0.5 text-[10.5px] leading-[1.4] text-aro-ink-3">{usage}</div>
+        <div className="font-aro-mono text-xs text-aro-ink">{name}</div>
+        <div className="mt-0.5 text-[var(--aro-text-2xs,10px)] leading-[1.4] text-aro-ink-3">{usage}</div>
       </div>
     </button>
   )
@@ -183,13 +214,35 @@ function Swatch({ name, cssVar, usage }: { name: string; cssVar: string; usage: 
 
 /* ============================ main view ============================ */
 export function AroDesignSystemPage() {
-  const [theme, setTheme] = useState<ThemeId>('obsidian')
+  const [theme, setTheme] = useState<ThemeId>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aro.theme') as ThemeId
+
+      if (['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(saved)) {
+        return saved
+      }
+    }
+
+    return 'obsidian'
+  })
+
+  const [glass, setGlass] = useState(false)
+  const [rtl, setRtl] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [checkboxVal, setCheckboxVal] = useState(true)
   const [demoTab, setDemoTab] = useState<'a' | 'b' | 'c'>('a')
   const [seg, setSeg] = useState<'plan' | 'agent'>('plan')
   const [sel, setSel] = useState('opus-4.6')
   const [tog, setTog] = useState(true)
   const [tog2, setTog2] = useState(false)
   const [modal, setModal] = useState(false)
+  const [layoutWidth, setLayoutWidth] = useState<'narrow' | 'standard' | 'wide'>('standard')
+  const [layoutState, setLayoutState] = useState<'idle' | 'loading' | 'empty' | 'error'>('idle')
+  const [layoutTemplate, setLayoutTemplate] = useState<'list' | 'form' | 'overlay' | 'dialog' | 'page'>('list')
+  const [demoSearch, setDemoSearch] = useState('')
+  const [demoBusy, setDemoBusy] = useState(false)
+  const [demoNav, setDemoNav] = useState('models')
   const [toasts, setToasts] = useState<{ id: number; msg: string; tone: string }[]>([])
 
   const toast = (msg: string, tone = 'iris') => {
@@ -201,34 +254,49 @@ export function AroDesignSystemPage() {
   return (
     // data-theme on the WRAPPER: the aro token layer resolves only inside
     // this subtree. Unmounting the page removes the attribute with it.
-    <div className="aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200" data-theme={theme}>
+    <div
+      className={cn(
+        'aro-scroll-thin h-full min-w-0 overflow-x-hidden overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-(--aro-dur-fast)',
+        glass && 'bg-aro-void/85 backdrop-blur-md',
+      )}
+      data-glass={glass ? 'true' : 'false'}
+      data-aro-gallery
+      data-motion={reducedMotion ? 'reduced' : 'full'}
+      data-theme={theme}
+      dir={rtl ? 'rtl' : 'ltr'}
+      style={
+        reducedMotion
+          ? ({
+              '--aro-dur-instant': '0ms',
+              '--aro-dur-fast': '0ms',
+              '--aro-dur-mid': '0ms',
+              '--aro-dur-base': '0ms',
+              '--aro-dur-slow': '0ms',
+            } as any)
+          : undefined
+      }
+    >
       {/* hero */}
       <div className="relative overflow-hidden border-b border-aro-line-soft">
-        <div className="aro-grid-bg pointer-events-none absolute inset-0 opacity-60" />
-        <div
-          className="pointer-events-none absolute -top-24 -right-10 size-[420px] rounded-full opacity-[0.18] blur-[80px]"
-          style={{ background: 'radial-gradient(circle,var(--aro-iris),transparent 70%)' }}
-        />
         <div className="relative px-6 py-8">
           <div className="flex items-center gap-2">
             <LogoMark size={26} />
-            <Badge className="text-[9.5px]" mono tone="iris">
+            <Badge className="text-aro-xs" mono tone="iris">
               aro/primitives · desktop port
             </Badge>
-            <Badge className="text-[9.5px]" mono tone="neutral">
+            <Badge className="text-[var(--aro-text-2xs,10px)]" mono tone="neutral">
               additive · namespaced · zero host risk
             </Badge>
           </div>
-          <h1 className="mt-3 max-w-[760px] font-aro-display text-[30px] leading-[1.08] font-semibold tracking-[-.03em] text-aro-ink">
+          <h1 className="mt-3 max-w-[760px] font-aro-display text-3xl leading-[1.08] font-semibold tracking-[-.03em] text-aro-ink">
             A design system for{' '}
-            <span className="relative whitespace-nowrap text-aro-iris-soft">
+            <span className="text-aro-ink">
               agent control surfaces
-              <span className="absolute -bottom-1 left-0 h-[3px] w-full rounded-full bg-linear-to-r from-aro-iris via-aro-cyan to-transparent opacity-70" />
             </span>
           </h1>
-          <p className="mt-2.5 max-w-[640px] text-[13px] leading-[1.7] text-aro-ink-3">
-            Ported additively into the desktop renderer: every token is namespaced <span className="font-aro-mono text-[12px]">--aro-*</span> and
-            gated behind <span className="font-aro-mono text-[12px]">data-theme</span>, so this page themes itself without touching a single
+          <p className="mt-2.5 max-w-[640px] text-xs leading-[1.7] text-aro-ink-3">
+            Ported additively into the desktop renderer: every token is namespaced <span className="font-aro-mono text-xs">--aro-*</span> and
+            gated behind <span className="font-aro-mono text-xs">data-theme</span>, so this page themes itself without touching a single
             existing screen.
           </p>
           <div className="mt-5 grid max-w-[860px] grid-cols-2 gap-3 md:grid-cols-4">
@@ -238,12 +306,29 @@ export function AroDesignSystemPage() {
               { t: 'Nothing silent', d: 'Tool calls, approvals and checkpoints are first-class, not log lines.', i: IconTerminal },
               { t: 'Density with air', d: '11–13px type, 4px rhythm, hairlines instead of heavy chrome.', i: IconSpark },
             ].map((p) => (
-              <div className="rounded-[11px] border border-aro-line-soft bg-aro-raise/70 p-3" key={p.t}>
+              <div className="rounded-panel border border-aro-line-soft bg-aro-raise/70 p-3" key={p.t}>
                 <p.i className="text-aro-iris-soft" size={14} />
-                <p className="mt-2 text-[12px] font-semibold text-aro-ink">{p.t}</p>
-                <p className="mt-1 text-[11px] leading-[1.55] text-aro-ink-3">{p.d}</p>
+                <p className="mt-2 text-xs font-semibold text-aro-ink">{p.t}</p>
+                <p className="mt-1 text-xs leading-[1.55] text-aro-ink-3">{p.d}</p>
               </div>
             ))}
+          </div>
+
+          {/* Interactive display controls (Gate A contract) */}
+          <div className="mt-6 flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-raise/40 px-4 py-3">
+            <span className="text-xs font-semibold text-aro-ink">Live Controls:</span>
+            <div className="flex items-center gap-2">
+              <Toggle aria-label="Glass Surface" checked={glass} onChange={setGlass} size="sm" />
+              <span className="text-xs text-aro-ink-2">Glass Surface</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Toggle aria-label="RTL Layout" checked={rtl} onChange={setRtl} size="sm" />
+              <span className="text-xs text-aro-ink-2">RTL Layout</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Toggle aria-label="Reduced Motion" checked={reducedMotion} onChange={setReducedMotion} size="sm" />
+              <span className="text-xs text-aro-ink-2">Reduced Motion</span>
+            </div>
           </div>
         </div>
       </div>
@@ -251,29 +336,39 @@ export function AroDesignSystemPage() {
       <div className="px-6 pb-16">
         {/* ---------------- THEMES ---------------- */}
         <DS
-          body="Five themes share one token contract. Signal colours are re-tuned per theme for contrast; tints are derived with color-mix so every badge, diff and approval card adapts automatically. Click to switch live — the whole page retints."
+          body="Six themes share one token contract. Signal colours are re-tuned per theme for contrast; tints are derived with color-mix so every badge, diff and approval card adapts automatically. Click to switch live — the whole page retints."
           eyebrow="foundation 00"
           id="themes"
           title="Themes"
         >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {THEMES.map((t) => (
               <button
                 className={cn(
-                  'group cursor-pointer overflow-hidden rounded-[12px] border text-left transition-all hover:shadow-aro-e3',
+                  'group cursor-pointer overflow-hidden rounded-panel border text-left transition-[box-shadow,border-color] hover:shadow-aro-e3',
                   theme === t.id ? 'border-aro-iris/60 shadow-aro-glow' : 'border-aro-line-soft hover:border-aro-line-strong',
                 )}
                 key={t.id}
-                onClick={() => setTheme(t.id)}
+                onClick={() => {
+                  setTheme(t.id)
+
+                  try {
+                    localStorage.setItem('aro.theme', t.id)
+                    localStorage.setItem('conductor.theme', t.id)
+                    window.dispatchEvent(new CustomEvent('aro:theme', { detail: t.id }))
+                  } catch {
+                    // ignore storage failure
+                  }
+                }}
               >
                 <div className="relative h-[92px] p-2.5" style={{ background: t.swatch[0] }}>
-                  <div className="h-full rounded-[7px] p-2" style={{ background: t.swatch[1], boxShadow: `inset 0 0 0 1px ${t.swatch[2]}33` }}>
+                  <div className="h-full rounded-control p-2" style={{ background: t.swatch[1], boxShadow: `inset 0 0 0 1px ${t.swatch[2]}33` }}>
                     <div className="h-[6px] w-1/2 rounded-full" style={{ background: t.swatch[2] }} />
                     <div className="mt-1.5 h-[4px] w-3/4 rounded-full opacity-40" style={{ background: t.swatch[3] }} />
                     <div className="mt-1 h-[4px] w-2/3 rounded-full opacity-25" style={{ background: t.swatch[3] }} />
                     <div className="mt-2.5 flex gap-1">
-                      <i className="h-[12px] w-[34px] rounded-[3px]" style={{ background: t.swatch[2] }} />
-                      <i className="h-[12px] w-[24px] rounded-[3px] opacity-50" style={{ background: t.swatch[3] }} />
+                      <i className="h-[12px] w-[34px] rounded-control" style={{ background: t.swatch[2] }} />
+                      <i className="h-[12px] w-[24px] rounded-control opacity-50" style={{ background: t.swatch[3] }} />
                     </div>
                   </div>
                   {theme === t.id && (
@@ -283,8 +378,8 @@ export function AroDesignSystemPage() {
                   )}
                 </div>
                 <div className="bg-aro-raise px-3 py-2.5">
-                  <div className="text-[12.5px] font-semibold text-aro-ink">{t.label}</div>
-                  <div className="text-[10.5px] text-aro-ink-3">{t.desc}</div>
+                  <div className="text-aro-sm font-semibold text-aro-ink">{t.label}</div>
+                  <div className="text-aro-xs text-aro-ink-3">{t.desc}</div>
                 </div>
               </button>
             ))}
@@ -323,9 +418,9 @@ export function AroDesignSystemPage() {
                   { c: 'sky', m: 'Informational · reads · file access' },
                 ].map((x) => (
                   <div className="flex items-center gap-2" key={x.c}>
-                    <i className={cn('size-[10px] shrink-0 rounded-[3px]', toneBg[x.c as keyof typeof toneBg])} />
-                    <span className="font-aro-mono text-[10.5px] text-aro-ink-2">{x.c}</span>
-                    <span className="min-w-0 flex-1 truncate text-[10.5px] text-aro-ink-4">{x.m}</span>
+                    <i className={cn('size-[10px] shrink-0 rounded-control', toneBg[x.c as keyof typeof toneBg])} />
+                    <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2">{x.c}</span>
+                    <span className="min-w-0 flex-1 truncate text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{x.m}</span>
                   </div>
                 ))}
               </div>
@@ -338,9 +433,9 @@ export function AroDesignSystemPage() {
                   { n: 'e3', d: 'menus, sticky bars', cls: 'shadow-aro-e3 bg-aro-overlay' },
                   { n: 'e4', d: 'modals, command palette', cls: 'shadow-aro-e4 bg-aro-overlay' },
                 ].map((x) => (
-                  <div className={cn('rounded-[8px] px-2.5 py-2', x.cls)} key={x.n}>
-                    <span className="font-aro-mono text-[10.5px] text-aro-ink">{x.n}</span>
-                    <span className="ml-2 text-[10.5px] text-aro-ink-3">{x.d}</span>
+                  <div className={cn('rounded-control px-2.5 py-2', x.cls)} key={x.n}>
+                    <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink">{x.n}</span>
+                    <span className="ml-2 text-[var(--aro-text-2xs,10px)] text-aro-ink-3">{x.d}</span>
                   </div>
                 ))}
               </div>
@@ -350,8 +445,8 @@ export function AroDesignSystemPage() {
                 <div className="flex items-center gap-3">
                   <LogoMark size={30} />
                   <div>
-                    <div className="text-[12px] font-semibold text-aro-ink">Aro mark</div>
-                    <div className="font-aro-mono text-[10px] text-aro-ink-4">#10B981 · #6EE7B7 · #0D9488</div>
+                    <div className="text-xs font-semibold text-aro-ink">Aro mark</div>
+                    <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">#10B981 · #6EE7B7 · #0D9488</div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -365,7 +460,7 @@ export function AroDesignSystemPage() {
                     bg-aro-emerald-tint
                   </Badge>
                 </div>
-                <div className="flex items-end gap-2 rounded-[8px] border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-[11.5px] text-aro-emerald">
+                <div className="flex items-end gap-2 rounded-control border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-xs text-aro-emerald">
                   <AgentMark from="#10b981" glyph="A" size={18} to="#0d9488" /> agent tone — the mark's emerald, usable as a live/ok accent
                 </div>
               </div>
@@ -386,8 +481,8 @@ export function AroDesignSystemPage() {
                 {DS_TYPE.map((t) => (
                   <div className="border-b border-aro-line-soft/60 pb-3 last:border-0 last:pb-0" key={t.token}>
                     <div className="mb-1 flex items-baseline gap-2">
-                      <span className="font-aro-mono text-[9.5px] text-aro-iris-soft">{t.token}</span>
-                      <span className="font-aro-mono text-[9.5px] text-aro-ink-4">{t.spec}</span>
+                      <span className="font-aro-mono text-aro-xs text-aro-iris-soft">{t.token}</span>
+                      <span className="font-aro-mono text-aro-xs text-aro-ink-4">{t.spec}</span>
                     </div>
                     <p className={cn('truncate text-aro-ink', t.cls)}>
                       {t.token === 'mono'
@@ -412,9 +507,9 @@ export function AroDesignSystemPage() {
                 <div className="space-y-1.5">
                   {DS_SPACING.map((s) => (
                     <div className="flex items-center gap-2.5" key={s}>
-                      <span className="w-6 shrink-0 font-aro-mono text-[9.5px] text-aro-ink-4">{s}</span>
-                      <div className="h-[7px] rounded-[2px] bg-linear-to-r from-aro-iris to-aro-iris-soft" style={{ width: s * 4 }} />
-                      <span className="font-aro-mono text-[9px] text-aro-ink-4">{s % 4 === 0 ? `${s}px` : 'avoid'}</span>
+                      <span className="w-6 shrink-0 font-aro-mono text-aro-xs text-aro-ink-4">{s}</span>
+                      <div className="h-[7px] rounded-control bg-linear-to-r from-aro-iris to-aro-iris-soft" style={{ width: s * 4 }} />
+                      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{s % 4 === 0 ? `${s}px` : 'avoid'}</span>
                     </div>
                   ))}
                 </div>
@@ -424,7 +519,7 @@ export function AroDesignSystemPage() {
                   {DS_RADII.map((r) => (
                     <div className="text-center" key={r.token}>
                       <div className="mx-auto h-9 w-full border border-aro-iris/35 bg-aro-iris-tint" style={{ borderRadius: r.px }} />
-                      <div className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-3">aro-{r.token}</div>
+                      <div className="mt-1 font-aro-mono text-aro-xs text-aro-ink-3">aro-{r.token}</div>
                       <div className="font-aro-mono text-[8.5px] text-aro-ink-4">{r.usage}</div>
                     </div>
                   ))}
@@ -443,12 +538,12 @@ export function AroDesignSystemPage() {
         >
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {DS_MOTION.map((m) => (
-              <div className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-3" key={m.token}>
+              <div className="rounded-panel border border-aro-line-soft bg-aro-raise p-3" key={m.token}>
                 <div className="flex items-center justify-between">
-                  <span className="font-aro-mono text-[11px] text-aro-iris-soft">aro-{m.token}</span>
-                  <span className="font-aro-mono text-[9.5px] text-aro-ink-4">{m.dur}</span>
+                  <span className="font-aro-mono text-xs text-aro-iris-soft">aro-{m.token}</span>
+                  <span className="font-aro-mono text-aro-xs text-aro-ink-4">{m.dur}</span>
                 </div>
-                <div className="mt-2.5 flex h-[26px] items-center gap-2 overflow-hidden rounded-[6px] border border-aro-line-soft bg-aro-sunken px-2">
+                <div className="mt-2.5 flex h-[26px] items-center gap-2 overflow-hidden rounded-control border border-aro-line-soft bg-aro-sunken px-2">
                   {m.token === 'shimmer' ? (
                     <div className="aro-skeleton h-[8px] w-full rounded-full" />
                   ) : m.token === 'breathe' ? (
@@ -459,18 +554,28 @@ export function AroDesignSystemPage() {
                     </div>
                   ) : (
                     <span
-                      className="rounded-[4px] bg-aro-iris px-1.5 py-[2px] font-aro-mono text-[9px] text-white"
+                      className="rounded-control bg-aro-iris px-1.5 py-[2px] font-aro-mono text-[var(--aro-text-2xs,10px)] text-white"
                       style={{ animation: `aro-${m.token} 2.4s ${m.curve} infinite` }}
                     >
                       {m.token}
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-[10.5px] text-aro-ink-3">{m.usage}</p>
-                <p className="mt-1 truncate font-aro-mono text-[9px] text-aro-ink-4">{m.curve}</p>
+                <p className="mt-2 text-aro-xs text-aro-ink-3">{m.usage}</p>
+                <p className="mt-1 truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{m.curve}</p>
               </div>
             ))}
           </div>
+        </DS>
+
+        {/* ---------------- HERO MOMENTS & AMBIENT LAYER ---------------- */}
+        <DS
+          body="Nine signature interaction moments in Aro Desktop, each verified against compositor-only frame budgets, 60fps frame rates, and strict reduced-motion parity. Includes the optional ambient space starfield."
+          eyebrow="phase 14"
+          id="hero-moments"
+          title="Hero Moments & Ambient Layer"
+        >
+          <AroHeroMomentsGallery />
         </DS>
 
         {/* ---------------- COMPONENTS ---------------- */}
@@ -480,6 +585,21 @@ export function AroDesignSystemPage() {
           id="components"
           title="Components"
         >
+          <Spec label="Desktop controls · interactive states">
+            <Row label="Search">
+              <SearchField
+                onChange={setDemoSearch}
+                placeholder="Search the gallery"
+                value={demoSearch}
+              />
+            </Row>
+            <Row label="Loading">
+              <DesktopButton loading={demoBusy}>Save changes</DesktopButton>
+              <Button onClick={() => setDemoBusy(!demoBusy)} variant="ghost">
+                {demoBusy ? 'Finish loading' : 'Preview loading'}
+              </Button>
+            </Row>
+          </Spec>
           <div className="grid gap-3 lg:grid-cols-2">
             <Spec label="buttons">
               <Row label="primary">
@@ -546,10 +666,10 @@ export function AroDesignSystemPage() {
                 <Kbd>⌘</Kbd> <Kbd>K</Kbd> <Kbd>⇧⌘P</Kbd> <Kbd>esc esc</Kbd> <Kbd>⏎</Kbd>
               </Row>
               <Row label="icon + text">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise py-[3px] pr-2.5 pl-2 text-[11px] text-aro-ink-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise py-[3px] pr-2.5 pl-2 text-xs text-aro-ink-3">
                   <IconAt className="text-aro-iris-soft" size={11} /> @file
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-aro-line bg-aro-raise px-1.5 py-[1px] font-aro-mono text-[10px] text-aro-ink-3">
+                <span className="inline-flex items-center gap-1.5 rounded-control border border-aro-line bg-aro-raise px-1.5 py-[1px] font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   <IconGit size={9} /> feat/ide-bridge
                 </span>
               </Row>
@@ -572,10 +692,10 @@ export function AroDesignSystemPage() {
                   <Select align="right" className="flex-1" onChange={setSel} options={[{ value: sel, label: 'Right aligned' }]} value={sel} />
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-2 text-[11.5px] text-aro-ink-2">
+                  <span className="flex items-center gap-2 text-aro-sm text-aro-ink-2">
                     <Toggle checked={tog} onChange={setTog} /> auto-approve
                   </span>
-                  <span className="flex items-center gap-2 text-[11.5px] text-aro-ink-2">
+                  <span className="flex items-center gap-2 text-aro-sm text-aro-ink-2">
                     <Toggle checked={tog2} onChange={setTog2} size="sm" /> network
                   </span>
                 </div>
@@ -607,15 +727,15 @@ export function AroDesignSystemPage() {
                   <Stat chart={[22, 31, 28, 44, 51, 63, 72, 96]} label="tokens" sub="62% of window" value="148.2k" />
                   <Stat label="spend" sub="this session" tone="iris" value="$3.41" />
                 </div>
-                <div className="flex items-center gap-4 rounded-[9px] border border-aro-line-soft bg-aro-sunken p-3">
+                <div className="flex items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-3">
                   <Ring size={54} stroke={5} value={62}>
-                    <span className="font-aro-mono text-[11px] font-semibold text-aro-ink">62%</span>
+                    <span className="font-aro-mono text-xs font-semibold text-aro-ink">62%</span>
                   </Ring>
                   <Ring size={54} stroke={5} tone="var(--aro-mint)" value={91}>
-                    <span className="font-aro-mono text-[11px] font-semibold text-aro-mint">91%</span>
+                    <span className="font-aro-mono text-xs font-semibold text-aro-mint">91%</span>
                   </Ring>
                   <Ring size={54} stroke={5} tone="var(--aro-amber)" value={38}>
-                    <span className="font-aro-mono text-[11px] font-semibold text-aro-amber">38%</span>
+                    <span className="font-aro-mono text-xs font-semibold text-aro-amber">38%</span>
                   </Ring>
                   <div className="ml-auto space-y-2">
                     <Bar tone="iris" value={62} />
@@ -624,8 +744,8 @@ export function AroDesignSystemPage() {
                     <Bar indeterminate tone="cyan" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between rounded-[9px] border border-aro-line-soft bg-aro-sunken px-3 py-2.5">
-                  <span className="font-aro-mono text-[10px] text-aro-ink-4">sparkline · 12 buckets</span>
+                <div className="flex items-center justify-between rounded-panel border border-aro-line-soft bg-aro-sunken px-3 py-2.5">
+                  <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">sparkline · 12 buckets</span>
                   <div className="flex items-end gap-3">
                     <Sparkline color="var(--aro-mint)" data={[4, 8, 6, 12, 9, 14, 11, 18]} h={22} w={70} />
                     <Sparkline color="var(--aro-rose)" data={[18, 14, 16, 9, 11, 6, 8, 4]} h={22} w={70} />
@@ -636,16 +756,16 @@ export function AroDesignSystemPage() {
 
             <Spec label="feedback">
               <div className="space-y-2.5">
-                <div className="flex items-center gap-2 rounded-[8px] border border-aro-amber/25 bg-aro-amber-tint/60 px-2.5 py-2 text-[11.5px] text-aro-amber">
+                <div className="flex items-center gap-2 rounded-control border border-aro-amber/25 bg-aro-amber-tint/60 px-2.5 py-2 text-xs text-aro-amber">
                   <IconWarning size={12} /> Approval required — <span className="font-aro-mono">gh pr create</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-[8px] border border-aro-rose/25 bg-aro-rose-tint/60 px-2.5 py-2 text-[11.5px] text-aro-rose">
+                <div className="flex items-center gap-2 rounded-control border border-aro-rose/25 bg-aro-rose-tint/60 px-2.5 py-2 text-xs text-aro-rose">
                   <IconWarning size={12} /> Spend cap reached — run halted at 44%
                 </div>
-                <div className="flex items-center gap-2 rounded-[8px] border border-aro-mint/25 bg-aro-mint-tint/60 px-2.5 py-2 text-[11.5px] text-aro-mint">
+                <div className="flex items-center gap-2 rounded-control border border-aro-mint/25 bg-aro-mint-tint/60 px-2.5 py-2 text-xs text-aro-mint">
                   <IconCheck size={12} /> 14 tests passed in 284ms
                 </div>
-                <div className="flex items-center gap-2 rounded-[8px] border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-[11.5px] text-aro-emerald">
+                <div className="flex items-center gap-2 rounded-control border border-aro-emerald/25 bg-aro-emerald-tint px-2.5 py-2 text-xs text-aro-emerald">
                   <AgentMark from="#10b981" glyph="A" size={14} to="#0d9488" /> aro · brand accent — live and healthy
                 </div>
               </div>
@@ -657,6 +777,9 @@ export function AroDesignSystemPage() {
                   <Button icon={IconBolt} onClick={() => setModal(true)} variant="secondary">
                     Open modal
                   </Button>
+                  <Button icon={IconWarning} onClick={() => setConfirmOpen(true)} variant="outline">
+                    Confirm dialog
+                  </Button>
                   <Button
                     onClick={() => {
                       toast('Patch applied · 3 files', 'mint')
@@ -667,7 +790,7 @@ export function AroDesignSystemPage() {
                     Fire toasts
                   </Button>
                 </div>
-                <div className="rounded-[10px] border border-dashed border-aro-line">
+                <div className="rounded-panel border border-dashed border-aro-line">
                   <EmptyState
                     action={
                       <Button size="xs" variant="secondary">
@@ -693,8 +816,87 @@ export function AroDesignSystemPage() {
                 </div>
               </div>
             </Spec>
+
+            <Spec label="forms & field feedback">
+              <div className="space-y-3">
+                <Textarea placeholder="Multi-line reasoning or system instructions…" rows={2} />
+                <div className="space-y-1.5">
+                  <FieldMessage tone="error">Branch has uncommitted changes that would be overwritten</FieldMessage>
+                  <FieldMessage tone="warn">Rate limit threshold reached for Anthropic tier</FieldMessage>
+                  <FieldMessage tone="success">Runtime verified with zero regressions</FieldMessage>
+                  <FieldMessage tone="info">Press Shift+Tab to move focus back to prompt composer</FieldMessage>
+                </div>
+                <div className="flex items-center gap-4 pt-1">
+                  <Checkbox checked={checkboxVal} label="Include commit history in context" onChange={setCheckboxVal} />
+                  <Checkbox checked={false} disabled label="Auto-compact disabled" onChange={() => {}} />
+                </div>
+              </div>
+            </Spec>
+
+            <Spec label="list rows & items">
+              <div className="space-y-1 rounded-panel border border-aro-line-soft bg-aro-sunken/40 p-1.5">
+                <ListRow
+                  action={<Badge dot tone="mint">active</Badge>}
+                  description="Primary autonomous reasoning loop with tools"
+                  icon={IconBolt}
+                  onClick={() => toast('Row clicked: Autonomous agent')}
+                  title="Aro Core Turn Loop"
+                />
+                <ListRow
+                  action={<Toggle checked={tog} onChange={setTog} size="sm" />}
+                  description="Pre-checks tool permissions before dispatching"
+                  icon={IconShield}
+                  title="Approval Gate"
+                />
+                <ListRow
+                  action={<Kbd>⌥⌘T</Kbd>}
+                  description="Direct subshell inside workspace container"
+                  disabled
+                  icon={IconTerminal}
+                  title="Pty Terminal Bridge"
+                />
+              </div>
+            </Spec>
+
+            <Spec label="diagnostics, loaders & logs">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-xs text-aro-ink-3">
+                    <Loader size={16} /> <span>Thinking…</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-aro-ink-3">
+                    <Loader size={20} /> <span>Executing bash command</span>
+                  </div>
+                  <Skeleton className="h-6 w-32" />
+                </div>
+                <LogView
+                  lines={[
+                    '[2026-10-17 10:00:12] INFO  aro_bridge.engine: connecting to local runtime',
+                    '[2026-10-17 10:00:13] INFO  model_switch: resolved model to ornith-1.5:9b',
+                    '[2026-10-17 10:00:14] WARN  rate_limit: bucket at 85% capacity (cooldown 12s)',
+                    '[2026-10-17 10:00:15] PASS  vitest: 14 test files passed, 0 errors'
+                  ]}
+                />
+                <div className="rounded-panel border border-aro-line-soft bg-aro-raise/30">
+                  <ErrorState
+                    description="Could not establish websocket connection to backend RPC daemon."
+                    retry={() => toast('Retrying connection…', 'cyan')}
+                    title="Gateway Daemon Offline"
+                  />
+                </div>
+              </div>
+            </Spec>
           </div>
         </DS>
+
+        <ConfirmDialog
+          danger
+          description="This will cancel the active background turn and roll back any unstaged file edits."
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => toast('Turn cancelled', 'rose')}
+          open={confirmOpen}
+          title="Cancel Active Turn?"
+        />
 
         {/* ---------------- TOKENS ---------------- */}
         <DS
@@ -703,15 +905,15 @@ export function AroDesignSystemPage() {
           id="tokens"
           title="Token export"
         >
-          <div className="overflow-hidden rounded-[11px] border border-aro-line-soft bg-aro-code">
+          <div className="overflow-hidden rounded-panel border border-aro-line-soft bg-aro-code">
             <div className="flex items-center gap-1.5 border-b border-aro-line-soft px-3 py-2">
               {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
                 <i className="size-[7px] rounded-full" key={c} style={{ background: c }} />
               ))}
-              <span className="ml-1.5 font-aro-mono text-[10px] text-aro-ink-4">src/aro/tokens.css</span>
-              <span className="ml-auto font-aro-mono text-[9.5px] text-aro-ink-4">namespaced</span>
+              <span className="ml-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">src/aro/tokens.css</span>
+              <span className="ml-auto font-aro-mono text-aro-xs text-aro-ink-4">namespaced</span>
             </div>
-            <pre className="aro-scroll-thin overflow-x-auto px-4 py-3 font-aro-mono text-[11px] leading-[1.8] text-aro-ink-3">
+            <pre className="aro-scroll-thin overflow-x-auto px-4 py-3 font-aro-mono text-xs leading-[1.8] text-aro-ink-3">
               {`@theme inline {
   /* surfaces — utilities: bg-aro-void … bg-aro-track */
   --color-aro-void: var(--aro-void);
@@ -765,6 +967,406 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
             </Badge>
           </div>
         </DS>
+
+        <DS
+          body="Standard page templates, layout primitives, and zero-shift state boxes on the 4px spacing scale with container query collapse."
+          eyebrow="Phase 9 UX-ASM"
+          id="layout-templates"
+          title="Layout & Templates"
+        >
+          {/* Interactive controls: Width preview, template selector, and state toggle */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-3.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                Container width:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'narrow', label: 'Narrow (420px)' },
+                  { value: 'standard', label: 'Standard (768px)' },
+                  { value: 'wide', label: 'Wide (1024px)' },
+                ]}
+                onChange={setLayoutWidth as any}
+                value={layoutWidth}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                State:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'idle', label: 'Idle' },
+                  { value: 'loading', label: 'Loading' },
+                  { value: 'empty', label: 'Empty' },
+                  { value: 'error', label: 'Error' },
+                ]}
+                onChange={setLayoutState as any}
+                value={layoutState}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold uppercase text-aro-ink-4">
+                Template:
+              </span>
+              <Segmented
+                items={[
+                  { value: 'list', label: 'List Page' },
+                  { value: 'form', label: 'Form Page' },
+                  { value: 'overlay', label: 'Master/Detail' },
+                  { value: 'page', label: 'Standard Page' },
+                  { value: 'dialog', label: 'Dialog' },
+                ]}
+                onChange={setLayoutTemplate as any}
+                value={layoutTemplate}
+              />
+            </div>
+          </div>
+
+          {/* Interactive container preview box */}
+          <div className="mt-4 flex justify-center rounded-panel border border-dashed border-aro-line-soft bg-aro-sunken/40 p-4 overflow-hidden">
+            <div
+              className={cn(
+                'w-full transition-[max-width] duration-200 border border-aro-line rounded-panel bg-aro-bg overflow-hidden shadow-aro-e2',
+                layoutWidth === 'narrow' && 'max-w-[420px]',
+                layoutWidth === 'standard' && 'max-w-[768px]',
+                layoutWidth === 'wide' && 'max-w-[1024px]'
+              )}
+            >
+              {layoutTemplate === 'list' && (
+                <ListPageTemplate
+                  actions={<Button size="xs" variant="primary">New item</Button>}
+                  description="Container queries collapse filters to drawer at narrow widths."
+                  emptyAction={<Button size="xs" variant="primary">Add item</Button>}
+                  emptyDescription="No search results matching your query"
+                  emptyTitle="No results found"
+                  items={[
+                    {
+                      title: 'Project Aro Desktop',
+                      description: 'Native Electron client with calm, keyboard-first workbench',
+                      badge: <Badge mono tone="mint">Active</Badge>,
+                    },
+                    {
+                      title: 'Aro Harness & Runner',
+                      description: 'Orchestration for autonomous subagents and cron tasks',
+                      badge: <Badge mono tone="iris">Runner</Badge>,
+                    },
+                    {
+                      title: 'Design System Primitives',
+                      description: 'Role-based tokens and zero-shift layout components',
+                      badge: <Badge mono tone="neutral">Ready</Badge>,
+                    },
+                  ]}
+                  onSearchChange={setDemoSearch}
+                  searchValue={demoSearch}
+                  state={layoutState}
+                  title="Projects List"
+                />
+              )}
+
+              {layoutTemplate === 'form' && (
+                <FormPageTemplate
+                  breadcrumb={<span>Preferences / Workspace</span>}
+                  description="Form fields align horizontally at standard width and stack on narrow."
+                  onReset={() => toast('Form reset to defaults', 'neutral')}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    toast('Workspace settings saved', 'mint')
+                  }}
+                  primaryActionLabel="Save Workspace"
+                  title="Workspace Configuration"
+                >
+                  <LayoutSection title="Repository Settings" variant="card">
+                    <FormRow
+                      description="Root directory for local project discovery and git operations"
+                      label="Workspace Path"
+                      required
+                    >
+                      <Input defaultValue="E:/Projects/Aro" />
+                    </FormRow>
+                    <FormRow
+                      description="Automatically reload changed files and skills"
+                      label="Auto-watch file changes"
+                    >
+                      <Checkbox checked={checkboxVal} onChange={setCheckboxVal} />
+                    </FormRow>
+                    <FormRow
+                      description="Controls when terminal tools require explicit confirmation"
+                      label="Tool execution safety"
+                    >
+                      <Select
+                        onChange={setSel}
+                        options={[
+                          { value: 'opus-4.6', label: 'Strict manual approvals' },
+                          { value: 'gpt-5.4', label: 'Smart checkpoint verification' },
+                        ]}
+                        value={sel}
+                      />
+                    </FormRow>
+                  </LayoutSection>
+                </FormPageTemplate>
+              )}
+
+              {layoutTemplate === 'overlay' && (
+                <div className="h-[460px]">
+                  <MasterDetailOverlayTemplate
+                    detailActions={<Button size="xs" variant="primary">Add key</Button>}
+                    detailDescription="Provider API keys are securely stored in your local vault."
+                    detailTitle={demoNav === 'models' ? 'Provider Keys' : 'Global Settings'}
+                    navItems={[
+                      { id: 'models', label: 'Provider Keys', icon: IconBolt, active: demoNav === 'models', onClick: () => setDemoNav('models') },
+                      { id: 'settings', label: 'Global Settings', icon: IconPlug, active: demoNav === 'settings', onClick: () => setDemoNav('settings') },
+                    ]}
+                  >
+                    <StateBox state={layoutState}>
+                      <Stack dividers gap={2}>
+                        <ListRow description="Key configured · valid through 2027" title="Nous Portal API Key" />
+                        <ListRow description="Key configured · local hardware acceleration" title="Local LM Studio Server" />
+                      </Stack>
+                    </StateBox>
+                  </MasterDetailOverlayTemplate>
+                </div>
+              )}
+
+              {layoutTemplate === 'page' && (
+                <PageTemplate
+                  actions={<Button size="xs" variant="secondary">Refresh</Button>}
+                  description="Standard PageShell with structured Section and FormRow primitives."
+                  title="Diagnostics & Health"
+                >
+                  <StateBox state={layoutState}>
+                    <LayoutSection title="System Resources" variant="card">
+                      <FormRow label="Memory Usage"><Badge mono tone="mint">142 MB</Badge></FormRow>
+                      <FormRow label="Process Latency"><Badge mono tone="cyan">12 ms</Badge></FormRow>
+                    </LayoutSection>
+                  </StateBox>
+                </PageTemplate>
+              )}
+
+              {layoutTemplate === 'dialog' && (
+                <div className="p-6 flex justify-center">
+                  <DialogTemplate
+                    description="This operation cannot be undone. Workspace files will not be deleted."
+                    destructiveAction={<Button size="sm" variant="danger">Delete session</Button>}
+                    onClose={() => toast('Dialog dismissed', 'neutral')}
+                    primaryAction={<Button onClick={() => toast('Session archived', 'mint')} size="sm" variant="primary">Archive</Button>}
+                    secondaryAction={<Button size="sm" variant="ghost">Cancel</Button>}
+                    title="Archive Conversation"
+                  >
+                    <p className="text-xs text-aro-ink-2 leading-relaxed">
+                      Archiving will move this session from your active sidebar into history storage.
+                    </p>
+                  </DialogTemplate>
+                </div>
+              )}
+            </div>
+          </div>
+        </DS>
+
+        <DS
+          body="Hunk-level accept/reject/comment code review with split/unified views, checkpoint rollbacks, and git index staging."
+          eyebrow="Phase 13 Feature Slice 1"
+          id="diff-review"
+          title="Diff-First Visual Review"
+        >
+          <div className="h-[460px] overflow-hidden rounded-panel border border-aro-line-soft shadow-aro-e2">
+            <AroReviewPage
+              forceEnabled={true}
+              overrideCheckpoints={[
+                { hash: 'a1b2c3d', label: 'Added cost HUD computation', at: '14:22' },
+                { hash: 'e4f5g6h', label: 'Initial tool setup', at: '14:10' },
+              ]}
+              overrideData={{
+                available: true,
+                error: null,
+                files: [
+                  {
+                    path: 'src/agent/turn.ts',
+                    adds: 3,
+                    dels: 1,
+                    lang: 'typescript',
+                    lines: [
+                      { t: 'hunk', text: '@@ -12,4 +12,6 @@' },
+                      { t: 'ctx', text: 'export function runTurn() {' },
+                      { t: 'del', text: '  const oldCost = 0' },
+                      { t: 'add', text: '  const activeCost = computeCost()' },
+                      { t: 'add', text: '  logCost(activeCost)' },
+                      { t: 'add', text: '  checkpointSave()' },
+                      { t: 'ctx', text: '}' },
+                    ],
+                  },
+                  {
+                    path: 'src/tools/git.ts',
+                    adds: 2,
+                    dels: 0,
+                    lang: 'typescript',
+                    lines: [
+                      { t: 'hunk', text: '@@ -1,3 +1,5 @@' },
+                      { t: 'ctx', text: 'import { exec } from "child_process"' },
+                      { t: 'add', text: 'export const STAGE_FILE = "git add"' },
+                      { t: 'add', text: 'export const RESET_HUNK = "git checkout -p"' },
+                    ],
+                  },
+                ],
+                loading: false,
+                stagedSet: new Set(['src/agent/turn.ts']),
+              }}
+            />
+          </div>
+        </DS>
+
+        <DS
+          body="Real-time session spend ($0.04), token burn (12.4k), prompt cache hit forensics, and proactive quota limits."
+          eyebrow="Phase 13 Feature Slice 2"
+          id="cost-hud"
+          title="Ambient Cost HUD & Token Burn Forensics"
+        >
+          <div className="flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-sunken p-4">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold text-aro-ink">Live Ambient HUD Pills</span>
+              <p className="text-aro-xs text-aro-ink-3">
+                Mounted directly in the desktop Titlebar with reactive status indicators (Normal, Caution, Warning, Exceeded).
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 ml-auto">
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 2, cost_usd: 0.042, input: 9800, output: 2600, total: 12400, cache_hit_pct: 88.4 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 8, cost_usd: 1.65, input: 48000, output: 12000, total: 60000, cache_hit_pct: 79.1 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 14, cost_usd: 2.45, input: 95000, output: 28000, total: 123000, cache_hit_pct: 72.0 }}
+              />
+              <AroCostHud
+                forceEnabled={true}
+                overrideBudget={{ softLimitUsd: 2.0, hardLimitUsd: 5.0 }}
+                overrideUsage={{ calls: 22, cost_usd: 5.4, input: 210000, output: 65000, total: 275000, cache_hit_pct: 65.4 }}
+              />
+            </div>
+          </div>
+        </DS>
+
+        <DS
+          body="Visual DAG of parent-child subagent tasks, dependency blockers, live statuses, and execution topologies."
+          eyebrow="Phase 13 Feature Slice 3"
+          id="tasks-board"
+          title="Parallel Subagent Work-Graph & Tasks Board"
+        >
+          <div className="rounded-panel border border-aro-line-soft bg-aro-sunken p-2 overflow-hidden max-h-[500px]">
+            <AroTasksPage
+              forceEnabled={true}
+              overrideData={{
+                hasSession: true,
+                live: true,
+                local: false,
+                tasks: [
+                  {
+                    id: 't-1',
+                    key: 'T-101',
+                    title: 'Research API rate limits & token models',
+                    status: 'done',
+                    priority: 'p1',
+                    source: 'agent',
+                    assignee: 'aro',
+                    estimate: '1h',
+                    deps: [],
+                    criteria: ['Check cache multipliers'],
+                    tags: ['research', 'tokens'],
+                    cost: '$0.02',
+                  },
+                  {
+                    id: 't-2',
+                    key: 'T-102',
+                    title: 'Author spec for parallel task board',
+                    status: 'running',
+                    priority: 'p0',
+                    source: 'agent',
+                    assignee: 'claude-code',
+                    estimate: '2h',
+                    deps: ['t-1'],
+                    criteria: ['Define work-graph DAG schema'],
+                    tags: ['spec', 'tasks'],
+                    cost: '$0.05',
+                  },
+                  {
+                    id: 't-3',
+                    key: 'T-103',
+                    title: 'Implement React DAG visualization',
+                    status: 'ready',
+                    priority: 'p1',
+                    source: 'agent',
+                    assignee: 'codex',
+                    estimate: '3h',
+                    deps: ['t-2'],
+                    criteria: ['Render blocked dependencies', 'List vs board switch'],
+                    tags: ['ui', 'dag'],
+                    cost: '$0.08',
+                  },
+                  {
+                    id: 't-4',
+                    key: 'T-104',
+                    title: 'Approve token budget overrun',
+                    status: 'review',
+                    priority: 'p0',
+                    source: 'manual',
+                    human: true,
+                    estimate: '15m',
+                    deps: [],
+                    criteria: ['Human review'],
+                    tags: ['approval', 'budget'],
+                    cost: '$0.00',
+                  },
+                ],
+              }}
+            />
+          </div>
+        </DS>
+
+        <DS
+          body="Embedded responsive preview supporting Desktop (100%), Tablet (768px), and Mobile (390px) viewports with dev-server quick links."
+          eyebrow="Phase 13 Feature Slice 4"
+          id="browser-preview"
+          title="In-App Responsive Web & Dev-Server Preview"
+        >
+          <div className="rounded-panel border border-aro-line-soft bg-aro-sunken overflow-hidden h-[420px]">
+            <AroBrowserPreview
+              forceEnabled={true}
+              overrideTabs={[
+                {
+                  id: 'tab-demo-1',
+                  input: 'http://localhost:5173',
+                  url: 'http://localhost:5173',
+                  title: 'Vite App (localhost:5173)',
+                  loading: false,
+                },
+                {
+                  id: 'tab-demo-2',
+                  input: 'https://aro.agent',
+                  url: 'https://aro.agent',
+                  title: 'aro.agent',
+                  loading: false,
+                },
+              ]}
+              overrideViewport="tablet"
+            />
+          </div>
+        </DS>
+
+        <DS
+          body="Bi-directional IDE deep-links targeting exact file and line coordinates in Cursor, VS Code, Windsurf, Zed, and JetBrains."
+          eyebrow="Phase 13 Feature Slice 5"
+          id="ide-deep-link"
+          title="One-Click IDE Deep Link & Editor Handoff"
+        >
+          <AroIdeHandoffPanel forceEnabled={true} />
+        </DS>
       </div>
 
       <Modal
@@ -775,11 +1377,11 @@ html[data-theme='paper'],     [data-theme='paper']     { … }`}
         width={520}
       >
         <div className="space-y-3 p-4">
-          <p className="text-[12.5px] leading-[1.65] text-aro-ink-2">
+          <p className="text-xs leading-[1.65] text-aro-ink-2">
             Modals are used for decisions that change what the agent is allowed to do — never for information the transcript already shows. This
             one renders inside the themed wrapper, so it keeps the active Aro theme while the rest of the window keeps the host theme.
           </p>
-          <div className="rounded-[9px] border border-aro-line-soft bg-aro-sunken p-3">
+          <div className="rounded-panel border border-aro-line-soft bg-aro-sunken p-3">
             <SectionLabel className="px-0">example content</SectionLabel>
             <div className="space-y-2">
               <Input placeholder="Session name" />

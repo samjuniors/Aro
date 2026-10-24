@@ -141,7 +141,7 @@ function ThemePreview({ name, mode }: { name: string; mode: 'light' | 'dark' }) 
 
   return (
     <div
-      className="h-20 overflow-hidden rounded-xl border shadow-xs"
+      className="h-20 overflow-hidden rounded-overlay border shadow-xs"
       style={{ backgroundColor: c.background, borderColor: c.border }}
     >
       <div className="flex h-full">
@@ -478,13 +478,15 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   // backend) for anything not already installed.
   const needle = normalize(query)
 
+  const WORKING_THEME_IDS = new Set(['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink', 'codex'])
   const filteredThemes = availableThemes
     .filter(
       theme =>
-        !needle ||
-        theme.label.toLowerCase().includes(needle) ||
-        theme.name.toLowerCase().includes(needle) ||
-        theme.description.toLowerCase().includes(needle)
+        WORKING_THEME_IDS.has(theme.name) &&
+        (!needle ||
+          theme.label.toLowerCase().includes(needle) ||
+          theme.name.toLowerCase().includes(needle) ||
+          theme.description.toLowerCase().includes(needle))
     )
     // Active theme first; stable sort keeps the rest in their original order.
     .sort((a, b) => Number(b.name === themeName) - Number(a.name === themeName))
@@ -590,7 +592,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                       <span className="text-[length:var(--conversation-caption-font-size)] font-medium text-(--ui-text-tertiary)">
                         Aro Canonical Palettes
                       </span>
-                      <span className="font-mono text-[10.5px] text-(--ui-text-quaternary) capitalize">
+                      <span className="font-mono text-aro-xs text-(--ui-text-quaternary) capitalize">
                         Active: {themeName}
                       </span>
                     </div>
@@ -607,7 +609,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                         return (
                           <button
                             className={cn(
-                              'flex min-w-[110px] items-center gap-2 rounded-[8px] border px-2.5 py-1.5 text-xs font-medium transition-all select-none',
+                              'flex min-w-[110px] items-center gap-2 rounded-control border px-2.5 py-1.5 text-xs font-medium transition-colors select-none',
                               active
                                 ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary shadow-xs'
                                 : 'border-(--ui-border-soft) bg-(--ui-bg-card) text-(--ui-text-secondary) hover:border-border hover:bg-(--ui-bg-elevated) hover:text-foreground'
@@ -619,7 +621,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                             }}
                             type="button"
                           >
-                            <span className="flex overflow-hidden rounded-[3px] border border-black/15 dark:border-white/10 shrink-0">
+                            <span className="flex overflow-hidden rounded-control border border-black/15 dark:border-white/10 shrink-0">
                               {item.swatch.map(color => (
                                 <i className="h-3.5 w-1.5" key={color} style={{ background: color }} />
                               ))}
@@ -680,7 +682,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                               {removable && (
                                 <button
                                   aria-label={a.removeTheme}
-                                  className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
+                                  className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-control bg-(--ui-bg-elevated)/80 text-(--ui-text-tertiary) opacity-0 backdrop-blur-sm transition hover:text-(--ui-red) focus-visible:opacity-100 group-hover:opacity-100"
                                   onClick={() => {
                                     triggerHaptic('crisp')
                                     removeUserTheme(theme.name)
@@ -700,7 +702,6 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
                         })}
                       </div>
                     )}
-                    <MarketplaceThemeResults installs={installs} onInstalled={name => setTheme(name)} query={query} />
                   </div>
                   {showProfileNote && (
                     <p className="mt-3 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">

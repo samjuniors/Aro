@@ -42,6 +42,13 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
   const allActions: ActionItem[] = useMemo(() => {
     return [
       {
+        id: 'overview',
+        label: 'Overview',
+        detail: 'Turn execution summary, touched files ledger, and checkpoints',
+        icon: IconSpark,
+        action: () => handleOpenSection('overview')
+      },
+      {
         id: 'review',
         label: 'Review',
         detail: 'Inspect uncommitted changes and git diffs',
@@ -136,12 +143,12 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
     <div className={cn('aro-workspace-launchpad flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8', className)}>
       <div className="w-full max-w-sm flex flex-col gap-3">
         {/* Antigravity-style Centered Search Input */}
-        <div className="relative flex items-center gap-2.5 rounded-lg border border-aro-line-soft bg-aro-well/70 px-3.5 py-2.5 shadow-sm transition-all focus-within:border-aro-iris focus-within:ring-2 focus-within:ring-aro-iris/20">
+        <div className="relative flex items-center gap-2.5 rounded-control border border-aro-line-soft bg-aro-well/70 px-3.5 py-2.5 shadow-(--aro-shadow-e1) transition-[border-color,box-shadow] focus-within:border-aro-iris focus-within:ring-2 focus-within:ring-aro-iris/20">
           <IconSearch className="text-aro-ink-4 shrink-0" size={14} />
           <input
             aria-label="Search workspace tools"
             autoFocus
-            className="w-full min-w-0 bg-transparent text-[13px] text-aro-ink placeholder:text-aro-ink-4 outline-none"
+            className="w-full min-w-0 bg-transparent text-sm text-aro-ink placeholder:text-aro-ink-4 outline-none"
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search workspace tools…"
@@ -164,14 +171,14 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
           {filteredActions.length > 0 ? (
             filteredActions.map(action => (
               <button
-                className="group flex items-center justify-between rounded-md px-3 py-2 text-left transition-colors hover:bg-aro-hover cursor-pointer"
+                className="group flex items-center justify-between rounded-control px-3 py-2 text-left transition-colors hover:bg-aro-hover cursor-pointer"
                 key={action.id}
                 onClick={action.action}
                 type="button"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <action.icon className="text-aro-ink-3 shrink-0 group-hover:text-aro-iris-soft transition-colors" size={15} />
-                  <span className="text-[13px] font-medium text-aro-ink">
+                  <span className="text-sm font-medium text-aro-ink">
                     {action.label}
                   </span>
                 </div>
@@ -182,7 +189,7 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
               </button>
             ))
           ) : (
-            <p aria-live="polite" className="px-3 py-2 text-center text-[11px] text-aro-ink-4" role="status">
+            <p aria-live="polite" className="px-3 py-2 text-center text-xs text-aro-ink-4" role="status">
               No workspace tools match “{searchQuery.trim()}”.
             </p>
           )}

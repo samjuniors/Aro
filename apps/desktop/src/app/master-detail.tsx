@@ -30,7 +30,7 @@ import {
 export function ToolChip({ children, title }: { children: ReactNode; title?: string }) {
   return (
     <span
-      className="rounded-md bg-(--ui-bg-quinary) px-1.5 py-0.5 font-mono text-[0.65rem] text-(--ui-text-tertiary)"
+      className="rounded-control bg-(--ui-bg-quinary) px-1.5 py-0.5 font-mono text-aro-xs text-(--ui-text-tertiary)"
       title={title}
     >
       {children}
@@ -178,7 +178,7 @@ export function DetailColumn({
         <div className="mx-auto max-w-2xl space-y-5 px-5 py-4">{children}</div>
       </div>
       {footer && (
-        <div className="mx-auto w-full max-w-2xl shrink-0 px-5 pb-3 pt-1.5 text-right text-[0.65rem] text-muted-foreground/50">
+        <div className="mx-auto w-full max-w-2xl shrink-0 px-5 pb-3 pt-1.5 text-right text-aro-xs text-muted-foreground/50">
           {footer}
         </div>
       )}
@@ -211,7 +211,7 @@ const DETAIL_PANE_COLLAPSED_PX = 4
 // finding 6), without changing how the button looks or lays out. The 2.5.5
 // enhanced 44px target is deliberately not met here.
 export const ICON_BUTTON =
-  "size-5 relative cursor-pointer rounded-[4px] text-muted-foreground/70 before:absolute before:-inset-0.5 before:content-[''] hover:bg-(--ui-control-active-background) hover:text-foreground"
+  "size-5 relative cursor-pointer rounded-control text-muted-foreground/70 before:absolute before:-inset-0.5 before:content-[''] hover:bg-(--ui-control-active-background) hover:text-foreground"
 
 export function DetailPane({
   actions,
@@ -409,7 +409,7 @@ export function ListStripButton({
   return (
     <button
       className={cn(
-        'cursor-pointer text-[0.68rem] font-medium transition-colors disabled:opacity-40',
+        'cursor-pointer text-aro-xs font-medium transition-colors disabled:opacity-40',
         active ? 'text-foreground' : 'text-muted-foreground/70 hover:text-foreground'
       )}
       disabled={disabled}
@@ -461,33 +461,33 @@ export function CapRow({
         // offscreen rows — the Capabilities lists routinely hold 80+ entries.
         // Row height is already fixed (h-8/h-11), so skipped rows keep their
         // exact size and scrollbar geometry never jumps.
-        'group/row row-hover flex w-full shrink-0 items-center rounded-md [content-visibility:auto] hover:text-foreground',
+        'group/row row-hover flex w-full shrink-0 items-center rounded-control [content-visibility:auto] hover:text-foreground',
         subtitle ? 'h-11' : 'h-8',
         active ? 'bg-(--ui-row-active-background) text-foreground' : 'text-(--ui-text-secondary)'
       )}
       id={rowId}
     >
       <RowButton
-        className="flex h-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md pl-2 pr-1.5 text-left"
+        className="flex h-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-control pl-2 pr-1.5 text-left"
         onClick={onSelect}
       >
         <span className="min-w-0 flex-1">
           <span
             className={cn(
-              'block truncate text-[0.78rem]',
+              'block truncate text-aro-sm',
               enabled ? 'font-medium text-foreground/85' : 'font-normal text-muted-foreground/60'
             )}
           >
             {title}
           </span>
           {subtitle != null && (
-            <span className="flex min-w-0 items-center gap-1 text-[0.62rem] text-muted-foreground/50">
+            <span className="flex min-w-0 items-center gap-1 text-aro-xs text-muted-foreground/50">
               {typeof subtitle === 'string' ? <span className="truncate">{subtitle}</span> : subtitle}
             </span>
           )}
         </span>
         {meta != null && (
-          <span className="shrink-0 rounded bg-(--ui-bg-quinary) px-1 py-px text-[0.6rem] tabular-nums leading-3.5 text-(--ui-text-tertiary)">
+          <span className="shrink-0 rounded-control bg-(--ui-bg-quinary) px-1 py-px text-aro-xs tabular-nums leading-3.5 text-(--ui-text-tertiary)">
             {meta}
           </span>
         )}

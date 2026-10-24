@@ -74,7 +74,7 @@ export function ToolsSummary({
         <h3 className="min-w-0 truncate text-xs font-medium text-(--ui-text-primary)">
           {title ?? (preview ? copy.summaryPreviewTitle(connectorName) : copy.summaryTitle(connectorName))}
         </h3>
-        <span className="shrink-0 tabular-nums text-[0.7rem] text-(--ui-text-tertiary)">
+        <span className="shrink-0 tabular-nums text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
           {copy.summaryCount(total)}
         </span>
       </div>
@@ -93,14 +93,14 @@ export function ToolsSummary({
               className="flex items-center gap-3 border-t border-(--ui-stroke-tertiary) py-2 first:border-t-0"
               key={row.facet}
             >
-              <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium text-(--ui-text-primary)">
+              <span className="min-w-0 flex-1 truncate text-xs font-medium text-(--ui-text-primary)">
                 {label}
               </span>
               <span className="shrink-0 tabular-nums text-xs text-(--ui-text-secondary)">{row.total}</span>
 
               {preview ? null : (
                 <>
-                  <span className="w-24 shrink-0 text-right text-[0.7rem] text-(--ui-text-tertiary)">
+                  <span className="w-24 shrink-0 text-right text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
                     {onLabel(copy, row)}
                   </span>
                   <Switch

@@ -101,12 +101,18 @@ export const modePref = profilePref(PROFILE_MODES_KEY, MODE_KEY, normalizeMode)
 const readBootProfileKey = () => normalizeProfileKey(storedString(LAST_PROFILE_KEY))
 const BOOT_PROFILE_KEY = typeof window === 'undefined' ? 'default' : (localDisplaySkinProfile ?? readBootProfileKey())
 
-// Provider state keeps the raw pick so a name nothing resolves YET (a backend
-// skin the gateway hasn't seeded on this launch) isn't flattened to the default
-// for the rest of the session — it paints as soon as the registry can resolve it.
-const storedSkin = (profile: string): string =>
-  skinPref.stored(profile) ??
-  (profile === BOOT_PROFILE_KEY ? (localDisplaySkinName ?? DEFAULT_SKIN_NAME) : DEFAULT_SKIN_NAME)
+const storedSkin = (profile: string): string => {
+  if (typeof window !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+    const aroTheme = localStorage.getItem('aro.theme')
+    if (aroTheme && resolveTheme(aroTheme)) {
+      return aroTheme
+    }
+  }
+  return (
+    skinPref.stored(profile) ??
+    (profile === BOOT_PROFILE_KEY ? (localDisplaySkinName ?? DEFAULT_SKIN_NAME) : DEFAULT_SKIN_NAME)
+  )
+}
 
 /** Everything a peer window could change that this one has to repaint for. */
 const APPEARANCE_KEYS = new Set([SKIN_KEY, PROFILE_SKINS_KEY, MODE_KEY, PROFILE_MODES_KEY])
@@ -222,6 +228,100 @@ const mixesFor = (isDark: boolean): Record<string, string> => ({
   '--theme-mix-bubble': isDark ? '46%' : '0%'
 })
 
+// NB-001: Batch theme attribute mutations via requestAnimationFrame to avoid DOM style re-calc flash on rapid skin switching.
+export interface ThemeDomBatch {
+  colorScheme: string
+  hermesTheme: string
+  hermesMode: string
+  actualDark: boolean
+  effectiveTheme: string
+}
+
+let pendingThemeRaf: null | number = null
+let pendingThemeBatch: null | ThemeDomBatch = null
+
+const getRaf = (): ((cb: FrameRequestCallback) => number) | undefined => {
+  if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+    return window.requestAnimationFrame.bind(window)
+  }
+
+  if (typeof requestAnimationFrame === 'function') {
+    return requestAnimationFrame
+  }
+
+  return undefined
+}
+
+const getCancelRaf = (): ((id: number) => void) | undefined => {
+  if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+    return window.cancelAnimationFrame.bind(window)
+  }
+
+  if (typeof cancelAnimationFrame === 'function') {
+    return cancelAnimationFrame
+  }
+
+  return undefined
+}
+
+export function scheduleThemeAttributes(batch: ThemeDomBatch): void {
+  pendingThemeBatch = batch
+
+  const raf = getRaf()
+
+  if (!raf) {
+    flushThemeAttributes()
+
+    return
+  }
+
+  if (pendingThemeRaf === null) {
+    pendingThemeRaf = raf(() => {
+      pendingThemeRaf = null
+      flushThemeAttributes()
+    })
+  }
+}
+
+export function applyThemeDomAttributes(batch: ThemeDomBatch): void {
+  const cancelRaf = getCancelRaf()
+
+  if (pendingThemeRaf !== null && cancelRaf) {
+    cancelRaf(pendingThemeRaf)
+    pendingThemeRaf = null
+  }
+
+  pendingThemeBatch = null
+
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  const root = document.documentElement
+  root.style.setProperty('color-scheme', batch.colorScheme)
+  root.dataset.hermesTheme = batch.hermesTheme
+  root.dataset.hermesMode = batch.hermesMode
+  root.classList.toggle('dark', batch.actualDark)
+  root.dataset.theme = batch.effectiveTheme
+}
+
+export function flushThemeAttributes(): void {
+  if (pendingThemeBatch) {
+    applyThemeDomAttributes(pendingThemeBatch)
+  }
+}
+
+export function __resetThemeBatch(): void {
+  const cancelRaf = getCancelRaf()
+
+  if (pendingThemeRaf !== null && cancelRaf) {
+    cancelRaf(pendingThemeRaf)
+  }
+
+  pendingThemeRaf = null
+  pendingThemeBatch = null
+}
+
 function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily = $chatFontFamily.get()) {
   if (typeof document === 'undefined') {
     return
@@ -235,19 +335,24 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
   const midground = c.midground ?? c.ring
   const skinName = theme.name.endsWith(`-${mode}`) ? theme.name.slice(0, -mode.length - 1) : theme.name
 
-  root.style.setProperty('color-scheme', rendered)
-  root.dataset.hermesTheme = skinName
-  root.dataset.hermesMode = rendered
-  root.classList.toggle('dark', isDark)
-
   const isAro = root.dataset.aroUi === 'true'
-  if (isAro && typeof window !== 'undefined') {
-    const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
-    const effectiveTheme = isProtoTheme ? skinName : (localStorage.getItem('aro.theme') || 'obsidian')
-    root.dataset.theme = effectiveTheme
-  } else {
-    root.dataset.theme = skinName
-  }
+  const isProtoTheme = ['codex', 'obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
+  const effectiveTheme = isAro
+    ? (isProtoTheme ? skinName : (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) || 'obsidian')
+    : skinName
+
+  const isAroLight = effectiveTheme === 'daylight' || effectiveTheme === 'paper'
+  const isAroDark = !isAroLight
+  const actualDark = isAro ? isAroDark : isDark
+  const actualRendered = isAro ? (actualDark ? 'dark' : 'light') : rendered
+
+  applyThemeDomAttributes({
+    colorScheme: actualRendered,
+    hermesTheme: effectiveTheme,
+    hermesMode: actualRendered,
+    actualDark,
+    effectiveTheme
+  })
 
   // Translucency is tuned per appearance, and "appearance" means the palette
   // actually painted — a skin that keeps a bright surface in "dark" wants
@@ -375,6 +480,7 @@ if (typeof window !== 'undefined') {
   const resolved = resolveMode(pref)
   const theme = deriveTheme(normalizeSkin(storedSkin(profile)), resolved)
   applyTheme(theme, resolved)
+  flushThemeAttributes()
   syncNativeTheme(pref, renderedModeFor(theme.colors, resolved))
 }
 
@@ -462,6 +568,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // remember it for the next boot's first paint.
   useEffect(() => {
     rememberActiveProfileKey(profileKey)
+    if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+      return
+    }
     setThemeNameState(storedSkin(profileKey))
     setModeState(modePref.resolve(profileKey))
   }, [profileKey])
@@ -472,7 +581,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // the OTHER windows, which is exactly the set that needs to catch up.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key && !APPEARANCE_KEYS.has(event.key)) {
+      if (event.key && !APPEARANCE_KEYS.has(event.key) && event.key !== 'aro.theme') {
+        return
+      }
+
+      if (typeof document !== 'undefined' && document.documentElement.dataset.aroUi === 'true') {
+        const aroTheme = localStorage.getItem('aro.theme') || DEFAULT_SKIN_NAME
+        setThemeNameState(aroTheme)
         return
       }
 
@@ -482,9 +597,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setModeState(modePref.resolve(live))
     }
 
-    window.addEventListener('storage', onStorage)
+    const onAroTheme = (event: Event) => {
+      const customEvent = event as CustomEvent<string>
+      if (customEvent.detail) {
+        setThemeNameState(customEvent.detail)
+      }
+    }
 
-    return () => window.removeEventListener('storage', onStorage)
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('aro:theme', onAroTheme)
+
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('aro:theme', onAroTheme)
+    }
   }, [])
 
   const systemDark = useMediaQuery('(prefers-color-scheme: dark)')
@@ -554,10 +680,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('aro.theme', next)
         localStorage.setItem('conductor.theme', next)
-        document.documentElement.dataset.theme = next
+        persistString(SKIN_KEY, next)
+        const isLight = next === 'daylight' || next === 'paper'
+        scheduleThemeAttributes({
+          colorScheme: isLight ? 'light' : 'dark',
+          hermesTheme: next,
+          hermesMode: isLight ? 'light' : 'dark',
+          actualDark: !isLight,
+          effectiveTheme: next
+        })
         window.dispatchEvent(new CustomEvent('aro:theme', { detail: next }))
       }
-    } catch {}
+    } catch {
+      // ignore storage or dispatch errors
+    }
   }, [])
 
   const setMode = useCallback((next: ThemeMode) => {

@@ -16,6 +16,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { $customAgents, adapters } from '@/adapters'
 import type { AgentKind } from '@/adapters/agents'
+import { PageHeader } from '@/components/ui/layout'
 import { readKey, writeKey } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 import { $activeSessionId } from '@/store/session'
@@ -47,7 +48,7 @@ const KIND_ICONS: Record<AgentKind, typeof IconTerminal> = {
   hybrid: IconLayers
 }
 
-// BACKEND-TODO(agents): local persistence only — future backend call is
+// BACKEND-TODO(agents): [D-10, research/11 §5] local persistence only — future backend call is
 // `agents.list/register` (see port/FEATURE_MAP.md `agents-adapters`).
 export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = {}) {
   const customAgents = useStore($customAgents)
@@ -224,31 +225,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-base text-aro-ink select-text">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-bg text-aro-ink select-text">
       {/* Header */}
-      <header className="border-b border-aro-line-soft bg-aro-raise/40 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[10px] font-semibold tracking-wider text-aro-ink-4 uppercase">
-                Configuration
-              </span>
-              <Badge mono tone="iris">
-                local catalog
-              </Badge>
-              <Badge mono tone="neutral">
-                conductor.workspace.v3.agents
-              </Badge>
-            </div>
-            <h1 className="text-[20px] font-semibold tracking-tight text-aro-ink">
-              Coding Agent Adapters
-            </h1>
-            <p className="text-[12px] text-aro-ink-3">
-              Reference catalog of coding agent definitions and live Hermes session subagents. Catalog entries represent reference specifications; custom registrations store local metadata only.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-6">
+        <PageHeader
+          actions={<>
             <Button
               icon={IconPlus}
               onClick={() => setIsRegistering(!isRegistering)}
@@ -257,28 +238,30 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
             >
               {isRegistering ? 'Cancel' : 'Register Adapter'}
             </Button>
-          </div>
-        </div>
-      </header>
+          </>}
+          description="Reference catalog of coding agent definitions and live Hermes session subagents. Catalog entries represent reference specifications; custom registrations store local metadata only."
+          title="Coding Agent Adapters"
+        />
+      </div>
 
       {/* Main Container */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
         {/* Runtime Boundary Notice */}
         <section
           aria-label="Agent Execution Notice"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise/80 p-4 shadow-aro-e1 space-y-1.5"
         >
           <div className="flex items-center gap-2">
             <IconTerminal className="text-aro-iris" size={15} />
-            <h2 className="text-[12.5px] font-semibold text-aro-ink">
+            <h2 className="text-xs font-semibold text-aro-ink">
               Catalog & Runtime Execution Boundaries
             </h2>
             <Badge mono tone="iris">
               catalog metadata
             </Badge>
           </div>
-          <p className="text-[11.5px] text-aro-ink-3">
-            <strong>Built-in catalog entries</strong> are reference specifications from the prototype catalog, not verified local host installations. <strong>Custom agent registration</strong> saves adapter metadata locally to workspace preferences (<code className="font-aro-mono text-[10.5px]">conductor.workspace.v3.agents</code>); it does not create an executable process or register a tool with the Hermes backend. <strong>Active Session Subagents</strong> below are genuine live subagents streamed from Hermes gateway events.
+          <p className="text-xs text-aro-ink-3">
+            <strong>Built-in catalog entries</strong> are reference specifications from the prototype catalog, not verified local host installations. <strong>Custom agent registration</strong> saves adapter metadata locally to workspace preferences (<code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">conductor.workspace.v3.agents</code>); it does not create an executable process or register a tool with the Hermes backend. <strong>Active Session Subagents</strong> below are genuine live subagents streamed from Hermes gateway events.
           </p>
         </section>
 
@@ -307,33 +290,33 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
         {/* Live Session Subagents Section (Session Isolation) */}
         <section
           aria-label="Active Session Subagents"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-3"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-3"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <IconPulse className="text-aro-cyan" size={15} />
-              <h2 className="text-[13px] font-semibold text-aro-ink">
+              <h2 className="text-xs font-semibold text-aro-ink">
                 Active Session Subagents
               </h2>
               <Badge dot mono tone="cyan">
                 {activeSessionSubagents.length} running
               </Badge>
             </div>
-            <span className="font-aro-mono text-[10px] text-aro-ink-4">
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
               {activeSessionId ? `Bound to ${activeSessionId}` : 'No active session'}
             </span>
           </div>
 
           {!activeSessionId ? (
-            <p className="font-aro-mono text-[11px] text-aro-ink-4">
+            <p className="font-aro-mono text-xs text-aro-ink-4">
               No active session selected. Open or select a chat session to monitor its delegated subagent workers.
             </p>
           ) : activeSessionSubagents.length === 0 ? (
-            <div className="rounded-[6px] border border-dashed border-aro-line-soft p-4 text-center">
-              <p className="text-[12px] text-aro-ink-3">
+            <div className="rounded-control border border-dashed border-aro-line-soft p-4 text-center">
+              <p className="text-xs text-aro-ink-3">
                 No subagent tasks have been spawned in the current session.
               </p>
-              <p className="mt-0.5 text-[10.5px] text-aro-ink-4">
+              <p className="mt-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                 When the agent delegates work via fan-out tools, child workers appear here with live progress.
               </p>
             </div>
@@ -343,7 +326,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                 <div className="flex items-center justify-between py-2.5" key={sub.id}>
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-aro-mono text-[11px] font-semibold text-aro-ink">
+                      <span className="font-aro-mono text-xs font-semibold text-aro-ink">
                         {sub.id}
                       </span>
                       <Badge
@@ -362,17 +345,17 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                         {sub.status}
                       </Badge>
                       {sub.model && (
-                        <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                        <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                           {sub.model}
                         </span>
                       )}
                     </div>
-                    <p className="truncate text-[12px] text-aro-ink-2">{sub.goal}</p>
+                    <p className="truncate text-xs text-aro-ink-2">{sub.goal}</p>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-3 font-aro-mono text-[11px] text-aro-ink-4">
+                  <div className="flex shrink-0 items-center gap-3 font-aro-mono text-xs text-aro-ink-4">
                     {sub.currentTool && (
-                      <span className="rounded bg-aro-hover px-1.5 py-0.5 text-[10px] text-aro-ink-3">
+                      <span className="rounded-control bg-aro-hover px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                         tool: {sub.currentTool}
                       </span>
                     )}
@@ -390,15 +373,15 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
         {isRegistering && (
           <section
             aria-label="Register New Agent Adapter"
-            className="rounded-[10px] border border-aro-iris/40 bg-aro-raise p-4 shadow-aro-e2 space-y-3"
+            className="rounded-panel border border-aro-iris/40 bg-aro-raise p-4 shadow-aro-e2 space-y-3"
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-[13px] font-semibold text-aro-ink">
+                <h3 className="text-xs font-semibold text-aro-ink">
                   Register Custom Agent Adapter
                 </h3>
-                <p className="text-[11px] text-aro-ink-3">
-                  Saves adapter metadata to local workspace storage (<code className="font-aro-mono text-[10px]">conductor.workspace.v3.agents</code>). Does not spawn an executable process.
+                <p className="text-xs text-aro-ink-3">
+                  Saves adapter metadata to local workspace storage (<code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">conductor.workspace.v3.agents</code>). Does not spawn an executable process.
                 </p>
               </div>
               <IconButton
@@ -411,11 +394,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
             <form className="grid grid-cols-1 gap-3 sm:grid-cols-2" onSubmit={handleRegister}>
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Adapter ID (slug) *
                 </label>
                 <Input
-                  className="font-aro-mono text-[12px]"
+                  className="font-aro-mono text-xs"
                   onChange={e => setFormId(e.target.value)}
                   placeholder="e.g., custom-coder"
                   required
@@ -424,11 +407,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Display Name *
                 </label>
                 <Input
-                  className="text-[12px]"
+                  className="text-xs"
                   onChange={e => setFormName(e.target.value)}
                   placeholder="e.g., Custom Coder"
                   required
@@ -437,11 +420,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Vendor
                 </label>
                 <Input
-                  className="text-[12px]"
+                  className="text-xs"
                   onChange={e => setFormVendor(e.target.value)}
                   placeholder="e.g., Internal / Self-hosted"
                   value={formVendor}
@@ -449,11 +432,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Kind
                 </label>
                 <select
-                  className="h-[30px] w-full rounded-[7px] border border-aro-line bg-aro-raise px-2 font-aro-mono text-[12px] text-aro-ink"
+                  className="h-[30px] w-full rounded-control border border-aro-line bg-aro-raise px-2 font-aro-mono text-xs text-aro-ink"
                   onChange={e => setFormKind(e.target.value as AgentKind)}
                   value={formKind}
                 >
@@ -465,11 +448,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Glyph (2 chars)
                 </label>
                 <Input
-                  className="font-aro-mono text-[12px] uppercase"
+                  className="font-aro-mono text-xs uppercase"
                   maxLength={2}
                   onChange={e => setFormGlyph(e.target.value.slice(0, 2))}
                   placeholder="CC"
@@ -478,11 +461,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Version
                 </label>
                 <Input
-                  className="font-aro-mono text-[12px]"
+                  className="font-aro-mono text-xs"
                   onChange={e => setFormVersion(e.target.value)}
                   placeholder="v1.0.0"
                   value={formVersion}
@@ -490,11 +473,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <label className="font-aro-mono text-[10.5px] text-aro-ink-3">
+                <label className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">
                   Strengths (comma separated)
                 </label>
                 <Input
-                  className="text-[12px]"
+                  className="text-xs"
                   onChange={e => setFormStrengths(e.target.value)}
                   placeholder="Fast completions, Local execution, Self-improving loop"
                   value={formStrengths}
@@ -503,7 +486,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
               {registerError && (
                 <div
-                  className="flex items-center gap-1.5 font-aro-mono text-[11px] text-aro-rose sm:col-span-2"
+                  className="flex items-center gap-1.5 font-aro-mono text-xs text-aro-rose sm:col-span-2"
                   role="alert"
                 >
                   <IconWarning size={13} />
@@ -548,7 +531,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
               size={13}
             />
             <Input
-              className="pl-8 text-[12px]"
+              className="pl-8 text-xs"
               onChange={e => setSearch(e.target.value)}
               placeholder="Search adapters..."
               value={search}
@@ -559,7 +542,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
         {/* Adapters Catalog Cards */}
         <section aria-label="Agent Adapters" className="space-y-3">
           {filteredAgents.length === 0 ? (
-            <div className="rounded-[10px] border border-aro-line-soft bg-aro-raise/50 p-6 text-center text-[12px] text-aro-ink-3">
+            <div className="rounded-panel border border-aro-line-soft bg-aro-raise/50 p-6 text-center text-xs text-aro-ink-3">
               No agent adapters found matching &ldquo;{search}&rdquo;.
             </div>
           ) : (
@@ -571,7 +554,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                 return (
                   <div
                     className={cn(
-                      'flex flex-col justify-between rounded-[10px] border bg-aro-raise p-4 transition-all shadow-aro-e1',
+                      'flex flex-col justify-between rounded-panel border bg-aro-raise p-4 transition-colors shadow-aro-e1',
                       isSelected
                         ? 'border-aro-iris bg-aro-raise/90 shadow-aro-e2'
                         : 'border-aro-line-soft hover:border-aro-line-strong'
@@ -591,7 +574,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                           />
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-[13.5px] font-semibold text-aro-ink">
+                              <h3 className="text-sm font-semibold text-aro-ink">
                                 {agent.name}
                               </h3>
                               {agent.custom && (
@@ -605,7 +588,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-[11px] text-aro-ink-3">
+                            <p className="text-xs text-aro-ink-3">
                               {agent.vendor || 'Unknown vendor'}{' '}
                               {agent.version && `· ${agent.version}`}
                             </p>
@@ -614,7 +597,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
                         <div className="flex items-center gap-1">
                           <span
-                            className="flex items-center gap-1 rounded bg-aro-hover px-1.5 py-0.5 font-aro-mono text-[9.5px] text-aro-ink-3 uppercase"
+                            className="flex items-center gap-1 rounded-control bg-aro-hover px-1.5 py-0.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3 uppercase"
                             title={`Kind: ${agent.kind}`}
                           >
                             <KindIcon size={11} />
@@ -624,9 +607,9 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                       </div>
 
                       {/* Status and Strengths */}
-                      <div className="space-y-1.5 text-[11px]">
+                      <div className="space-y-1.5 text-xs">
                         <div className="flex items-center gap-2">
-                          <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                             STATUS:
                           </span>
                           <span className="text-aro-ink-3">
@@ -640,7 +623,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
                           <div className="flex flex-wrap gap-1">
                             {agent.strengths.map((str, idx) => (
                               <span
-                                className="rounded bg-aro-sunken px-1.5 py-0.5 text-[10px] text-aro-ink-3"
+                                className="rounded-control bg-aro-sunken px-1.5 py-0.5 text-[var(--aro-text-2xs,10px)] text-aro-ink-3"
                                 key={idx}
                               >
                                 {str}
@@ -653,7 +636,7 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
 
                     {/* Bottom Actions */}
                     <div className="mt-4 flex items-center justify-between border-t border-aro-line-soft/60 pt-3">
-                      <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                         id: {agent.id}
                       </span>
 

@@ -50,7 +50,7 @@ export function StatusRow({
     <div
       aria-expanded={expanded}
       className={cn(
-        'group/status-row status-row flex min-h-6 items-center gap-2 rounded-md px-1.5 py-1',
+        'group/status-row status-row flex min-h-6 items-center gap-2 rounded-control px-1.5 py-1',
         // row-hover bundles cursor:pointer — only when the row actually activates.
         onActivate ? 'row-hover' : 'hover:bg-(--ui-row-hover-background)',
         className

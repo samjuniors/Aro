@@ -31,7 +31,7 @@ interface ResizableFrameProps {
 export function ResizableFrame({ children, height, minHeight }: ResizableFrameProps) {
   return (
     <div
-      className="resize-y overflow-auto rounded-md border border-(--ui-stroke-secondary)"
+      className="resize-y overflow-auto rounded-control border border-(--ui-stroke-secondary)"
       style={{
         height,
         minHeight

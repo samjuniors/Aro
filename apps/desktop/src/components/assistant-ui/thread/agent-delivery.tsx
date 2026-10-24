@@ -119,7 +119,7 @@ export function replyTextFromResult(result: unknown): string {
 }
 
 const NOTICE_CLASS =
-  'flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-[0.6875rem] leading-5 text-muted-foreground/60'
+  'flex max-w-[min(86%,44rem)] flex-col gap-0.5 self-center px-2 py-0.5 text-aro-xs leading-5 text-muted-foreground/60'
 
 const AgentGlyph: FC<{ handle: string }> = ({ handle }) => {
   const [avatar, setAvatar] = useState<null | string>(() => agentAvatarCache.get(handle.toLowerCase())?.url ?? null)
@@ -141,7 +141,7 @@ const AgentGlyph: FC<{ handle: string }> = ({ handle }) => {
   return avatar ? (
     <img alt="" aria-hidden className="size-4 shrink-0 rounded-full object-cover" src={avatar} />
   ) : (
-    <span aria-hidden className="text-[0.8125rem] leading-none">
+    <span aria-hidden className="text-aro-md leading-none">
       🤖
     </span>
   )
@@ -184,7 +184,7 @@ export const AgentDeliveryNotice: FC<ToolCallMessagePartProps> = props => {
             <summary className="cursor-pointer select-none text-center text-muted-foreground/45 hover:text-muted-foreground/70">
               show message
             </summary>
-            <div className="mt-1 max-w-[36rem] whitespace-pre-wrap rounded-lg border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-[0.75rem] leading-5 text-foreground/85">
+            <div className="mt-1 max-w-[36rem] whitespace-pre-wrap rounded-panel border border-(--ui-stroke-tertiary) px-3 py-2 text-left text-aro-sm leading-5 text-foreground/85">
               {replyBody}
             </div>
           </details>

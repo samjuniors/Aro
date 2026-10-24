@@ -204,7 +204,7 @@ function StaleAuxWarning({ applying, onDismiss, onReset, slots, taskLabel }: Sta
   const names = slots.map(slot => taskLabel(slot.task)).join(', ')
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-400/60 bg-amber-500/15 px-3 py-2.5 text-sm text-amber-600 dark:text-amber-300">
+    <div className="flex flex-wrap items-center gap-2 rounded-control border border-amber-400/60 bg-amber-500/15 px-3 py-2.5 text-sm text-amber-600 dark:text-amber-300">
       <AlertTriangle className="size-4 shrink-0" />
       <span className="grow font-medium">
         {m.staleAuxBefore(slots.length, names)}
@@ -1108,7 +1108,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
               const isEditing = editingAuxTask === meta.key
 
               return (
-                <div className="scroll-mt-6 rounded-lg" id={`aux-task-${meta.key}`} key={meta.key}>
+                <div className="scroll-mt-6 rounded-panel" id={`aux-task-${meta.key}`} key={meta.key}>
                   <ListRow
                     action={
                       !isEditing && (
@@ -1202,7 +1202,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                       )
                     }
                     description={
-                      <span className="font-mono text-[0.68rem]">
+                      <span className="font-mono text-aro-xs">
                         {isAuto ? m.autoUseMain : `${current.provider} · ${current.model || m.providerDefault}`}
                         {!isAuto && current.base_url && (
                           <span className="text-muted-foreground"> · {current.base_url}</span>
@@ -1249,7 +1249,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                 ))}
               </SelectContent>
             </Select>
-            <label className="flex items-center gap-2 rounded-sm border border-border px-2 py-1 text-xs">
+            <label className="flex items-center gap-2 rounded-control border border-border px-2 py-1 text-xs">
               {m.moaEnabled}
               <Switch
                 checked={currentMoaPreset.enabled !== false}
@@ -1412,7 +1412,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                 }
                 className={cn(slot.enabled === false && 'opacity-60')}
                 description={
-                  <span className="font-mono text-[0.68rem]">
+                  <span className="font-mono text-aro-xs">
                     {slot.provider} · {slot.model || m.model}
                   </span>
                 }
@@ -1484,7 +1484,7 @@ export function ModelSettings({ onMainModelChanged, scopeProfile, subpage }: Mod
                 </div>
               }
               description={
-                <span className="font-mono text-[0.68rem]">
+                <span className="font-mono text-aro-xs">
                   {currentMoaPreset.aggregator.provider} · {currentMoaPreset.aggregator.model}
                 </span>
               }

@@ -5,12 +5,12 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 const switchVariants = cva(
-  'peer inline-flex shrink-0 items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 data-[state=unchecked]:bg-black/15 dark:data-[state=unchecked]:bg-white/15 data-[state=unchecked]:border data-[state=unchecked]:border-black/5 dark:data-[state=unchecked]:border-white/10 data-[state=checked]:border-transparent data-[state=checked]:bg-primary disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
+  'peer inline-flex shrink-0 items-center rounded-full p-0.5 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 data-[state=unchecked]:bg-(--aro-line-strong) data-[state=checked]:bg-primary disabled:data-[state=checked]:bg-(--ui-text-tertiary)',
   {
     variants: {
       size: {
-        default: 'h-[22px] w-[38px]',
-        xs: 'h-[18px] w-[30px]'
+        default: 'h-6 w-10',
+        xs: 'h-6 w-8'
       }
     },
     defaultVariants: {
@@ -20,12 +20,12 @@ const switchVariants = cva(
 )
 
 const switchThumbVariants = cva(
-  'pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] ring-0 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] data-[state=unchecked]:translate-x-0',
+  'pointer-events-none block rounded-full bg-(--aro-switch-thumb) shadow-(--aro-shadow-thumb) ring-0 transition-transform duration-(--aro-dur-base) ease-(--aro-ease-out) data-[state=unchecked]:translate-x-0',
   {
     variants: {
       size: {
-        default: 'size-[18px] data-[state=checked]:translate-x-[16px]',
-        xs: 'size-[14px] data-[state=checked]:translate-x-[12px]'
+        default: 'size-5 data-[state=checked]:translate-x-4 rtl:data-[state=checked]:-translate-x-4',
+        xs: 'size-4 data-[state=checked]:translate-x-3 rtl:data-[state=checked]:-translate-x-3'
       }
     },
     defaultVariants: {

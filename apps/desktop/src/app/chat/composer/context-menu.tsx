@@ -53,7 +53,7 @@ export function ContextMenu({
             <Button
               aria-label={state.tools.label}
               className={cn(
-                'h-[30px] w-[30px] shrink-0 rounded-[7px] p-0 text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink data-[state=open]:bg-aro-hover data-[state=open]:text-aro-ink'
+                'h-[30px] w-[30px] shrink-0 rounded-control p-0 text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink data-[state=open]:bg-aro-hover data-[state=open]:text-aro-ink'
               )}
               disabled={!state.tools.enabled}
               size="icon"
@@ -65,7 +65,7 @@ export function ContextMenu({
           </DropdownMenuTrigger>
         </Tip>
         <DropdownMenuContent align="start" className={cn('w-60', composerPanelCard)} side="top" sideOffset={6}>
-          <DropdownMenuLabel className="px-2 pb-0.5 pt-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-(--ui-text-tertiary)">
+          <DropdownMenuLabel className="px-2 pb-0.5 pt-0.5 text-aro-xs font-semibold uppercase tracking-wider text-(--ui-text-tertiary)">
             {c.attachLabel}
           </DropdownMenuLabel>
           <ContextMenuItem disabled={!onPickFiles} icon={FileText} onSelect={onPickFiles}>
@@ -108,7 +108,7 @@ export function ContextMenu({
 
           <DropdownMenuSeparator />
 
-          <div className="px-2 py-1 text-[0.7rem] text-muted-foreground/80">
+          <div className="px-2 py-1 text-aro-xs text-muted-foreground/80">
             {c.tipPre}
             <Kbd size="sm">@</Kbd>
             {c.tipPost}
@@ -139,7 +139,7 @@ function PromptSnippetsDialog({ onInsertText, onOpenChange, open }: PromptSnippe
             return (
               <li key={key}>
                 <button
-                  className="group/snippet flex w-full cursor-pointer items-start gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-left transition-colors hover:border-(--ui-stroke-tertiary) hover:bg-(--ui-control-hover-background) focus-visible:border-(--ui-stroke-tertiary) focus-visible:bg-(--ui-control-hover-background) focus-visible:outline-none"
+                  className="group/snippet flex w-full cursor-pointer items-start gap-2.5 rounded-control border border-transparent px-2.5 py-2 text-left transition-colors hover:border-(--ui-stroke-tertiary) hover:bg-(--ui-control-hover-background) focus-visible:border-(--ui-stroke-tertiary) focus-visible:bg-(--ui-control-hover-background) focus-visible:outline-none"
                   onClick={() => {
                     onInsertText(snippet.text)
                     onOpenChange(false)

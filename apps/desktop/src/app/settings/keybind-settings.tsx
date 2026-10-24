@@ -132,12 +132,12 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
       <div className="flex items-center justify-between gap-3 pb-3">
         <div className="min-w-0">
           {!hasBreadcrumb && <h2 className="text-sm font-semibold text-foreground">{k.title}</h2>}
-          <p className="mt-0.5 text-[0.72rem] text-muted-foreground">
+          <p className="mt-0.5 text-aro-sm text-muted-foreground">
             {k.subtitle(openCombo ? formatCombo(openCombo) : '')}
           </p>
         </div>
         <button
-          className="flex shrink-0 items-center gap-1 rounded-md text-[0.72rem] text-muted-foreground hover:text-foreground"
+          className="flex shrink-0 items-center gap-1 rounded-control text-aro-sm text-muted-foreground hover:text-foreground"
           onClick={resetAllBindings}
           type="button"
         >
@@ -164,7 +164,7 @@ function ShortcutSettings({ includeScreenshot }: { includeScreenshot: boolean })
       {isSearching ? (
         <div className="px-2 py-1.5">
           {filteredActions?.length === 0 && filteredReadonly?.length === 0 ? (
-            <p className="px-2.5 py-4 text-center text-[0.82rem] text-muted-foreground">—</p>
+            <p className="px-2.5 py-4 text-center text-aro-md text-muted-foreground">—</p>
           ) : (
             <>
               {filteredActions?.map(action => (
@@ -216,7 +216,7 @@ function CategoryHeader({ label, onToggle, open }: { label: string; onToggle: ()
       onClick={onToggle}
       type="button"
     >
-      <span className="min-w-0 truncate text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+      <span className="min-w-0 truncate text-aro-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
         {label}
       </span>
       <DisclosureCaret
@@ -247,8 +247,8 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
     .find(Boolean)
 
   return (
-    <div className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1 transition-colors hover:bg-(--chrome-action-hover)">
-      <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/90">{label}</span>
+    <div className="group flex items-center gap-2.5 rounded-panel px-2.5 py-1 transition-colors hover:bg-(--chrome-action-hover)">
+      <span className="min-w-0 flex-1 truncate text-aro-md text-foreground/90">{label}</span>
 
       {conflict && (
         <span className="flex size-4 items-center justify-center text-amber-500/90" title={k.conflictWith(conflict)}>
@@ -260,7 +260,7 @@ function KeybindRow({ action }: { action: KeybindActionMeta }) {
       <Tip label={k.rebind}>
         <button
           aria-label={k.rebind}
-          className="flex shrink-0 items-center gap-1 rounded-lg outline-none"
+          className="flex shrink-0 items-center gap-1 rounded-panel outline-none"
           onClick={() => (capturing ? endCapture() : beginCapture(action.id))}
           type="button"
         >
@@ -317,8 +317,8 @@ function ReadonlyRow({ shortcut }: { shortcut: KeybindReadonly }) {
   const label = k.actions[shortcut.id] ?? shortcut.id
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-1">
-      <span className="min-w-0 flex-1 truncate text-[0.82rem] text-foreground/75">{label}</span>
+    <div className="flex items-center gap-2.5 rounded-panel px-2.5 py-1">
+      <span className="min-w-0 flex-1 truncate text-aro-md text-foreground/75">{label}</span>
       <div className="flex shrink-0 items-center gap-1">
         {shortcut.keys.map(key => (
           <KbdCombo combo={key} key={key} />

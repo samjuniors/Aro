@@ -169,7 +169,7 @@ function ArchivedSessionsSettings({ includeDefaultDirectory }: { includeDefaultD
             const busy = busyId === session.id
 
             return (
-              <div className="scroll-mt-6 rounded-lg" id={`archived-session-${session.id}`} key={session.id}>
+              <div className="scroll-mt-6 rounded-panel" id={`archived-session-${session.id}`} key={session.id}>
                 <ListRow
                   action={
                     <div className="flex items-center gap-1.5">

@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { adapters } from '@/adapters'
 import type { DoctorCheck } from '@/adapters/doctor'
 import { getActionStatus, runDoctor } from '@/api/system'
+import { PageHeader } from '@/components/ui/layout'
 import { readKey, writeKey } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 import { $currentCwd, $gatewayState } from '@/store/session'
@@ -71,13 +72,13 @@ function Step({
       <div className="min-w-0">
         <p
           className={cn(
-            'text-[12px] leading-[1.35] font-medium',
+            'text-xs leading-[1.35] font-medium',
             state === 'checking' ? 'text-aro-ink-2' : 'text-aro-ink'
           )}
         >
           {label}
         </p>
-        {sub && <p className="mt-0.5 font-aro-mono text-[9.5px] leading-[1.35] text-aro-ink-4">{sub}</p>}
+        {sub && <p className="mt-0.5 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-[1.35] text-aro-ink-4">{sub}</p>}
       </div>
       {action}
     </div>
@@ -137,7 +138,7 @@ export function OnboardingStrip({ onDismiss }: { onDismiss?: () => void }) {
 
   return (
     <div
-      className="flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[10px] border border-aro-iris/25 bg-aro-iris-tint/40 px-4 py-3 shadow-aro-e1"
+      className="flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-panel border border-aro-iris/25 bg-aro-iris-tint/40 px-4 py-3 shadow-aro-e1"
       data-testid="onboarding-strip"
     >
       {/* Brand & Title */}
@@ -146,8 +147,8 @@ export function OnboardingStrip({ onDismiss }: { onDismiss?: () => void }) {
           <LogoMark size={22} />
         </span>
         <div className="min-w-0">
-          <p className="text-[13px] leading-[1.3] font-semibold text-aro-ink">Get Aro Running</p>
-          <p className="text-[11.5px] leading-[1.4] text-aro-ink-3">
+          <p className="text-xs leading-[1.3] font-semibold text-aro-ink">Get Aro Running</p>
+          <p className="text-xs leading-[1.4] text-aro-ink-3">
             {workspaceState === 'done' && runtimeState === 'done'
               ? 'Workspace attached and runtime ready.'
               : 'Complete runtime and workspace setup to start prompting.'}
@@ -181,7 +182,7 @@ export function OnboardingStrip({ onDismiss }: { onDismiss?: () => void }) {
       <Step
         action={
           workspaceState !== 'done' ? (
-            <span className="font-aro-mono text-[9px] text-aro-amber">
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-amber">
               Open a folder
             </span>
           ) : undefined
@@ -224,7 +225,7 @@ export function OnboardingStrip({ onDismiss }: { onDismiss?: () => void }) {
    ARO DOCTOR PAGE — Readiness Sweep & Deep Diagnostics Dashboard
    ==================================================================== */
 
-// BACKEND-TODO(onboarding-doctor): renderer-visible signals only — the
+// BACKEND-TODO(onboarding-doctor): [D-10, research/10 §2] renderer-visible signals only — the
 // future backend call is an `ops.doctor` summary (see port/FEATURE_MAP.md).
 export function AroDoctorPage() {
   const gatewayState = useStore($gatewayState)
@@ -272,7 +273,7 @@ export function AroDoctorPage() {
   const handleRunBackendDoctor = useCallback(async () => {
     if (gatewayState !== 'open') {
       setBackendDoctorError(
-        `Gateway is currently "${gatewayState || 'offline'}". Start the Hermes backend gateway to run deep diagnostics.`
+        `Gateway is currently "${gatewayState || 'offline'}". Start the Aro backend gateway to run deep diagnostics.`
       )
 
       return
@@ -325,31 +326,11 @@ export function AroDoctorPage() {
   const unknownCount = checks.filter(c => c.state === 'unknown').length
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-base text-aro-ink select-text">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-bg text-aro-ink select-text">
       {/* Header */}
-      <header className="border-b border-aro-line-soft bg-aro-raise/40 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[10px] font-semibold tracking-wider text-aro-ink-4 uppercase">
-                Diagnostics & Onboarding
-              </span>
-              <Badge mono tone="iris">
-                local readiness sweep
-              </Badge>
-              <Badge mono tone="neutral">
-                renderer signals
-              </Badge>
-            </div>
-            <h1 className="text-[20px] font-semibold tracking-tight text-aro-ink">
-              System Readiness Doctor
-            </h1>
-            <p className="text-[12px] text-aro-ink-3">
-              Audits local application readiness, workspace attachment, and triggers backend diagnostics without simulated success.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-6">
+        <PageHeader
+          actions={<>
             <Button
               disabled={isSweeping}
               icon={IconRefresh}
@@ -359,9 +340,11 @@ export function AroDoctorPage() {
             >
               {isSweeping ? 'Sweeping…' : 'Refresh Sweep'}
             </Button>
-          </div>
-        </div>
-      </header>
+          </>}
+          description="Audits local application readiness, workspace attachment, and triggers backend diagnostics without simulated success."
+          title="System Readiness Doctor"
+        />
+      </div>
 
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
@@ -403,19 +386,19 @@ export function AroDoctorPage() {
         {/* Readiness Sweep Results */}
         <section
           aria-label="Readiness Checks"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-4"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-4"
         >
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <h2 className="text-[14px] font-semibold text-aro-ink">
+              <h2 className="text-sm font-semibold text-aro-ink">
                 Renderer Readiness Sweep
               </h2>
-              <p className="text-[11.5px] text-aro-ink-3">
+              <p className="text-xs text-aro-ink-3">
                 Evaluates signals visible to the desktop UI. Provider status remains honestly unknown until tested by backend.
               </p>
             </div>
             {lastSweepTime && (
-              <span className="font-aro-mono text-[10px] text-aro-ink-4">
+              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                 Swept at {lastSweepTime.toLocaleTimeString()}
               </span>
             )}
@@ -438,7 +421,7 @@ export function AroDoctorPage() {
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-[13px] text-aro-ink">
+                      <span className="font-medium text-xs text-aro-ink">
                         {check.label}
                       </span>
                       <Badge dot={check.state !== 'unknown'} mono tone={stateTone}>
@@ -449,23 +432,23 @@ export function AroDoctorPage() {
                             : 'Unknown (backend truth)'}
                       </Badge>
                     </div>
-                    <p className="text-[12px] text-aro-ink-3">{check.detail}</p>
+                    <p className="text-xs text-aro-ink-3">{check.detail}</p>
                   </div>
 
                   {/* Remediation / info hint */}
                   <div className="text-right sm:max-w-xs">
                     {check.id === 'runtime' && check.state !== 'ok' && (
-                      <span className="font-aro-mono text-[10px] text-aro-amber">
+                      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-amber">
                         Launch gateway (`hermes serve`)
                       </span>
                     )}
                     {check.id === 'workspace' && check.state !== 'ok' && (
-                      <span className="font-aro-mono text-[10px] text-aro-amber">
+                      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-amber">
                         Attach project folder
                       </span>
                     )}
                     {check.id === 'providers' && (
-                      <span className="font-aro-mono text-[10px] text-aro-ink-4">
+                      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                         Requires backend probe below
                       </span>
                     )}
@@ -479,17 +462,17 @@ export function AroDoctorPage() {
         {/* Deep Backend Doctor Diagnostics Section */}
         <section
           aria-label="Deep Backend Diagnostics"
-          className="rounded-[10px] border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-4"
+          className="rounded-panel border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1 space-y-4"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <IconTerminal className="text-aro-iris" size={15} />
-                <h2 className="text-[14px] font-semibold text-aro-ink">
-                  Hermes Deep Doctor Diagnostics
+                <h2 className="text-sm font-semibold text-aro-ink">
+                  Aro Deep Doctor Diagnostics
                 </h2>
               </div>
-              <p className="text-[11.5px] text-aro-ink-3">
+              <p className="text-xs text-aro-ink-3">
                 Executes the authentic `/api/ops/doctor` backend command to audit Python environment, models, and tools.
               </p>
             </div>
@@ -507,19 +490,19 @@ export function AroDoctorPage() {
 
           {gatewayState !== 'open' && (
             <div
-              className="flex items-center gap-2 rounded-[6px] border border-aro-amber/30 bg-aro-amber-tint/30 p-3 text-[11.5px] text-aro-amber"
+              className="flex items-center gap-2 rounded-control border border-aro-amber/30 bg-aro-amber-tint/30 p-3 text-xs text-aro-amber"
               role="status"
             >
               <IconWarning className="shrink-0" size={14} />
               <span>
-                Gateway connection is currently &ldquo;{gatewayState || 'idle'}&rdquo;. Deep diagnostics require an active connection to Hermes core.
+                Gateway connection is currently &ldquo;{gatewayState || 'idle'}&rdquo;. Deep diagnostics require an active connection to Aro core.
               </span>
             </div>
           )}
 
           {backendDoctorError && (
             <div
-              className="flex items-center gap-2 rounded-[6px] border border-aro-rose/30 bg-aro-rose-tint/30 p-3 text-[11.5px] text-aro-rose"
+              className="flex items-center gap-2 rounded-control border border-aro-rose/30 bg-aro-rose-tint/30 p-3 text-xs text-aro-rose"
               role="alert"
             >
               <IconWarning className="shrink-0" size={14} />
@@ -528,8 +511,8 @@ export function AroDoctorPage() {
           )}
 
           {backendDoctorResult && (
-            <div className="rounded-[6px] border border-aro-line-soft bg-aro-sunken/60 p-3 space-y-2">
-              <div className="flex items-center justify-between font-aro-mono text-[11px]">
+            <div className="rounded-control border border-aro-line-soft bg-aro-sunken/60 p-3 space-y-2">
+              <div className="flex items-center justify-between font-aro-mono text-xs">
                 <span className="text-aro-ink-3">
                   Action: {backendDoctorResult.name || 'doctor'} (PID: {backendDoctorResult.pid})
                 </span>
@@ -539,7 +522,7 @@ export function AroDoctorPage() {
               </div>
 
               {backendDoctorLogs.length > 0 && (
-                <pre className="max-h-48 overflow-y-auto rounded bg-aro-base p-2 font-aro-mono text-[10.5px] text-aro-ink-2 leading-relaxed">
+                <pre className="max-h-48 overflow-y-auto rounded-control bg-aro-bg p-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 leading-relaxed">
                   {backendDoctorLogs.join('\n')}
                 </pre>
               )}
@@ -550,13 +533,13 @@ export function AroDoctorPage() {
         {/* Onboarding State Management */}
         <section
           aria-label="Onboarding Persistence Settings"
-          className="flex items-center justify-between rounded-[10px] border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1"
+          className="flex items-center justify-between rounded-panel border border-aro-line-soft bg-aro-raise p-4 shadow-aro-e1"
         >
           <div className="space-y-0.5">
-            <h3 className="text-[13px] font-semibold text-aro-ink">
+            <h3 className="text-xs font-semibold text-aro-ink">
               Onboarding Checklist State
             </h3>
-            <p className="text-[11.5px] text-aro-ink-3">
+            <p className="text-xs text-aro-ink-3">
               Persisted under <code className="font-aro-mono text-aro-iris">{ONBOARDING_DONE_STORAGE_KEY}</code>.
             </p>
           </div>

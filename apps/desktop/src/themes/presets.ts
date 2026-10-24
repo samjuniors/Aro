@@ -717,6 +717,20 @@ export const inkTheme: DesktopTheme = {
 }
 
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
+  codex: {
+    ...obsidianTheme,
+    name: 'codex',
+    label: 'Codex Desktop',
+    description: 'Neutral charcoal workspace, soft gray panels, compact line icons',
+    colors: {
+      background: '#181818', foreground: '#eeeeee', card: '#2c2c2c', cardForeground: '#eeeeee',
+      popover: '#2c2c2c', popoverForeground: '#eeeeee', primary: '#eeeeee', primaryForeground: '#181818',
+      secondary: '#303030', secondaryForeground: '#bcbcbc', muted: '#212121', mutedForeground: '#a0a0a0',
+      accent: '#333333', accentForeground: '#eeeeee', destructive: '#ff6666', destructiveForeground: '#181818',
+      border: '#343434', input: '#3a3a3a', ring: '#8ab4f8', sidebarBackground: '#1c1c1c'
+    },
+    darkColors: undefined
+  },
   obsidian: obsidianTheme,
   daylight: daylightTheme,
   nord: nordTheme,

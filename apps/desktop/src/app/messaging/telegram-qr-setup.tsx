@@ -248,7 +248,7 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
   }
 
   return (
-    <div className="rounded-xl border border-(--ui-stroke-secondary) bg-(--ui-surface-secondary,transparent) p-3">
+    <div className="rounded-overlay border border-(--ui-stroke-secondary) bg-(--ui-surface-secondary,transparent) p-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -306,7 +306,7 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
 
                 <div className="grid gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-[var(--aro-text-2xs,10px)] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       {q.allowedUsers}
                     </span>
                     {detectedOwnerId && allowedIds.includes(detectedOwnerId) && (
@@ -318,7 +318,7 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
                       <button
                         aria-label={`${t.common.remove} ${id}`}
                         className={cn(
-                          'inline-flex items-center gap-1 rounded-md border border-(--ui-stroke-secondary) px-2 py-1 font-mono text-xs',
+                          'inline-flex items-center gap-1 rounded-control border border-(--ui-stroke-secondary) px-2 py-1 font-mono text-xs',
                           'hover:border-destructive/50 hover:text-destructive'
                         )}
                         key={id}
@@ -367,7 +367,7 @@ export function TelegramQrSetup({ onApplied, platform, scopeProfile }: TelegramQ
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <img alt="Telegram setup QR code" className="size-56 rounded-md bg-white p-2" src={qrDataUrl} />
+            <img alt="Telegram setup QR code" className="size-56 rounded-control bg-white p-2" src={qrDataUrl} />
             <Badge variant={expiresIn ? 'outline' : 'destructive'}>
               {expiresIn ? q.expiresIn(expiresIn) : q.expired}
             </Badge>

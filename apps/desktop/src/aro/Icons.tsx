@@ -22,6 +22,8 @@ const base = ({ size, ...p }: P) => ({
   strokeWidth: 1.7,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
+  'aria-hidden': p['aria-label'] || p['aria-labelledby'] ? undefined : true,
+  focusable: false,
   ...p,
 })
 
@@ -468,7 +470,7 @@ export function IdeMark({ kind, size = 16, className }: MarkProps & { kind: stri
 
   return (
     <span
-      className={cn('inline-flex shrink-0 items-center justify-center rounded-[4px] font-aro-mono font-bold', className)}
+      className={cn('inline-flex shrink-0 items-center justify-center rounded-control font-aro-mono font-bold', className)}
       style={{
         width: size,
         height: size,

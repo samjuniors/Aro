@@ -40,4 +40,15 @@ describe('editors adapter (local)', () => {
     expect(openSpy).toHaveBeenCalledWith('windsurf://file//home/z/Some%20Project', '_self')
     expect(window.localStorage.getItem(preferredKey)).toBe('windsurf')
   })
+
+  it('prefers window.hermesDesktop.openExternal when available', () => {
+    const openExternal = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('hermesDesktop', { openExternal })
+
+    expect(localEditorsAdapter.open('/home/z/Some Project', 'cursor')).toBe(true)
+    expect(openExternal).toHaveBeenCalledWith('cursor://file//home/z/Some%20Project')
+    expect(openSpy).not.toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
 })

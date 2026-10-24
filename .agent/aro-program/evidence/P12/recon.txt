@@ -1,0 +1,24 @@
+P12 RECON AND CONTEXT PACK
+===========================
+Date: 2026-10-19
+Branch: aro/P12-backend (off aro/integration @ 496b7ca56b)
+Goal: Every BACKEND-TODO and NB- item is either implemented behind adapters or consciously cut; failure states handled.
+
+BASELINE INVENTORY:
+- 26 BACKEND-TODO markers identified across 7 kinds in `apps/desktop/src`:
+  1. `agents` (4 markers: adapters/agents.ts:153, 190; adapters/index.ts:50; aro/AgentsView.tsx:50)
+  2. `browser-preview` (5 markers: adapters/browser-preview.ts:99, 154; adapters/index.ts:56; app/right-sidebar/browser-section.tsx:70, 343)
+  3. `code-search` (4 markers: adapters/code-search.ts:109; adapters/index.ts:54; app/right-sidebar/search-section.tsx:20, 30)
+  4. `onboarding-doctor` (3 markers: adapters/doctor.ts:37; adapters/index.ts:58; aro/OnboardingDoctorView.tsx:227)
+  5. `editors` (2 markers: adapters/editors.ts:76; adapters/index.ts:52)
+  6. `tasks` (3 markers: adapters/tasks.ts:92, 158; adapters/index.ts:46)
+  7. `rules` (4 markers: adapters/rules.ts:41, 79; adapters/index.ts:48; aro/RulesView.tsx:55)
+  General note: `adapters/index.ts:33`
+
+OPEN ITEMS CARRIED IN:
+- Finding 2: `ScriptProcessorNode` in `apps/desktop/src/lib/wake-client-capture.ts:148-150` (to migrate to AudioWorkletNode)
+- `NB-001`: Theme attribute mutation batching via requestAnimationFrame in `apps/desktop/src/themes/context.tsx`
+- Failure matrix coverage across all user-facing failure paths.
+
+FROZEN SURFACES:
+Hermes core Python (`agent/`, `gateway/`, `tools/`, `hermes_*.py`) modified only via ADR; primary work surfaces are `apps/desktop/src/adapters/` and `aro_bridge/`.

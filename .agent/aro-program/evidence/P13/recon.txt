@@ -1,0 +1,16 @@
+# Phase 13 Recon: Feature Long List and Shortlist Selection
+
+Date: 2026-10-19
+Branch: aro/P13-features
+Baseline Commit: 8833da53ba (aro-gate/P12-G12.3)
+
+## Recon Summary
+1. Evaluated `port/FEATURE_MAP.md` (101 features: 64 wired, 1 partial, 10 local, 22 hermes-only, 4 dropped).
+2. Reviewed competitive landscape and moats in `docs/research/01-competitive-analysis.md` and `docs/research/02-gap-analysis.md`.
+3. Verified existing infrastructure in `apps/desktop/src/aro/` and `apps/desktop/src/adapters/`:
+   - `ReviewHunks.tsx`: unified diff parsing and git review bridge in place.
+   - `TasksBoard.tsx`: task persistence and todo streaming ready for Kanban board polish.
+   - `browser-section.tsx`: loopback sandbox ready for device frame toggles.
+   - `editors.ts`: OS protocol schemes operational.
+   - `error-surface.ts` & `session.usage`: token and cost tracking available for ambient HUD.
+4. Filtered candidates against the 5-feature v1 limit and RICE/risk rubric.

@@ -18,7 +18,7 @@ export function ErrorBanner({ children, className }: { children: ReactNode; clas
   return (
     <div
       className={cn(
-        'flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-destructive',
+        'flex items-start gap-2 rounded-overlay border border-destructive/30 bg-destructive/10 px-3 py-2 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-destructive',
         className
       )}
     >

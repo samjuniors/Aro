@@ -66,7 +66,7 @@ describe('AroAppearanceSettings', () => {
 
     // 5 profiles
     expect(screen.getByText('Aro Standard')).toBeTruthy()
-    expect(screen.getByText('Codex Desktop')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Codex Desktop' })).toBeTruthy()
     expect(screen.getByText('Claude Code Desktop')).toBeTruthy()
     expect(screen.getByText('Editorial Reference')).toBeTruthy()
     expect(screen.getByText('Cursor 2.x Lineage')).toBeTruthy()
@@ -95,7 +95,7 @@ describe('AroAppearanceSettings', () => {
   it('switches design profile and updates DOM attribute and localStorage', () => {
     render(<AroAppearanceSettings />)
 
-    const codexBtn = screen.getByRole('button', { name: /Codex/i })
+    const codexBtn = screen.getByRole('button', { name: /Codex.*Project-first/ })
     act(() => {
       fireEvent.click(codexBtn)
     })
@@ -150,7 +150,7 @@ describe('AroAppearanceSettings', () => {
 
     render(<AroAppearanceSettings />)
 
-    const toggle = screen.getByRole('checkbox', { checked: true })
+    const toggle = screen.getByRole('checkbox', { name: 'Voice Assistant Orb' })
     act(() => {
       fireEvent.click(toggle)
     })
@@ -160,6 +160,25 @@ describe('AroAppearanceSettings', () => {
     expect(orbListener).toHaveBeenCalled()
 
     window.removeEventListener('conductor:voice:orb', orbListener)
+  })
+
+  it('toggles ambient space layer setting and persists conductor.ambient.stars', () => {
+    const starsListener = vi.fn()
+    window.addEventListener('conductor:ambient:stars', starsListener)
+
+    render(<AroAppearanceSettings />)
+
+    const toggle = screen.getByRole('checkbox', { name: 'Ambient Space Layer' })
+    expect((toggle as HTMLInputElement).checked).toBe(true)
+
+    act(() => {
+      fireEvent.click(toggle)
+    })
+
+    expect(window.localStorage.getItem('conductor.ambient.stars')).toBe('false')
+    expect(starsListener).toHaveBeenCalled()
+
+    window.removeEventListener('conductor:ambient:stars', starsListener)
   })
 
   it('persists git merge strategy preference', () => {

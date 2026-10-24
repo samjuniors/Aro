@@ -11,7 +11,15 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ButtonHTMLAttributes, ComponentType, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  ComponentType,
+  CSSProperties,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  TextareaHTMLAttributes,
+} from 'react'
 import { createPortal } from 'react-dom'
 
 import { cn } from '@/lib/utils'
@@ -33,10 +41,10 @@ const variantMap: Record<Variant, string> = {
 }
 
 const sizeMap: Record<Size, string> = {
-  xs: 'h-[24px] px-2 text-[11.5px] gap-1 rounded-[6px]',
-  sm: 'h-[30px] px-3 text-[12.5px] gap-1.5 rounded-[7px]',
-  md: 'h-[34px] px-3.5 text-[13px] gap-2 rounded-[8px]',
-  lg: 'h-[40px] px-5 text-[14px] gap-2 rounded-[10px]',
+  xs: 'h-6 px-2 text-xs gap-1 rounded-control',
+  sm: 'h-7 px-3 text-xs gap-1.5 rounded-control',
+  md: 'h-8 px-3 text-xs gap-2 rounded-control',
+  lg: 'h-10 px-5 text-sm gap-2 rounded-control',
 }
 
 export function Button({
@@ -57,7 +65,7 @@ export function Button({
     <button
       {...rest}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,filter] duration-(--aro-dur-fast) ease-(--aro-ease-standard) select-none focus-visible:aro-ring-focus active:duration-0 disabled:pointer-events-none disabled:opacity-40 [&>svg]:shrink-0',
         variantMap[variant],
         sizeMap[size],
         className,
@@ -89,7 +97,7 @@ export function IconButton({
       {...rest}
       aria-label={label}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[7px] text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:bg-aro-raise active:duration-0 disabled:pointer-events-none disabled:opacity-40',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
@@ -156,8 +164,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-[2px] text-[10.5px] font-medium',
-        mono && 'font-aro-mono text-[10px]',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-[2px] text-[var(--aro-text-2xs,10px)] font-medium',
+        mono && 'font-aro-mono text-[var(--aro-text-2xs,10px)]',
         toneBg[tone],
         className,
       )}
@@ -172,7 +180,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
   return (
     <kbd
       className={cn(
-        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[4px] border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[9.5px] leading-none font-medium text-aro-ink-3',
+        'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-control border border-aro-line-strong/80 bg-aro-well px-1 font-aro-mono text-[var(--aro-text-2xs,10px)] leading-none font-medium text-aro-ink-3',
         className,
       )}
     >
@@ -184,7 +192,7 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
 /* ================================ SURFACES ================================ */
 export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className={cn('rounded-[10px] border border-aro-line-soft bg-aro-raise', className)}>
+    <div {...rest} className={cn('rounded-panel border border-aro-line-soft bg-aro-raise', className)}>
       {children}
     </div>
   )
@@ -193,7 +201,7 @@ export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivEl
 export function SectionLabel({ children, className, right }: { children: ReactNode; className?: string; right?: ReactNode }) {
   return (
     <div className={cn('flex items-center justify-between gap-2 px-2.5 pt-2.5 pb-1.5', className)}>
-      <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">{children}</span>
+      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">{children}</span>
       {right}
     </div>
   )
@@ -209,7 +217,7 @@ export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputEleme
     <input
       {...rest}
       className={cn(
-        'h-[32px] w-full rounded-[7px] border border-aro-line bg-aro-sunken px-2.5 text-[12.5px] text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
+        'h-[32px] w-full rounded-control border border-aro-line bg-aro-sunken px-2.5 text-xs text-aro-ink transition-shadow placeholder:text-aro-ink-4 focus:border-aro-iris/50 focus:aro-ring-focus focus:outline-none',
         className,
       )}
     />
@@ -326,7 +334,7 @@ export function Menu({
           <div
             aria-label="Menu"
             className={cn(
-              'fixed z-[99999] overflow-hidden rounded-[10px] border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
+              'fixed z-[99999] overflow-hidden rounded-panel border border-aro-line-strong bg-aro-overlay p-1 shadow-aro-e4',
               coords.opensAbove
                 ? 'origin-bottom animate-aro-slide-up -translate-y-full'
                 : 'origin-top animate-aro-slide-down',
@@ -369,7 +377,7 @@ export function MenuItem({
   return (
     <button
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2.5 rounded-[7px] px-2 py-[7px] text-left text-[12.5px] transition-colors',
+        'flex min-h-8 w-full cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-start text-xs transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus',
         active
           ? 'bg-aro-iris-tint text-aro-iris-soft'
           : danger
@@ -382,13 +390,13 @@ export function MenuItem({
     >
       {icon && <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {hint && <span className="shrink-0 font-aro-mono text-[10px] text-aro-ink-4">{hint}</span>}
+      {hint && <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{hint}</span>}
     </button>
   )
 }
 
 export function MenuLabel({ children }: { children: ReactNode }) {
-  return <div className="px-2 pt-2 pb-1 font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">{children}</div>
+  return <div className="px-2 pt-2 pb-1 font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">{children}</div>
 }
 
 export function MenuSep() {
@@ -423,9 +431,9 @@ export function Select({
           aria-expanded={open}
           aria-haspopup="menu"
           className={cn(
-            'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-[7px] text-aro-ink-2 transition-colors hover:text-aro-ink',
+            'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-control text-aro-ink-2 transition-colors hover:text-aro-ink',
             !bare && 'border border-aro-line bg-aro-raise hover:border-aro-line-strong',
-            size === 'xs' ? 'h-[24px] px-1.5 text-[11.5px]' : 'h-[30px] px-2 text-[12.5px]',
+            size === 'xs' ? 'h-[24px] px-1.5 text-xs' : 'h-[30px] px-2 text-xs',
           )}
           type="button"
         >
@@ -468,9 +476,9 @@ export function Toggle({
   className?: string
   'aria-label'?: string
 }) {
-  const w = size === 'sm' ? 30 : 38
-  const h = size === 'sm' ? 18 : 22
-  const k = h - 4
+  const w = size === 'sm' ? 32 : 40
+  const h = 24
+  const k = size === 'sm' ? 16 : 20
   const travel = w - k - 4
 
   return (
@@ -478,10 +486,10 @@ export function Toggle({
       aria-checked={checked}
       aria-label={ariaLabel}
       className={cn(
-        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aro-iris/40 disabled:pointer-events-none disabled:opacity-40',
+        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
         checked
-          ? 'bg-aro-iris shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]'
-          : 'bg-black/15 dark:bg-white/15 border border-black/5 dark:border-white/10',
+          ? 'bg-aro-iris'
+          : 'bg-aro-line-strong',
         className
       )}
       disabled={disabled}
@@ -492,12 +500,15 @@ export function Toggle({
     >
       <span
         aria-hidden
-        className="pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className={cn(
+          'pointer-events-none block rounded-full bg-(--aro-switch-thumb) shadow-(--aro-shadow-thumb) transition-transform duration-(--aro-dur-base) ease-(--aro-ease-out)',
+          checked && 'translate-x-(--aro-toggle-offset) rtl:-translate-x-(--aro-toggle-offset)',
+        )}
         style={{
           width: k,
           height: k,
-          transform: `translateX(${checked ? travel : 0}px)`
-        }}
+          '--aro-toggle-offset': `${travel}px`,
+        } as CSSProperties}
       />
     </button>
   )
@@ -517,7 +528,7 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md'
 }) {
   return (
-    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-[8px] border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
+    <div aria-label="Options" className={cn('inline-flex items-center gap-0.5 rounded-control border border-aro-line bg-aro-sunken p-0.5', className)} role="group">
       {items.map((it) => {
         const on = it.value === value
 
@@ -525,8 +536,8 @@ export function Segmented<T extends string>({
           <button
             aria-pressed={on}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] font-medium transition-[background-color,color,box-shadow,transform] duration-150',
-              size === 'md' ? 'px-3 py-[6px] text-[12.5px]' : 'px-2.5 py-[4px] text-[12px]',
+              'inline-flex min-h-6 cursor-pointer items-center gap-1.5 rounded-control font-medium transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus [&>svg]:shrink-0',
+              size === 'md' ? 'px-3 py-[6px] text-xs' : 'px-2.5 py-[4px] text-xs',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
@@ -562,7 +573,7 @@ export function Tabs<T extends string>({
           <button
             aria-selected={on}
             className={cn(
-              'relative cursor-pointer rounded-[6px] px-2.5 py-[6px] text-[12.5px] font-medium transition-colors',
+              'relative cursor-pointer rounded-control px-2.5 py-[6px] text-xs font-medium transition-colors',
               on ? 'text-aro-ink' : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}
             key={it.value}
@@ -573,7 +584,7 @@ export function Tabs<T extends string>({
             <span className="flex items-center gap-1.5">
               {it.label}
               {it.count !== undefined && (
-                <span className={cn('rounded-full px-1.5 font-aro-mono text-[9.5px]', on ? 'bg-aro-iris-tint text-aro-iris-soft' : 'bg-aro-hover text-aro-ink-4')}>
+                <span className={cn('rounded-full px-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)]', on ? 'bg-aro-iris-tint text-aro-iris-soft' : 'bg-aro-hover text-aro-ink-4')}>
                   {it.count}
                 </span>
               )}
@@ -678,13 +689,13 @@ export function Stat({
   chart?: number[]
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-[10px] border border-aro-line-soft bg-aro-raise p-3">
-      <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
+    <div className="flex flex-col gap-1 rounded-panel border border-aro-line-soft bg-aro-raise p-3">
+      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{label}</span>
       <div className="flex items-end justify-between gap-2">
-        <span className={cn('text-[20px] leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
+        <span className={cn('text-xl leading-none font-semibold tracking-tight', tone === 'neutral' ? 'text-aro-ink' : toneText[tone])}>{value}</span>
         {chart && <Sparkline data={chart} h={18} w={54} />}
       </div>
-      {sub && <span className="text-[11px] text-aro-ink-3">{sub}</span>}
+      {sub && <span className="text-xs text-aro-ink-3">{sub}</span>}
     </div>
   )
 }
@@ -696,7 +707,7 @@ export function Tip({ label, children, side = 'top' }: { label: string; children
       {children}
       <span
         className={cn(
-          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-[6px] border border-aro-line-strong bg-aro-overlay px-2 py-1 text-[11px] whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
+          'pointer-events-none absolute left-1/2 z-[70] -translate-x-1/2 scale-95 rounded-control border border-aro-line-strong bg-aro-overlay px-2 py-1 text-xs whitespace-nowrap text-aro-ink-2 opacity-0 shadow-aro-e3 transition-[opacity,transform] duration-150 delay-150 group-hover/tip:scale-100 group-hover/tip:opacity-100 group-focus-within/tip:scale-100 group-focus-within/tip:opacity-100',
           side === 'top' ? 'bottom-[calc(100%+7px)]' : 'top-[calc(100%+7px)]',
         )}
       >
@@ -719,12 +730,12 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-8 py-14 text-center">
-      <div className="flex size-11 items-center justify-center rounded-[12px] border border-aro-line bg-aro-raise text-aro-ink-3">
+      <div className="flex size-11 items-center justify-center rounded-panel border border-aro-line bg-aro-raise text-aro-ink-3">
         <Icon size={19} />
       </div>
       <div className="space-y-1">
-        <p className="text-[13.5px] font-semibold text-aro-ink">{title}</p>
-        <p className="max-w-[280px] text-[12px] leading-relaxed text-aro-ink-3">{body}</p>
+        <p className="text-sm font-semibold text-aro-ink">{title}</p>
+        <p className="max-w-[280px] text-xs leading-relaxed text-aro-ink-3">{body}</p>
       </div>
       {action}
     </div>
@@ -764,14 +775,14 @@ export function Modal({
       <div
         aria-label={title}
         aria-modal="true"
-        className="relative max-h-[78vh] animate-aro-pop overflow-hidden rounded-[14px] border border-aro-line-strong bg-aro-bg shadow-aro-e4"
+        className="relative max-h-[78vh] animate-aro-pop overflow-hidden rounded-overlay border border-aro-line-strong bg-aro-bg shadow-aro-e4"
         role="dialog"
         style={{ width, maxWidth: '94vw' }}
       >
         <div className="flex items-start justify-between gap-4 border-b border-aro-line-soft bg-aro-raise/60 px-4 py-3">
           <div>
-            <h3 className="font-aro-display text-[15px] font-semibold tracking-[-.015em] text-aro-ink">{title}</h3>
-            {sub && <p className="mt-0.5 text-[12px] leading-[1.5] text-aro-ink-3">{sub}</p>}
+            <h3 className="font-aro-display text-base font-semibold tracking-[-.015em] text-aro-ink">{title}</h3>
+            {sub && <p className="mt-0.5 text-xs leading-[1.5] text-aro-ink-3">{sub}</p>}
           </div>
           <IconButton icon={IconX} label="Close" onClick={onClose} size={28} />
         </div>
@@ -792,7 +803,7 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
       {items.map((t) => (
         <div
           className={cn(
-            'animate-aro-slide-up rounded-[9px] border bg-aro-overlay px-3 py-2 text-[12px] text-aro-ink shadow-aro-e3',
+            'animate-aro-slide-up rounded-control border bg-aro-overlay px-3 py-2 text-xs text-aro-ink shadow-aro-e3',
             t.tone === 'mint'
               ? 'border-aro-mint/30'
               : t.tone === 'rose'
@@ -810,3 +821,267 @@ export function Toasts({ items }: { items: { id: number; msg: string; tone: stri
     </div>
   )
 }
+
+export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...rest}
+      className={cn(
+        'w-full rounded-control border border-aro-line bg-aro-well px-3 py-2 text-sm text-aro-ink placeholder:text-aro-ink-4 outline-none transition-[border-color,background-color,box-shadow] duration-150 focus:border-aro-line-strong focus:bg-aro-bg focus:ring-1 focus:ring-aro-iris disabled:pointer-events-none disabled:opacity-40',
+        className,
+      )}
+    />
+  )
+}
+
+export function Checkbox({
+  checked,
+  onChange,
+  label,
+  className,
+  disabled = false,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label?: ReactNode
+  className?: string
+  disabled?: boolean
+}) {
+  return (
+    <label
+      className={cn(
+        'inline-flex cursor-pointer select-none items-center gap-2 text-sm text-aro-ink',
+        disabled && 'pointer-events-none opacity-40',
+        className,
+      )}
+    >
+      <input
+        checked={checked}
+        className="sr-only"
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        type="checkbox"
+      />
+      <span
+        className={cn(
+          'flex size-4 shrink-0 items-center justify-center rounded-control border transition-colors duration-150',
+          checked
+            ? 'border-aro-iris bg-aro-iris text-aro-on-iris'
+            : 'border-aro-line bg-aro-well hover:border-aro-line-strong',
+        )}
+      >
+        {checked && (
+          <svg className="size-3 stroke-current stroke-2 fill-none" viewBox="0 0 16 16">
+            <polyline points="3.5 8 6.5 11 12.5 5" />
+          </svg>
+        )}
+      </span>
+      {label && <span>{label}</span>}
+    </label>
+  )
+}
+
+export function Skeleton({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      {...rest}
+      className={cn('aro-skeleton rounded-control', className)}
+    />
+  )
+}
+
+export function Loader({ size = 16, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      className={cn('animate-spin text-aro-ink-3', className)}
+      fill="none"
+      style={{ width: size, height: size }}
+      viewBox="0 0 24 24"
+    >
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+      <path className="opacity-75" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function FieldMessage({
+  children,
+  className,
+  tone = 'error',
+}: {
+  children: ReactNode
+  className?: string
+  tone?: 'error' | 'warn' | 'success' | 'info'
+}) {
+  const toneMap = {
+    error: 'text-aro-rose',
+    warn: 'text-aro-amber',
+    success: 'text-aro-mint',
+    info: 'text-aro-ink-3',
+  }
+
+  return (
+    <p
+      className={cn('flex items-center gap-1.5 text-xs leading-4', toneMap[tone], className)}
+      role={tone === 'error' ? 'alert' : 'status'}
+    >
+      {children}
+    </p>
+  )
+}
+
+export function ListRow({
+  title,
+  description,
+  icon: Icon,
+  action,
+  badge,
+  disabled = false,
+  onClick,
+  className,
+  ...rest
+}: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
+  title: ReactNode
+  description?: ReactNode
+  icon?: ComponentType<{ size?: number; className?: string }> | ReactNode
+  action?: ReactNode
+  badge?: ReactNode
+  disabled?: boolean
+}) {
+  const isInteractive = Boolean(onClick) && !disabled
+
+  return (
+    <div
+      {...rest}
+      aria-disabled={disabled || undefined}
+      className={cn(
+        'group flex items-center justify-between gap-3 rounded-panel border border-transparent px-3 py-2.5 transition-colors duration-150',
+        isInteractive &&
+          'cursor-pointer hover:bg-aro-hover/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-aro-iris',
+        disabled && 'pointer-events-none opacity-40',
+        className,
+      )}
+      onClick={disabled ? undefined : onClick}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        {Icon && (
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-control bg-aro-well text-aro-ink-3 group-hover:text-aro-ink">
+            {typeof Icon === 'function' ? <Icon size={14} /> : Icon}
+          </div>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium text-aro-ink">{title}</span>
+            {badge}
+          </div>
+          {description && (
+            <p className="truncate text-xs text-aro-ink-3">{description}</p>
+          )}
+        </div>
+      </div>
+      {action && <div className="shrink-0 pl-2">{action}</div>}
+    </div>
+  )
+}
+
+export function ErrorState({
+  title = 'Something went wrong',
+  description,
+  retry,
+  className,
+}: {
+  title?: string
+  description?: string
+  retry?: () => void
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col items-center justify-center p-8 text-center', className)}>
+      <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-aro-rose/10 text-aro-rose">
+        <svg className="size-5 stroke-current stroke-2 fill-none" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" x2="12" y1="8" y2="12" />
+          <line x1="12" x2="12.01" y1="16" y2="16" />
+        </svg>
+      </div>
+      <h3 className="text-sm font-semibold text-aro-ink">{title}</h3>
+      {description && <p className="mt-1 max-w-sm text-xs text-aro-ink-3">{description}</p>}
+      {retry && (
+        <div className="mt-4">
+          <Button onClick={retry} size="sm" variant="secondary">
+            Try again
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function LogView({
+  lines,
+  className,
+}: {
+  lines: string[]
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'aro-scroll-thin max-h-[300px] overflow-auto rounded-control border border-aro-line bg-aro-code p-3 font-mono text-xs leading-relaxed text-aro-ink-2',
+        className,
+      )}
+    >
+      {lines.map((l, i) => (
+        <div className="whitespace-pre-wrap" key={i}>
+          {l}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function ConfirmDialog({
+  open,
+  title,
+  description,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  danger = false,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean
+  title: string
+  description?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  danger?: boolean
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  return (
+    <Modal onClose={onClose} open={open} title={title} width={420}>
+      <div className="p-4">
+        {description && <p className="mb-4 text-xs leading-relaxed text-aro-ink-3">{description}</p>}
+        <div className="flex items-center justify-end gap-2 border-t border-aro-line-soft pt-2">
+          <Button onClick={onClose} size="sm" variant="ghost">
+            {cancelLabel}
+          </Button>
+          <Button
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+            size="sm"
+            variant={danger ? 'danger' : 'primary'}
+          >
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+

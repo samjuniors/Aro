@@ -46,6 +46,26 @@ class FakeGain {
   disconnect = vi.fn()
 }
 
+class FakeWorkletPort {
+  onmessage: ((event: { data: Float32Array }) => void) | null = null
+}
+
+const workletInstances: FakeAudioWorkletNode[] = []
+
+class FakeAudioWorkletNode {
+  port = new FakeWorkletPort()
+  connect = vi.fn()
+  disconnect = vi.fn()
+
+  constructor(public context: unknown, public name: string) {
+    workletInstances.push(this)
+  }
+
+  emit(input: Float32Array): void {
+    this.port.onmessage?.({ data: input })
+  }
+}
+
 const instances: FakeAudioContext[] = []
 
 class FakeAudioContext {
@@ -98,6 +118,7 @@ describe('startClientWakeCapture (issue #119089)', () => {
 
   beforeEach(() => {
     instances.length = 0
+    workletInstances.length = 0
     handles = []
     tracks = [new FakeTrack()]
     getUserMedia = vi.fn().mockResolvedValue(new FakeStream(tracks))
@@ -235,5 +256,83 @@ describe('startClientWakeCapture (issue #119089)', () => {
     await flush()
     expect(onError).not.toHaveBeenCalled()
     expect(handle.active).toBe(true)
+  })
+
+  it('modernizes audio capture using AudioWorkletNode when available', async () => {
+    const addModule = vi.fn().mockResolvedValue(undefined)
+
+    class WorkletAudioContext extends FakeAudioContext {
+      audioWorklet = {
+        addModule
+      }
+    }
+
+    vi.stubGlobal('AudioContext', WorkletAudioContext)
+    vi.stubGlobal('AudioWorkletNode', FakeAudioWorkletNode)
+    const originalCreateObjectURL = URL.createObjectURL
+    const originalRevokeObjectURL = URL.revokeObjectURL
+    URL.createObjectURL = vi.fn(() => 'blob:mock-worklet')
+    URL.revokeObjectURL = vi.fn()
+
+    try {
+      const request = vi.fn(async () => ({ fed: true }))
+      const handle = await start({ request })
+      handles.push(handle)
+
+      expect(addModule).toHaveBeenCalledWith('blob:mock-worklet')
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-worklet')
+      expect(workletInstances).toHaveLength(1)
+      const workletNode = workletInstances[0]
+      expect(workletNode.name).toBe('pcm-capture-processor')
+      // Ensure ScriptProcessor was NOT instantiated
+      expect(instances[0].processors).toHaveLength(0)
+
+      workletNode.emit(toneFrame())
+      await flush()
+
+      expect(request).toHaveBeenCalled()
+      const [method, params] = request.mock.calls[0] as unknown as [string, { pcm: string; sample_rate: number }]
+      expect(method).toBe('wake.feed')
+      expect(params.sample_rate).toBe(16_000)
+
+      handle.stop()
+      expect(workletNode.disconnect).toHaveBeenCalled()
+      expect(workletNode.port.onmessage).toBeNull()
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL
+      URL.revokeObjectURL = originalRevokeObjectURL
+    }
+  })
+
+  it('falls back to ScriptProcessorNode if AudioWorklet addModule fails', async () => {
+    class FailingWorkletAudioContext extends FakeAudioContext {
+      audioWorklet = {
+        addModule: vi.fn().mockRejectedValue(new Error('Module load error'))
+      }
+    }
+
+    vi.stubGlobal('AudioContext', FailingWorkletAudioContext)
+    vi.stubGlobal('AudioWorkletNode', FakeAudioWorkletNode)
+    const originalCreateObjectURL = URL.createObjectURL
+    const originalRevokeObjectURL = URL.revokeObjectURL
+    URL.createObjectURL = vi.fn(() => 'blob:mock-failing')
+    URL.revokeObjectURL = vi.fn()
+
+    try {
+      const request = vi.fn(async () => ({ fed: true }))
+      const handle = await start({ request })
+      handles.push(handle)
+
+      // Fallback instantiated ScriptProcessorNode
+      expect(processor()).toBeDefined()
+      processor().emit(toneFrame())
+      await flush()
+
+      expect(request).toHaveBeenCalled()
+      expect(handle.active).toBe(true)
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL
+      URL.revokeObjectURL = originalRevokeObjectURL
+    }
   })
 })

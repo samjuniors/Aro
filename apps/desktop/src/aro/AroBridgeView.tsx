@@ -22,8 +22,8 @@ function ThinkingRow({ step }: { step: Extract<AroBridgeStep, { kind: 'thinking'
   return (
     <div className="flex items-center gap-2.5 px-1 py-1">
       <IconBrain className="shrink-0 text-aro-plum" size={12} />
-      <span className="text-[12.5px] text-aro-ink-3 italic">{step.label}</span>
-      <span className="font-aro-mono text-[10px] text-aro-ink-4">{(step.ms / 1000).toFixed(1)}s</span>
+      <span className="text-xs text-aro-ink-3 italic">{step.label}</span>
+      <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{(step.ms / 1000).toFixed(1)}s</span>
     </div>
   )
 }
@@ -33,19 +33,19 @@ function ToolCard({ step, onResolve }: { step: Extract<AroBridgeStep, { kind: 't
   const pending = step.ok === undefined
 
   return (
-    <div className="overflow-hidden rounded-[9px] border border-aro-line-soft bg-aro-well">
+    <div className="overflow-hidden rounded-control border border-aro-line-soft bg-aro-well">
       <div className="flex items-center gap-2 px-2.5 py-2">
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-aro-line-soft bg-aro-raise text-aro-cyan">
+        <span className="flex size-5 shrink-0 items-center justify-center rounded-control border border-aro-line-soft bg-aro-raise text-aro-cyan">
           <IconSearch size={11} />
         </span>
-        <span className="shrink-0 font-aro-mono text-[9.5px] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{step.tool}</span>
-        <span className="min-w-0 flex-1 truncate font-aro-mono text-[11.5px] text-aro-ink-2">{JSON.stringify(step.args)}</span>
-        {pending && <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-[10.5px] text-aro-cyan"><i className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />host</span>}
+        <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.12em] text-aro-ink-4 uppercase">{step.tool}</span>
+        <span className="min-w-0 flex-1 truncate font-aro-mono text-xs text-aro-ink-2">{JSON.stringify(step.args)}</span>
+        {pending && <span className="flex shrink-0 items-center gap-1.5 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-cyan"><i className="size-[5px] animate-aro-breathe rounded-full bg-aro-cyan" />host</span>}
         {step.ok === false && <Badge mono tone="rose">failed</Badge>}
-        {!pending && step.ok && step.ms !== undefined && <span className="shrink-0 font-aro-mono text-[10px] text-aro-ink-4">{step.ms}ms</span>}
+        {!pending && step.ok && step.ms !== undefined && <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{step.ms}ms</span>}
       </div>
       {step.lines && step.lines.length > 0 && (
-        <pre className="aro-scroll-thin overflow-x-auto border-t border-aro-line-soft px-3 py-2 font-aro-mono text-[11px] leading-[1.7] text-aro-ink-3">
+        <pre className="aro-scroll-thin overflow-x-auto border-t border-aro-line-soft px-3 py-2 font-aro-mono text-xs leading-[1.7] text-aro-ink-3">
           {step.summary && <div className="pb-1 text-aro-ink-2">{step.summary}</div>}
           {step.lines.map((line, i) => <div key={i}>{line || ' '}</div>)}
         </pre>
@@ -69,16 +69,16 @@ function ToolCard({ step, onResolve }: { step: Extract<AroBridgeStep, { kind: 't
 function ReplyBlock({ step }: { step: Extract<AroBridgeStep, { kind: 'reply' }> }) {
   return (
     <div className="flex gap-3">
-      <span className="mt-0.5 flex size-[26px] shrink-0 items-center justify-center rounded-[8px] border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft">
+      <span className="mt-0.5 flex size-[26px] shrink-0 items-center justify-center rounded-control border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft">
         <IconZap size={12} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
-          <span className="text-[12.5px] font-semibold text-aro-ink">Aro</span>
-          {!step.closed && <span className="font-aro-mono text-[10px] text-aro-cyan"><span className="animate-aro-caret">▊</span></span>}
-          {step.ms !== undefined && <span className="font-aro-mono text-[10px] text-aro-ink-4">{step.ms}ms</span>}
+          <span className="text-xs font-semibold text-aro-ink">Aro</span>
+          {!step.closed && <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-cyan"><span className="animate-aro-caret">▊</span></span>}
+          {step.ms !== undefined && <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{step.ms}ms</span>}
         </div>
-        <p className="text-[13px] leading-[1.65] whitespace-pre-wrap text-aro-ink-2">{step.text}</p>
+        <p className="text-xs leading-[1.65] whitespace-pre-wrap text-aro-ink-2">{step.text}</p>
       </div>
     </div>
   )
@@ -86,7 +86,7 @@ function ReplyBlock({ step }: { step: Extract<AroBridgeStep, { kind: 'reply' }> 
 
 function ErrorRow({ step }: { step: Extract<AroBridgeStep, { kind: 'error' }> }) {
   return (
-    <div className="flex items-center gap-2 rounded-[8px] border border-aro-rose/25 bg-aro-rose-tint/60 px-3 py-2 text-[12px] text-aro-rose">
+    <div className="flex items-center gap-2 rounded-control border border-aro-rose/25 bg-aro-rose-tint/60 px-3 py-2 text-xs text-aro-rose">
       <IconWarning size={12} />
       {step.message}
     </div>
@@ -121,8 +121,8 @@ export function AroBridgeView() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
       <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
         <div className="min-w-0">
-          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">aro bridge · aro.jsonl/1</div>
-          <h1 className="text-[15px] font-semibold text-aro-ink">Bridge session</h1>
+          <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">aro bridge · aro.jsonl/1</div>
+          <h1 className="text-sm font-semibold text-aro-ink">Bridge session</h1>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {chip}
@@ -149,7 +149,7 @@ export function AroBridgeView() {
       </header>
 
       {engine === 'demo' && (
-        <div className="flex items-center gap-2 border-b border-aro-amber/20 bg-aro-amber-tint/40 px-5 py-2 text-[11.5px] text-aro-ink-3">
+        <div className="flex items-center gap-2 border-b border-aro-amber/20 bg-aro-amber-tint/40 px-5 py-2 text-xs text-aro-ink-3">
           <IconWarning className="shrink-0 text-aro-amber" size={12} />
           <span>Running in <strong>demo / test mode</strong> (canned responses). Switch to <strong>OpenAI</strong> above to run against a real model engine.</span>
         </div>
@@ -157,7 +157,7 @@ export function AroBridgeView() {
 
       {engine === 'openai' && (
         <div className="flex flex-wrap items-center gap-2 border-b border-aro-line-soft bg-aro-sunken/40 px-5 py-2">
-          <span className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">endpoint</span>
+          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">endpoint</span>
           <Input aria-label="base url" className="w-[200px]" onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.openai.com/v1" value={baseUrl} />
           <Input aria-label="model" className="w-[140px]" onChange={e => setModel(e.target.value)} placeholder="model name" value={model} />
           <Input aria-label="api key" className="w-[140px]" onChange={e => setApiKey(e.target.value)} placeholder="API key (optional)" type="password" value={apiKey} />
@@ -174,11 +174,11 @@ export function AroBridgeView() {
       <div className="aro-scroll-thin flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[760px] flex-col gap-3.5 px-5 py-6">
           {startError && (
-            <div className="flex items-start gap-2 rounded-[9px] border border-aro-rose/25 bg-aro-rose-tint/60 px-3 py-2.5 text-[12px] leading-relaxed text-aro-rose">
+            <div className="flex items-start gap-2 rounded-control border border-aro-rose/25 bg-aro-rose-tint/60 px-3 py-2.5 text-xs leading-relaxed text-aro-rose">
               <IconWarning className="mt-0.5 shrink-0" size={13} />
               <div className="flex-1">
                 <div>{startError}</div>
-                <div className="mt-1 text-[11px] opacity-80">
+                <div className="mt-1 text-xs opacity-80">
                   {engine === 'openai'
                     ? 'Real-engine verification requires an active OpenAI-compatible endpoint and credentials. No silent demo fallback will be substituted.'
                     : "The daemon requires the checkout's venv python (HERMES_DESKTOP_PYTHON overrides it)."}
@@ -218,12 +218,12 @@ export function AroBridgeView() {
 
           {busy && (
             <div className="flex items-center gap-2.5 pl-10">
-              <span className="flex size-[26px] items-center justify-center rounded-[8px] border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"><IconZap className="animate-aro-breathe" size={12} /></span>
-              <span className="text-[12.5px] text-aro-ink-3">Aro is working — events stream in as they run</span>
+              <span className="flex size-[26px] items-center justify-center rounded-control border border-aro-iris/30 bg-aro-iris-tint text-aro-iris-soft"><IconZap className="animate-aro-breathe" size={12} /></span>
+              <span className="text-xs text-aro-ink-3">Aro is working — events stream in as they run</span>
             </div>
           )}
           {status === 'exited' && !startError && steps.length > 0 && (
-            <Panel className="flex items-center gap-2 px-3 py-2 text-[12px] text-aro-ink-3">
+            <Panel className="flex items-center gap-2 px-3 py-2 text-xs text-aro-ink-3">
               <IconX className="text-aro-rose" size={12} />
               Daemon session ended — Restart to start a new one.
             </Panel>

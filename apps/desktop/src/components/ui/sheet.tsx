@@ -53,7 +53,7 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Content
         className={cn(
-          'fixed z-50 flex flex-col gap-3 border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) text-[length:var(--conversation-text-font-size)] shadow-md transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500',
+          'fixed z-50 flex min-h-0 flex-col gap-3 overflow-y-auto border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) text-[length:var(--conversation-text-font-size)] shadow-(--aro-shadow-e3) ease-(--aro-ease-out) data-[state=closed]:animate-out data-[state=closed]:duration-(--aro-dur-fast) data-[state=open]:animate-in data-[state=open]:duration-(--aro-dur-base) motion-reduce:animate-none',
           side === 'right' &&
             'inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
           side === 'left' &&
@@ -71,7 +71,7 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close
             aria-label={t.common.close}
-            className="absolute top-3 right-3 rounded-md p-1 text-(--ui-text-tertiary) opacity-70 ring-offset-background transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary"
+            className="absolute top-3 right-3 rounded-control p-1 text-(--ui-text-tertiary) opacity-70 ring-offset-background transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary"
           >
             <Codicon name="close" size="1rem" />
             <span className="sr-only">{t.common.close}</span>
@@ -93,7 +93,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
 function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
   return (
     <SheetPrimitive.Title
-      className={cn('text-[0.9375rem] font-semibold text-foreground', className)}
+      className={cn('text-aro-lg font-semibold text-foreground', className)}
       data-slot="sheet-title"
       {...props}
     />

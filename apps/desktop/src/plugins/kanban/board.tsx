@@ -167,7 +167,7 @@ function CardFooter({ arc, task }: { arc: ArcState | null; task: KanbanTask }) {
   const meta = columnMeta(task.status)
 
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap text-[0.625rem] text-(--ui-text-tertiary)">
+    <div className="flex items-center gap-2 whitespace-nowrap text-aro-xs text-(--ui-text-tertiary)">
       {arc === 'queued' && attached ? (
         // WHO is coming for the card. The arc only animates once the agent is
         // actually working; while queued, the named chip carries "attached".
@@ -276,7 +276,7 @@ function Card({
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'group relative flex cursor-grab flex-col gap-2 rounded-md border border-(--ui-stroke-tertiary) border-l-2 bg-(--ui-bg-elevated) p-2.5',
+            'group relative flex cursor-grab flex-col gap-2 rounded-control border border-(--ui-stroke-tertiary) border-l-2 bg-(--ui-bg-elevated) p-2.5',
             // Hover matches the provider-picker rows: a quiet primary fill;
             // selected = the theme's focus color (same as a focused input).
             'transition-colors hover:bg-primary/[0.06] active:cursor-grabbing',
@@ -304,11 +304,11 @@ function Card({
           {(arc === 'running' || arc === 'stale') && !dragging && !selected && (
             <span aria-hidden className={cn('kanban-arc', arc === 'stale' && 'kanban-arc--stale')} />
           )}
-          <span className="line-clamp-2 text-[0.8125rem] font-medium leading-snug text-foreground">
+          <span className="line-clamp-2 text-aro-md font-medium leading-snug text-foreground">
             {task.title || task.id}
           </span>
           {summary && (
-            <span className="line-clamp-2 text-[0.6875rem] leading-snug text-(--ui-text-tertiary)">{summary}</span>
+            <span className="line-clamp-2 text-aro-xs leading-snug text-(--ui-text-tertiary)">{summary}</span>
           )}
           <CardFooter arc={arc} task={task} />
         </div>
@@ -430,7 +430,7 @@ function Column({
         {...dragHandlers}
         aria-label={k.expand(label)}
         className={cn(
-          'flex h-full w-8 shrink-0 flex-col items-center gap-1.5 rounded-lg p-2 transition-colors hover:bg-(--ui-bg-quinary)',
+          'flex h-full w-8 shrink-0 flex-col items-center gap-1.5 rounded-panel p-2 transition-colors hover:bg-(--ui-bg-quinary)',
           wash
         )}
         onClick={onToggle}
@@ -439,11 +439,11 @@ function Column({
         <span className="grid h-5 shrink-0 place-items-center">
           <span className="size-1.5 rounded-full" style={{ backgroundColor: meta.tone }} />
         </span>
-        <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-(--ui-text-tertiary) [writing-mode:vertical-rl]">
+        <span className="text-aro-xs font-medium uppercase tracking-wide text-(--ui-text-tertiary) [writing-mode:vertical-rl]">
           {label}
         </span>
         {column.tasks.length > 0 && (
-          <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
+          <span className="text-aro-xs tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
         )}
       </button>
     )
@@ -452,19 +452,19 @@ function Column({
   return (
     <div
       {...dragHandlers}
-      className={cn('group/col flex h-full w-64 shrink-0 flex-col rounded-lg p-2 transition-colors', wash)}
+      className={cn('group/col flex h-full w-64 shrink-0 flex-col rounded-panel p-2 transition-colors', wash)}
     >
       <header className="mb-1.5 flex h-5 items-center gap-1.5 px-1">
         <span className="size-1.5 rounded-full" style={{ backgroundColor: meta.tone }} />
         <Tip label={columnHelp(k, column.name)}>
-          <span className="cursor-help text-[0.6875rem] font-medium uppercase tracking-wide text-(--ui-text-tertiary)">
+          <span className="cursor-help text-aro-xs font-medium uppercase tracking-wide text-(--ui-text-tertiary)">
             {label}
           </span>
         </Tip>
-        <span className="text-[0.625rem] tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
+        <span className="text-aro-xs tabular-nums text-(--ui-text-quaternary)">{column.tasks.length}</span>
         <button
           aria-label={k.collapse(label)}
-          className="ml-auto grid size-5 place-items-center rounded text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
+          className="ml-auto grid size-5 place-items-center rounded-control text-(--ui-text-tertiary) opacity-0 transition-opacity hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100 group-hover/col:opacity-100"
           onClick={onToggle}
           type="button"
         >
@@ -475,7 +475,7 @@ function Column({
         {lanes
           ? lanes.map(([assignee, tasks]) => (
               <div className="flex flex-col gap-2" key={assignee}>
-                <div className="flex items-center gap-1.5 px-1 pt-1 text-[0.625rem] text-(--ui-text-quaternary)">
+                <div className="flex items-center gap-1.5 px-1 pt-1 text-aro-xs text-(--ui-text-quaternary)">
                   {assignee !== UNASSIGNED_LANE && <Avatar name={assignee} size="0.875rem" />}
                   {assignee}
                   <span className="tabular-nums">{tasks.length}</span>
@@ -512,7 +512,7 @@ function Column({
         {!locked && (
           <button
             aria-label={k.newTaskIn(label)}
-            className="flex shrink-0 items-center justify-center rounded-md border border-dashed border-(--ui-stroke-secondary) py-1.5 text-(--ui-text-tertiary) opacity-0 transition-[opacity,color,border-color] group-hover/col:opacity-100 hover:border-(--ui-text-quaternary) hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100"
+            className="flex shrink-0 items-center justify-center rounded-control border border-dashed border-(--ui-stroke-secondary) py-1.5 text-(--ui-text-tertiary) opacity-0 transition-[opacity,color,border-color] group-hover/col:opacity-100 hover:border-(--ui-text-quaternary) hover:bg-(--chrome-action-hover) hover:text-foreground focus-visible:opacity-100"
             onClick={() => onAdd(column.name)}
             type="button"
           >
@@ -520,7 +520,7 @@ function Column({
           </button>
         )}
         {column.tasks.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 grid place-items-center text-[0.6875rem] text-(--ui-text-quaternary)">
+          <div className="pointer-events-none absolute inset-0 grid place-items-center text-aro-xs text-(--ui-text-quaternary)">
             {k.empty}
           </div>
         )}
@@ -737,7 +737,7 @@ function NewTaskDialog({
                 placeholder={boardDefaultDir || k.workspaceInherit}
                 value={workspacePath}
               />
-              <span className="text-[0.625rem] text-(--ui-text-quaternary)">
+              <span className="text-aro-xs text-(--ui-text-quaternary)">
                 {boardDefaultDir ? k.workspaceInheritDir(boardDefaultDir) : k.workspaceInheritGeneric}
               </span>
             </Field>
@@ -768,7 +768,7 @@ function NewTaskDialog({
 
           <Field label={k.model}>
             <ModelOverrideField onChange={setModelOverride} value={modelOverride} />
-            <span className="text-[0.625rem] text-(--ui-text-quaternary)">{k.modelHint}</span>
+            <span className="text-aro-xs text-(--ui-text-quaternary)">{k.modelHint}</span>
           </Field>
 
           {parents.length > 0 && (
@@ -789,15 +789,15 @@ function NewTaskDialog({
             </Field>
           )}
 
-          <label className="flex cursor-pointer items-center gap-2 text-[0.75rem] text-(--ui-text-secondary)">
+          <label className="flex cursor-pointer items-center gap-2 text-aro-sm text-(--ui-text-secondary)">
             <Switch aria-label={k.goalMode} checked={goalMode} onCheckedChange={setGoalMode} size="xs" />
             {k.goalMode}
           </label>
 
-          {error && <span className="text-[0.75rem] text-destructive">{error}</span>}
+          {error && <span className="text-aro-sm text-destructive">{error}</span>}
         </div>
         <DialogFooter>
-          <div className="mr-auto flex items-center gap-1 text-[0.75rem] text-(--ui-text-tertiary)">
+          <div className="mr-auto flex items-center gap-1 text-aro-sm text-(--ui-text-tertiary)">
             {estimate?.ok ? (
               <>
                 <Tip label={estimate.rationale || k.roughEstimate}>
@@ -862,7 +862,7 @@ function Intro() {
 
   return (
     <div
-      className="mx-4 mb-2 flex flex-col items-start gap-1.5 rounded-lg bg-(--ui-bg-quinary) px-3 py-2.5 text-[0.75rem] leading-relaxed text-(--ui-text-secondary)"
+      className="mx-4 mb-2 flex flex-col items-start gap-1.5 rounded-panel bg-(--ui-bg-quinary) px-3 py-2.5 text-aro-sm leading-relaxed text-(--ui-text-secondary)"
       data-selectable-text="true"
     >
       <p className="min-w-0">{k.introBody}</p>
@@ -1020,7 +1020,7 @@ function SelectionBar({
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
       {/* Flat overlay: stroke + elevated surface do the separating, no shadow. */}
-      <div className="pointer-events-auto flex items-center gap-1 rounded-lg border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 pr-1 pl-3">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-panel border border-(--ui-stroke-secondary) bg-(--ui-bg-elevated) py-1 pr-1 pl-3">
         <span className="mr-1 text-xs tabular-nums text-(--ui-text-secondary)">{k.nSelected(selected.size)}</span>
 
         <DropdownMenu onOpenChange={open => setMenu(open ? 'move' : null)} open={menu === 'move'}>
@@ -1337,7 +1337,7 @@ export function KanbanBoardPage() {
     <div className="relative flex h-full flex-col overflow-hidden bg-(--ui-surface-background)">
       <header className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-2">
         <h1 className="text-sm font-semibold text-foreground">{k.title}</h1>
-        <span className="rounded-full bg-(--ui-bg-quaternary) px-1.5 py-px text-[0.625rem] tabular-nums text-(--ui-text-tertiary)">
+        <span className="rounded-full bg-(--ui-bg-quaternary) px-1.5 py-px text-aro-xs tabular-nums text-(--ui-text-tertiary)">
           {total}
         </span>
         {/* The full page projects this into its page header; a split tile has

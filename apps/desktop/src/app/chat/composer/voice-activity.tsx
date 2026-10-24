@@ -177,7 +177,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
     <div
       aria-live="polite"
       className={cn(
-        'flex h-8 items-center gap-2 rounded-xl border border-border/55 bg-muted/55 px-2.5 text-xs text-muted-foreground',
+        'flex h-8 items-center gap-2 rounded-overlay border border-border/55 bg-muted/55 px-2.5 text-xs text-muted-foreground',
         'shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm'
       )}
       data-slot="composer-voice-activity"
@@ -194,7 +194,7 @@ export function VoiceActivity({ state }: { state: VoiceActivityState }) {
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate font-medium text-foreground/85">{title}</span>
-        <span aria-hidden="true" className="font-mono text-[0.6875rem] text-muted-foreground/85">
+        <span aria-hidden="true" className="font-mono text-aro-xs text-muted-foreground/85">
           {formatElapsed(state.elapsedSeconds)}
         </span>
       </div>
@@ -224,7 +224,7 @@ export function VoicePlaybackActivity() {
     <div
       aria-live="polite"
       className={cn(
-        'flex h-8 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-2.5 text-xs text-primary',
+        'flex h-8 items-center gap-2 rounded-overlay border border-primary/20 bg-primary/10 px-2.5 text-xs text-primary',
         'shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm'
       )}
       role="status"
@@ -239,7 +239,7 @@ export function VoicePlaybackActivity() {
       </div>
 
       <Button
-        className="h-6 shrink-0 gap-1 rounded-full px-2 text-[0.6875rem]"
+        className="h-6 shrink-0 gap-1 rounded-full px-2 text-aro-xs"
         onClick={stopVoicePlayback}
         size="sm"
         type="button"

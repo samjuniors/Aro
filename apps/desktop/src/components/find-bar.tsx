@@ -305,7 +305,7 @@ export function FindBar() {
         // inside the titlebar strip, underneath the native min/max/close
         // window-controls overlay on Windows/Linux.
         'pointer-events-auto fixed right-4 top-[calc(var(--titlebar-height,34px)+0.5rem)] z-50',
-        'flex items-center gap-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-surface-background) px-2 py-1.5 shadow-md'
+        'flex items-center gap-2 rounded-panel border border-(--ui-stroke-tertiary) bg-(--ui-surface-background) px-2 py-1.5 shadow-aro-e2'
       )}
       role="search"
       style={barStyle}
@@ -323,7 +323,7 @@ export function FindBar() {
       />
 
       {matchLabel && (
-        <span aria-live="polite" className="min-w-[3rem] text-center text-[0.6875rem] text-(--ui-text-tertiary)">
+        <span aria-live="polite" className="min-w-[3rem] text-center text-aro-xs text-(--ui-text-tertiary)">
           {matchLabel}
         </span>
       )}
@@ -331,7 +331,7 @@ export function FindBar() {
       <Tip label={t.findInPage.previous}>
         <button
           aria-label={t.findInPage.previous}
-          className="flex h-7 w-7 items-center justify-center rounded text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
+          className="flex h-7 w-7 items-center justify-center rounded-control text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
           onClick={findPrevious}
           type="button"
         >
@@ -344,7 +344,7 @@ export function FindBar() {
       <Tip label={t.findInPage.next}>
         <button
           aria-label={t.findInPage.next}
-          className="flex h-7 w-7 items-center justify-center rounded text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
+          className="flex h-7 w-7 items-center justify-center rounded-control text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
           onClick={findNext}
           type="button"
         >
@@ -356,7 +356,7 @@ export function FindBar() {
 
       <button
         aria-label={t.common.close}
-        className="flex h-7 w-7 items-center justify-center rounded text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
+        className="flex h-7 w-7 items-center justify-center rounded-control text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background)"
         onClick={closeFindBar}
         type="button"
       >

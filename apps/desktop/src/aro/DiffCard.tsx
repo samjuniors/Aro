@@ -65,13 +65,13 @@ export function DiffView({
   )
 
   return (
-    <div className="overflow-hidden rounded-[8px] border border-aro-line-soft bg-aro-sunken">
+    <div className="overflow-hidden rounded-control border border-aro-line-soft bg-aro-sunken">
       <div className="flex items-center justify-between gap-2 border-b border-aro-line-soft bg-aro-well px-2.5 py-1.5">
         <div className="flex min-w-0 items-center gap-1.5">
           <IconFile className="shrink-0 text-aro-ink-4" size={11} />
-          <span className="truncate font-aro-mono text-[11px] text-aro-ink-2">{file.path}</span>
+          <span className="truncate font-aro-mono text-xs text-aro-ink-2">{file.path}</span>
         </div>
-        <div className="flex shrink-0 items-center gap-2 font-aro-mono text-[10px]">
+        <div className="flex shrink-0 items-center gap-2 font-aro-mono text-[var(--aro-text-2xs,10px)]">
           <span className="text-aro-mint">+{file.adds}</span>
           <span className="text-aro-rose">−{file.dels}</span>
           {showToggle && (
@@ -84,7 +84,7 @@ export function DiffView({
           )}
         </div>
       </div>
-      <div className="aro-scroll-thin overflow-x-auto font-aro-mono text-[11.5px] leading-[1.65]">
+      <div className="aro-scroll-thin overflow-x-auto font-aro-mono text-xs leading-[1.65]">
         {mode === 'unified'
           ? shown.map((l, i) => (
               <div className={cn('flex items-start whitespace-pre', l.t === 'add' && 'aro-diff-add', l.t === 'del' && 'aro-diff-del', l.t === 'hunk' && 'bg-aro-iris-tint/50')} key={i}>
@@ -113,7 +113,7 @@ export function DiffView({
       </div>
       {file.lines.length > maxLines && (
         <button
-          className="flex w-full cursor-pointer items-center justify-center gap-1.5 border-t border-aro-line-soft py-1.5 text-[11px] text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
+          className="flex w-full cursor-pointer items-center justify-center gap-1.5 border-t border-aro-line-soft py-1.5 text-xs text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink"
           onClick={() => setAll((a) => !a)}
         >
           {all ? 'Collapse' : `Show ${file.lines.length - maxLines} more lines`}

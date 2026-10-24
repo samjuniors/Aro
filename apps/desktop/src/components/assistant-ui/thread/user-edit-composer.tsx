@@ -838,7 +838,7 @@ export const UserEditComposer: FC<UserEditComposerProps> = ({ cwd, gateway, sess
     <ComposerPrimitive.Root className="contents" data-slot="aui_edit-composer-root">
       <StickyHumanMessageContainer>
         <div
-          className="composer-human-message-container human-execution-message-top relative flex w-full items-start rounded-md bg-(--ui-chat-surface-background)"
+          className="composer-human-message-container human-execution-message-top relative flex w-full items-start rounded-control bg-(--ui-chat-surface-background)"
           // A raised box over the transcript field: under window glass it keeps
           // a near-opaque fill instead of thinning with the field behind it.
           data-glass-raised=""
@@ -927,7 +927,7 @@ export const UserEditComposer: FC<UserEditComposerProps> = ({ cwd, gateway, sess
             </ComposerPrimitive.Input>
             {staging && (
               <span
-                className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/80 px-1.5 py-0.5 text-[0.62rem] text-muted-foreground backdrop-blur-[1px]"
+                className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/80 px-1.5 py-0.5 text-aro-xs text-muted-foreground backdrop-blur-[1px]"
                 data-slot="aui_edit-staging"
               >
                 <Loader2Icon className="size-3 animate-spin" />

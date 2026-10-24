@@ -235,7 +235,7 @@ export function SidebarWorkspaceGroup({
       {open && (
         <>
           {visibleSessions.length === 0 ? (
-            <div className="min-h-7 pl-2 text-[0.75rem] leading-7 text-(--ui-text-quaternary)">{s.noSessions}</div>
+            <div className="min-h-7 pl-2 text-xs leading-7 text-(--ui-text-quaternary)">{s.noSessions}</div>
           ) : (
             renderRows(visibleSessions)
           )}

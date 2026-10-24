@@ -409,7 +409,7 @@ export function ZoneEditor() {
           <h2 className="text-sm font-semibold text-foreground">{t.zones.zoneEditorTitle}</h2>
           <p className="text-xs text-muted-foreground/80">
             {t.zones.editorHintPre}
-            <kbd className="rounded border border-(--ui-stroke-secondary) bg-foreground/5 px-1 font-mono text-[10px]">
+            <kbd className="rounded-control border border-(--ui-stroke-secondary) bg-foreground/5 px-1 font-mono text-[var(--aro-text-2xs,10px)]">
               ⇧
             </kbd>
             {t.zones.editorHintPost}
@@ -443,7 +443,7 @@ export function ZoneEditor() {
 
       {/* Canvas */}
       <div
-        className="relative min-h-0 flex-1 cursor-crosshair overflow-hidden rounded-lg border border-(--ui-stroke-secondary)"
+        className="relative min-h-0 flex-1 cursor-crosshair overflow-hidden rounded-panel border border-(--ui-stroke-secondary)"
         onPointerDown={onCanvasPointerDown}
         onPointerLeave={onCanvasPointerLeave}
         onPointerMove={onCanvasPointerMove}
@@ -454,7 +454,7 @@ export function ZoneEditor() {
 
           return (
             <div
-              className="absolute flex items-center justify-center rounded-[3px] border transition-colors"
+              className="absolute flex items-center justify-center rounded-control border transition-colors"
               key={zone.index}
               style={{
                 left: pct(zone.left),
@@ -469,7 +469,7 @@ export function ZoneEditor() {
             >
               {/* Quiet zone tag — the app's small-caps label voice, not a
                   billboard number. */}
-              <span className="select-none text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-(--ui-text-tertiary)">
+              <span className="select-none text-aro-xs font-semibold uppercase tracking-[0.16em] text-(--ui-text-tertiary)">
                 {t.zones.zoneTag(zone.index + 1)}
               </span>
             </div>
@@ -550,7 +550,7 @@ export function ZoneEditor() {
         {mergeAt && selection.length > 1 && (
           <div className="absolute z-20 flex gap-1" style={{ left: mergeAt.x, top: mergeAt.y }}>
             <Button
-              className="shadow-lg"
+              className="shadow-aro-e3"
               onClick={merge}
               onPointerDown={e => e.stopPropagation()}
               size="sm"

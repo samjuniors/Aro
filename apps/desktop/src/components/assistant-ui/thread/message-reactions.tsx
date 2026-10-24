@@ -57,7 +57,7 @@ const FullEmojiPicker: FC<{ onSelect: (emoji: string) => void }> = ({ onSelect }
         components={{
           CategoryHeader: ({ category, ...props }) => (
             <div
-              className="bg-(--ui-bg-elevated) px-1.5 pt-2 pb-1 text-[0.6875rem] text-(--ui-text-tertiary)"
+              className="bg-(--ui-bg-elevated) px-1.5 pt-2 pb-1 text-aro-xs text-(--ui-text-tertiary)"
               {...props}
             >
               {category.label}
@@ -65,7 +65,7 @@ const FullEmojiPicker: FC<{ onSelect: (emoji: string) => void }> = ({ onSelect }
           ),
           Emoji: ({ emoji, ...props }) => (
             <button
-              className={cn('grid size-8 shrink-0 place-items-center rounded-md text-lg', cellTint(emoji.emoji))}
+              className={cn('grid size-8 shrink-0 place-items-center rounded-control text-lg', cellTint(emoji.emoji))}
               {...props}
             >
               {emoji.emoji}
@@ -170,7 +170,7 @@ export const ReactionBadge: FC<{
 
   return (
     <span
-      className={cn('flex items-center gap-1 text-[0.8125rem] leading-none', className)}
+      className={cn('flex items-center gap-1 text-aro-md leading-none', className)}
       data-slot="aui_msg-reactions"
     >
       {reactions.map(reaction =>
@@ -197,7 +197,7 @@ export const ReactionBadge: FC<{
           <span
             className="reaction-pop leading-none"
             key={`${reaction.author}-${reaction.emoji}`}
-            title="Reacted by Hermes"
+            title="Reacted by Aro"
           >
             {reaction.emoji}
           </span>

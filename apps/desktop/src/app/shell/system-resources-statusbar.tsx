@@ -151,7 +151,7 @@ export function useSystemResourcesStatusbarItem(): StatusbarItem {
     menuAlign: 'end',
     menuClassName: 'w-64 p-0',
     menuContent: (
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 p-3 text-[0.75rem]" data-slot="system-resources-panel">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 p-3 text-aro-sm" data-slot="system-resources-panel">
         {/* min-w-0 everywhere a flex/grid child must shrink: grid items
             default min-width:auto, so a long GPU name's nowrap min-content
             props the track open past the w-64 box and overflow-x:hidden
@@ -161,7 +161,7 @@ export function useSystemResourcesStatusbarItem(): StatusbarItem {
           <p className="shrink-0 font-medium text-foreground">{copy.title}</p>
 
           {hardware?.gpu_name && (
-            <span className="min-w-0 truncate text-[0.6875rem] text-muted-foreground">{hardware.gpu_name}</span>
+            <span className="min-w-0 truncate text-aro-xs text-muted-foreground">{hardware.gpu_name}</span>
           )}
         </div>
 
@@ -187,7 +187,7 @@ export function useSystemResourcesStatusbarItem(): StatusbarItem {
           value={`${gbLong(ramUsed)} / ${gbLong(hardware?.ram_total_bytes)}`}
         />
 
-        {hardware?.uma && <p className="text-[0.6875rem] text-muted-foreground">{copy.unifiedNote}</p>}
+        {hardware?.uma && <p className="text-aro-xs text-muted-foreground">{copy.unifiedNote}</p>}
       </div>
     ),
     toggleLabel: enabled ? copy.toggle : undefined,

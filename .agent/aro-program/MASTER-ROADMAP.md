@@ -1,0 +1,72 @@
+# MASTER ROADMAP: Aro to public release
+
+```
+Active phase: P17-operate-and-evolve (completed)
+Active step: 17.1
+Last gate tag: aro-gate/P17-G17.1
+Integration branch: aro/integration (per D-1)
+```
+
+## Where we start (read from the repo on branch `ui-port/aro-patches` @ `81d86f11`, 2026-10-18)
+- Phases 0-7 (UI port to parity): done. `port/PARITY_REPORT.md` status PASSED; `port/RELEASE_AUDIT_REPORT.md`
+  says CONDITIONAL ACCEPTANCE (ready for packaging/staging).
+- Phase 8 (design system) and Phase 9 (UX assembly): every step and gate marked `[x]` in
+  `.agent/aro-design-system/ROADMAP.md` and `.agent/aro-ux-assembly/ROADMAP.md`.
+- Known open items carried in: `port/RELEASE_AUDIT_REPORT.md` findings 1-2 and plan P1-P3,
+  26 `BACKEND-TODO` markers in 7 areas, `NB-001` in the UX roadmap.
+
+## Phases
+
+| Phase | Outcome | Gates | Needs |
+| --- | --- | --- | --- |
+| P10 foundation-and-truth | One clean integration branch, docs that match code, fork risks listed, CI map | 10.1, 10.2 | none |
+| P11 runtime-install-packaging | Installs and first-runs on a clean machine; signed-ready packages; safe upgrade/uninstall | 11.1, 11.2, 11.3 | P10 |
+| P12 backend-wiring-behavior | Every `BACKEND-TODO` and `NB-` item implemented or cut; failure states handled | 12.1, 12.2, 12.3 | P10 |
+| P13 features | The v1 feature set (max 5) specified, built, verified in slices | 13.1, then one per slice | P11, P12 |
+| P14 motion-and-interaction | A motion language and the hero moments, inside a performance budget | 14.1, 14.2, 14.3 | P12 |
+| P15 hardening | Security, privacy, accessibility, performance, i18n, test pyramid signed off | 15.1, 15.2, 15.3 | P11-P14 |
+| P16 release-and-launch | Signing, update path, brand/legal clear, beta run, go/no-go | 16.1, 16.2, 16.3 | P15 |
+| P17 operate-and-evolve | Release train, triage, upstream-sync cadence, roadmap intake | 17.1 | P16 |
+
+P11 and P12 may run in either order; P14 may start once P12.1 is approved. Order is
+fixed otherwise. Frontend/UI work lives in P13-P14 (and finished P8-P9); backend in P11-P12.
+
+## Finish line: "public-ready" (all must be true; each is checked at P16.3)
+1. Clean-machine install and first run succeed on every supported OS in under 10 minutes,
+   including a run with no network.
+2. No open P0/P1 defects; typecheck, lint, unit, e2e green in CI on the release commit.
+3. Security checklist (P15.1) signed off; no secrets in repo or logs.
+4. Nothing leaves the device without opt-in; privacy policy matches what the code does.
+5. Accessibility: WCAG 2.2 AA on the 10 default journeys, keyboard-only and one screen reader.
+6. Performance budgets (P15.3) met on the reference low-end machine.
+7. Signed, notarized (where applicable) installers; update path and rollback tested.
+8. Brand, trademark, attribution, and font/asset licenses cleared (founder decision).
+9. Docs, support channel, and known-issues page exist and are true.
+10. Beta feedback loop closed: top issues fixed or consciously deferred in writing.
+11. Upstream-sync and security-patch policy decided and written (ADR).
+
+## Phase history log (append one line per approved gate)
+- P10-G10.1: 2026-10-19 — baseline recon, integration plan, decisions D-1..D-5 recorded (tag aro-gate/P10-G10.1)
+- P10-G10.2: 2026-10-19 — registry, context map, ledger, fork-safety audit, CI map (tag aro-gate/P10-G10.2)
+- P11-G11.1: 2026-10-19 — packaging recon, clean-machine smoke matrix, runtime spike ADR (tag aro-gate/P11-G11.1)
+- P11-G11.2: 2026-10-19 — installers built, install smoke green on host, clean-machine pass (tag aro-gate/P11-G11.2)
+- P11-G11.3: 2026-10-19 — failure matrix, uninstall/upgrade tests, updater ADR D-9 (tag aro-gate/P11-G11.3)
+- P12-G12.1: 2026-10-19 — inventory, specs, decisions D-10..D-11 recorded (tag aro-gate/P12-G12.1)
+- P12-G12.2: 2026-10-19 — every v1 item works end to end, BACKEND-TODOs linked, NB-001 resolved (tag aro-gate/P12-G12.2)
+- P12-G12.3: 2026-10-19 — audio capture modernized with AudioWorkletNode, failure matrix verified, Phase 12 complete (tag aro-gate/P12-G12.3)
+- P13-G13.1: 2026-10-19 — v1 feature scope and 5 vertical slices approved (tag aro-gate/P13-G13.1)
+- P13-G13.S1: 2026-10-19 — Slice 1 diff-first visual review and checkpoint rollback (tag aro-gate/P13-G13.S1)
+- P13-G13.S2: 2026-10-19 — Slice 2 ambient cost HUD and proactive quota guard (tag aro-gate/P13-G13.S2)
+- P13-G13.S3: 2026-10-19 — Slice 3 parallel subagent work-graph and tasks board (tag aro-gate/P13-G13.S3)
+- P13-G13.S4: 2026-10-19 — Slice 4 in-app responsive web and dev-server preview (tag aro-gate/P13-G13.S4)
+- P13-G13.S5: 2026-10-19 — Slice 5 one-click IDE deep link and editor handoff; Phase 13 complete (tag aro-gate/P13-G13.S5)
+- P14-G14.1: 2026-10-21 — Motion language, token extension, animation inventory decisions, and interview answers (tag aro-gate/P14-G14.1)
+- P14-G14.2: 2026-10-21 — 9 signature hero moments verified with frame-timing traces; ambient space layer with off conditions and measured cost (tag aro-gate/P14-G14.2)
+- P14-G14.3: 2026-10-21 — Micro-interactions, performance pass, reduced-motion parity pass, and keyboard pass; Phase 14 complete (tag aro-gate/P14-G14.3)
+- P15-G15.1: 2026-10-21 — Electron security review checklist, secret redaction pass, and privacy network map (tag aro-gate/P15-G15.1)
+- P15-G15.2: 2026-10-21 — WCAG 2.2 AA accessibility verification across 10 journeys, theme contrast, and i18n audit (tag aro-gate/P15-G15.2)
+- P15-G15.3: 2026-10-21 — Performance budgets met on 4-core reference baseline, test pyramid signed off; Phase 15 complete (tag aro-gate/P15-G15.3)
+- P16-G16.1: 2026-10-21 — Interview batch 1 answers, legal & brand inventory, About dialog attribution, packaging dry run (tag aro-gate/P16-G16.1)
+- P16-G16.2: 2026-10-21 — User documentation suite, privacy policy, and closed beta operational runbook (tag aro-gate/P16-G16.2)
+- P16-G16.3: 2026-10-21 — 11 public-ready criteria verified, release notes, rollback plan, 7-day on-call runbook; Phase 16 complete (tag aro-gate/P16-G16.3)
+- P17-G17.1: 2026-10-21 — Operating handbook, automation & release runbook, staleness check, roadmap intake; Phase 17 complete (tag aro-gate/P17-G17.1)

@@ -44,13 +44,13 @@ function rowKind(item: Unstable_TriggerItem, isSlash: boolean): string {
 }
 
 const ROW_CLASS = [
-  'relative flex w-full cursor-default select-none items-center gap-2 rounded-md px-2 py-1 text-left',
+  'relative flex w-full cursor-default select-none items-center gap-2 rounded-control px-2 py-1 text-left',
   'outline-hidden transition-colors hover:bg-(--ui-bg-tertiary)',
   'data-[highlighted]:bg-(--ui-bg-tertiary) data-[highlighted]:text-foreground'
 ].join(' ')
 
 const GROUP_HEADER_CLASS =
-  'select-none px-2 pb-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-(--ui-text-tertiary)'
+  'select-none px-2 pb-0.5 text-aro-xs font-semibold uppercase tracking-wider text-(--ui-text-tertiary)'
 
 interface ComposerTriggerPopoverProps {
   activeIndex: number

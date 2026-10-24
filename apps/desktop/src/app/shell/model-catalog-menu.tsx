@@ -91,7 +91,7 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
   const cache = pricing.cache || null
 
   if (pricing.free) {
-    return <span className="shrink-0 pl-2 text-[0.625rem] text-(--ui-green)">{copy.free}</span>
+    return <span className="shrink-0 pl-2 text-aro-xs text-(--ui-green)">{copy.free}</span>
   }
 
   if (!input && !output) {
@@ -103,7 +103,7 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
 
   return (
     <span
-      className="flex shrink-0 items-center gap-1.5 pl-2 text-[0.625rem] tabular-nums text-(--ui-text-tertiary)"
+      className="flex shrink-0 items-center gap-1.5 pl-2 text-aro-xs tabular-nums text-(--ui-text-tertiary)"
       title={copy.priceTitle(input ?? '—', output ?? '—', cache ?? '')}
     >
       <span>
@@ -115,7 +115,7 @@ function ModelPrice({ pricing }: { pricing: ModelPricing }) {
         </span>
       ) : null}
       {discount ? (
-        <span className="rounded bg-(--ui-green)/10 px-1 py-px font-medium text-(--ui-green)">−{discount}%</span>
+        <span className="rounded-control bg-(--ui-green)/10 px-1 py-px font-medium text-(--ui-green)">−{discount}%</span>
       ) : null}
     </span>
   )
@@ -826,7 +826,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'all'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'all'
                 ? 'bg-(--ui-control-active-background) font-semibold text-foreground shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -844,7 +844,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'free'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'free'
                 ? 'bg-emerald-500/15 font-semibold text-emerald-600 dark:text-emerald-400 shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -862,7 +862,7 @@ export function ModelCatalogMenu({
           <button
             aria-selected={tierFilter === 'paid'}
             className={cn(
-              'cursor-pointer rounded-[5px] px-2 py-0.5 text-[10.5px] font-medium transition-colors',
+              'cursor-pointer rounded-control px-2 py-0.5 text-[var(--aro-text-2xs,10px)] font-medium transition-colors',
               tierFilter === 'paid'
                 ? 'bg-amber-500/15 font-semibold text-amber-600 dark:text-amber-400 shadow-2xs'
                 : 'text-(--ui-text-tertiary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
@@ -1286,7 +1286,7 @@ function ModelFamilyRow({
             aria-label={favoriteLabel}
             aria-pressed={favorite}
             className={cn(
-              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-sm transition-colors duration-100 hover:text-foreground hover:transition-none',
+              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-control transition-colors duration-100 hover:text-foreground hover:transition-none',
               favorite
                 ? 'text-(--ui-text-secondary)'
                 : 'text-(--ui-text-quaternary) group-hover/model:text-(--ui-text-tertiary) group-hover/model:transition-none group-data-[kb-active]/model:text-(--ui-text-tertiary)'
@@ -1322,17 +1322,17 @@ function ModelFamilyRow({
                 style={{ width: `${Math.max(2, loadProgress.percent)}%` }}
               />
             </span>
-            <span className="text-[0.62rem] tabular-nums text-(--ui-text-tertiary)">{loadProgress.percent}%</span>
+            <span className="text-aro-xs tabular-nums text-(--ui-text-tertiary)">{loadProgress.percent}%</span>
           </span>
         ) : null}
         {isFree ? (
-          <span className="shrink-0 rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          <span className="shrink-0 rounded-control px-1.5 py-0.5 text-aro-xs font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
             Free
           </span>
         ) : pricing ? (
           <ModelPrice pricing={pricing} />
         ) : (
-          <span className="shrink-0 font-aro-mono text-[9px] text-(--ui-text-tertiary) opacity-70">
+          <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary) opacity-70">
             {provider.name}
           </span>
         )}
@@ -1377,7 +1377,7 @@ function ModelFamilyRow({
             aria-label={favoriteLabel}
             aria-pressed={favorite}
             className={cn(
-              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-sm transition-colors duration-100 hover:text-foreground hover:transition-none',
+              '-mx-0.5 grid size-4 shrink-0 place-items-center rounded-control transition-colors duration-100 hover:text-foreground hover:transition-none',
               favorite
                 ? 'text-(--ui-text-secondary)'
                 : 'text-(--ui-text-quaternary) group-hover/model:text-(--ui-text-tertiary) group-hover/model:transition-none group-data-[kb-active]/model:text-(--ui-text-tertiary)'
@@ -1413,7 +1413,7 @@ function ModelFamilyRow({
                 style={{ width: `${Math.max(2, loadProgress.percent)}%` }}
               />
             </span>
-            <span className="text-[0.62rem] tabular-nums text-(--ui-text-tertiary)">{loadProgress.percent}%</span>
+            <span className="text-aro-xs tabular-nums text-(--ui-text-tertiary)">{loadProgress.percent}%</span>
           </span>
         ) : null}
         {showPricing && pricing ? <ModelPrice pricing={pricing} /> : null}
@@ -1453,12 +1453,12 @@ function caretAtEnd(input: HTMLInputElement): boolean {
 
 // Heading for every row group in the list (Favorites, providers, downloads).
 const catalogGroupLabel =
-  'px-2 pb-0.5 pt-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-(--ui-text-tertiary)'
+  'px-2 pb-0.5 pt-0.5 text-aro-xs font-semibold uppercase tracking-wider text-(--ui-text-tertiary)'
 
 // A provider inside a mixed Favorites section: the group heading's ink, set
 // in normal case and indented to the model names it labels, so it reads as
 // a sub-group rather than a sibling section.
-const favoriteProviderLabel = 'pt-1.5 pb-0 pr-2 pl-7.75 text-[0.625rem] text-(--ui-text-tertiary)'
+const favoriteProviderLabel = 'pt-1.5 pb-0 pr-2 pl-7.75 text-aro-xs text-(--ui-text-tertiary)'
 
 /** The picker's chips: a filled tag for what the model IS (its variant), an
  *  outlined one for how this row is SET (fast, effort), so the two read as
@@ -1527,7 +1527,7 @@ function DownloadingModelRow({
             style={{ width: `${Math.max(2, percent ?? 0)}%` }}
           />
         </span>
-        <span className="text-[0.62rem] tabular-nums text-(--ui-text-tertiary)">
+        <span className="text-aro-xs tabular-nums text-(--ui-text-tertiary)">
           {paused
             ? copyLocal.downloadPausedLabel
             : typeof percent === 'number'

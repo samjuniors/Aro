@@ -71,7 +71,7 @@ export function TreeEditBar() {
 
   return (
     <div
-      className="absolute z-50 flex w-[26rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-(--ui-stroke-secondary) bg-popover text-popover-foreground shadow-2xl [-webkit-app-region:no-drag]"
+      className="absolute z-50 flex w-[26rem] max-w-[calc(100%-2rem)] flex-col rounded-overlay border border-(--ui-stroke-secondary) bg-popover text-popover-foreground shadow-aro-e4 [-webkit-app-region:no-drag]"
       ref={cardRef}
       style={pos ? { left: pos.x, top: pos.y } : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
     >
@@ -85,7 +85,7 @@ export function TreeEditBar() {
           <p className="text-xs text-muted-foreground/80">
             {t.zones.editHint}{' '}
             {toggleCombo && (
-              <kbd className="rounded border border-(--ui-stroke-secondary) bg-foreground/5 px-1 font-mono text-[10px]">
+              <kbd className="rounded-control border border-(--ui-stroke-secondary) bg-foreground/5 px-1 font-mono text-[var(--aro-text-2xs,10px)]">
                 {formatCombo(toggleCombo)}
               </kbd>
             )}

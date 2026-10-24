@@ -23,6 +23,7 @@
     "audit:fix:web": "npm audit fix --workspace web",
     "audit:fix:tui": "npm audit fix --workspace ui-tui",
     "dev": "npm run dev --workspace apps/desktop",
+    "dev:design": "npm run dev:design --workspace apps/desktop",
     "dev:desktop": "npm run dev --workspace apps/desktop",
     "dev:web": "npm run dev --workspace web",
     "dev:tui": "npm run dev --workspace ui-tui",

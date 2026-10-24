@@ -65,7 +65,7 @@ interface GlyphSpinnerProps {
  * document-scale style recalculation on every tick (see glyph-spinner.css).
  *
  * The outer cell keeps the exact classes it always had, so consumer sizing
- * (`size-3`, `text-[0.75rem]`, colour, opacity) lands unchanged; the 1em-tall
+ * (`size-3`, `text-aro-sm`, colour, opacity) lands unchanged; the 1em-tall
  * clipping viewport is centred inside it by the same `items-center` that used
  * to centre the single glyph.
  */

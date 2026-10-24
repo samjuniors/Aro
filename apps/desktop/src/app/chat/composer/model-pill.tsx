@@ -29,7 +29,7 @@ import type { ChatBarState } from './types'
 // truncates when the row is genuinely out of room (#49340) — not at an
 // arbitrary 160px.
 const PILL = cn(
-  'h-[28px] min-w-0 shrink gap-1 rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-xs font-normal shadow-sm transition-all',
+  'h-[28px] min-w-0 shrink gap-1 rounded-full border border-aro-line-soft bg-aro-well/60 px-3 text-xs font-normal shadow-(--aro-shadow-e1) transition-colors',
   'text-aro-ink-3 hover:border-aro-line hover:bg-aro-hover hover:text-aro-ink'
 )
 
@@ -160,7 +160,7 @@ export function ModelPill({
   // padding, sized to match the other composer icon buttons.
   const pillClass = compact
     ? cn(
-        'size-(--composer-control-size) shrink-0 justify-center gap-0 rounded-md p-0',
+        'size-(--composer-control-size) shrink-0 justify-center gap-0 rounded-control p-0',
         'text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
       )
     : PILL

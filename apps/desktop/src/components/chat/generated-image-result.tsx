@@ -70,7 +70,7 @@ export const GeneratedImage: FC<{ aspectRatio?: string; result?: unknown }> = ({
       <span
         aria-label={pending ? t.assistant.tool.renderingImage : undefined}
         aria-live={pending ? 'polite' : undefined}
-        className="group/image relative block max-w-full overflow-hidden rounded-2xl"
+        className="group/image relative block max-w-full overflow-hidden rounded-overlay"
         data-slot="aui_generated-image"
         role={pending ? 'status' : undefined}
         style={media.frameStyle}

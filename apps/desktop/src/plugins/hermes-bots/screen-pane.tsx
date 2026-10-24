@@ -484,7 +484,7 @@ export function BotScreenPane({ bot }: { bot: RosterRow }) {
         {status?.placement?.startsWith('terminal:') ? (
           // Where the desktop lives matters for what a takeover can reach: inside the terminal's sandbox,
           // not on the gateway host.
-          <span className="rounded bg-(--ui-bg-tertiary) px-1.5 py-0.5 text-muted-foreground">
+          <span className="rounded-control bg-(--ui-bg-tertiary) px-1.5 py-0.5 text-muted-foreground">
             {t.screen.placementSandbox(status.placement.slice('terminal:'.length))}
           </span>
         ) : null}
@@ -492,20 +492,20 @@ export function BotScreenPane({ bot }: { bot: RosterRow }) {
         {lease?.holder === 'human' && lease.reason ? (
           // Why control was taken stays readable while the human acts.
           <span
-            className="max-w-[40%] truncate rounded bg-amber-500/15 px-2 py-0.5 text-amber-600 dark:text-amber-400"
+            className="max-w-[40%] truncate rounded-control bg-amber-500/15 px-2 py-0.5 text-amber-600 dark:text-amber-400"
             title={lease.reason}
           >
             <Codicon name="bell" /> {lease.reason}
           </span>
         ) : null}
         {iHold ? (
-          <span className="rounded bg-red-500/15 px-2 py-0.5 font-medium text-red-600 dark:text-red-400">
+          <span className="rounded-control bg-red-500/15 px-2 py-0.5 font-medium text-red-600 dark:text-red-400">
             {t.screen.youControl}
           </span>
         ) : humanOther ? (
-          <span className="rounded bg-muted px-2 py-0.5 text-muted-foreground">{t.screen.otherControls}</span>
+          <span className="rounded-control bg-muted px-2 py-0.5 text-muted-foreground">{t.screen.otherControls}</span>
         ) : (
-          <span className="rounded bg-muted px-2 py-0.5 text-muted-foreground">{t.screen.agentControls}</span>
+          <span className="rounded-control bg-muted px-2 py-0.5 text-muted-foreground">{t.screen.agentControls}</span>
         )}
         {iHold ? (
           <Button disabled={busy} onClick={() => void handBack()} size="sm" variant="secondary">

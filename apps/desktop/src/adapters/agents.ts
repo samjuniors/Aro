@@ -150,7 +150,7 @@ export function sanitizeCustomAgents(value: unknown): AgentAdapterEntry[] {
 
 /* ============================== adapter ============================== */
 
-// BACKEND-TODO(agents): local persistence only — the future backend call is
+// BACKEND-TODO(agents): [D-10, research/11 §5] local persistence only — the future backend call is
 // `agents.register` (see port/FEATURE_MAP.md `agents-adapters`).
 export const localAgentsAdapter: AgentsAdapter = {
   list() {
@@ -187,7 +187,7 @@ export const localAgentsAdapter: AgentsAdapter = {
 export const $customAgents = atom<AgentAdapterEntry[]>(readLocalRecord(WORKSPACE_KEY.agents, [], sanitizeCustomAgents))
 
 $customAgents.subscribe(entries => {
-  // BACKEND-TODO(agents): replace with the real `agents.list/register` sync
+  // BACKEND-TODO(agents): [D-10, research/11 §5] replace with the real `agents.list/register` sync
   // when the backend lands; until then this is the persistence point.
   writeLocalRecord(WORKSPACE_KEY.agents, entries)
 })

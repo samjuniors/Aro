@@ -65,7 +65,7 @@ export function SharedMetricsConsentStrip() {
       }
       trailingVisible
     >
-      <span className="min-w-0 truncate text-[0.73rem] leading-4 text-foreground/92">
+      <span className="min-w-0 truncate text-aro-sm leading-4 text-foreground/92">
         <span className="font-medium">{copy.consentTitle}</span>
         <span className="text-muted-foreground/80"> {copy.stripBody}</span>
       </span>

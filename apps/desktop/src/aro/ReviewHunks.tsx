@@ -20,6 +20,8 @@ import { activeGateway } from '@/store/gateway'
 import { $activeSessionId } from '@/store/session'
 
 import { DiffView } from './DiffCard'
+import { AroIdeHandoffButton, parseHunkLine } from './EditorDeepLink'
+import { $aroFeatures } from './flags'
 import { IconCheck, IconFile, IconPencil, IconUndo, IconX } from './Icons'
 import { InlineHint, SourceBadge, useAroCheckpoints, useAroReview } from './live'
 import { ToastHost, useToasts } from './toasts'
@@ -39,26 +41,47 @@ function HunkThread({ thread }: { thread: HunkThreadData }) {
         <div className="flex items-start gap-2">
           <IconPencil className="mt-[3px] shrink-0 text-aro-amber" size={11} />
           <div className="min-w-0 flex-1">
-            <p className={cn('text-[12px] leading-[1.55] text-aro-ink-2', resolved && 'text-aro-ink-4 line-through')}>{thread.text}</p>
-            <div className="mt-1 font-aro-mono text-[9.5px] text-aro-ink-4">you · just now{resolved && <span className="text-aro-mint"> · resolved</span>}</div>
+            <p className={cn('text-xs leading-[1.55] text-aro-ink-2', resolved && 'text-aro-ink-4 line-through')}>{thread.text}</p>
+            <div className="mt-1 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">you · just now{resolved && <span className="text-aro-mint"> · resolved</span>}</div>
           </div>
           <Button aria-label={resolved ? 'Reopen thread' : 'Resolve thread'} onClick={() => setResolved((r) => !r)} size="xs" variant="ghost">
             {resolved ? 'Reopen' : 'Resolve'}
           </Button>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 border-t border-aro-amber/20 pt-1.5">
-          <span className="font-aro-mono text-[10px] text-aro-ink-4">Review note (local)</span>
+          <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">Review note (local)</span>
         </div>
       </div>
     </div>
   )
 }
 
-export function AroReviewPage() {
+export function AroReviewPage({
+  overrideData,
+  overrideCheckpoints,
+  forceEnabled,
+}: {
+  overrideData?: Partial<ReturnType<typeof useAroReview>>
+  overrideCheckpoints?: { hash: string; label: string; at?: string }[]
+  forceEnabled?: boolean
+} = {}) {
   const { items, toast } = useToasts()
-  const { files, live, available, error, loading, stagedSet, toggleStaged, refresh } = useAroReview()
+  const liveReview = useAroReview()
+  const features = useStore($aroFeatures)
+  const enabled = forceEnabled ?? features.reviewHunks
+
+  const files = overrideData?.files !== undefined ? overrideData.files : liveReview.files
+  const live = overrideData?.live !== undefined ? overrideData.live : liveReview.live
+  const available = overrideData?.available !== undefined ? overrideData.available : liveReview.available
+  const error = overrideData?.error !== undefined ? overrideData.error : liveReview.error
+  const loading = overrideData?.loading !== undefined ? overrideData.loading : liveReview.loading
+  const stagedSet = overrideData?.stagedSet !== undefined ? overrideData.stagedSet : liveReview.stagedSet
+  const toggleStaged = overrideData?.toggleStaged !== undefined ? overrideData.toggleStaged : liveReview.toggleStaged
+  const refresh = overrideData?.refresh !== undefined ? overrideData.refresh : liveReview.refresh
+
   const sessionId = useStore($activeSessionId)
-  const checkpoints = useAroCheckpoints(sessionId, live)
+  const liveCheckpoints = useAroCheckpoints(sessionId, live)
+  const checkpoints = overrideCheckpoints ?? liveCheckpoints
 
   const [active, setActive] = useState(0)
   const [layout, setLayout] = useState<'unified' | 'split'>('split')
@@ -147,14 +170,37 @@ export function AroReviewPage() {
     toast('Review comment added', 'amber')
   }
 
+  // Feature flag check (Slice 13.S1 reviewHunks)
+  if (!enabled) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
+        <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
+          <div className="min-w-0">
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+            <h1 className="text-sm font-semibold text-aro-ink">Review changes</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2"><SourceBadge demoLabel="disabled" live={false} /></div>
+        </header>
+        <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
+          <div className="max-w-[440px] space-y-3 text-center">
+            <InlineHint>
+              Diff-first visual review is currently disabled by feature flag (<span className="font-aro-mono text-xs text-aro-iris">reviewHunks</span>). Enable it in Aro settings or feature flags.
+            </InlineHint>
+          </div>
+        </div>
+        <ToastHost items={items} />
+      </div>
+    )
+  }
+
   // Honest unavailable state when git review is unavailable or in error
   if (!available || error) {
     return (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
         <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
           <div className="min-w-0">
-            <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
-            <h1 className="text-[15px] font-semibold text-aro-ink">Review changes</h1>
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+            <h1 className="text-sm font-semibold text-aro-ink">Review changes</h1>
           </div>
           <div className="ml-auto flex items-center gap-2"><SourceBadge demoLabel="unavailable" live={false} /></div>
         </header>
@@ -176,15 +222,15 @@ export function AroReviewPage() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
         <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
           <div className="min-w-0">
-            <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
-            <h1 className="text-[15px] font-semibold text-aro-ink">Review changes</h1>
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+            <h1 className="text-sm font-semibold text-aro-ink">Review changes</h1>
           </div>
           <div className="ml-auto flex items-center gap-2"><SourceBadge live={true} /></div>
         </header>
         <div className="aro-scroll-thin flex flex-1 items-center justify-center overflow-y-auto p-6">
           <div className="max-w-[440px] space-y-3 text-center">
             {loading ? (
-              <InlineHint><span className="font-aro-mono text-[10.5px] text-aro-cyan">scanning working tree…</span></InlineHint>
+              <InlineHint><span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-cyan">scanning working tree…</span></InlineHint>
             ) : (
               <InlineHint>Working tree clean. No uncommitted changes in the repository. When files are modified, they appear here as reviewable hunks.</InlineHint>
             )}
@@ -199,9 +245,9 @@ export function AroReviewPage() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-theme="obsidian">
       <header className="flex flex-wrap items-center gap-3 border-b border-aro-line-soft px-5 py-3">
         <div className="min-w-0">
-          <div className="font-aro-mono text-[9.5px] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
-          <h1 className="text-[15px] font-semibold text-aro-ink">Review changes</h1>
-          <p className="mt-0.5 text-[11.5px] text-aro-ink-3">Agent edits, editor edits and cloud runs land here as one reviewable diff — with a checkpoint behind every change.</p>
+          <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-[.14em] text-aro-ink-4 uppercase">changes · p3</div>
+          <h1 className="text-sm font-semibold text-aro-ink">Review changes</h1>
+          <p className="mt-0.5 text-xs text-aro-ink-3">Agent edits, editor edits and cloud runs land here as one reviewable diff — with a checkpoint behind every change.</p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <SourceBadge live={live} />
@@ -218,10 +264,10 @@ export function AroReviewPage() {
         {/* file sidebar */}
         <div className="flex w-[280px] shrink-0 flex-col border-r border-aro-line-soft bg-aro-sunken">
           <div className="flex items-center gap-2 border-b border-aro-line-soft px-3 py-2.5">
-            <span className="font-aro-mono text-[9.5px] tracking-[.14em] text-aro-ink-4 uppercase">changed</span>
-            <span className="font-aro-mono text-[10px] text-aro-mint">+{files.reduce((a, f) => a + f.adds, 0)}</span>
-            <span className="font-aro-mono text-[10px] text-aro-rose">−{files.reduce((a, f) => a + f.dels, 0)}</span>
-            <span className="ml-auto font-aro-mono text-[9.5px] text-aro-ink-4">{files.length} files</span>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">changed</span>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-mint">+{files.reduce((a, f) => a + f.adds, 0)}</span>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-rose">−{files.reduce((a, f) => a + f.dels, 0)}</span>
+            <span className="ml-auto font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{files.length} files</span>
           </div>
           <div className="aro-scroll-thin flex-1 overflow-y-auto p-1.5">
             {files.map((f, i) => {
@@ -229,10 +275,10 @@ export function AroReviewPage() {
               const s = isStaged(f.path)
 
               return (
-                <div aria-label={`Open ${f.path}`} className={cn('flex cursor-pointer items-start gap-2 rounded-[8px] px-2 py-2 transition-colors', on ? 'bg-aro-raise shadow-aro-e1' : 'hover:bg-aro-raise/60')} key={f.path} onClick={() => setActive(i)} onKeyDown={(e) => e.key === 'Enter' && setActive(i)} role="button" tabIndex={0}>
+                <div aria-label={`Open ${f.path}`} className={cn('flex cursor-pointer items-start gap-2 rounded-control px-2 py-2 transition-colors', on ? 'bg-aro-raise shadow-aro-e1' : 'hover:bg-aro-raise/60')} key={f.path} onClick={() => setActive(i)} onKeyDown={(e) => e.key === 'Enter' && setActive(i)} role="button" tabIndex={0}>
                   <button
                     aria-label={s ? `Unstage ${f.path}` : `Stage ${f.path}`}
-                    className={cn('mt-[2px] flex size-[15px] shrink-0 cursor-pointer items-center justify-center rounded-[3px] border', s ? 'border-aro-iris bg-aro-iris text-aro-on-iris' : 'border-aro-line-strong')}
+                    className={cn('mt-[2px] flex size-[15px] shrink-0 cursor-pointer items-center justify-center rounded-control border', s ? 'border-aro-iris bg-aro-iris text-aro-on-iris' : 'border-aro-line-strong')}
                     onClick={(e) => {
                       e.stopPropagation()
                       onToggleStaged(f.path)
@@ -241,10 +287,10 @@ export function AroReviewPage() {
                     {s && <IconCheck size={9} />}
                   </button>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-aro-mono text-[11px] text-aro-ink-2">{f.path.split('/').pop()}</p>
-                    <p className="truncate font-aro-mono text-[9.5px] text-aro-ink-4">{f.path.split('/').slice(0, -1).join('/')}</p>
+                    <p className="truncate font-aro-mono text-xs text-aro-ink-2">{f.path.split('/').pop()}</p>
+                    <p className="truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{f.path.split('/').slice(0, -1).join('/')}</p>
                   </div>
-                  <div className="text-right font-aro-mono text-[9.5px]">
+                  <div className="text-right font-aro-mono text-[var(--aro-text-2xs,10px)]">
                     <div className="text-aro-mint">+{f.adds}</div>
                     <div className="text-aro-rose">−{f.dels}</div>
                   </div>
@@ -253,16 +299,16 @@ export function AroReviewPage() {
             })}
           </div>
           <div className="border-t border-aro-line-soft p-2.5">
-            <div className="font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">checkpoints</div>
-            {checkpoints.length === 0 && <p className="mt-2 text-[10.5px] text-aro-ink-4">none yet this session</p>}
+            <div className="font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">checkpoints</div>
+            {checkpoints.length === 0 && <p className="mt-2 text-[var(--aro-text-2xs,10px)] text-aro-ink-4">none yet this session</p>}
             {checkpoints.map(({ hash, label, at }, i) => (
               <div className="group mt-2 flex items-center gap-2" key={`${hash}-${i}`}>
                 <i className={cn('size-[6px] rounded-full', i === 0 ? 'bg-aro-iris' : 'bg-aro-line-strong')} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11.5px] text-aro-ink-2">{label}</p>
-                  <p className="font-aro-mono text-[9.5px] text-aro-ink-4">{hash}{at ? ` · ${at}` : ''}</p>
+                  <p className="truncate text-xs text-aro-ink-2">{label}</p>
+                  <p className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{hash}{at ? ` · ${at}` : ''}</p>
                 </div>
-                <button className="cursor-pointer font-aro-mono text-[9.5px] text-aro-iris-soft opacity-0 group-hover:opacity-100" onClick={() => void restoreCheckpoint(hash)}>restore</button>
+                <button className="cursor-pointer font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-iris-soft opacity-0 group-hover:opacity-100" onClick={() => void restoreCheckpoint(hash)}>restore</button>
               </div>
             ))}
           </div>
@@ -272,17 +318,23 @@ export function AroReviewPage() {
         <div className="aro-scroll-thin flex-1 overflow-y-auto bg-aro-bg">
           <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-aro-line-soft bg-aro-bg/90 px-4 py-2.5 backdrop-blur-xl">
             <IconFile className="text-aro-ink-4" size={12} />
-            <span className="font-aro-mono text-[11.5px] text-aro-ink">{file.path}</span>
-            <span className="font-aro-mono text-[10px] text-aro-mint">+{file.adds}</span>
-            <span className="font-aro-mono text-[10px] text-aro-rose">−{file.dels}</span>
+            <span className="font-aro-mono text-xs text-aro-ink">{file.path}</span>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-mint">+{file.adds}</span>
+            <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-rose">−{file.dels}</span>
             <div className="ml-auto flex gap-1.5">
               <Button onClick={() => hunks.length > 0 && toggleComposer(hkey(0))} size="xs" variant="ghost">Comment</Button>
               <Button onClick={() => { const r = hunks.findIndex((_, i) => verdicts[hkey(i)] === 'rejected'); toggleComposer(hkey(r === -1 ? 0 : r)); }} size="xs" variant="ghost">Ask agent to fix</Button>
-              <Button onClick={() => toast('R3 opens this hunk set in the host editor pane', 'iris')} size="xs" variant="ghost">Open in editor</Button>
+              <AroIdeHandoffButton
+                filePath={file.path}
+                label="Open in editor"
+                line={hunks.length > 0 ? parseHunkLine(hunks[0].header) : undefined}
+                size="xs"
+                variant="ghost"
+              />
             </div>
           </div>
           <div className="p-4">
-            <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-aro-mono text-[10px]">
+            <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-aro-mono text-[var(--aro-text-2xs,10px)]">
               <span className="text-aro-ink-3">{hunks.length} hunk{hunks.length === 1 ? '' : 's'}</span>
               <span className="text-aro-ink-4">·</span>
               <span className="text-aro-mint">{fAcc} accepted</span>
@@ -300,7 +352,7 @@ export function AroReviewPage() {
 
             {hunks.length === 0 ? (
               loading ? (
-                <InlineHint><span className="font-aro-mono text-[10.5px] text-aro-cyan">loading diff…</span></InlineHint>
+                <InlineHint><span className="font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-cyan">loading diff…</span></InlineHint>
               ) : (
                 <InlineHint>Diff unavailable for this file — the git bridge could not produce one (binary, untracked without content, or a remote gateway without git access).</InlineHint>
               )
@@ -310,15 +362,15 @@ export function AroReviewPage() {
                 const v = verdicts[key]
 
                 return (
-                  <div className={cn('group/hunk mb-2 overflow-clip rounded-[8px] border bg-aro-well transition-all', v === 'accepted' ? 'border-aro-mint/30' : v === 'rejected' ? 'border-aro-rose/25 opacity-60' : 'border-aro-line-soft hover:border-aro-line-strong')} key={key}>
+                  <div className={cn('group/hunk mb-2 overflow-clip rounded-control border bg-aro-well transition-colors', v === 'accepted' ? 'border-aro-mint/30' : v === 'rejected' ? 'border-aro-rose/25 opacity-60' : 'border-aro-line-soft hover:border-aro-line-strong')} key={key}>
                     <div className="sticky top-[45px] z-10 flex items-center gap-2 border-b border-aro-line-soft bg-aro-well/80 px-2.5 py-[5px] backdrop-blur">
-                      <span className="shrink-0 font-aro-mono text-[9px] tracking-[.14em] text-aro-ink-4 uppercase">hunk {i + 1}</span>
-                      <span className="shrink-0 font-aro-mono text-[9.5px]">
+                      <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">hunk {i + 1}</span>
+                      <span className="shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)]">
                         <span className="text-aro-mint">+{h.adds}</span> <span className="text-aro-rose">−{h.dels}</span>
                       </span>
-                      <span className="min-w-0 flex-1 truncate font-aro-mono text-[10.5px] text-aro-ink-3">{h.header}</span>
+                      <span className="min-w-0 flex-1 truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-3">{h.header}</span>
                       {v && (
-                        <button aria-label={`Reset hunk ${i + 1}`} className={cn('inline-flex shrink-0 cursor-pointer items-center rounded-full px-1.5 py-px font-aro-mono text-[9.5px] transition-opacity hover:opacity-75', v === 'accepted' ? 'bg-aro-mint-tint text-aro-mint' : 'bg-aro-rose-tint text-aro-rose')} onDoubleClick={() => resetVerdict(key)}>
+                        <button aria-label={`Reset hunk ${i + 1}`} className={cn('inline-flex shrink-0 cursor-pointer items-center rounded-full px-1.5 py-px font-aro-mono text-[var(--aro-text-2xs,10px)] transition-opacity hover:opacity-75', v === 'accepted' ? 'bg-aro-mint-tint text-aro-mint' : 'bg-aro-rose-tint text-aro-rose')} onDoubleClick={() => resetVerdict(key)}>
                           {v === 'accepted' ? 'accepted ✓' : 'rejected'}
                         </button>
                       )}
@@ -326,6 +378,14 @@ export function AroReviewPage() {
                         <Button aria-label={`Accept hunk ${i + 1}`} icon={IconCheck} onClick={() => setVerdict(key, 'accepted')} size="xs" variant="success">Accept</Button>
                         <Button aria-label={`Reject hunk ${i + 1}`} icon={IconX} onClick={() => setVerdict(key, 'rejected')} size="xs" variant="danger">Reject</Button>
                         <Button aria-label={`Comment on hunk ${i + 1}`} icon={IconPencil} onClick={() => toggleComposer(key)} size="xs" variant="ghost">Comment</Button>
+                        <AroIdeHandoffButton
+                          aria-label={`Jump to hunk ${i + 1} in editor`}
+                          filePath={file.path}
+                          label="Jump"
+                          line={parseHunkLine(h.header)}
+                          size="xs"
+                          variant="ghost"
+                        />
                       </div>
                     </div>
                     <div className="[&>div]:rounded-none [&>div]:border-0 [&>div>div:first-child]:hidden">
@@ -336,7 +396,7 @@ export function AroReviewPage() {
                         <Input
                           aria-label={`Comment on hunk ${i + 1}`}
                           autoFocus
-                          className="h-[26px] flex-1 text-[12px]"
+                          className="h-[26px] flex-1 text-xs"
                           onChange={(e) => setDraft(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {

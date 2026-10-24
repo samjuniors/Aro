@@ -107,7 +107,7 @@ export function DecodeText({
   return (
     <span
       className={cn(
-        'inline-flex items-center font-mono text-[0.64rem] font-semibold uppercase tracking-[0.4em] tabular-nums',
+        'inline-flex items-center font-mono text-aro-xs font-semibold uppercase tracking-[0.4em] tabular-nums',
         className
       )}
       {...props}
@@ -117,7 +117,7 @@ export function DecodeText({
       {cursor && (
         <span
           aria-hidden="true"
-          className="dither ml-0.5 inline-block size-2 shrink-0 -translate-y-px rounded-[1px] decode-cursor-blink"
+          className="dither ml-0.5 inline-block size-2 shrink-0 -translate-y-px rounded-control decode-cursor-blink"
         />
       )}
     </span>

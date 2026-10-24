@@ -387,11 +387,11 @@ function ModelResults({
                           style={{ width: `${Math.max(2, loadProgress.percent)}%` }}
                         />
                       </span>
-                      <span className="text-[0.62rem] tabular-nums text-muted-foreground">{loadProgress.percent}%</span>
+                      <span className="text-aro-xs tabular-nums text-muted-foreground">{loadProgress.percent}%</span>
                     </span>
                   )}
                   {locked && (
-                    <span className="shrink-0 text-[0.62rem] uppercase tracking-wide opacity-80">{copy.pro}</span>
+                    <span className="shrink-0 text-aro-xs uppercase tracking-wide opacity-80">{copy.pro}</span>
                   )}
                   <ModelPrice isCurrent={isCurrent} price={price} />
                 </CommandItem>
@@ -401,7 +401,7 @@ function ModelResults({
               <DownloadingModelRow jobId={job.jobId} key={job.jobId} owner={owner} target={job.target} />
             ))}
             {unavailable.size > 0 && (
-              <div className="px-6 pb-2 pt-1 text-[0.62rem] leading-relaxed text-muted-foreground">
+              <div className="px-6 pb-2 pt-1 text-aro-xs leading-relaxed text-muted-foreground">
                 {copy.proNeedsSubscription}
               </div>
             )}
@@ -425,7 +425,7 @@ function ModelResults({
               value={`custom:${provider.slug}:${customSlug}`}
             >
               <span className="min-w-0 flex-1 truncate">{customSlug}</span>
-              <span className="shrink-0 text-[0.66rem] text-muted-foreground">{provider.name}</span>
+              <span className="shrink-0 text-aro-xs text-muted-foreground">{provider.name}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -485,7 +485,7 @@ function DownloadingModelRow({
             style={{ width: `${Math.max(2, percent ?? 0)}%` }}
           />
         </span>
-        <span className="text-[0.62rem] tabular-nums text-muted-foreground">
+        <span className="text-aro-xs tabular-nums text-muted-foreground">
           {paused ? copyLocal.downloadPausedLabel : typeof percent === 'number' ? `${percent}%` : copy.downloading}
         </span>
       </span>
@@ -509,7 +509,7 @@ function ModelPrice({ price, isCurrent }: { price?: ModelPricing; isCurrent: boo
         {typeof price.discount_percent === 'number' ? (
           <span
             className={cn(
-              'rounded-sm px-1 py-0.5 text-[0.62rem] font-semibold',
+              'rounded-control px-1 py-0.5 text-aro-xs font-semibold',
               isCurrent ? 'bg-primary-foreground/20' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
             )}
           >
@@ -518,7 +518,7 @@ function ModelPrice({ price, isCurrent }: { price?: ModelPricing; isCurrent: boo
         ) : null}
         <span
           className={cn(
-            'shrink-0 rounded-sm px-1 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide',
+            'shrink-0 rounded-control px-1 py-0.5 text-aro-xs font-semibold uppercase tracking-wide',
             isCurrent ? 'bg-primary-foreground/20' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
           )}
         >
@@ -533,7 +533,7 @@ function ModelPrice({ price, isCurrent }: { price?: ModelPricing; isCurrent: boo
   return (
     <span
       className={cn(
-        'shrink-0 inline-flex items-center gap-1.5 text-[0.66rem] tabular-nums',
+        'shrink-0 inline-flex items-center gap-1.5 text-aro-xs tabular-nums',
         isCurrent ? 'text-primary-foreground/80' : 'text-muted-foreground'
       )}
       title={copy.priceTitle}
@@ -541,7 +541,7 @@ function ModelPrice({ price, isCurrent }: { price?: ModelPricing; isCurrent: boo
       {onSale ? (
         <span
           className={cn(
-            'rounded-sm px-1 py-0.5 text-[0.62rem] font-semibold',
+            'rounded-control px-1 py-0.5 text-aro-xs font-semibold',
             isCurrent ? 'bg-primary-foreground/20' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
           )}
         >
@@ -569,7 +569,7 @@ function LoadingResults() {
   return (
     <CommandGroup heading={<Skeleton className="h-3 w-32" />}>
       {Array.from({ length: 4 }, (_, rowIndex) => (
-        <div className="rounded-sm py-1.5 pl-6 pr-2" key={rowIndex}>
+        <div className="rounded-control py-1.5 pl-6 pr-2" key={rowIndex}>
           <Skeleton className={cn('h-5', rowIndex % 3 === 0 ? 'w-3/5' : rowIndex % 3 === 1 ? 'w-4/5' : 'w-1/2')} />
         </div>
       ))}
@@ -587,11 +587,11 @@ function ProviderHeading({ provider }: { provider: ModelOptionProvider }) {
   // route by name — the label is copy.
   const tierBadge =
     provider.free_tier === true || provider.free_tier_row === true ? (
-      <span className="rounded-sm bg-emerald-500/15 px-1 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+      <span className="rounded-control bg-emerald-500/15 px-1 py-0.5 text-aro-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
         {copy.freeTier}
       </span>
     ) : provider.free_tier === false ? (
-      <span className="rounded-sm bg-primary/15 px-1 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-primary">
+      <span className="rounded-control bg-primary/15 px-1 py-0.5 text-aro-xs font-semibold uppercase tracking-wide text-primary">
         {copy.pro}
       </span>
     ) : null

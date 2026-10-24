@@ -27,7 +27,7 @@ export function EmbedFacade({ descriptor, onLoad }: { descriptor: EmbedDescripto
 
   return (
     <span
-      className="flex size-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)/30"
+      className="flex size-full flex-col items-center justify-center gap-2 rounded-panel border border-dashed border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary)/30"
       style={style}
     >
       <SplitButton
@@ -37,7 +37,7 @@ export function EmbedFacade({ descriptor, onLoad }: { descriptor: EmbedDescripto
         primaryIcon={<Play className="size-3 translate-x-px fill-current" />}
         value={choice}
       />
-      <span className="text-[0.6875rem] text-(--ui-text-tertiary)">{hostOf(descriptor)}</span>
+      <span className="text-aro-xs text-(--ui-text-tertiary)">{hostOf(descriptor)}</span>
     </span>
   )
 }

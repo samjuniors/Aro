@@ -1,0 +1,213 @@
+{
+  "version": 2,
+  "description": "Per-file ratchet baseline for raw visual values in apps/desktop/src. Counts only shrink; lower them with UPDATE_RATCHET=1 npx vitest run no-raw-visuals.",
+  "generated": true,
+  "files": {
+    "adapters/agents.ts": {
+      "hexLiterals": 16
+    },
+    "app/capabilities/plugins/plugins-tab.tsx": {
+      "hexLiterals": 3
+    },
+    "app/chat/composer/attachments.tsx": {
+      "rawShadows": 1
+    },
+    "app/chat/composer/index.tsx": {
+      "hexLiterals": 1
+    },
+    "app/chat/composer/voice-activity.tsx": {
+      "rawShadows": 2
+    },
+    "app/chat/orb.tsx": {
+      "hexLiterals": 12
+    },
+    "app/chat/session-tile.tsx": {
+      "hexLiterals": 1
+    },
+    "app/chat/sidebar/profile-dropdown-switcher.tsx": {
+      "textArbitrary": 1
+    },
+    "app/chat/sidebar/session-row.tsx": {
+      "textArbitrary": 1
+    },
+    "app/chat/voice-agent-orb.tsx": {
+      "zArbitrary": 1
+    },
+    "app/messaging/platform-icon.tsx": {
+      "hexLiterals": 17
+    },
+    "app/quick-entry/quick-entry-app.tsx": {
+      "hexLiterals": 3
+    },
+    "app/right-sidebar/git-section.tsx": {
+      "textArbitrary": 1
+    },
+    "app/right-sidebar/index.tsx": {
+      "rawShadows": 2
+    },
+    "app/right-sidebar/review/index.tsx": {
+      "rawShadows": 2
+    },
+    "app/right-sidebar/terminal/selection.ts": {
+      "hexLiterals": 42
+    },
+    "app/right-sidebar/terminal/use-agent-terminal.ts": {
+      "hexLiterals": 1
+    },
+    "app/right-sidebar/terminal/use-terminal-session.ts": {
+      "hexLiterals": 1
+    },
+    "app/settings/appearance-settings.tsx": {
+      "hexLiterals": 24
+    },
+    "app/settings/billing/tier-art.tsx": {
+      "hexLiterals": 1
+    },
+    "app/settings/gateway-settings.tsx": {
+      "hexLiterals": 1
+    },
+    "app/settings/vault-settings.tsx": {
+      "hexLiterals": 1
+    },
+    "app/shell/wslg-window-controls.tsx": {
+      "hexLiterals": 3
+    },
+    "app/starmap/color.ts": {
+      "hexLiterals": 1
+    },
+    "aro/AgentsView.tsx": {
+      "hexLiterals": 2
+    },
+    "aro/AroAppearanceSettings.tsx": {
+      "hexLiterals": 40
+    },
+    "aro/AroProjectDialog.tsx": {
+      "hexLiterals": 6
+    },
+    "aro/AroSidebar.tsx": {
+      "hexLiterals": 17
+    },
+    "aro/AroTitlebar.tsx": {
+      "hexLiterals": 24,
+      "textArbitrary": 1
+    },
+    "aro/DesignSystemAro.tsx": {
+      "hexLiterals": 36,
+      "textArbitrary": 1
+    },
+    "aro/Icons.tsx": {
+      "hexLiterals": 14
+    },
+    "aro/ui.tsx": {
+      "zArbitrary": 4
+    },
+    "aro/workbenchData.ts": {
+      "hexLiterals": 10
+    },
+    "components/assistant-ui/artifact-card.tsx": {
+      "textArbitrary": 1
+    },
+    "components/assistant-ui/markdown-text.tsx": {
+      "rawShadows": 1
+    },
+    "components/assistant-ui/thread/assistant-message.tsx": {
+      "hexLiterals": 1
+    },
+    "components/chat/activity-timer-text.tsx": {
+      "textArbitrary": 1
+    },
+    "components/chat/code-card.tsx": {
+      "textArbitrary": 1
+    },
+    "components/chat/code-editor-theme.ts": {
+      "hexLiterals": 18
+    },
+    "components/chat/shiki-config.ts": {
+      "hexLiterals": 2
+    },
+    "components/chat/vibe-hearts.tsx": {
+      "hexLiterals": 1
+    },
+    "components/onboarding-chat/options.tsx": {
+      "hexLiterals": 12
+    },
+    "components/pane-shell/tree/renderer/tree-group.tsx": {
+      "hexLiterals": 1
+    },
+    "components/pane-shell/tree/zone-editor.tsx": {
+      "zArbitrary": 1
+    },
+    "components/pane-shell/tree/zones-engine.ts": {
+      "hexLiterals": 4
+    },
+    "components/pet/pet-star-shower.tsx": {
+      "hexLiterals": 3
+    },
+    "components/ui/badge.tsx": {
+      "textArbitrary": 1
+    },
+    "components/ui/confirm-dialog.tsx": {
+      "hexLiterals": 1
+    },
+    "components/ui/dialog.tsx": {
+      "zArbitrary": 2
+    },
+    "components/ui/kbd.tsx": {
+      "rawShadows": 2
+    },
+    "components/ui/pane-tab.tsx": {
+      "rawShadows": 5
+    },
+    "components/ui/profile-glyph.tsx": {
+      "textArbitrary": 1
+    },
+    "components/ui/sidebar.tsx": {
+      "rawShadows": 2
+    },
+    "debug/perf-live.ts": {
+      "hexLiterals": 3
+    },
+    "lib/mcp-brands.tsx": {
+      "hexLiterals": 38
+    },
+    "lib/preview-act/watch-in-page.ts": {
+      "hexLiterals": 4
+    },
+    "lib/preview-annotate/in-page.ts": {
+      "hexLiterals": 1
+    },
+    "lib/preview-annotate/tokens.ts": {
+      "hexLiterals": 4
+    },
+    "plugins/hermes-bots/avatar.tsx": {
+      "hexLiterals": 1
+    },
+    "plugins/hermes-bots/mcp-setup.tsx": {
+      "hexLiterals": 1
+    },
+    "plugins/hermes-bots/roster-pane-toolbar.tsx": {
+      "hexLiterals": 1
+    },
+    "plugins/hermes-bots/screen-hero.tsx": {
+      "textArbitrary": 1
+    },
+    "plugins/kanban/drawer.tsx": {
+      "hexLiterals": 1
+    },
+    "plugins/kanban/types.ts": {
+      "hexLiterals": 8
+    },
+    "themes/color.ts": {
+      "hexLiterals": 3
+    },
+    "themes/context.tsx": {
+      "hexLiterals": 20
+    },
+    "themes/skin.ts": {
+      "hexLiterals": 7
+    },
+    "themes/vscode.ts": {
+      "hexLiterals": 7
+    }
+  }
+}

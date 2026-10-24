@@ -107,7 +107,7 @@ export const ELITE_LAYOUT_ID = 'terminal-deck'
 
 export const LAYOUTS: Array<{ description: string; id: string; mode: InterfaceMode; name: string; tree: MiniNode }> = [
   {
-    description: 'For talking to Hermes.',
+    description: 'For talking to Aro.',
     id: 'sidebar-left',
     mode: 'simple',
     name: 'Basic',
@@ -128,7 +128,7 @@ export const LAYOUTS: Array<{ description: string; id: string; mode: InterfaceMo
 
 export function MiniTree({ node }: { node: MiniNode }) {
   if (node === 1) {
-    return <div className="min-h-0 min-w-0 flex-1 rounded-[3px] bg-foreground/15" />
+    return <div className="min-h-0 min-w-0 flex-1 rounded-control bg-foreground/15" />
   }
 
   return (
@@ -180,7 +180,7 @@ export function LayoutPreviewCard({
 }) {
   return (
     <button aria-pressed={active} className="group flex flex-col items-center gap-2" onClick={onSelect} type="button">
-      <span className={cn('flex aspect-[10/7] w-full flex-col gap-1.5 rounded-[8px] p-2', selectableClass(active))}>
+      <span className={cn('flex aspect-[10/7] w-full flex-col gap-1.5 rounded-control p-2', selectableClass(active))}>
         <MiniWindowButtons />
         <span className="flex min-h-0 flex-1">
           <MiniTree node={tree} />
@@ -188,7 +188,7 @@ export function LayoutPreviewCard({
       </span>
       <span className="flex flex-col items-center gap-0.5">
         <span className={cn('text-xs', active ? 'text-foreground' : 'text-muted-foreground')}>{name}</span>
-        {description && <span className="text-[0.68rem] text-muted-foreground/70">{description}</span>}
+        {description && <span className="text-[var(--aro-text-2xs,10px)] text-muted-foreground/70">{description}</span>}
       </span>
     </button>
   )

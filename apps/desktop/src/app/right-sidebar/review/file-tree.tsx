@@ -295,7 +295,7 @@ function ReviewDirRow({
   return (
     <>
       <div
-        className="group/review-row row-hover flex h-6 select-none items-center gap-1.5 rounded-md pr-1.5 text-xs text-(--ui-text-secondary) hover:text-foreground"
+        className="group/review-row row-hover flex h-6 select-none items-center gap-1.5 rounded-control pr-1.5 text-xs text-(--ui-text-secondary) hover:text-foreground"
         onClick={toggle}
         style={rowStyle(depth)}
       >
@@ -307,7 +307,7 @@ function ReviewDirRow({
         <span className="min-w-0 flex-1 truncate" title={node.name}>
           {node.name}
         </span>
-        {!open && <DiffCount added={node.added} className="text-[0.64rem] leading-4" removed={node.removed} />}
+        {!open && <DiffCount added={node.added} className="text-[var(--aro-text-2xs,10px)] leading-4" removed={node.removed} />}
       </div>
       {!leaf && open && node.children && <ReviewNodeList animate={animate} depth={depth + 1} nodes={node.children} />}
     </>
@@ -394,7 +394,7 @@ function ReviewFileRow({ node, depth }: { node: ReviewTreeNode; depth: number })
       <div
         aria-selected={selected}
         className={cn(
-          'group/review-row row-hover flex h-6 select-none items-center gap-1.5 rounded-md pr-1.5 text-xs text-(--ui-text-secondary) hover:text-foreground',
+          'group/review-row row-hover flex h-6 select-none items-center gap-1.5 rounded-control pr-1.5 text-xs text-(--ui-text-secondary) hover:text-foreground',
           selected && 'bg-(--ui-row-active-background) text-foreground'
         )}
         draggable
@@ -419,7 +419,7 @@ function ReviewFileRow({ node, depth }: { node: ReviewTreeNode; depth: number })
             {node.name}
           </span>
           {node.dir && (
-            <span className="min-w-0 shrink-[9999] truncate text-[0.68rem] text-(--ui-text-tertiary)" title={node.dir}>
+            <span className="min-w-0 shrink-[9999] truncate text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)" title={node.dir}>
               {node.dir}
             </span>
           )}
@@ -429,7 +429,7 @@ function ReviewFileRow({ node, depth }: { node: ReviewTreeNode; depth: number })
           <Tip label={file.staged ? c.unstage : c.stage}>
             <Button
               aria-label={file.staged ? c.unstage : c.stage}
-              className="size-4 rounded text-muted-foreground/70 hover:text-foreground"
+              className="size-4 rounded-control text-muted-foreground/70 hover:text-foreground"
               onClick={event => {
                 event.stopPropagation()
                 void (file.staged ? unstageReviewFile(file.path) : stageReviewFile(file.path))
@@ -443,7 +443,7 @@ function ReviewFileRow({ node, depth }: { node: ReviewTreeNode; depth: number })
           <Tip label={c.revert}>
             <Button
               aria-label={c.revert}
-              className="size-4 rounded text-muted-foreground/70 hover:text-(--ui-red)"
+              className="size-4 rounded-control text-muted-foreground/70 hover:text-(--ui-red)"
               onClick={event => {
                 event.stopPropagation()
                 requestRevert(file.path)
@@ -458,7 +458,7 @@ function ReviewFileRow({ node, depth }: { node: ReviewTreeNode; depth: number })
 
         <DiffCount
           added={node.added}
-          className="text-[0.64rem] leading-4 group-hover/review-row:hidden"
+          className="text-[var(--aro-text-2xs,10px)] leading-4 group-hover/review-row:hidden"
           removed={node.removed}
         />
         {file.staged && (

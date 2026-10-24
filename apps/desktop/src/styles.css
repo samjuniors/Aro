@@ -8,6 +8,7 @@
 @import './aro/tokens.css';
 /* Apply the prototype visual system to real Hermes surfaces. */
 @import './aro/host-theme.css';
+@import './aro/codex-theme.css';
 
 /* Titlebar clusters: 24×24 hit targets, 13.9px glyphs. codicon.css is
    unlayered (`font: 16px/1`); Tailwind utilities in @layer lose that fight. */
@@ -129,6 +130,40 @@
   src: url('./fonts/JetBrainsMono-Italic.woff2') format('woff2');
 }
 
+/* Geist Sans — primary UI, tabs, chat, and buttons */
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/Geist-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/Geist-Variable.woff2') format('woff2');
+}
+
+/* Cascadia Code — terminal output */
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/CascadiaCode-Regular.woff2') format('woff2');
+}
+
+/* Monaspace Neon — agent code blocks */
+@font-face {
+  font-family: 'Monaspace Neon';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/MonaspaceNeon-Regular.woff2') format('woff2');
+}
+
 @theme inline {
   --color-background: var(--dt-background);
   --color-foreground: var(--dt-foreground);
@@ -166,6 +201,21 @@
   --radius-2xl: calc(var(--radius-scalar) * 1.5rem);
   --radius-3xl: calc(var(--radius-scalar) * 2rem);
   --radius-4xl: calc(var(--radius-scalar) * 2.5rem);
+  --radius-control: var(--aro-radius-control, 7px);
+  --radius-panel: var(--aro-radius-panel, 10px);
+  --radius-overlay: var(--aro-radius-overlay, 14px);
+
+  /* Type ladder utilities (text-aro-xs … text-aro-mono) backed by --aro-text-*
+     in aro/tokens.css, with fallbacks for windows that do not load the Aro
+     theme. Font-size only, no line-height, so existing leading is inherited
+     and nothing reflows when a hand-picked size is replaced. Add new names to
+     lib/utils.ts (tailwind-merge) in the same change. */
+  --text-aro-xs: var(--aro-text-xs, 0.6875rem);
+  --text-aro-sm: var(--aro-text-sm, 0.75rem);
+  --text-aro-md: var(--aro-text-md, 0.8125rem);
+  --text-aro-lg: var(--aro-text-lg, 0.9375rem);
+  --text-aro-xl: var(--aro-text-xl, 1.125rem);
+  --text-aro-mono: var(--aro-text-mono, 0.75rem);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -202,6 +252,8 @@
     0 0 0 0.0625rem color-mix(in srgb, var(--dt-foreground) 8%, transparent),
     0 0.75rem 2rem color-mix(in srgb, #000 12%, transparent);
   --shadow-composer: 0 0.0625rem 0.125rem color-mix(in srgb, #000 5%, transparent);
+  --shadow-menu: var(--aro-shadow-menu);
+  --shadow-panel: var(--aro-shadow-panel);
 }
 
 @layer base {

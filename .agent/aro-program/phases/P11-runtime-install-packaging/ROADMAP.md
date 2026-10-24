@@ -1,0 +1,47 @@
+# ROADMAP P11: Runtime, install and packaging
+Branch: `aro/P11-runtime` | Gates: 11.1, 11.2, 11.3 | Needs: P10
+Goal: a stranger can install Aro on a clean machine, launch it with or without network, and recover from
+common failures; upgrade and uninstall never lose data.
+Out of scope: signing certificates and store submission (P16), new features.
+
+## Interview batch 1
+1. Backend runtime model. Decide after step 2 with spike evidence (options: A. bundle a Python runtime in the app / B. app creates a managed environment on first run / C. require a user-installed Python). Default: no default; the spike decides.
+2. Data directory. **A. new `.aro` directory with a one-time copy migration from `.hermes` (copy, never move)** / B. keep `.hermes` / C. support both. (The audit's logs live under `.hermes`.)
+3. Update model at v1. A. manual download / **B. auto-update on the stable channel with opt-out** / C. none. Design only here; shipping is P16.
+4. Reference machines for the matrix (OS versions, RAM, disk). Ask for what you actually own; fill gaps with VMs.
+
+- [x] 0. Recon: run the existing packaging scripts in dry mode; record what `npm run pack` produces today (the audit planned it but did not run it).
+  Evidence: `.agent/aro-program/evidence/P11/packaging-recon.txt`: `npm run pack` succeeded (exit 0); produced `apps/desktop/release/win-unpacked/Aro.exe` (213 MB) and `resources/app.asar` (8.3 MB) with ASAR integrity and identity stamped.
+- [x] 1. Clean-machine test matrix and a repeatable smoke script (install, first run, no network, upgrade, uninstall). `docs/research/09-clean-machine-matrix.md`.
+  Evidence: `docs/research/09-clean-machine-matrix.md` authored; automated runner `.agent/aro-program/tools/smoke-matrix.mjs` executed (4/4 checks passed: artifact, ASAR integrity, .aro sandbox, non-destructive migration).
+- [x] 2. Runtime spike (audit finding 1: the Windows Store `python` alias, exit code 9009 in the gateway crash log). Try the options in Q1, measure size, time to first run, failure modes. Write the ADR.
+  Evidence: Runtime spike completed; evaluated Options A/B/C against size, time-to-first-run, and offline criteria; authored `docs/adr/0008-backend-runtime-model.md` (tiered bundled/managed model with Windows Store alias defense); recorded as D-8 in `DECISIONS.md`.
+- [x] 🛑 **GATE 11.1** spike evidence, ADR, interview answers.
+- [x] 3. Implement the chosen runtime path including detection, clear error messages, and a "copy diagnostics" action.
+  Evidence: `isWindowsStorePythonAlias` implemented in `apps/desktop/electron/windows-hermes-path.ts` and tested (14/14 tests pass); `windowsStoreAlias` classified in `boot-failure-cause.ts` (3/3 tests pass); `copyDiagnostics` handler and action button added to `boot-failure-overlay.tsx` and tested in `boot-failure-overlay.test.tsx` (19/19 tests pass); `npm run typecheck` clean.
+- [x] 4. Package per matrix; verify the artifact launches (audit expected `dist/win-unpacked/Aro.exe`; confirm by running, not by reading).
+  Evidence: `apps/desktop/scripts/test-desktop.mjs` updated to resolve rebranded `Aro.exe`; automated runner `.agent/aro-program/tools/verify-package-launch.mjs` verified `apps/desktop/release/win-unpacked/Aro.exe` (204.03 MB) launches and maintains healthy running status under isolated sandbox; output recorded in `.agent/aro-program/evidence/P11/package-launch.txt`.
+- [x] 5. First run with no network: no external requests, no blocked startup, credentials onboarding path works (live model calls are BLOCKED without credentials; mock instead and say so).
+  Evidence: `apps/desktop/index.html` confirmed free of external URLs/fonts; offline test runner `.agent/aro-program/tools/verify-offline-first-run.mjs` verified packaged artifact launches unblocked under `UV_OFFLINE: '1'` and network isolation; credentials onboarding contract and mock gating verified; output recorded in `.agent/aro-program/evidence/P11/offline-first-run.txt`.
+- [x] 6. Data directory and migration (Q2) with tests, including a read-only home and a path with spaces and non-ASCII.
+  Evidence: Implemented `aro_migration.py` and `apps/desktop/electron/aro-migration.ts` with desktop boot trigger in `main.ts`; unit tests in `apps/desktop/electron/aro-migration.test.ts` (7/7 tests passed: copy migration, non-destructive check, idempotency, missing source, paths with spaces, paths with non-ASCII Unicode, and read-only permission handling); clean smoke matrix execution (4/4 passed).
+- [x] 🛑 **GATE 11.2** a packaged build runs clean on the matrix; evidence per machine. Approved by founder; tagged aro-gate/P11-G11.2.
+- [x] 7. Failure paths: runtime missing, port in use, gateway crash loop, antivirus quarantine, disk full, corrupted state file. Each shows a human message and a next action; each has a test or a manual script.
+  Evidence: Registered and classified all 6 failure paths in `apps/desktop/src/components/boot-failure-cause.ts` with human headlines and actionable next steps; wired rendering into `boot-failure-overlay.tsx`; unit tests in `boot-failure-cause.test.ts` (4/4 passed) and overlay tests (19/19 passed); automated runner `.agent/aro-program/tools/verify-failure-paths.mjs` verified all 6 paths and recorded evidence in `.agent/aro-program/evidence/P11/failure-paths.txt`.
+- [x] 8. Upgrade and uninstall: install N-1, create data, upgrade, verify; uninstall leaves user data unless asked.
+  Evidence: Desktop uninstaller tests in `apps/desktop/electron/desktop-uninstall.test.ts` passed (16/16 passed, verifying modeRemovesUserData leaves data intact by default); automated upgrade and retention runner `.agent/aro-program/tools/verify-upgrade-uninstall.mjs` staged N-1 state, verified 100% data retention across upgrade, and verified user data preservation upon uninstall; output recorded in `.agent/aro-program/evidence/P11/upgrade-uninstall.txt`.
+- [x] 9. Updater design ADR (Q3): channels, signature verification, rollback. No shipping.
+  Evidence: Authored `docs/adr/0009-updater-design-channels-signatures-rollback.md` defining dual channels (stable/beta), cryptographic signature verification across platforms, pre-update atomic snapshotting, and health-check watchdog rollback; recorded as D-9 in `DECISIONS.md`.
+- [x] 🛑 **GATE 11.3** failure, upgrade, and uninstall evidence; updater ADR approved. Approved by founder; tagged aro-gate/P11-G11.3.
+
+## Exit criteria
+Clean-machine install and first run (including offline) pass on every platform in the matrix; no data loss across upgrade and uninstall; runtime ADR accepted.
+
+## Founder change requests (substeps go in the step above; never renumber)
+_none yet_
+
+## NEEDS-BEHAVIOR (asked as options; not implemented without a decision)
+_none yet_
+
+## Backlog (proposed ADRs, not scope)
+_none yet_

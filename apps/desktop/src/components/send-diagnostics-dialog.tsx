@@ -98,7 +98,7 @@ export function SendDiagnosticsHost() {
             </DialogHeader>
             {(state.result?.viewUrl || state.result?.uploadId) && (
               <div
-                className="flex items-center gap-2 rounded-md border border-(--ui-stroke-tertiary) px-3 py-2"
+                className="flex items-center gap-2 rounded-control border border-(--ui-stroke-tertiary) px-3 py-2"
                 data-selectable-text="true"
               >
                 {state.result.viewUrl ? (
@@ -110,7 +110,7 @@ export function SendDiagnosticsHost() {
                   // preview pane would open BEHIND this modal dialog; the
                   // support buttons below already go to the system browser.
                   <ExternalLinkAnchor
-                    className="min-w-0 flex-1 truncate font-mono text-[0.78rem] text-(--ui-text-secondary)"
+                    className="min-w-0 flex-1 truncate font-mono text-aro-sm text-(--ui-text-secondary)"
                     href={state.result.viewUrl}
                     native
                     title={state.result.viewUrl}
@@ -118,7 +118,7 @@ export function SendDiagnosticsHost() {
                     {state.result.viewUrl}
                   </ExternalLinkAnchor>
                 ) : (
-                  <code className="min-w-0 flex-1 truncate text-[0.78rem] text-(--ui-text-secondary)">
+                  <code className="min-w-0 flex-1 truncate text-aro-sm text-(--ui-text-secondary)">
                     {copy.uploadIdFallback(state.result.uploadId ?? '')}
                   </code>
                 )}
@@ -130,7 +130,7 @@ export function SendDiagnosticsHost() {
                 />
               </div>
             )}
-            <div className="text-[0.8rem] text-(--ui-text-secondary)">{copy.handoffLead}</div>
+            <div className="text-aro-md text-(--ui-text-secondary)">{copy.handoffLead}</div>
             <div className="flex flex-wrap gap-1.5">
               {SUPPORT_LINKS.map(link => (
                 <Button key={link.key} onClick={() => openExternalLink(link.url)} size="sm" variant="outline">

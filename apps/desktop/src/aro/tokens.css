@@ -69,6 +69,34 @@
   font-display: swap;
   src: url('../fonts/JetBrainsMono-Regular.woff2') format('woff2');
 }
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Geist-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/Geist-Variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/CascadiaCode-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Monaspace Neon';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/MonaspaceNeon-Regular.woff2') format('woff2');
+}
 
 /* The prototype's next/font CSS variables, bound to the bundled families so
    the `var(--f-…, "Family")` indirection in the design profiles resolves to a
@@ -80,6 +108,9 @@
   --f-newsreader: 'Newsreader';
   --f-dmsans: 'DM Sans';
   --f-jbmono: 'JetBrains Mono';
+  --f-geist: 'Geist Sans';
+  --f-cascadia: 'Cascadia Code';
+  --f-monaspace: 'Monaspace Neon';
 }
 
 /* ============================================================================
@@ -171,6 +202,33 @@
   --animate-aro-sweep: aro-sweep 1.6s ease-in-out infinite;
   --animate-aro-sheet: aro-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-aro-drawer: aro-drawer-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  --duration-aro-instant: var(--aro-dur-instant);
+  --duration-aro-fast: var(--aro-dur-fast);
+  --duration-aro-mid: var(--aro-dur-mid);
+  --duration-aro-base: var(--aro-dur-base);
+  --duration-aro-slow: var(--aro-dur-slow);
+  --duration-aro-panel: var(--aro-dur-panel);
+  --duration-aro-hero: var(--aro-dur-hero);
+  --duration-aro-ambient: var(--aro-dur-ambient);
+
+  --ease-aro-standard: var(--aro-ease-standard);
+  --ease-aro-out: var(--aro-ease-out);
+  --ease-aro-in: var(--aro-ease-in);
+  --ease-aro-out-quint: var(--aro-ease-out-quint);
+  --ease-aro-spring: var(--aro-ease-spring);
+
+  /* ---- layout measures & heights (Phase 9 UX-ASM) ----------------------- */
+  --width-aro-chat: var(--aro-measure-chat);
+  --width-aro-form: var(--aro-measure-form);
+  --width-aro-overlay: var(--aro-measure-overlay);
+  --width-aro-sidebar: var(--aro-measure-sidebar);
+  --width-aro-nav: var(--aro-measure-nav);
+  --height-aro-titlebar: var(--aro-height-titlebar);
+  --height-aro-statusbar: var(--aro-height-statusbar);
+  --height-aro-header: var(--aro-height-header);
+  --height-aro-control: var(--aro-height-control);
+  --height-aro-row: var(--aro-height-row);
 }
 
 /* ============================================================================
@@ -232,19 +290,52 @@
    ============================================================================ */
 
 /* Theme-independent constants carried by whatever element opts in. */
+:root,
 [data-theme] {
   --aro-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --aro-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --aro-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --aro-ease-in-quit: cubic-bezier(0.4, 0, 1, 1);
   --aro-ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
-  /* Duration ladder — prototype's --dur-fast/mid/slow/panel, renamed to the
-     aro namespace so transitions can reference a shared timing scale instead
-     of hardcoding milliseconds at each call site. */
+  /* Standard duration & easing steps per DESIGN.md §3.7 */
+  --aro-dur-instant: 0ms;
   --aro-dur-fast: 100ms;
   --aro-dur-mid: 150ms;
+  --aro-dur-base: 160ms;
   --aro-dur-slow: 220ms;
   --aro-dur-panel: 260ms;
+  --aro-dur-hero: 450ms;
+  --aro-dur-ambient: 2200ms;
+  --aro-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --aro-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --aro-ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Spatial distance tokens per Phase 14 Step 2 */
+  --aro-dist-xs: 2px;
+  --aro-dist-sm: 4px;
+  --aro-dist-md: 8px;
+  --aro-dist-lg: 16px;
+  --aro-dist-xl: 28px;
+
+  /* Typography scale per DESIGN.md §3.6 */
+  --aro-text-xs: 11px;
+  --aro-text-xs-lh: 16px;
+  --aro-text-sm: 12px;
+  --aro-text-sm-lh: 16px;
+  --aro-text-md: 13px;
+  --aro-text-md-lh: 20px;
+  --aro-text-lg: 15px;
+  --aro-text-lg-lh: 22px;
+  --aro-text-xl: 18px;
+  --aro-text-xl-lh: 26px;
+  --aro-text-mono: 12px;
+  --aro-text-mono-lh: 18px;
+
+  /* Status roles mapped to theme signals per DESIGN.md §3.4 */
+  --aro-status-success: var(--aro-mint);
+  --aro-status-warn: var(--aro-amber);
+  --aro-status-danger: var(--aro-rose);
+  --aro-status-info: var(--aro-cyan);
 
   /* Shared interaction + elevation contract. Keep these derived from the
      active theme so every shell surface gets the same focus language and
@@ -257,7 +348,55 @@
   --aro-shadow-panel: 0 12px 30px -18px var(--aro-shadow-c), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
   --aro-shadow-menu: 0 18px 44px -18px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 5%, transparent) inset;
   --aro-shadow-composer: 0 18px 40px -24px var(--aro-shadow-d), 0 1px 0 color-mix(in srgb, var(--aro-ink) 4%, transparent) inset;
+
+  /* Layout measures and heights per LAYOUT-UX.md §2, §4 (Phase 9 UX-ASM) */
+  --aro-measure-chat: 72ch;
+  --aro-measure-form: 40rem;
+  --aro-measure-overlay: 75rem;
+  --aro-measure-sidebar: 237px;
+  --aro-measure-sidebar-min: 200px;
+  --aro-measure-sidebar-max: 360px;
+  --aro-measure-nav: 240px;
+  --aro-height-titlebar: 34px;
+  --aro-height-statusbar: 20px;
+  --aro-height-header: 40px;
+  --aro-height-control: 32px;
+  --aro-height-row: 36px;
+  --aro-switch-thumb: #ffffff;
+  --aro-shadow-thumb: 0 1px 3px var(--aro-shadow-c);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme] {
+    --aro-dur-instant: 0ms;
+    --aro-dur-fast: 0ms;
+    --aro-dur-mid: 0ms;
+    --aro-dur-base: 0ms;
+    --aro-dur-slow: 0ms;
+    --aro-dur-panel: 0ms;
+    --aro-dur-hero: 0ms;
+    --aro-dur-ambient: 0ms;
+    --aro-ease-standard: linear;
+    --aro-ease-out: linear;
+    --aro-ease-in: linear;
+    --aro-ease-out-quint: linear;
+    --aro-ease-spring: linear;
+    --aro-ease-out-expo: linear;
+    --aro-ease-in-quit: linear;
+    --aro-ease-inout: linear;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 
 /* ---- obsidian · deep neutral dark, violet accent (default) ---------------- */
 /* NOTE: no `:root[data-aro-ui='true']` selector here — that compound would
@@ -638,9 +777,9 @@ html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] .composer
 }
 
 /* ---- motion axis — reduced kills decorative animation globally ----------- */
-html[data-motion='reduced'] *,
-html[data-motion='reduced'] *::before,
-html[data-motion='reduced'] *::after {
+:is(html, [data-aro-gallery])[data-motion='reduced'] *,
+:is(html, [data-aro-gallery])[data-motion='reduced'] *::before,
+:is(html, [data-aro-gallery])[data-motion='reduced'] *::after {
   animation-duration: .001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: .001ms !important;

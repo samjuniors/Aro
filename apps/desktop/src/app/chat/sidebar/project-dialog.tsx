@@ -226,15 +226,15 @@ export function ProjectDialog() {
 
         {mode === 'create' && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[0.6875rem] font-medium text-(--ui-text-tertiary)">{p.foldersLabel}</span>
+            <span className="text-aro-xs font-medium text-(--ui-text-tertiary)">{p.foldersLabel}</span>
             {folders.length === 0 ? (
-              <span className="text-[0.75rem] text-(--ui-text-quaternary)">{p.noFolders}</span>
+              <span className="text-aro-sm text-(--ui-text-quaternary)">{p.noFolders}</span>
             ) : (
               <ul className="flex flex-col gap-1">
                 {folders.map((folder, index) => (
                   <li
                     className={cn(
-                      'flex items-center gap-2 rounded-md bg-(--ui-control-hover-background) px-2 py-1 text-[0.75rem]'
+                      'flex items-center gap-2 rounded-control bg-(--ui-control-hover-background) px-2 py-1 text-aro-sm'
                     )}
                     key={folder}
                   >
@@ -243,7 +243,7 @@ export function ProjectDialog() {
                       {folder}
                     </span>
                     {index === 0 && (
-                      <span className="shrink-0 text-[0.625rem] uppercase text-(--ui-text-quaternary)">
+                      <span className="shrink-0 text-aro-xs uppercase text-(--ui-text-quaternary)">
                         {p.primaryBadge}
                       </span>
                     )}
@@ -279,10 +279,10 @@ export function ProjectDialog() {
 
         {mode === 'create' && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[0.6875rem] font-medium text-(--ui-text-tertiary)">{p.ideaLabel}</span>
+            <span className="text-aro-xs font-medium text-(--ui-text-tertiary)">{p.ideaLabel}</span>
             <div className="relative">
               <Textarea
-                className="min-h-20 pr-8 text-[0.8125rem]"
+                className="min-h-20 pr-8 text-aro-md"
                 disabled={submitting}
                 onChange={event => setIdea(event.target.value)}
                 placeholder={p.ideaPlaceholder}
@@ -300,7 +300,7 @@ export function ProjectDialog() {
             <div className="flex flex-wrap items-center gap-1">
               {templates.map(template => (
                 <button
-                  className="flex items-center gap-1 rounded-full border border-(--ui-stroke-tertiary) px-2 py-0.5 text-[0.6875rem] text-(--ui-text-secondary) transition-colors hover:border-(--ui-stroke-secondary) hover:bg-(--ui-control-hover-background) hover:text-foreground disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-full border border-(--ui-stroke-tertiary) px-2 py-0.5 text-aro-xs text-(--ui-text-secondary) transition-colors hover:border-(--ui-stroke-secondary) hover:bg-(--ui-control-hover-background) hover:text-foreground disabled:opacity-50"
                   disabled={submitting}
                   key={template.label}
                   onClick={() => setIdea(template.idea)}

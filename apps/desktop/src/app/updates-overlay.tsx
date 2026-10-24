@@ -310,7 +310,7 @@ function IdleView({
         {groups.map((group, index) => (
           <div key={group.id}>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[0.625rem] font-semibold text-muted-foreground">{group.label}</p>
+              <p className="text-aro-xs font-semibold text-muted-foreground">{group.label}</p>
               {index === 0 && commits.length > 0 && (
                 <CopyButton
                   appearance="icon"
@@ -412,7 +412,7 @@ function ManualView({
 
       <button
         className={cn(
-          'group flex w-full items-center justify-between gap-3 rounded-md border px-4 py-3 text-left transition-colors',
+          'group flex w-full items-center justify-between gap-3 rounded-control border px-4 py-3 text-left transition-colors',
           copied ? 'border-primary/50' : 'border-(--stroke-nous) hover:border-(--ui-stroke-secondary)'
         )}
         onClick={handleCopy}
@@ -517,7 +517,7 @@ function ApplyingView({
       />
 
       {recentLog.length > 1 ? (
-        <div className="max-h-24 overflow-hidden rounded-md border border-border/70 bg-muted/35 px-3 py-2 text-left font-mono text-[11px] leading-4 text-muted-foreground">
+        <div className="max-h-24 overflow-hidden rounded-control border border-border/70 bg-muted/35 px-3 py-2 text-left font-mono text-xs leading-4 text-muted-foreground">
           {recentLog.map((entry, index) => (
             <div className="truncate" key={`${entry.at}-${index}`}>
               {entry.message}

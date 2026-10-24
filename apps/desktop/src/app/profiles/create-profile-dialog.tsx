@@ -119,7 +119,7 @@ export function CreateProfileDialog({
               onValueChange={value => setCloneFrom(value === '__none__' ? null : value)}
               value={cloneFrom ?? '__none__'}
             >
-              <SelectTrigger className="h-9 rounded-md" id="new-profile-clone-from">
+              <SelectTrigger className="h-9 rounded-control" id="new-profile-clone-from">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -145,7 +145,7 @@ export function CreateProfileDialog({
           </Field>
 
           {error && (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <div className="flex items-start gap-2 rounded-control border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
               <span>{error}</span>
             </div>

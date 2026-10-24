@@ -61,7 +61,7 @@ export function BlueprintSlotControl({
   if (field.type === 'enum' || field.type === 'weekdays') {
     return (
       <Select onValueChange={onChange} value={value}>
-        <SelectTrigger className="h-9 rounded-md" id={id}>
+        <SelectTrigger className="h-9 rounded-control" id={id}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

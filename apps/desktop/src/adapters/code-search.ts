@@ -106,8 +106,8 @@ export function matchFile(
 
 /* ============================== adapter ============================== */
 
-// BACKEND-TODO(code-search): renderer-side walk only — the future backend
-// call is a `search` RPC over the workspace (see port/FEATURE_MAP.md).
+// BACKEND-TODO(code-search): [D-10, research/11 §2] renderer-side walk only — the
+// future backend call is a `search` RPC over the workspace (see port/FEATURE_MAP.md).
 export const localCodeSearchAdapter: CodeSearchAdapter = {
   async search({ query, root, maxResults = DEFAULT_MAX_RESULTS }) {
     const needle = query.trim()

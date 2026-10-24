@@ -279,7 +279,7 @@ export function VoiceAgentOrb({
       {open && (
         <section
           aria-label="Voice assistant"
-          className="mb-3 w-[min(340px,calc(100vw-28px))] animate-in fade-in zoom-in-95 duration-150 overflow-hidden rounded-[20px] border border-aro-line-strong bg-aro-overlay/95 shadow-aro-e4 backdrop-blur-xl"
+          className="mb-3 w-[min(340px,calc(100vw-28px))] animate-in fade-in zoom-in-95 duration-150 overflow-hidden rounded-overlay border border-aro-line-strong bg-aro-overlay/95 shadow-aro-e4 backdrop-blur-xl"
           role="dialog"
         >
           <div
@@ -288,8 +288,8 @@ export function VoiceAgentOrb({
             onPointerMove={moveDrag}
             onPointerUp={endDrag}
           >
-            <span className="text-[13px] font-semibold tracking-tight text-aro-ink">Aro</span>
-            <span className={cn('flex items-center gap-1 font-aro-mono text-[10px]', tone)}>
+            <span className="text-xs font-semibold tracking-tight text-aro-ink">Aro</span>
+            <span className={cn('flex items-center gap-1 font-aro-mono text-[var(--aro-text-2xs,10px)]', tone)}>
               <i className="size-[5px] rounded-full bg-current" />
               {ORB_LABEL[orbState].toLowerCase()}
             </span>
@@ -314,8 +314,8 @@ export function VoiceAgentOrb({
             >
               <Orb levelRef={micLevel} size={118} state={orbState} />
             </button>
-            <p className={cn('mt-2 text-[12.5px] font-medium', tone)}>{STATE_HINT[orbState]}</p>
-            <p className="mt-1 min-h-[34px] max-w-[280px] text-center text-[11.5px] leading-[1.45] text-aro-ink-2">
+            <p className={cn('mt-2 text-xs font-medium', tone)}>{STATE_HINT[orbState]}</p>
+            <p className="mt-1 min-h-[34px] max-w-[280px] text-center text-xs leading-[1.45] text-aro-ink-2">
               {transcript ? (
                 <span className="font-aro-mono text-aro-ink-4">
                   {transcript}
@@ -333,7 +333,7 @@ export function VoiceAgentOrb({
           <div className="flex gap-1.5 px-3.5 pb-3">
             <input
               aria-label="Send a message"
-              className="h-[34px] min-w-0 flex-1 rounded-[10px] border border-aro-line bg-aro-well px-3 text-[12px] text-aro-ink placeholder:text-aro-ink-4 focus:border-aro-iris/60 focus:outline-none"
+              className="h-[34px] min-w-0 flex-1 rounded-control border border-aro-line bg-aro-well px-3 text-xs text-aro-ink placeholder:text-aro-ink-4 focus:border-aro-iris/60 focus:outline-none"
               onChange={event => setDraft(event.target.value)}
               onKeyDown={event => {
                 if (event.key === 'Enter') {
@@ -346,7 +346,7 @@ export function VoiceAgentOrb({
             <button
               aria-label="Dictate once — inserts into the composer"
               className={cn(
-                'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-colors',
+                'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-control transition-colors',
                 voiceStatus === 'idle' ? 'bg-aro-raise text-aro-ink-2 hover:bg-aro-hover' : 'bg-aro-rose-tint text-aro-rose'
               )}
               disabled={conversationActive}
@@ -358,8 +358,8 @@ export function VoiceAgentOrb({
             <button
               aria-label="Send"
               className={cn(
-                'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-colors',
-                draft.trim() ? 'bg-aro-iris text-white shadow-sm' : 'bg-aro-raise text-aro-ink-4'
+                'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-control transition-colors',
+                draft.trim() ? 'bg-aro-iris text-white shadow-aro-e1' : 'bg-aro-raise text-aro-ink-4'
               )}
               disabled={!draft.trim()}
               onClick={sendDraft}
@@ -398,7 +398,7 @@ export function VoiceAgentOrb({
           </button>
           <span
             className={cn(
-              'pointer-events-none absolute top-1/2 right-[62px] -translate-y-1/2 rounded-full border border-aro-line-strong bg-aro-overlay/90 px-2.5 py-1 font-aro-mono text-[10px] whitespace-nowrap shadow-md backdrop-blur-md transition-all duration-200',
+              'pointer-events-none absolute top-1/2 right-[62px] -translate-y-1/2 rounded-full border border-aro-line-strong bg-aro-overlay/90 px-2.5 py-1 font-aro-mono text-[var(--aro-text-2xs,10px)] whitespace-nowrap shadow-aro-e2 backdrop-blur-md transition-[opacity,transform] duration-200',
               orbState === 'idle'
                 ? 'translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'
                 : 'opacity-100',

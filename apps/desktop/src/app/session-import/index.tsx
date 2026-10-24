@@ -213,7 +213,7 @@ export function SessionImportView({ owner, onClose, onOpenSession }: SessionImpo
                     <button
                       aria-pressed={selected === row.id}
                       className={cn(
-                        'w-full cursor-pointer rounded-md px-3 py-4 text-start transition-colors hover:bg-(--chrome-action-hover) focus-visible:outline-2 focus-visible:outline-(--ui-accent)',
+                        'w-full cursor-pointer rounded-control px-3 py-4 text-start transition-colors hover:bg-(--chrome-action-hover) focus-visible:outline-2 focus-visible:outline-(--ui-accent)',
                         selected === row.id && 'bg-(--chrome-action-hover)'
                       )}
                       onClick={() => {

@@ -99,13 +99,13 @@ export function setMotion(motion: Motion): void {
 /**
  * Recommended Hermes built-in themes per design profile.
  * Resolves the deferred A11 theme-profile coupling:
- * - Aro, Codex, Cursor default to Obsidian (deep dark surface).
+ * - Aro and Cursor recommend Obsidian; Codex recommends its neutral palette.
  * - Claude Code defaults to Ember (warm graphite).
  * - Editorial defaults to Nous (classic high-contrast).
  */
 export const RECOMMENDED_THEMES: Record<DesignProfile, string> = {
   aro: 'obsidian',
-  codex: 'obsidian',
+  codex: 'codex',
   claude: 'ember',
   editorial: 'nous',
   cursor: 'obsidian'
@@ -166,3 +166,21 @@ export function getMergeStrategy(): MergeStrategy {
 export function setMergeStrategy(strategy: MergeStrategy): void {
   writePref(MERGE_STRATEGY_KEY, strategy)
 }
+
+export const AMBIENT_STARS_KEY = 'conductor.ambient.stars'
+
+export function getAmbientStarsEnabled(): boolean {
+  const stored = readPref(AMBIENT_STARS_KEY)
+
+  if (stored !== null) {
+    return stored !== 'false'
+  }
+
+  return true
+}
+
+export function setAmbientStarsEnabled(enabled: boolean): void {
+  writePref(AMBIENT_STARS_KEY, enabled ? 'true' : 'false')
+  window.dispatchEvent(new CustomEvent('conductor:ambient:stars', { detail: enabled }))
+}
+

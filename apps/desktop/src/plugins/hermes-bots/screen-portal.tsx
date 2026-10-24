@@ -187,11 +187,11 @@ export function ScreenPortal({ bot }: { bot: RosterRow }) {
   return (
     <button
       aria-label={`${t.screen.portalTitle}: ${subtitle}`}
-      className="group flex w-full items-center gap-2 rounded-md border border-(--ui-stroke-secondary) bg-(--chrome-action-hover)/40 px-2 py-1.5 text-left transition-colors hover:bg-(--chrome-action-hover)"
+      className="group flex w-full items-center gap-2 rounded-control border border-(--ui-stroke-secondary) bg-(--chrome-action-hover)/40 px-2 py-1.5 text-left transition-colors hover:bg-(--chrome-action-hover)"
       onClick={() => openBotScreen(bot, null)}
       type="button"
     >
-      <span className="relative grid size-7 shrink-0 place-items-center rounded bg-black/70 text-white/90">
+      <span className="relative grid size-7 shrink-0 place-items-center rounded-control bg-black/70 text-white/90">
         <Codicon name={TONE_ICON[tone]} />
         <span
           className={`absolute -right-0.5 -top-0.5 size-2 rounded-full ring-2 ring-(--ui-bg-primary) ${TONE_DOT[tone]}`}
@@ -199,9 +199,9 @@ export function ScreenPortal({ bot }: { bot: RosterRow }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-medium">{t.screen.portalTitle}</span>
-        {subtitle ? <span className="block truncate text-[0.65rem] text-(--ui-text-tertiary)">{subtitle}</span> : null}
+        {subtitle ? <span className="block truncate text-aro-xs text-(--ui-text-tertiary)">{subtitle}</span> : null}
       </span>
-      <span className="flex shrink-0 items-center gap-1 text-[0.65rem] text-(--ui-text-tertiary) opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="flex shrink-0 items-center gap-1 text-aro-xs text-(--ui-text-tertiary) opacity-0 transition-opacity group-hover:opacity-100">
         {t.screen.portalOpen} <Codicon name="arrow-right" />
       </span>
     </button>

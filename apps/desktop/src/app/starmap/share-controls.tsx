@@ -101,7 +101,7 @@ export function ShareControls({ imported = false, onImport, onResetMap, shareCod
           <div className="group/code relative">
             <textarea
               aria-label={t.starmap.shareTitle}
-              className="h-24 w-full resize-none rounded-md bg-foreground/5 p-2.5 pr-9 font-mono text-xs leading-relaxed break-all text-muted-foreground/90 outline-none transition placeholder:text-muted-foreground/50 focus-visible:text-foreground focus-visible:ring-1 focus-visible:ring-ring/40"
+              className="h-24 w-full resize-none rounded-control bg-foreground/5 p-2.5 pr-9 font-mono text-xs leading-relaxed break-all text-muted-foreground/90 outline-none transition placeholder:text-muted-foreground/50 focus-visible:text-foreground focus-visible:ring-1 focus-visible:ring-ring/40"
               onChange={e => {
                 setValue(e.target.value)
                 setError(null)
@@ -113,7 +113,7 @@ export function ShareControls({ imported = false, onImport, onResetMap, shareCod
             {code !== '' && (
               <CopyButton
                 appearance="inline"
-                className="absolute right-1.5 top-1.5 h-5 gap-0 rounded-md px-1 opacity-0 transition-opacity focus-visible:opacity-100 group-hover/code:opacity-100 hover:opacity-100"
+                className="absolute right-1.5 top-1.5 h-5 gap-0 rounded-control px-1 opacity-0 transition-opacity focus-visible:opacity-100 group-hover/code:opacity-100 hover:opacity-100"
                 iconClassName="size-3"
                 label={t.starmap.copy}
                 showLabel={false}
@@ -122,7 +122,7 @@ export function ShareControls({ imported = false, onImport, onResetMap, shareCod
             )}
           </div>
 
-          {error && <p className="text-[0.7rem] text-destructive">{error}</p>}
+          {error && <p className="text-[var(--aro-text-2xs,10px)] text-destructive">{error}</p>}
 
           <Button className="w-full" disabled={!canLoad} onClick={load} type="button">
             {t.starmap.importBtn}

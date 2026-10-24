@@ -298,21 +298,21 @@ export function AroProjectDialog() {
     >
       {pendingTrustFolder ? (
         <div className="p-5 pt-3 space-y-4">
-          <div className="flex items-center gap-3 rounded-[10px] border border-aro-line-soft bg-aro-sunken/40 p-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-aro-iris/15 text-aro-iris">
+          <div className="flex items-center gap-3 rounded-panel border border-aro-line-soft bg-aro-sunken/40 p-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-panel bg-aro-iris/15 text-aro-iris">
               <IconShield size={18} />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="block text-[11px] font-medium text-aro-ink-3 uppercase tracking-wider">
+              <span className="block text-xs font-medium text-aro-ink-3 uppercase tracking-wider">
                 Target Directory
               </span>
-              <span className="block truncate font-aro-mono text-[11.5px] text-aro-ink" title={pendingTrustFolder}>
+              <span className="block truncate font-aro-mono text-aro-sm text-aro-ink" title={pendingTrustFolder}>
                 {pendingTrustFolder}
               </span>
             </div>
           </div>
 
-          <div className="space-y-2 rounded-[10px] border border-aro-line-soft bg-aro-well/40 p-3.5 text-[12px] text-aro-ink-2">
+          <div className="space-y-2 rounded-panel border border-aro-line-soft bg-aro-well/40 p-3.5 text-xs text-aro-ink-2">
             <div className="flex items-start gap-2.5">
               <IconCheck className="shrink-0 text-aro-mint mt-0.5" size={13} />
               <div>
@@ -336,12 +336,12 @@ export function AroProjectDialog() {
             </div>
           </div>
 
-          <p className="text-[11px] text-aro-ink-4 leading-relaxed">
+          <p className="text-xs text-aro-ink-4 leading-relaxed">
             Only trust folders from authors and sources you trust. If you do not trust this directory, cancel to abort without granting execution access.
           </p>
 
           {error && (
-            <p className="text-[11.5px] text-aro-rose font-medium" role="alert">
+            <p className="text-aro-sm text-aro-rose font-medium" role="alert">
               {error}
             </p>
           )}
@@ -369,14 +369,14 @@ export function AroProjectDialog() {
         <form className="p-5 pt-3 space-y-4" onSubmit={handleSubmit}>
           {mode !== 'add-folder' && (
             <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-aro-ink-2">
+              <label className="mb-1.5 block text-xs font-medium text-aro-ink-2">
                 Project name
               </label>
-              <div className="flex h-[40px] items-center rounded-[10px] border border-aro-line bg-aro-sunken/40 px-3 focus-within:border-aro-iris focus-within:ring-1 focus-within:ring-aro-iris/30">
+              <div className="flex h-[40px] items-center rounded-control border border-aro-line bg-aro-sunken/40 px-3 focus-within:border-aro-iris focus-within:ring-1 focus-within:ring-aro-iris/30">
                 <IconFolder className="mr-2.5 text-aro-ink-3 shrink-0" size={15} />
                 <input
                   autoComplete="off"
-                  className="h-full min-w-0 flex-1 bg-transparent text-[13px] text-aro-ink placeholder:text-aro-ink-4 focus:outline-none"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm text-aro-ink placeholder:text-aro-ink-4 focus:outline-none"
                   disabled={submitting}
                   maxLength={80}
                   onChange={e => {
@@ -395,7 +395,7 @@ export function AroProjectDialog() {
             <>
               {/* Color Swatches */}
               <div className="flex items-center justify-between px-0.5">
-                <label className="text-[12px] font-medium text-aro-ink-3">Project Color</label>
+                <label className="text-xs font-medium text-aro-ink-3">Project Color</label>
                 <div aria-label="Project accent color" className="flex items-center gap-1.5" role="radiogroup">
                   {ARO_PROJECT_COLORS.map(c => (
                     <button
@@ -410,7 +410,7 @@ export function AroProjectDialog() {
                       type="button"
                     >
                       {color === c.value && (
-                        <IconCheck className="text-white drop-shadow-sm" size={10} />
+                        <IconCheck className="text-white drop-shadow-(--aro-shadow-e1)" size={10} />
                       )}
                     </button>
                   ))}
@@ -420,15 +420,15 @@ export function AroProjectDialog() {
               {/* Source Folders Box */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[12px] font-medium text-aro-ink-2">
+                  <label className="block text-xs font-medium text-aro-ink-2">
                     Source folders
                   </label>
-                  <span className="text-[11px] text-aro-ink-4">
+                  <span className="text-xs text-aro-ink-4">
                     {folders.length} {folders.length === 1 ? 'folder' : 'folders'}
                   </span>
                 </div>
 
-                <div className="rounded-[10px] border border-aro-line-soft bg-aro-sunken/25 p-2.5">
+                <div className="rounded-panel border border-aro-line-soft bg-aro-sunken/25 p-2.5">
                   {folders.length > 0 && (
                     <div className="space-y-1 mb-2.5">
                       {folders.map(folder => {
@@ -437,7 +437,7 @@ export function AroProjectDialog() {
 
                         return (
                           <div
-                            className="flex items-center gap-2 rounded-[7px] border border-aro-line-soft bg-aro-raise/80 px-2.5 py-1.5"
+                            className="flex items-center gap-2 rounded-control border border-aro-line-soft bg-aro-raise/80 px-2.5 py-1.5"
                             key={folder}
                           >
                             <IconFolder
@@ -446,16 +446,16 @@ export function AroProjectDialog() {
                               style={{ color }}
                             />
                             <div className="min-w-0 flex-1">
-                              <span className="block truncate text-[12px] font-medium text-aro-ink">
+                              <span className="block truncate text-xs font-medium text-aro-ink">
                                 {base}
                               </span>
-                              <span className="block truncate font-aro-mono text-[10px] text-aro-ink-4">
+                              <span className="block truncate font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">
                                 {folder}
                               </span>
                             </div>
                             <button
                               aria-label={`Remove ${base}`}
-                              className="flex size-5 items-center justify-center rounded text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink cursor-pointer"
+                              className="flex size-5 items-center justify-center rounded-control text-aro-ink-4 hover:bg-aro-hover hover:text-aro-ink cursor-pointer"
                               onClick={() => handleRemoveFolder(folder)}
                               type="button"
                             >
@@ -469,7 +469,7 @@ export function AroProjectDialog() {
 
                   <div className="flex flex-col items-center justify-center gap-2 py-3">
                     <button
-                      className="flex h-[30px] items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise px-3.5 text-[12px] font-medium text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink disabled:opacity-50 cursor-pointer"
+                      className="flex h-[30px] items-center gap-1.5 rounded-full border border-aro-line bg-aro-raise px-3.5 text-xs font-medium text-aro-ink-2 transition-colors hover:bg-aro-hover hover:text-aro-ink disabled:opacity-50 cursor-pointer"
                       disabled={submitting}
                       onClick={() => void handlePickFolder()}
                       type="button"
@@ -478,7 +478,7 @@ export function AroProjectDialog() {
                       <IconPlus size={11} />
                       <span>Choose a local folder</span>
                     </button>
-                    <span className="text-[10.5px] text-aro-ink-4">
+                    <span className="text-aro-xs text-aro-ink-4">
                       Sessions inside this project will run in this directory
                     </span>
                   </div>
@@ -490,7 +490,7 @@ export function AroProjectDialog() {
           {mode === 'add-folder' && (
             <div className="py-4 text-center">
               <button
-                className="inline-flex h-[32px] items-center gap-2 rounded-[8px] bg-aro-iris px-4 text-[12.5px] font-medium text-aro-on-iris hover:brightness-110 cursor-pointer"
+                className="inline-flex h-[32px] items-center gap-2 rounded-control bg-aro-iris px-4 text-aro-sm font-medium text-aro-on-iris hover:brightness-110 cursor-pointer"
                 disabled={submitting}
                 onClick={() => void handlePickFolder()}
                 type="button"
@@ -502,7 +502,7 @@ export function AroProjectDialog() {
           )}
 
           {error && (
-            <p className="text-[11.5px] text-aro-rose font-medium" role="alert">
+            <p className="text-aro-sm text-aro-rose font-medium" role="alert">
               {error}
             </p>
           )}

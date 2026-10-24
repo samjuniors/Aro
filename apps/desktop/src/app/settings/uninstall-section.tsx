@@ -123,13 +123,13 @@ export function UninstallSection(): ReactElement | null {
     <div className={cn('mx-auto w-full max-w-2xl', !hasBreadcrumb && 'mt-8')}>
       <SectionHeading icon={AlertTriangle} page title={t.settings.uninstallSection.dangerZone} />
 
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+      <div className="rounded-overlay border border-destructive/30 bg-destructive/5 px-4 py-3">
         {pendingOption ? (
           <div>
             <p className="text-sm font-medium text-destructive">{t.settings.uninstallSection.confirmUninstall}</p>
             <p className="mt-1 text-xs text-muted-foreground">{u.confirmBody(pendingOption.consequence)}</p>
             {summary?.running_app_path && (
-              <p className="mt-1 font-mono text-[0.68rem] text-muted-foreground/60">
+              <p className="mt-1 font-mono text-aro-xs text-muted-foreground/60">
                 {u.appLabel} {summary.running_app_path}
               </p>
             )}
@@ -152,7 +152,7 @@ export function UninstallSection(): ReactElement | null {
               {visibleOptions.map((opt: ModeOption): ReactElement => (
                 <button
                   className={cn(
-                    'flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2.5 text-left transition',
+                    'flex items-start gap-3 rounded-panel border border-border/60 bg-background/40 px-3 py-2.5 text-left transition',
                     'hover:border-destructive/40 hover:bg-destructive/5'
                   )}
                   key={opt.mode}

@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 // Kept a string (not a shared CSS utility): the `size-5` prefix lets
 // tailwind-merge override <Button size="icon">'s larger built-in size.
 const ICON_BUTTON =
-  'size-5 cursor-pointer rounded-[4px] text-muted-foreground/70 hover:bg-(--ui-control-active-background) hover:text-foreground'
+  'size-5 cursor-pointer rounded-control text-muted-foreground/70 hover:bg-(--ui-control-active-background) hover:text-foreground'
 
 interface JsonDocumentEditorProps {
   apiRef?: RefObject<CodeEditorApi | null>
@@ -53,7 +53,7 @@ export function JsonDocumentEditor({
     <div className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', className)}>
       <div className="flex h-8 shrink-0 items-center gap-2 px-3">
         {header ? (
-          <span className="flex min-w-0 items-center gap-1.5 text-[0.68rem] text-(--ui-text-tertiary)">{header}</span>
+          <span className="flex min-w-0 items-center gap-1.5 text-aro-xs text-(--ui-text-tertiary)">{header}</span>
         ) : null}
         <div className="ml-auto flex items-center gap-1">
           <Tip label={t.common.formatJson}>

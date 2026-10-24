@@ -19,12 +19,12 @@ export function ReferenceChip({ name, onRemove, src }: ReferenceChipProps) {
   const [viewing, setViewing] = useState(false)
 
   return (
-    <div className="ml-auto flex h-6 items-center gap-2 self-start rounded-lg border border-border/60 bg-background/50 pl-1 pr-2">
+    <div className="ml-auto flex h-6 items-center gap-2 self-start rounded-panel border border-border/60 bg-background/50 pl-1 pr-2">
       <button aria-label={t.desktop.openImage} className="shrink-0" onClick={() => setViewing(true)} type="button">
-        <img alt={name} className="size-4 rounded-md object-cover" src={src} />
+        <img alt={name} className="size-4 rounded-control object-cover" src={src} />
       </button>
 
-      <span className="max-w-40 truncate text-[0.64rem] font-medium text-foreground/50">{name || 'Reference'}</span>
+      <span className="max-w-40 truncate text-aro-xs font-medium text-foreground/50">{name || 'Reference'}</span>
       <button
         aria-label="Remove reference"
         className="text-(--ui-text-tertiary) transition not-hover:opacity-50"

@@ -78,7 +78,7 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
       {onGenerate && (
         <button
           className={cn(
-            'flex w-full items-center gap-2 rounded-md text-left text-foreground transition-colors hover:bg-(--chrome-action-hover)',
+            'flex w-full items-center gap-2 rounded-control text-left text-foreground transition-colors hover:bg-(--chrome-action-hover)',
             HUD_ITEM,
             HUD_TEXT
           )}
@@ -86,14 +86,14 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
           onMouseDown={event => event.preventDefault()}
           type="button"
         >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-(--chrome-action-hover)">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-control bg-(--chrome-action-hover)">
             <Egg className="size-4" />
           </span>
           <span className="font-medium">{t.commandCenter.generatePet.title}</span>
         </button>
       )}
 
-      {error && <p className="px-2 pb-1 pt-1.5 text-[0.6875rem] text-(--ui-red)">{error}</p>}
+      {error && <p className="px-2 pb-1 pt-1.5 text-aro-xs text-(--ui-red)">{error}</p>}
 
       {shown.length === 0 ? (
         <StatusRow text={copy.empty} />
@@ -105,7 +105,7 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
           return (
             <button
               className={cn(
-                'flex w-full items-center gap-2 rounded-md text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60',
+                'flex w-full items-center gap-2 rounded-control text-left transition-colors hover:bg-(--chrome-action-hover) disabled:opacity-60',
                 HUD_ITEM,
                 HUD_TEXT,
                 isActive && 'bg-(--chrome-action-hover)/70'
@@ -128,17 +128,17 @@ export function PetPalettePage({ search, onGenerate }: PetPalettePageProps) {
                 <span className="flex items-center gap-1.5">
                   <span className="truncate font-medium">{pet.displayName}</span>
                   {pet.generated && (
-                    <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-px text-[0.625rem] font-medium text-primary">
+                    <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-px text-aro-xs font-medium text-primary">
                       {copy.generatedTag}
                     </span>
                   )}
                 </span>
-                <span className="truncate text-[0.6875rem] text-muted-foreground/80">
+                <span className="truncate text-aro-xs text-muted-foreground/80">
                   {pet.slug}
                   {pet.installed ? ` · ${copy.installed}` : ''}
                 </span>
               </span>
-              <span className="ml-auto flex shrink-0 items-center text-[0.6875rem] text-muted-foreground">
+              <span className="ml-auto flex shrink-0 items-center text-aro-xs text-muted-foreground">
                 {isBusy ? (
                   <Loader2 className="size-3 animate-spin" />
                 ) : isActive ? (
@@ -183,7 +183,7 @@ export function PetInlineToggle() {
       aria-label={enabled ? copy.turnOff : copy.turnOn}
       aria-pressed={enabled}
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-md p-1.5 transition-colors disabled:opacity-50',
+        'flex shrink-0 items-center justify-center rounded-control p-1.5 transition-colors disabled:opacity-50',
         enabled
           ? 'bg-(--chrome-action-hover) text-foreground'
           : 'text-muted-foreground hover:bg-(--chrome-action-hover)/60'

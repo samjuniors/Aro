@@ -170,7 +170,7 @@ function KindBadge({ kind }: { kind: PackageKind }) {
   const p = t.skills.plugins
 
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-(--ui-stroke-tertiary) px-1.5 py-px text-[0.65rem] text-(--ui-text-tertiary)">
+    <span className="inline-flex items-center gap-1 rounded-control border border-(--ui-stroke-tertiary) px-1.5 py-px text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
       {kind !== 'desktop' && <Package aria-hidden className="size-3" />}
       {kind !== 'agent' && <Monitor aria-hidden className="size-3" />}
       {kind === 'both' ? p.kindBoth : kind === 'agent' ? p.kindAgent : p.kindDesktop}
@@ -462,7 +462,7 @@ function PackageRow({
             />
           ) : pkg.desktopMissing ? (
             <Tip label={remoteBackend ? p.desktopHalfRemoteTip : p.desktopHalfPendingTip}>
-              <span className="text-[0.65rem] text-(--ui-text-tertiary)">
+              <span className="text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)">
                 {remoteBackend ? p.desktopHalfRemote : p.desktopHalfPending}
               </span>
             </Tip>
@@ -476,7 +476,7 @@ function PackageRow({
             <>
               {agent.update_available && (
                 <Button
-                  className="h-5 px-1.5 text-[0.65rem]"
+                  className="h-5 px-1.5 text-[var(--aro-text-2xs,10px)]"
                   disabled={busy}
                   onClick={() => onAgentUpdate(agent)}
                   size="xs"
@@ -505,7 +505,7 @@ function PackageRow({
             <Tip label={desktop.packageOrigin?.repo ? p.installAgentHereTip(scopeLabel) : p.installAgentHereNoOrigin}>
               <span>
                 <Button
-                  className="h-5 px-1.5 text-[0.65rem]"
+                  className="h-5 px-1.5 text-[var(--aro-text-2xs,10px)]"
                   disabled={!desktop.packageOrigin?.repo}
                   onClick={() => installAgentHalfHere(desktop, scope)}
                   size="xs"
@@ -734,7 +734,7 @@ export const PluginsTab = memo(function PluginsTab({
                 aligned with the cells below. The profile selector sits INSIDE
                 the Agent header so it visibly governs only that column. */}
             <div
-              className="flex items-center gap-3 border-y border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-1.5 text-[0.68rem] text-(--ui-text-tertiary)"
+              className="flex items-center gap-3 border-y border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) px-3 py-1.5 text-[var(--aro-text-2xs,10px)] text-(--ui-text-tertiary)"
               role="row"
             >
               <div className="min-w-0 flex-1" role="columnheader" />
@@ -857,7 +857,7 @@ export const PluginsTab = memo(function PluginsTab({
           />
         </div>
         <div className="flex shrink-0 items-center justify-between px-3 py-1.5">
-          <span className="text-[0.62rem] font-medium tracking-wide uppercase text-(--ui-text-quaternary)">
+          <span className="text-[var(--aro-text-2xs,10px)] font-medium tracking-wide uppercase text-(--ui-text-quaternary)">
             {p.catalogTitle}
           </span>
           <Button onClick={() => setPaneHeightOverride(CATALOG_PANE_ID, open ? 0 : undefined)} size="xs" variant="text">
@@ -894,7 +894,7 @@ export const PluginsTab = memo(function PluginsTab({
                 title={p.catalogTitle}
               />
             </div>
-            <p className="shrink-0 px-1 text-[0.65rem] leading-4 text-(--ui-text-quaternary)">{p.catalogHint}</p>
+            <p className="shrink-0 px-1 text-[var(--aro-text-2xs,10px)] leading-4 text-(--ui-text-quaternary)">{p.catalogHint}</p>
           </div>
         )}
       </section>

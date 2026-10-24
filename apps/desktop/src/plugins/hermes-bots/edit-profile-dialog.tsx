@@ -246,7 +246,7 @@ export function EditProfileDialog({ bot, open, onClose }: EditProfileDialogProps
             {b.bot.advancedHint}
           </Button>
           {advanced ? (
-            <div className="rounded-md border border-(--ui-stroke-secondary) p-3">
+            <div className="rounded-control border border-(--ui-stroke-secondary) p-3">
               <AdvancedProfileConfig bot={bot} setState={setAdv} state={adv} />
             </div>
           ) : null}

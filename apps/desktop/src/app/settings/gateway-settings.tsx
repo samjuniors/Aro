@@ -1068,7 +1068,7 @@ function GatewayConnectionSettings({ embedded, standalone }: { embedded: boolean
       )}
 
       {state.envOverride ? (
-        <div className="mb-5 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-[length:var(--conversation-caption-font-size)] text-destructive">
+        <div className="mb-5 flex items-start gap-2 rounded-overlay border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-[length:var(--conversation-caption-font-size)] text-destructive">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <div>
             <div className="font-medium">{g.envOverrideTitle}</div>
@@ -1259,7 +1259,7 @@ function GatewayConnectionSettings({ embedded, standalone }: { embedded: boolean
 
                       return (
                         <div
-                          className={cn('rounded-md px-2', connected && 'bg-primary/5 ring-1 ring-primary/25')}
+                          className={cn('rounded-control px-2', connected && 'bg-primary/5 ring-1 ring-primary/25')}
                           key={agent.id}
                         >
                           <ListRow
