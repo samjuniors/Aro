@@ -362,6 +362,8 @@
   --aro-height-header: 40px;
   --aro-height-control: 32px;
   --aro-height-row: 36px;
+  --aro-switch-thumb: #ffffff;
+  --aro-shadow-thumb: 0 1px 3px var(--aro-shadow-c);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -775,9 +777,9 @@ html[data-density='compact'][data-aro-ui='true'] [data-aro-transcript] .composer
 }
 
 /* ---- motion axis — reduced kills decorative animation globally ----------- */
-html[data-motion='reduced'] *,
-html[data-motion='reduced'] *::before,
-html[data-motion='reduced'] *::after {
+:is(html, [data-aro-gallery])[data-motion='reduced'] *,
+:is(html, [data-aro-gallery])[data-motion='reduced'] *::before,
+:is(html, [data-aro-gallery])[data-motion='reduced'] *::after {
   animation-duration: .001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: .001ms !important;

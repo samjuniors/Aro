@@ -8,6 +8,7 @@
 @import './aro/tokens.css';
 /* Apply the prototype visual system to real Hermes surfaces. */
 @import './aro/host-theme.css';
+@import './aro/codex-theme.css';
 
 /* Titlebar clusters: 24×24 hit targets, 13.9px glyphs. codicon.css is
    unlayered (`font: 16px/1`); Tailwind utilities in @layer lose that fight. */

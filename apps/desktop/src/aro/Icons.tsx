@@ -22,6 +22,8 @@ const base = ({ size, ...p }: P) => ({
   strokeWidth: 1.7,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
+  'aria-hidden': p['aria-label'] || p['aria-labelledby'] ? undefined : true,
+  focusable: false,
   ...p,
 })
 

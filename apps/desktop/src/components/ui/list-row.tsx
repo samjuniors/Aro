@@ -25,6 +25,7 @@ export function ListRow({
   disabled = false,
   icon: Icon,
   onClick,
+  onKeyDown,
   title,
   ...rest
 }: ListRowProps) {
@@ -35,13 +36,21 @@ export function ListRow({
       {...rest}
       aria-disabled={disabled || undefined}
       className={cn(
-        'group flex items-center justify-between gap-3 px-3 py-2.5 transition-colors duration-150',
-        'rounded-panel border border-transparent',
+        'group flex min-w-0 items-center justify-between gap-3 px-3 py-2.5 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard)',
+        'rounded-control border border-transparent',
         isInteractive && 'cursor-pointer hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         disabled && 'pointer-events-none opacity-50',
         className
       )}
       onClick={disabled ? undefined : onClick}
+      onKeyDown={event => {
+        onKeyDown?.(event)
+
+        if (isInteractive && !event.defaultPrevented && event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault()
+          event.currentTarget.click()
+        }
+      }}
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
     >
@@ -57,12 +66,12 @@ export function ListRow({
             {badge}
           </div>
           {description && (
-            <p className="truncate text-xs text-muted-foreground">{description}</p>
+            <p className="break-words text-xs leading-relaxed text-muted-foreground">{description}</p>
           )}
         </div>
       </div>
       {action && (
-        <div className="shrink-0 pl-2">
+        <div className="shrink-0 ps-2">
           {action}
         </div>
       )}

@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { adapters } from '@/adapters'
 import type { DoctorCheck } from '@/adapters/doctor'
 import { getActionStatus, runDoctor } from '@/api/system'
+import { PageHeader } from '@/components/ui/layout'
 import { readKey, writeKey } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 import { $currentCwd, $gatewayState } from '@/store/session'
@@ -272,7 +273,7 @@ export function AroDoctorPage() {
   const handleRunBackendDoctor = useCallback(async () => {
     if (gatewayState !== 'open') {
       setBackendDoctorError(
-        `Gateway is currently "${gatewayState || 'offline'}". Start the Hermes backend gateway to run deep diagnostics.`
+        `Gateway is currently "${gatewayState || 'offline'}". Start the Aro backend gateway to run deep diagnostics.`
       )
 
       return
@@ -325,31 +326,11 @@ export function AroDoctorPage() {
   const unknownCount = checks.filter(c => c.state === 'unknown').length
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-base text-aro-ink select-text">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-bg text-aro-ink select-text">
       {/* Header */}
-      <header className="border-b border-aro-line-soft bg-aro-raise/40 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider text-aro-ink-4 uppercase">
-                Diagnostics & Onboarding
-              </span>
-              <Badge mono tone="iris">
-                local readiness sweep
-              </Badge>
-              <Badge mono tone="neutral">
-                renderer signals
-              </Badge>
-            </div>
-            <h1 className="text-lg font-semibold tracking-tight text-aro-ink">
-              System Readiness Doctor
-            </h1>
-            <p className="text-xs text-aro-ink-3">
-              Audits local application readiness, workspace attachment, and triggers backend diagnostics without simulated success.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-6">
+        <PageHeader
+          actions={<>
             <Button
               disabled={isSweeping}
               icon={IconRefresh}
@@ -359,9 +340,11 @@ export function AroDoctorPage() {
             >
               {isSweeping ? 'Sweeping…' : 'Refresh Sweep'}
             </Button>
-          </div>
-        </div>
-      </header>
+          </>}
+          description="Audits local application readiness, workspace attachment, and triggers backend diagnostics without simulated success."
+          title="System Readiness Doctor"
+        />
+      </div>
 
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
@@ -486,7 +469,7 @@ export function AroDoctorPage() {
               <div className="flex items-center gap-2">
                 <IconTerminal className="text-aro-iris" size={15} />
                 <h2 className="text-sm font-semibold text-aro-ink">
-                  Hermes Deep Doctor Diagnostics
+                  Aro Deep Doctor Diagnostics
                 </h2>
               </div>
               <p className="text-xs text-aro-ink-3">
@@ -512,7 +495,7 @@ export function AroDoctorPage() {
             >
               <IconWarning className="shrink-0" size={14} />
               <span>
-                Gateway connection is currently &ldquo;{gatewayState || 'idle'}&rdquo;. Deep diagnostics require an active connection to Hermes core.
+                Gateway connection is currently &ldquo;{gatewayState || 'idle'}&rdquo;. Deep diagnostics require an active connection to Aro core.
               </span>
             </div>
           )}
@@ -539,7 +522,7 @@ export function AroDoctorPage() {
               </div>
 
               {backendDoctorLogs.length > 0 && (
-                <pre className="max-h-48 overflow-y-auto rounded-control bg-aro-base p-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 leading-relaxed">
+                <pre className="max-h-48 overflow-y-auto rounded-control bg-aro-bg p-2 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-2 leading-relaxed">
                   {backendDoctorLogs.join('\n')}
                 </pre>
               )}

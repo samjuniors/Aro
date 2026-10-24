@@ -85,8 +85,8 @@ const DESIGN_PROFILE_ITEMS: readonly DesignProfileItem[] = [
     label: 'Codex',
     source: 'Codex Desktop',
     summary: 'Project-first, quiet monochrome, tight rows, review-forward diff layout.',
-    swatch: ['#0a0a0b', '#111214', '#d6d6d2', '#8f8f88'],
-    recommendedTheme: 'obsidian'
+    swatch: ['var(--codex-preview-bg)', 'var(--codex-preview-panel)', 'var(--codex-preview-ink)', 'var(--codex-preview-hover)'],
+    recommendedTheme: 'codex'
   },
   {
     id: 'claude',
@@ -115,6 +115,7 @@ const DESIGN_PROFILE_ITEMS: readonly DesignProfileItem[] = [
 ]
 
 const PROTOTYPE_THEMES = [
+  { id: 'codex', label: 'Codex Desktop', desc: 'Neutral charcoal · quiet workspace', swatch: ['var(--codex-preview-bg)', 'var(--codex-preview-panel)', 'var(--codex-preview-ink)', 'var(--codex-preview-hover)'] },
   { id: 'obsidian', label: 'Obsidian', desc: 'Deep neutral dark · violet accent', swatch: ['#0c0e14', '#12151d', '#7c6bff', '#35d6c4'] },
   { id: 'daylight', label: 'Daylight', desc: 'Clean light · high legibility', swatch: ['#ffffff', '#f4f5f8', '#5b4ce6', '#0f9f90'] },
   { id: 'nord', label: 'Nord', desc: 'Arctic blue-grey · frost accent', swatch: ['#2a303b', '#313845', '#88c0d0', '#a3be8c'] },
@@ -345,7 +346,7 @@ export function AroAppearanceSettings() {
                 >
                   <div
                     className="flex h-full gap-1.5 rounded-control border p-1.5"
-                    style={{ background: item.swatch[1], borderColor: `${item.swatch[2]}33` }}
+                    style={{ background: item.swatch[1], borderColor: `color-mix(in srgb, ${item.swatch[2]} 20%, transparent)` }}
                   >
                     {/* Mini Sidebar */}
                     <div className="w-1/4 space-y-1 border-r border-current/15 pr-1">
@@ -417,7 +418,7 @@ export function AroAppearanceSettings() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Hermes themes are preserved per-profile. Auto-sync is opt-in so your saved skin is never silently overwritten.
+                Aro themes are preserved per-profile. Auto-sync is opt-in so your saved skin is never silently overwritten.
               </p>
             </div>
 

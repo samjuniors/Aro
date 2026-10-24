@@ -118,13 +118,13 @@ export const OverlayNavItem = memo(function OverlayNavItem({
     <button
       aria-current={current ? 'page' : undefined}
       className={cn(
-        'flex h-7 w-full items-center justify-start gap-2 rounded-control border px-2 text-left text-[length:var(--conversation-text-font-size)] font-normal transition-colors',
+        'flex min-h-8 w-full items-center justify-start gap-2 rounded-control border px-2 text-start text-aro-md font-normal transition-colors duration-(--aro-dur-fast)',
         nested
           ? active
             ? 'border-transparent bg-(--chrome-action-hover) font-medium text-foreground'
             : 'border-transparent bg-transparent text-(--ui-text-tertiary) hover:bg-(--chrome-action-hover) hover:text-foreground'
           : active
-            ? 'border-(--ui-stroke-tertiary) bg-(--ui-bg-tertiary) text-foreground'
+            ? 'border-transparent bg-(--ui-bg-tertiary) font-medium text-foreground'
             : 'border-transparent bg-transparent text-(--ui-text-secondary) hover:bg-(--chrome-action-hover) hover:text-foreground'
       )}
       // Names the row by its own id, so a tour can address one link

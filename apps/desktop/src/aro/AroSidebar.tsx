@@ -1057,7 +1057,7 @@ export function AroSidebar({
         onClick={() => setAuditDrawerOpen(!auditDrawerOpen)}
         type="button"
       >
-        <span>{auditDrawerOpen ? '[-] Audit Surfaces' : '[+] Hermes Surfaces (Audit)'}</span>
+        <span>{auditDrawerOpen ? '[-] Audit Surfaces' : '[+] Aro Surfaces (Audit)'}</span>
         <span className="font-mono text-[var(--aro-text-2xs,9px)] text-aro-ink-4">
           {cronJobs.length + messagingOpenIds.length + (connectionsRegistry?.connections?.length || 0)} items
         </span>

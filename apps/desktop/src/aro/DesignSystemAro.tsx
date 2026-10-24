@@ -11,6 +11,8 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { Button as DesktopButton } from '@/components/ui/button'
+import { SearchField } from '@/components/ui/search-field'
 
 import {
   FormRow,
@@ -160,7 +162,7 @@ function DS({ id, eyebrow, title, body, children }: { id: string; eyebrow: strin
 function Spec({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="rounded-panel border border-aro-line-soft bg-aro-sunken p-3">
-      <div className="mb-2.5 font-aro-mono text-[var(--aro-text-2xs,10px)] tracking-[.14em] text-aro-ink-4 uppercase">{label}</div>
+      <div className="mb-3 text-aro-sm font-medium text-aro-ink-2">{label}</div>
       {children}
     </div>
   )
@@ -169,7 +171,7 @@ function Spec({ label, children }: { label: string; children: ReactNode }) {
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-aro-line-soft/60 py-2.5 last:border-0">
-      <span className="w-[110px] shrink-0 font-aro-mono text-[var(--aro-text-2xs,10px)] text-aro-ink-4">{label}</span>
+      <span className="w-24 shrink-0 text-aro-sm text-aro-ink-3">{label}</span>
       {children}
     </div>
   )
@@ -239,6 +241,7 @@ export function AroDesignSystemPage() {
   const [layoutState, setLayoutState] = useState<'idle' | 'loading' | 'empty' | 'error'>('idle')
   const [layoutTemplate, setLayoutTemplate] = useState<'list' | 'form' | 'overlay' | 'dialog' | 'page'>('list')
   const [demoSearch, setDemoSearch] = useState('')
+  const [demoBusy, setDemoBusy] = useState(false)
   const [demoNav, setDemoNav] = useState('models')
   const [toasts, setToasts] = useState<{ id: number; msg: string; tone: string }[]>([])
 
@@ -253,10 +256,12 @@ export function AroDesignSystemPage() {
     // this subtree. Unmounting the page removes the attribute with it.
     <div
       className={cn(
-        'aro-scroll-thin h-full overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-200',
+        'aro-scroll-thin h-full min-w-0 overflow-x-hidden overflow-y-auto bg-aro-void text-aro-ink transition-colors duration-(--aro-dur-fast)',
         glass && 'bg-aro-void/85 backdrop-blur-md',
       )}
       data-glass={glass ? 'true' : 'false'}
+      data-aro-gallery
+      data-motion={reducedMotion ? 'reduced' : 'full'}
       data-theme={theme}
       dir={rtl ? 'rtl' : 'ltr'}
       style={
@@ -273,11 +278,6 @@ export function AroDesignSystemPage() {
     >
       {/* hero */}
       <div className="relative overflow-hidden border-b border-aro-line-soft">
-        <div className="aro-grid-bg pointer-events-none absolute inset-0 opacity-60" />
-        <div
-          className="pointer-events-none absolute -top-24 -right-10 size-[420px] rounded-full opacity-[0.18] blur-[80px]"
-          style={{ background: 'radial-gradient(circle,var(--aro-iris),transparent 70%)' }}
-        />
         <div className="relative px-6 py-8">
           <div className="flex items-center gap-2">
             <LogoMark size={26} />
@@ -290,9 +290,8 @@ export function AroDesignSystemPage() {
           </div>
           <h1 className="mt-3 max-w-[760px] font-aro-display text-3xl leading-[1.08] font-semibold tracking-[-.03em] text-aro-ink">
             A design system for{' '}
-            <span className="relative whitespace-nowrap text-aro-iris-soft">
+            <span className="text-aro-ink">
               agent control surfaces
-              <span className="absolute -bottom-1 left-0 h-[3px] w-full rounded-full bg-linear-to-r from-aro-iris via-aro-cyan to-transparent opacity-70" />
             </span>
           </h1>
           <p className="mt-2.5 max-w-[640px] text-xs leading-[1.7] text-aro-ink-3">
@@ -319,15 +318,15 @@ export function AroDesignSystemPage() {
           <div className="mt-6 flex flex-wrap items-center gap-4 rounded-panel border border-aro-line-soft bg-aro-raise/40 px-4 py-3">
             <span className="text-xs font-semibold text-aro-ink">Live Controls:</span>
             <div className="flex items-center gap-2">
-              <Toggle checked={glass} onChange={setGlass} size="sm" />
+              <Toggle aria-label="Glass Surface" checked={glass} onChange={setGlass} size="sm" />
               <span className="text-xs text-aro-ink-2">Glass Surface</span>
             </div>
             <div className="flex items-center gap-2">
-              <Toggle checked={rtl} onChange={setRtl} size="sm" />
+              <Toggle aria-label="RTL Layout" checked={rtl} onChange={setRtl} size="sm" />
               <span className="text-xs text-aro-ink-2">RTL Layout</span>
             </div>
             <div className="flex items-center gap-2">
-              <Toggle checked={reducedMotion} onChange={setReducedMotion} size="sm" />
+              <Toggle aria-label="Reduced Motion" checked={reducedMotion} onChange={setReducedMotion} size="sm" />
               <span className="text-xs text-aro-ink-2">Reduced Motion</span>
             </div>
           </div>
@@ -337,12 +336,12 @@ export function AroDesignSystemPage() {
       <div className="px-6 pb-16">
         {/* ---------------- THEMES ---------------- */}
         <DS
-          body="Five themes share one token contract. Signal colours are re-tuned per theme for contrast; tints are derived with color-mix so every badge, diff and approval card adapts automatically. Click to switch live — the whole page retints."
+          body="Six themes share one token contract. Signal colours are re-tuned per theme for contrast; tints are derived with color-mix so every badge, diff and approval card adapts automatically. Click to switch live — the whole page retints."
           eyebrow="foundation 00"
           id="themes"
           title="Themes"
         >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {THEMES.map((t) => (
               <button
                 className={cn(
@@ -586,6 +585,21 @@ export function AroDesignSystemPage() {
           id="components"
           title="Components"
         >
+          <Spec label="Desktop controls · interactive states">
+            <Row label="Search">
+              <SearchField
+                onChange={setDemoSearch}
+                placeholder="Search the gallery"
+                value={demoSearch}
+              />
+            </Row>
+            <Row label="Loading">
+              <DesktopButton loading={demoBusy}>Save changes</DesktopButton>
+              <Button onClick={() => setDemoBusy(!demoBusy)} variant="ghost">
+                {demoBusy ? 'Finish loading' : 'Preview loading'}
+              </Button>
+            </Row>
+          </Spec>
           <div className="grid gap-3 lg:grid-cols-2">
             <Spec label="buttons">
               <Row label="primary">

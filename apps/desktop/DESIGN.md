@@ -271,6 +271,25 @@ Rules:
 
 ## 5. Interaction states (all primitives)
 
+Desktop refinement: sidebar selection uses the neutral hover surface and medium
+weight; primary navigation does not add an accent rail or colored glow. The new
+chat action uses a flat raised surface. Navigation and session rows share the
+36px row token, 12px leading inset, control radius, and non-shrinking icons.
+Section labels use sentence case and secondary hierarchy. Trailing row actions
+have 24px targets and remain visible for touch or keyboard focus. Sidebar insets
+and its dividing hairline use logical directions for RTL.
+
+Search fields remain legible when empty; focus adds the shared underline.
+Loading buttons keep their accessible action name and stable dimensions while
+showing a spinner. Decorative line icons are hidden from assistive technology;
+explicitly named icons remain exposed.
+
+Aro buttons use 24/28/32/40px size steps and the control radius at every size.
+Controls respond through color in 100ms with immediate press feedback; pressing
+does not translate the target. Floating menus enter directionally in 160ms and
+exit in 100ms without scale bounce. All durations resolve through existing
+motion tokens and respect reduced motion.
+
 Every interactive primitive implements and the gallery shows:
 
 `rest, hover, focus-visible, pressed, selected/on, disabled, loading (where
@@ -666,3 +685,25 @@ change.
 - [ ] `no-raw-visuals` passes and the baseline did not grow?
 - [ ] Touched a primitive, token, variant or role? This file updated in the
       same change.
+
+### Shared layout and interaction contracts
+
+- Codex Desktop is an opt-in palette (`codex`), separate from the Codex layout
+  profile. It uses screenshot-derived charcoal surfaces, 13px workspace text,
+  14px conversation text, and 16px line icons in workspace chrome. Existing
+  palettes remain unchanged. Select it in Appearance > Color Theme.
+- The pinned task summary is a non-modal complementary region, not a menu.
+  It opens on first viewing a started task without moving focus. Explicit
+  Show/Hide controls retain the choice per session during the app run, including
+  later turns and switching away and back. Outside clicks do not dismiss it.
+  The full workspace panel remains independently toggleable.
+
+- Page headers and form rows respond to their pane container, not only the
+  window width. Header actions wrap before colliding with page titles.
+- Switch geometry belongs to the primitive; host-theme selectors must not
+  override its track or thumb. Both implementations share thumb color and
+  elevation tokens and preserve RTL travel.
+- Interactive list rows support Enter and Space without intercepting nested
+  control events. Disabled rows cannot activate.
+- Sheets use fast/base motion tokens and honor reduced motion. Preserve
+  Radix focus management and dismissal rather than replacing it.

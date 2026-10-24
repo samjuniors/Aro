@@ -42,6 +42,13 @@ export function WorkspaceLaunchpad({ className, onSelectAction }: WorkspaceLaunc
   const allActions: ActionItem[] = useMemo(() => {
     return [
       {
+        id: 'overview',
+        label: 'Overview',
+        detail: 'Turn execution summary, touched files ledger, and checkpoints',
+        icon: IconSpark,
+        action: () => handleOpenSection('overview')
+      },
+      {
         id: 'review',
         label: 'Review',
         detail: 'Inspect uncommitted changes and git diffs',

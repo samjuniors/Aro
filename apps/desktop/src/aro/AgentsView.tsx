@@ -16,6 +16,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { $customAgents, adapters } from '@/adapters'
 import type { AgentKind } from '@/adapters/agents'
+import { PageHeader } from '@/components/ui/layout'
 import { readKey, writeKey } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 import { $activeSessionId } from '@/store/session'
@@ -224,31 +225,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-base text-aro-ink select-text">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-bg text-aro-ink select-text">
       {/* Header */}
-      <header className="border-b border-aro-line-soft bg-aro-raise/40 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider text-aro-ink-4 uppercase">
-                Configuration
-              </span>
-              <Badge mono tone="iris">
-                local catalog
-              </Badge>
-              <Badge mono tone="neutral">
-                conductor.workspace.v3.agents
-              </Badge>
-            </div>
-            <h1 className="text-lg font-semibold tracking-tight text-aro-ink">
-              Coding Agent Adapters
-            </h1>
-            <p className="text-xs text-aro-ink-3">
-              Reference catalog of coding agent definitions and live Hermes session subagents. Catalog entries represent reference specifications; custom registrations store local metadata only.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-6">
+        <PageHeader
+          actions={<>
             <Button
               icon={IconPlus}
               onClick={() => setIsRegistering(!isRegistering)}
@@ -257,9 +238,11 @@ export function AroAgentsPage({ onStart }: { onStart?: (id: string) => void } = 
             >
               {isRegistering ? 'Cancel' : 'Register Adapter'}
             </Button>
-          </div>
-        </div>
-      </header>
+          </>}
+          description="Reference catalog of coding agent definitions and live Hermes session subagents. Catalog entries represent reference specifications; custom registrations store local metadata only."
+          title="Coding Agent Adapters"
+        />
+      </div>
 
       {/* Main Container */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">

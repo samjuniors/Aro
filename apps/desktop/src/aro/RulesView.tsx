@@ -14,6 +14,7 @@ import { useStore } from '@nanostores/react'
 import { useCallback, useMemo, useState } from 'react'
 
 import { $rules, adapters } from '@/adapters'
+import { PageHeader } from '@/components/ui/layout'
 import { readKey, writeKey } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 
@@ -237,31 +238,11 @@ export function AroRulesPage() {
   }, [rules, disabledRules, filter, search])
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-base text-aro-ink select-text">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-aro-bg text-aro-ink select-text">
       {/* Header */}
-      <header className="border-b border-aro-line-soft bg-aro-raise/40 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="font-aro-mono text-[var(--aro-text-2xs,10px)] font-semibold tracking-wider text-aro-ink-4 uppercase">
-                Configuration
-              </span>
-              <Badge mono tone="iris">
-                local adapter
-              </Badge>
-              <Badge mono tone="neutral">
-                conductor.workspace.v3.rules
-              </Badge>
-            </div>
-            <h1 className="text-lg font-semibold tracking-tight text-aro-ink">
-              Global Rules
-            </h1>
-            <p className="text-xs text-aro-ink-3">
-              Locally saved instructions stored in workspace preferences. Note: Active Hermes agent instructions are configured via Profile SOUL.md; these local rules are stored locally and do not alter live Hermes agent execution.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-5xl px-6 pt-6">
+        <PageHeader
+          actions={<>
             {hasUnsavedEdits && (
               <Badge dot mono tone="amber">
                 Unsaved edits pending
@@ -270,9 +251,11 @@ export function AroRulesPage() {
             <Badge dot mono tone="mint">
               {rules.length} {rules.length === 1 ? 'rule' : 'rules'}
             </Badge>
-          </div>
-        </div>
-      </header>
+          </>}
+          description="Locally saved instructions stored in workspace preferences. Note: Active Aro agent instructions are configured via Profile SOUL.md; these local rules are stored locally and do not alter live Aro agent execution."
+          title="Global Rules"
+        />
+      </div>
 
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
@@ -284,14 +267,14 @@ export function AroRulesPage() {
           <div className="flex items-center gap-2">
             <IconSliders className="text-aro-iris" size={15} />
             <h2 className="text-xs font-semibold text-aro-ink">
-              Locally Saved Rules (Not Injected into Hermes Runtime)
+              Locally Saved Rules (Not Injected into Aro Runtime)
             </h2>
             <Badge mono tone="amber">
               local storage only
             </Badge>
           </div>
           <p className="text-xs text-aro-ink-3">
-            These rules are persisted strictly in local workspace preferences (<code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">conductor.workspace.v3.rules</code>). Hermes agent execution instructions are loaded from Profile <code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">SOUL.md</code>. Creating, editing, enabling, or disabling rules here does not alter live Hermes agent execution until server-side rules synchronization is connected.
+            These rules are persisted strictly in local workspace preferences (<code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">conductor.workspace.v3.rules</code>). Aro agent execution instructions are loaded from Profile <code className="font-aro-mono text-[var(--aro-text-2xs,10px)]">SOUL.md</code>. Creating, editing, enabling, or disabling rules here does not alter live Aro agent execution until server-side rules synchronization is connected.
           </p>
         </section>
 
@@ -305,7 +288,7 @@ export function AroRulesPage() {
           />
           <Stat
             label="Active Rules"
-            sub="Locally enabled (not in Hermes)"
+            sub="Locally enabled (not in Aro)"
             tone="mint"
             value={enabledCount}
           />

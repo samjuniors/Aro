@@ -235,6 +235,29 @@ describe('ThemeProvider highlight preview', () => {
     expect(cssVar('--theme-foreground')).not.toBe(everforestTheme.darkColors!.foreground)
   })
 
+  it('selects the Codex palette on the Aro surface without falling back to Obsidian', () => {
+    const root = window.document.documentElement
+    const previous = root.dataset.aroUi
+    root.dataset.aroUi = 'true'
+    try {
+      renderProbe()
+      act(() => ctx.setTheme('codex'))
+      expect(ctx.themeName).toBe('codex')
+      expect(root.dataset.theme).toBe('codex')
+      expect(skinPref.resolve('default')).toBe('codex')
+      act(() => ctx.setTheme('daylight'))
+      expect(root.dataset.theme).toBe('daylight')
+      act(() => ctx.setTheme('codex'))
+      expect(root.dataset.theme).toBe('codex')
+    } finally {
+      if (previous === undefined) {
+        delete root.dataset.aroUi
+      } else {
+        root.dataset.aroUi = previous
+      }
+    }
+  })
+
   it('ignores a preview of an unknown theme', () => {
     renderProbe()
 

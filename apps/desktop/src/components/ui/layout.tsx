@@ -1,23 +1,22 @@
 import {
   type ComponentType,
   type HTMLAttributes,
-  type ReactNode,
   isValidElement,
+  type ReactNode,
 } from 'react'
 
 import {
-  CHAT_MAX_W,
   FORM_MAX_W,
   PAGE_INSET_X,
   PAGE_MAX_W,
 } from '@/app/layout-constants'
 import { cn } from '@/lib/utils'
 
+export { EmptyState } from './empty-state'
 // Re-export aligned primitives for unified access
 export { ListRow, type ListRowProps } from './list-row'
-export { EmptyState } from './empty-state'
+export { OverlayMain, OverlaySidebar, OverlaySplitLayout } from '@/app/overlays/overlay-split-layout'
 export { PanelEmpty } from '@/app/overlays/panel'
-export { OverlaySplitLayout, OverlaySidebar, OverlayMain } from '@/app/overlays/overlay-split-layout'
 
 /* ============================================================================
    PAGE SHELL — The top-level scroll and gutter container for screen views
@@ -55,13 +54,13 @@ export function PageShell({
     <div
       {...rest}
       className={cn(
-        'w-full flex-1',
+        '@container/aro-page min-w-0 w-full flex-1',
         scrollable && 'h-full min-h-0 overflow-y-auto',
         !bare && cn('pb-12 pt-4', PAGE_INSET_X),
         className
       )}
     >
-      <div className={cn('mx-auto w-full', maxWClass)}>{children}</div>
+      <div className={cn('mx-auto min-w-0 w-full', maxWClass)}>{children}</div>
     </div>
   )
 }
@@ -92,40 +91,42 @@ export function PageHeader({
   title,
 }: PageHeaderProps) {
   const renderIcon = () => {
-    if (!Icon) return null
-    if (isValidElement(Icon)) return Icon
+    if (!Icon) {return null}
+
+    if (isValidElement(Icon)) {return Icon}
     const IconComp = Icon as ComponentType<{ className?: string; size?: number }>
+
     return <IconComp className="size-5 shrink-0 text-muted-foreground" size={20} />
   }
 
   return (
     <header
       className={cn(
-        'mb-6 flex flex-col gap-2 border-b border-(--ui-stroke-tertiary)/60 pb-4',
+        '@container/aro-header mb-6 flex min-w-0 flex-col gap-2 border-b border-(--ui-stroke-tertiary)/60 pb-4',
         sticky && 'sticky top-0 z-10 bg-(--ui-chat-surface-background)/95 backdrop-blur-sm',
         className
       )}
     >
       {breadcrumb && <div className="text-xs text-muted-foreground">{breadcrumb}</div>}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 @min-[32rem]/aro-header:flex-row">
         <div className="flex min-w-0 items-center gap-3">
           {renderIcon()}
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="min-w-0 break-words text-aro-xl font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
               {meta}
             </div>
             {description && (
-              <p className="mt-0.5 text-xs text-muted-foreground leading-normal">
+              <p className="mt-1 max-w-prose text-aro-md text-muted-foreground leading-relaxed">
                 {description}
               </p>
             )}
           </div>
         </div>
         {actions && (
-          <div className="flex shrink-0 items-center gap-2 self-center">
+          <div className="flex max-w-full flex-wrap items-center gap-2 @min-[32rem]/aro-header:shrink-0 @min-[32rem]/aro-header:self-center">
             {actions}
           </div>
         )}
@@ -161,9 +162,11 @@ export function Section({
   ...rest
 }: SectionProps) {
   const renderIcon = () => {
-    if (!Icon) return null
-    if (isValidElement(Icon)) return Icon
+    if (!Icon) {return null}
+
+    if (isValidElement(Icon)) {return Icon}
     const IconComp = Icon as ComponentType<{ className?: string; size?: number }>
+
     return <IconComp className="size-4 shrink-0 text-muted-foreground" size={16} />
   }
 
@@ -182,7 +185,7 @@ export function Section({
       )}
     >
       {hasHeader && (
-        <div className="mb-3.5 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             {renderIcon()}
             {title && (
@@ -238,11 +241,11 @@ export function FormRow({
   return (
     <div
       className={cn(
-        'py-2.5 transition-colors',
+        'min-w-0 py-3',
         isHorizontal && 'flex items-center justify-between gap-4',
         isVertical && 'flex flex-col gap-1.5',
         layout === 'responsive' &&
-          'flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4',
+          'flex flex-col gap-2 @min-[32rem]/aro-page:flex-row @min-[32rem]/aro-page:items-center @min-[32rem]/aro-page:justify-between @min-[32rem]/aro-page:gap-4',
         className
       )}
     >
@@ -270,7 +273,7 @@ export function FormRow({
           </p>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-2 sm:max-w-xs">{children}</div>
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 @min-[32rem]/aro-page:max-w-xs">{children}</div>
     </div>
   )
 }
@@ -409,11 +412,11 @@ export function Toolbar({
         className
       )}
     >
-      <div className="flex flex-1 items-center gap-2">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         {start}
         {children}
       </div>
-      {end && <div className="flex shrink-0 items-center gap-2">{end}</div>}
+      {end && <div className="flex max-w-full flex-wrap items-center gap-2">{end}</div>}
     </div>
   )
 }
@@ -444,17 +447,17 @@ export function ActionBar({
     <div
       {...rest}
       className={cn(
-        'mt-6 flex items-center justify-between gap-3 pt-3',
+        'mt-6 flex flex-wrap items-center justify-between gap-3 pt-3',
         sticky &&
           'sticky bottom-0 z-10 border-t border-(--ui-stroke-tertiary)/60 bg-(--ui-chat-surface-background)/95 py-3 backdrop-blur-sm',
         className
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {destructive}
         {children}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
         {secondary}
         {primary}
       </div>

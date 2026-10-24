@@ -1,6 +1,6 @@
 {
   "name": "aro-desktop",
-  "productName": "Hermes",
+  "productName": "Aro",
   "private": true,
   "version": "0.0.0",
   "description": "Aro Desktop — native desktop shell for Aro Agent, by samjuniors.",

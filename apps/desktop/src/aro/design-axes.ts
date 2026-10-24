@@ -99,13 +99,13 @@ export function setMotion(motion: Motion): void {
 /**
  * Recommended Hermes built-in themes per design profile.
  * Resolves the deferred A11 theme-profile coupling:
- * - Aro, Codex, Cursor default to Obsidian (deep dark surface).
+ * - Aro and Cursor recommend Obsidian; Codex recommends its neutral palette.
  * - Claude Code defaults to Ember (warm graphite).
  * - Editorial defaults to Nous (classic high-contrast).
  */
 export const RECOMMENDED_THEMES: Record<DesignProfile, string> = {
   aro: 'obsidian',
-  codex: 'obsidian',
+  codex: 'codex',
   claude: 'ember',
   editorial: 'nous',
   cursor: 'obsidian'

@@ -66,7 +66,7 @@ describe('AroAppearanceSettings', () => {
 
     // 5 profiles
     expect(screen.getByText('Aro Standard')).toBeTruthy()
-    expect(screen.getByText('Codex Desktop')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Codex Desktop' })).toBeTruthy()
     expect(screen.getByText('Claude Code Desktop')).toBeTruthy()
     expect(screen.getByText('Editorial Reference')).toBeTruthy()
     expect(screen.getByText('Cursor 2.x Lineage')).toBeTruthy()
@@ -95,7 +95,7 @@ describe('AroAppearanceSettings', () => {
   it('switches design profile and updates DOM attribute and localStorage', () => {
     render(<AroAppearanceSettings />)
 
-    const codexBtn = screen.getByRole('button', { name: /Codex/i })
+    const codexBtn = screen.getByRole('button', { name: /Codex.*Project-first/ })
     act(() => {
       fireEvent.click(codexBtn)
     })

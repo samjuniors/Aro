@@ -14,7 +14,7 @@
   width: 100%;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
+  border-inline-end: 1px solid var(--aro-line-soft);
   background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
   color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
   user-select: none;
@@ -25,11 +25,11 @@
 /* Brand header */
 .sidebar-brand {
   display: flex;
-  height: 40px;
+  height: var(--aro-height-header);
   flex-shrink: 0;
   align-items: center;
-  gap: 9px;
-  padding-inline: 12px 10px;
+  gap: 8px;
+  padding-inline: 12px;
   border-bottom: 1px solid transparent;
 }
 
@@ -64,7 +64,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 140ms ease;
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-standard), color var(--aro-dur-fast) var(--aro-ease-standard);
 }
 
 .sidebar-mode-tab:hover {
@@ -117,19 +117,19 @@
 
 .new-session-action {
   display: flex;
-  height: 36px;
+  height: var(--aro-height-row);
   width: 100%;
   align-items: center;
   gap: 10px;
-  border-radius: 8px;
-  padding-inline: 9px;
+  border-radius: var(--aro-radius-control);
+  padding-inline: 12px;
   border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
   background: var(--color-raise, var(--aro-raise, var(--dt-background)));
   color: var(--color-ink-2, var(--aro-ink-2, var(--dt-foreground)));
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 140ms, border-color 140ms, color 140ms;
+  transition: background-color var(--aro-dur-fast) var(--aro-ease-standard), border-color var(--aro-dur-fast) var(--aro-ease-standard), color var(--aro-dur-fast) var(--aro-ease-standard);
 }
 
 .new-session-action:hover {
@@ -145,11 +145,10 @@
 
 .sidebar-search {
   box-sizing: border-box;
-  height: 32px;
+  height: var(--aro-height-control);
   width: 100%;
-  padding-left: 30px;
-  padding-right: 10px;
-  border-radius: 7px;
+  padding-inline: 32px 12px;
+  border-radius: var(--aro-radius-control);
   border: 1px solid var(--color-line, var(--aro-line, var(--dt-border)));
   background: var(--color-base, var(--aro-bg, var(--dt-background)));
   color: var(--color-ink, var(--aro-ink, var(--dt-foreground)));
@@ -173,16 +172,17 @@
 
 .sidebar-navigation-row {
   display: flex;
-  min-height: 34px;
+  min-height: var(--aro-height-row);
   width: 100%;
   align-items: center;
-  gap: 10px;
-  border-radius: 8px;
-  padding-inline: 9px;
+  gap: 8px;
+  border-radius: var(--aro-radius-control);
+  padding-inline: 12px;
   border: none;
   background: transparent;
   color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
-  font-size: 12.5px;
+  font-size: var(--aro-text-md);
+  line-height: var(--aro-text-md-lh);
   cursor: pointer;
   transition: background-color 140ms, color 140ms;
 }
@@ -204,12 +204,11 @@
   flex-shrink: 0;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 6px 16px;
-  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  padding: 12px 16px 8px;
+  color: var(--aro-ink-3);
+  font-size: var(--aro-text-sm);
+  line-height: var(--aro-text-sm-lh);
+  font-weight: 500;
 }
 
 /* Project Group */
@@ -233,11 +232,12 @@
 /* Session List Row */
 .session-list-row {
   display: flex;
-  min-height: 32px;
+  min-height: var(--aro-height-row);
   align-items: center;
-  gap: 5px;
-  border-radius: 7px;
-  padding: 0 4px 0 9px;
+  gap: 8px;
+  border-radius: var(--aro-radius-control);
+  padding-block: 2px;
+  padding-inline: 12px 4px;
   color: var(--color-ink-3, var(--aro-ink-3, var(--dt-muted-foreground)));
   cursor: pointer;
   transition: background-color 140ms, color 140ms;
@@ -261,8 +261,9 @@
 
 .session-row-more {
   display: flex;
-  height: 21px;
-  width: 21px;
+  height: 24px;
+  width: 24px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
@@ -288,8 +289,8 @@
 
 .session-row-action {
   display: flex;
-  height: 21px;
-  width: 21px;
+  height: 24px;
+  width: 24px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -318,12 +319,11 @@
 }
 
 .sidebar-section-label {
-  padding: 7px 9px 5px;
-  color: var(--color-ink-4, var(--aro-ink-4, var(--dt-muted-foreground)));
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  padding: 12px 12px 8px;
+  color: var(--aro-ink-3);
+  font-size: var(--aro-text-sm);
+  line-height: var(--aro-text-sm-lh);
+  font-weight: 500;
 }
 
 /* Footer */
@@ -332,6 +332,28 @@
   padding: 8px 10px 14px;
   border-top: 1px solid var(--color-line-soft, var(--aro-line-soft, var(--dt-border)));
   background: var(--color-sunken, var(--aro-sunken, var(--dt-card)));
+}
+
+.sidebar-navigation-row > svg,
+.new-session-action > svg,
+.session-list-row > svg {
+  flex-shrink: 0;
+}
+
+.codex-sidebar :is(button, [role='button']):focus-visible {
+  outline: 2px solid var(--aro-iris);
+  outline-offset: -2px;
+}
+
+.codex-sidebar :is(button, [role='button']):active {
+  transition-duration: var(--aro-dur-instant);
+}
+
+@media (hover: none) {
+  .session-row-more,
+  .session-row-action {
+    opacity: 1;
+  }
 }
 
 /* Frozen & Audit Section */

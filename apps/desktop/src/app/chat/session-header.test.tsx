@@ -3,13 +3,15 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { $rightSidebarSection } from '@/app/right-sidebar/store'
+import type * as LayoutStore from '@/store/layout'
 import { $fileBrowserOpen, toggleRightSide } from '@/store/layout'
 import { $sessions } from '@/store/session'
 
 import { SessionHeader } from './session-header'
 
 vi.mock('@/store/layout', async importOriginal => {
-  const actual = await importOriginal<typeof import('@/store/layout')>()
+  const actual = await importOriginal<typeof LayoutStore>()
+
   return {
     ...actual,
     toggleRightSide: vi.fn(actual.toggleRightSide)
@@ -118,65 +120,39 @@ describe('SessionHeader', () => {
     expect(toggleRightSide).toHaveBeenCalledTimes(2)
   })
 
-  it('automatically opens Overview popover when agent task is running (busy: true)', () => {
+  it('opens the summary when a task starts and keeps it pinned after outside interaction', () => {
     render(
       <MemoryRouter>
-        <SessionHeader
-          activeSessionId={null}
-          busy={true}
-          cwd={null}
-          isRoutedSessionView={false}
-          messagesEmpty={true}
-          onDeleteSelectedSession={vi.fn()}
-          onToggleSelectedPin={vi.fn()}
-          selectedSessionId={null}
-        />
+        <SessionHeader activeSessionId="summary-start" busy cwd={null} isRoutedSessionView={false}
+          messagesEmpty onDeleteSelectedSession={vi.fn()} onToggleSelectedPin={vi.fn()} selectedSessionId="summary-start" />
       </MemoryRouter>
     )
-
-    const overviewBtn = screen.getByLabelText(/^Overview$/i)
-    const toggleBtn = screen.getByLabelText(/Toggle workspace panel/i)
-
-    expect(overviewBtn).toBeDefined()
-    expect(toggleBtn).toBeDefined()
-
-    // Popover automatically opens when busy: true
-    expect(screen.getByText('Review')).toBeDefined()
-    expect(screen.getByText('Files')).toBeDefined()
-    expect(screen.getByText('Terminal')).toBeDefined()
-    expect(screen.getByText('Plugins')).toBeDefined()
-    expect(screen.getByText('Background Tasks')).toBeDefined()
-
-    // Clicking Review opens workspace panel and closes popover
-    fireEvent.click(screen.getByText('Review'))
-    expect(toggleRightSide).toHaveBeenCalled()
+    expect(screen.getByRole('complementary', { name: 'Pinned task summary' })).toBeDefined()
+    fireEvent.pointerDown(document.body)
+    expect(screen.getByRole('complementary', { name: 'Pinned task summary' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: /Changes/ }))
+    expect($rightSidebarSection.get()).toBe('changes')
+    expect(toggleRightSide).toHaveBeenCalledTimes(1)
   })
 
-  it('hides Overview popover when agent is not busy, but allows manual toggle via icon button', () => {
-    render(
+  it('respects hiding through task updates and session switches, with an explicit show action', () => {
+    const header = (sessionId: string, busy: boolean) => (
       <MemoryRouter>
-        <SessionHeader
-          activeSessionId="session-1"
-          busy={false}
-          cwd="/test/path"
-          isRoutedSessionView={true}
-          messagesEmpty={false}
-          onDeleteSelectedSession={vi.fn()}
-          onToggleSelectedPin={vi.fn()}
-          selectedSessionId="session-1"
-        />
+        <SessionHeader activeSessionId={sessionId} busy={busy} cwd={null} isRoutedSessionView
+          messagesEmpty={false} onDeleteSelectedSession={vi.fn()} onToggleSelectedPin={vi.fn()} selectedSessionId={sessionId} />
       </MemoryRouter>
     )
 
-    const overviewBtn = screen.getByLabelText(/^Overview$/i)
-    expect(overviewBtn).toBeDefined()
-    expect(screen.getByLabelText(/Toggle workspace panel/i)).toBeDefined()
-
-    // Popover is initially hidden when not busy
-    expect(screen.queryByText('Review')).toBeNull()
-
-    // Clicking overview button manually toggles it open
-    fireEvent.click(overviewBtn)
-    expect(screen.getByText('Review')).toBeDefined()
+    const { rerender } = render(header('summary-toggle', true))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Hide pinned summary' })[0])
+    rerender(header('summary-toggle', false))
+    rerender(header('summary-toggle', true))
+    expect(screen.queryByRole('complementary')).toBeNull()
+    rerender(header('summary-other', true))
+    expect(screen.getByRole('complementary')).toBeDefined()
+    rerender(header('summary-toggle', false))
+    expect(screen.queryByRole('complementary')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Show pinned summary' }))
+    expect(screen.getByRole('complementary')).toBeDefined()
   })
 })

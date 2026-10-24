@@ -102,7 +102,7 @@ if (!winParam) {
 }
 
 if (winParam === 'hud') {
-  document.title = 'Hermes HUD'
+  document.title = 'Aro HUD'
 }
 
 // The `?win=` kinds whose Electron window is `transparent: true` and so paints

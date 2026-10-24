@@ -79,7 +79,7 @@
       "hexLiterals": 2
     },
     "aro/AroAppearanceSettings.tsx": {
-      "hexLiterals": 44
+      "hexLiterals": 40
     },
     "aro/AroProjectDialog.tsx": {
       "hexLiterals": 6
@@ -99,7 +99,6 @@
       "hexLiterals": 14
     },
     "aro/ui.tsx": {
-      "rawShadows": 2,
       "zArbitrary": 4
     },
     "aro/workbenchData.ts": {
@@ -164,9 +163,6 @@
     },
     "components/ui/sidebar.tsx": {
       "rawShadows": 2
-    },
-    "components/ui/switch.tsx": {
-      "rawShadows": 1
     },
     "debug/perf-live.ts": {
       "hexLiterals": 3

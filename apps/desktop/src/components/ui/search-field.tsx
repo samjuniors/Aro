@@ -30,7 +30,7 @@ interface SearchFieldProps {
 /**
  * Shared search field used everywhere (sessions sidebar, pages, overlays,
  * command center, cron). No box — borderless until focus, then an underline.
- * Rests at low opacity until focused or filled. Width/placement come from
+ * Uses secondary text until focused or filled. Width/placement come from
  * `containerClassName`.
  */
 export function SearchField({
@@ -62,14 +62,13 @@ export function SearchField({
         // min-w-0 is load-bearing: without it the content-sized input sets the
         // container's flex min-width and the field bulldozes its siblings
         // instead of shrinking to fit its context.
-        'inline-flex min-w-0 max-w-full items-center gap-1.5 border-b border-transparent px-0.5 transition-[color,border-color,opacity]',
-        // Recede until the user reaches for it.
-        !value && 'opacity-30 focus-within:opacity-100',
+        'inline-flex min-w-0 max-w-full items-center gap-1.5 border-b border-transparent px-0.5 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-within:border-ring',
         containerClassName
       )}
     >
-      <Search className="pointer-events-none size-3.5 shrink-0 text-muted-foreground/70" />
+      <Search aria-hidden className="pointer-events-none size-3.5 shrink-0 text-muted-foreground" />
       <input
+        aria-busy={loading || undefined}
         aria-label={ariaLabel ?? placeholder}
         className={cn(
           // `field-sizing: content` sizes the input to its placeholder/typed
@@ -91,12 +90,11 @@ export function SearchField({
       />
       {trailingAction}
       {loading ? (
-        <Loader2 className="pointer-events-none size-3.5 shrink-0 animate-spin text-muted-foreground/70" />
+        <Loader2 aria-hidden className="pointer-events-none size-3.5 shrink-0 animate-spin text-muted-foreground" />
       ) : value ? (
         <Tip label={t.ui.search.clear}>
           <Button
             aria-label={t.ui.search.clear}
-            className="shrink-0 text-muted-foreground/85 hover:bg-accent/60 hover:text-foreground"
             onClick={clear}
             size="icon-xs"
             variant="ghost"

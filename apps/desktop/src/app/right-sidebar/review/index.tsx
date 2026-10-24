@@ -17,6 +17,7 @@ import {
   IconWrapText,
   IconX
 } from '@/aro/Icons'
+import { ToastHost, useToasts } from '@/aro/toasts'
 import { FileDiffPanel } from '@/components/chat/diff-lines'
 import { DiffSkeleton } from '@/components/chat/skeletons'
 import { Codicon } from '@/components/ui/codicon'
@@ -101,6 +102,7 @@ function getFileIcon(path: string) {
 }
 
 export function ReviewPane() {
+  const { items, toast } = useToasts()
   const { t } = useI18n()
   const c = t.statusStack.coding
   const panesFlipped = useStore($panesFlipped)
@@ -330,6 +332,19 @@ export function ReviewPane() {
                 <span>{t.rightSidebar.refreshTree}</span>
                 <IconRefresh size={13} className="text-aro-ink-3" />
               </DropdownMenuItem>
+              {diff && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigator.clipboard.writeText(diff).then(() => {
+                      toast('Diff copied to clipboard', 'mint')
+                    }).catch(() => {})
+                  }}
+                  className="text-xs cursor-pointer rounded-control py-1.5 px-2 text-aro-ink hover:bg-aro-hover flex items-center justify-between"
+                >
+                  <span>Copy git diff</span>
+                  <Codicon name="copy" size="0.75rem" className="text-aro-ink-3" />
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -542,6 +557,7 @@ export function ReviewPane() {
         open={revertTarget !== undefined}
         title={revertingAll ? c.revertAll : c.revert}
       />
+      <ToastHost items={items} />
     </aside>
   )
 }

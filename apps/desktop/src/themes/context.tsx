@@ -336,7 +336,7 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
   const skinName = theme.name.endsWith(`-${mode}`) ? theme.name.slice(0, -mode.length - 1) : theme.name
 
   const isAro = root.dataset.aroUi === 'true'
-  const isProtoTheme = ['obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
+  const isProtoTheme = ['codex', 'obsidian', 'daylight', 'nord', 'ember', 'paper', 'ink'].includes(skinName)
   const effectiveTheme = isAro
     ? (isProtoTheme ? skinName : (typeof window !== 'undefined' && localStorage.getItem('aro.theme')) || 'obsidian')
     : skinName

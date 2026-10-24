@@ -98,7 +98,7 @@ describe('aro design axes (A0 foundations)', () => {
   it('exposes recommended themes for each design profile', async () => {
     const { RECOMMENDED_THEMES } = await import('./design-axes')
     expect(RECOMMENDED_THEMES.aro).toBe('obsidian')
-    expect(RECOMMENDED_THEMES.codex).toBe('obsidian')
+    expect(RECOMMENDED_THEMES.codex).toBe('codex')
     expect(RECOMMENDED_THEMES.claude).toBe('ember')
     expect(RECOMMENDED_THEMES.editorial).toBe('nous')
     expect(RECOMMENDED_THEMES.cursor).toBe('obsidian')

@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   ButtonHTMLAttributes,
   ComponentType,
+  CSSProperties,
   HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
@@ -40,10 +41,10 @@ const variantMap: Record<Variant, string> = {
 }
 
 const sizeMap: Record<Size, string> = {
-  xs: 'h-[24px] px-2 text-xs gap-1 rounded-control',
-  sm: 'h-[30px] px-3 text-xs gap-1.5 rounded-control',
-  md: 'h-[34px] px-3.5 text-xs gap-2 rounded-control',
-  lg: 'h-[40px] px-5 text-sm gap-2 rounded-panel',
+  xs: 'h-6 px-2 text-xs gap-1 rounded-control',
+  sm: 'h-7 px-3 text-xs gap-1.5 rounded-control',
+  md: 'h-8 px-3 text-xs gap-2 rounded-control',
+  lg: 'h-10 px-5 text-sm gap-2 rounded-control',
 }
 
 export function Button({
@@ -64,7 +65,7 @@ export function Button({
     <button
       {...rest}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 select-none focus-visible:aro-ring-focus active:translate-y-[var(--aro-dist-xs,2px)] disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,filter] duration-(--aro-dur-fast) ease-(--aro-ease-standard) select-none focus-visible:aro-ring-focus active:duration-0 disabled:pointer-events-none disabled:opacity-40 [&>svg]:shrink-0',
         variantMap[variant],
         sizeMap[size],
         className,
@@ -96,7 +97,7 @@ export function IconButton({
       {...rest}
       aria-label={label}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:scale-[.94] disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) hover:bg-aro-hover hover:text-aro-ink focus-visible:aro-ring-focus active:bg-aro-raise active:duration-0 disabled:pointer-events-none disabled:opacity-40',
         active && 'bg-aro-iris-tint text-aro-iris-soft',
         className,
       )}
@@ -376,7 +377,7 @@ export function MenuItem({
   return (
     <button
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2.5 rounded-control px-2 py-[7px] text-left text-xs transition-colors',
+        'flex min-h-8 w-full cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-start text-xs transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus',
         active
           ? 'bg-aro-iris-tint text-aro-iris-soft'
           : danger
@@ -475,9 +476,9 @@ export function Toggle({
   className?: string
   'aria-label'?: string
 }) {
-  const w = size === 'sm' ? 30 : 38
-  const h = size === 'sm' ? 18 : 22
-  const k = h - 4
+  const w = size === 'sm' ? 32 : 40
+  const h = 24
+  const k = size === 'sm' ? 16 : 20
   const travel = w - k - 4
 
   return (
@@ -485,10 +486,10 @@ export function Toggle({
       aria-checked={checked}
       aria-label={ariaLabel}
       className={cn(
-        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-[2px] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aro-iris/40 disabled:pointer-events-none disabled:opacity-40',
+        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus disabled:pointer-events-none disabled:opacity-40',
         checked
-          ? 'bg-aro-iris shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]'
-          : 'bg-black/15 dark:bg-white/15 border border-black/5 dark:border-white/10',
+          ? 'bg-aro-iris'
+          : 'bg-aro-line-strong',
         className
       )}
       disabled={disabled}
@@ -499,12 +500,15 @@ export function Toggle({
     >
       <span
         aria-hidden
-        className="pointer-events-none block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.22),0_1px_1px_rgba(0,0,0,0.1)] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className={cn(
+          'pointer-events-none block rounded-full bg-(--aro-switch-thumb) shadow-(--aro-shadow-thumb) transition-transform duration-(--aro-dur-base) ease-(--aro-ease-out)',
+          checked && 'translate-x-(--aro-toggle-offset) rtl:-translate-x-(--aro-toggle-offset)',
+        )}
         style={{
           width: k,
           height: k,
-          transform: `translateX(${checked ? travel : 0}px)`
-        }}
+          '--aro-toggle-offset': `${travel}px`,
+        } as CSSProperties}
       />
     </button>
   )
@@ -532,7 +536,7 @@ export function Segmented<T extends string>({
           <button
             aria-pressed={on}
             className={cn(
-              'inline-flex cursor-pointer items-center gap-1.5 rounded-control font-medium transition-[background-color,color,box-shadow,transform] duration-150',
+              'inline-flex min-h-6 cursor-pointer items-center gap-1.5 rounded-control font-medium transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) focus-visible:aro-ring-focus [&>svg]:shrink-0',
               size === 'md' ? 'px-3 py-[6px] text-xs' : 'px-2.5 py-[4px] text-xs',
               on ? cn('bg-aro-raise text-aro-ink shadow-aro-e1', it.tone && toneText[it.tone]) : 'text-aro-ink-3 hover:text-aro-ink-2',
             )}

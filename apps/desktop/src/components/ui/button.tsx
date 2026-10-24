@@ -12,7 +12,7 @@ const TEXT_ACTION_ICON = '[&_.codicon]:no-underline [&_svg]:no-underline'
 // fixed heights — so they stay snug and scale with content. Only icon buttons
 // (inherently square) carry the shared 4px radius.
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-control text-xs leading-4 font-medium whitespace-nowrap shadow-none transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[0.1875rem] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-default disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-control text-xs leading-4 font-medium whitespace-nowrap shadow-none transition-colors duration-(--aro-dur-fast) ease-(--aro-ease-standard) outline-none focus-visible:border-ring focus-visible:ring-[0.1875rem] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-default disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       variant: {
@@ -108,7 +108,7 @@ function Button({
               exactly what the live one did. The spinner sits in a wrapper so
               it is never a direct-child svg — the size variants' `has-[>svg]`
               would otherwise switch to icon padding and shave the width. */}
-          <span aria-hidden className="invisible inline-flex items-center gap-[inherit]">
+          <span className="inline-flex items-center gap-[inherit] opacity-0">
             {children}
           </span>
           <span aria-hidden className="absolute inset-0 grid place-items-center">

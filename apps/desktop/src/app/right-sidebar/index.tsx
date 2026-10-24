@@ -23,6 +23,7 @@ import {
   IconPlus,
   IconRefresh,
   IconSearch,
+  IconSpark,
   IconTerminal,
   IconX
 } from '@/aro/Icons'
@@ -58,6 +59,7 @@ import { ProjectTree } from './files/tree'
 import { useProjectTree } from './files/use-project-tree'
 import { GitSection } from './git-section'
 import { WorkspaceLaunchpad } from './launchpad'
+import { OverviewSection } from './overview-section'
 import { PlanSection } from './plan-section'
 import { SearchSection } from './search-section'
 import {
@@ -65,6 +67,7 @@ import {
   $workspaceOpenTabs,
   closeWorkspaceTab,
   type ContextSectionId,
+  openWorkspaceTab,
   setRightSidebarSection
 } from './store'
 import { TerminalSection } from './terminal-section'
@@ -80,6 +83,7 @@ const SECTION_CONFIG: Record<
   ContextSectionId,
   { id: ContextSectionId; label: string; icon: ComponentType<{ size?: number; className?: string }> }
 > = {
+  overview: { id: 'overview', label: 'Overview', icon: IconSpark },
   changes: { id: 'changes', label: 'Changes', icon: IconGit },
   terminal: { id: 'terminal', label: isWin ? 'powershell.exe' : 'Terminal', icon: IconTerminal },
   files: { id: 'files', label: 'Files', icon: IconFolder },
@@ -108,6 +112,27 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
       setFullscreen(false)
     }
   }, [rightSideOpen])
+
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      // Ctrl+Shift+G / Cmd+Shift+G to toggle Changes/Review, matching OpenAI Codex Desktop
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'g') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!rightSideOpen) {
+          openWorkspaceTab('changes')
+          toggleRightSide()
+        } else if (section === 'changes') {
+          toggleRightSide()
+        } else {
+          openWorkspaceTab('changes')
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleShortcut, true)
+    return () => window.removeEventListener('keydown', handleShortcut, true)
+  }, [rightSideOpen, section])
 
   useEffect(() => {
     if (!fullscreen) {return}
@@ -412,6 +437,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
         role="region"
         tabIndex={0}
       >
+        {section === 'overview' && <OverviewSection />}
         {section === 'files' && (
           <FilesystemTab
             canCollapse={canCollapse}

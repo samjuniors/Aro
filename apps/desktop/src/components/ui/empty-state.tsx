@@ -14,10 +14,10 @@ export function EmptyState({
   className?: string
 }) {
   return (
-    <div className={cn('grid min-h-48 place-items-center text-center', className)}>
-      <div>
+    <div className={cn('grid min-h-48 place-items-center p-6 text-center', className)}>
+      <div className="max-w-prose">
         <div className="text-sm font-medium">{title}</div>
-        {description && <div className="mt-1 text-xs text-muted-foreground">{description}</div>}
+        {description && <div className="mt-2 text-aro-md leading-relaxed text-muted-foreground">{description}</div>}
       </div>
     </div>
   )

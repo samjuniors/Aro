@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { openSession } from '@/app/open-session'
@@ -7,19 +7,12 @@ import { openWorkspaceTab } from '@/app/right-sidebar/store'
 import { NEW_CHAT_ROUTE } from '@/app/routes'
 import { ExternalIdeControl } from '@/app/shell/external-ide-control'
 import {
-  IconBrain,
   IconBranch,
   IconChevronDown,
-  IconChevronRight,
-  IconFolder,
-  IconGit,
-  IconList,
-  IconMaximize,
   IconMore,
   IconPanelRight,
   IconPlus,
-  IconSearch,
-  IconTerminal
+  IconSearch
 } from '@/aro/Icons'
 import { formatMessageTimestamp } from '@/components/assistant-ui/thread/timestamp'
 import {
@@ -27,23 +20,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tip } from '@/components/ui/tooltip'
 import { useI18n } from '@/i18n'
 import { NEW_SESSION_TITLE, sessionTitle } from '@/lib/chat-runtime'
 import { isMacPlatform } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 import { repoStatusForCwd } from '@/store/coding-status'
-import { $backgroundStatusBySession } from '@/store/composer-status'
 import { $fileBrowserOpen, $pinnedSessionIds, toggleRightSide } from '@/store/layout'
-import { $profiles, requestFreshSession } from '@/store/profile'
+import { $profiles } from '@/store/profile'
 import { $sessions, sessionMatchesStoredId, sessionPinId } from '@/store/session'
 import { $subagentsBySession } from '@/store/subagents'
 import { isAuxiliaryWindow } from '@/store/windows'
 
+import { PinnedSummary } from './pinned-summary'
 import { ProfileTag } from './profile-tag'
 import { SessionActionsMenu } from './sidebar/session-actions-menu'
 
@@ -80,26 +71,10 @@ export function SessionHeader({
   const [search, setSearch] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  const bgStatus = useStore($backgroundStatusBySession)
   const subagents = useStore($subagentsBySession)
 
   const sessionId = selectedSessionId || activeSessionId
 
-  const backgroundTasksCount = useMemo(() => {
-    let count = 0
-    if (sessionId) {
-      count += (bgStatus[sessionId] ?? []).filter(i => i.state === 'running').length
-      count += (subagents[sessionId] ?? []).filter(i => i.status === 'running').length
-    } else {
-      for (const items of Object.values(bgStatus)) {
-        count += items.filter(i => i.state === 'running').length
-      }
-      for (const items of Object.values(subagents)) {
-        count += items.filter(i => i.status === 'running').length
-      }
-    }
-    return count
-  }, [sessionId, bgStatus, subagents])
 
   const activeStoredSession =
     ((selectedSessionId || activeSessionId) &&
@@ -107,20 +82,13 @@ export function SessionHeader({
     null
 
   const hasChat = !messagesEmpty || Boolean(busy)
+
   const isEmptyDraft =
     (!activeStoredSession || activeStoredSession.id.startsWith('draft_')) &&
     [selectedSessionId, activeSessionId].filter(Boolean).every(id => id!.startsWith('draft_')) &&
     messagesEmpty &&
     !busy
 
-  const [overviewOpen, setOverviewOpen] = useState(Boolean(busy))
-
-  // Open when a task starts; a user close stays respected until busy changes.
-  useEffect(() => {
-    if (busy) {
-      setOverviewOpen(true)
-    }
-  }, [busy])
 
   const title = activeStoredSession ? sessionTitle(activeStoredSession) : NEW_SESSION_TITLE
   const showSessionSwitcher = Boolean(activeStoredSession && !activeStoredSession.id.startsWith('draft_'))
@@ -138,6 +106,7 @@ export function SessionHeader({
     if (!search.trim()) {
       return sessions.slice(0, 15)
     }
+
     const q = search.toLowerCase().trim()
 
     return sessions
@@ -157,6 +126,7 @@ export function SessionHeader({
 
   const openWorkspaceNewTab = () => {
     openWorkspaceTab('launchpad')
+
     if (!fileBrowserOpen) {
       toggleRightSide()
     }
@@ -295,96 +265,14 @@ export function SessionHeader({
           <>
             {cwd && <ExternalIdeControl compact />}
 
-            {/* Overview Popover: automatically opens when agent task is running, otherwise toggled via icon */}
-            <Popover modal={false} onOpenChange={setOverviewOpen} open={overviewOpen}>
-              <Tip label={overviewOpen ? 'Close overview' : 'Overview'} side="bottom">
-                <PopoverTrigger asChild>
-                  <button
-                    aria-label="Overview"
-                    aria-pressed={overviewOpen}
-                    className={cn(
-                      'flex size-7 cursor-pointer items-center justify-center rounded-control text-aro-ink-3 transition-colors hover:bg-aro-hover hover:text-aro-ink',
-                      overviewOpen && 'bg-aro-hover text-aro-iris-soft'
-                    )}
-                    type="button"
-                  >
-                    <IconList size={14} />
-                  </button>
-                </PopoverTrigger>
-              </Tip>
-              <PopoverContent
-                align="end"
-                className="w-52 rounded-control border border-aro-line bg-aro-raise/95 p-1.5 shadow-aro-e4 backdrop-blur-xl z-50 text-aro-ink"
-                onOpenAutoFocus={e => e.preventDefault()}
-                side="bottom"
-                sideOffset={6}
-                variant="menu"
-              >
-                <div className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-aro-ink-3 tracking-wider">
-                  <span>Overview</span>
-                  <IconMore size={12} className="text-aro-ink-4 hover:text-aro-ink-2 cursor-pointer" />
-                </div>
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openWorkspaceTab('changes')
-                      if (!fileBrowserOpen) toggleRightSide()
-                      setOverviewOpen(false)
-                    }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
-                  >
-                    <IconGit size={13} className="text-aro-ink-3 shrink-0" />
-                    <span>Changes</span>
-                    <span className="sr-only">Review</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openWorkspaceTab('files')
-                      if (!fileBrowserOpen) toggleRightSide()
-                      setOverviewOpen(false)
-                    }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
-                  >
-                    <IconFolder size={13} className="text-aro-ink-3 shrink-0" />
-                    <span>Files</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openWorkspaceTab('terminal')
-                      if (!fileBrowserOpen) toggleRightSide()
-                      setOverviewOpen(false)
-                    }}
-                    className="flex items-center gap-2.5 w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
-                  >
-                    <IconTerminal size={13} className="text-aro-ink-3 shrink-0" />
-                    <span>Terminal</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openWorkspaceTab('context')
-                      if (!fileBrowserOpen) toggleRightSide()
-                      setOverviewOpen(false)
-                    }}
-                    className="flex items-center justify-between w-full py-1.5 px-2 text-xs text-aro-ink rounded-control cursor-pointer hover:bg-aro-hover transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <IconBrain size={13} className="text-aro-ink-3 shrink-0" />
-                      <span>Plugins</span>
-                    </div>
-                    <IconChevronRight size={11} className="text-aro-ink-4 shrink-0" />
-                  </button>
-                </div>
-                <div className="my-1 border-t border-aro-line-soft" />
-                <div className="flex items-center justify-between px-2 py-1 text-xs text-aro-ink-3">
-                  <span>Background Tasks</span>
-                  <span className="font-mono text-xs font-medium text-aro-ink-3">{backgroundTasksCount}</span>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <PinnedSummary
+              added={repoStatus?.added ?? 0}
+              completed={(sessionId ? subagents[sessionId] ?? [] : []).filter(agent => agent.status === 'completed').length}
+              removed={repoStatus?.removed ?? 0}
+              running={(sessionId ? subagents[sessionId] ?? [] : []).filter(agent => agent.status === 'running').length}
+              sessionKey={activeStoredSession?.id || sessionId || 'draft'}
+              title={cwd?.split(/[\\\\/]+/).filter(Boolean).at(-1) || title}
+            />
           </>
         )}
 
